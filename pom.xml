@@ -1,5 +1,5 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>eu.dasish.annotation</groupId>
     <artifactId>annotator-backend</artifactId>
@@ -41,6 +41,33 @@
                         <version>3.0.1</version>
                     </dependency>
                 </dependencies>
+            </plugin>
+            <plugin>
+                <groupId>org.jvnet.jaxb2.maven2</groupId>
+                <artifactId>maven-jaxb2-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>jaxb-components</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <forceRegenerate>true</forceRegenerate>
+                            <generatePackage>eu.dasish.annotation.schema</generatePackage>                 
+                            <outputDirectory>${basedir}/src/generated/jaxb</outputDirectory>
+                            <schemas>
+                                <schema>
+                                    <dependencyResource>
+                                        <groupId>eu.dasish.annotation</groupId>
+                                        <artifactId>annotator-schema</artifactId>
+                                        <version>1.0-SNAPSHOT</version>
+                                        <resource>DASISH-schema.xsd</resource>
+                                    </dependencyResource>
+                                </schema>
+                            </schemas>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
