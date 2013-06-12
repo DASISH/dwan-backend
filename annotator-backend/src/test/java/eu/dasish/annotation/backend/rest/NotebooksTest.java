@@ -15,13 +15,16 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package eu.dasish.annotation.backend;
+package eu.dasish.annotation.backend.rest;
 
+import eu.dasish.annotation.backend.rest.NotebookResource;
 import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.spi.spring.container.servlet.SpringServlet;
 import com.sun.jersey.test.framework.JerseyTest;
 import com.sun.jersey.test.framework.WebAppDescriptor;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.springframework.web.context.ContextLoaderListener;
 
 /**
  * Created on : Jun 12, 2013, 11:31 AM
@@ -31,15 +34,15 @@ import static org.junit.Assert.*;
 public class NotebooksTest extends JerseyTest {
 
     public NotebooksTest() {
-        super(new WebAppDescriptor.Builder(Notebooks.class.getPackage().getName())
-                // .servletClass(SpringServlet.class)
-                // .contextParam("contextConfigLocation", "classpath:testApplicationContext.xml")
-                // .contextListenerClass(ContextLoaderListener.class)
+        super(new WebAppDescriptor.Builder(NotebookResource.class.getPackage().getName())
+                 .servletClass(SpringServlet.class)
+                 .contextParam("contextConfigLocation", "classpath:notebooksTestApplicationContext.xml")
+                 .contextListenerClass(ContextLoaderListener.class)
                 .build());
     }
 
     /**
-     * Test of getNotebookInfo method, of class Notebooks. Returns
+     * Test of getNotebookInfo method, of class NotebookResource. Returns
      * notebook-infos for the notebooks accessible to the current user. GET
      * api/notebooks
      */
@@ -52,7 +55,7 @@ public class NotebooksTest extends JerseyTest {
     }
 
     /**
-     * Test of getUsersNotebooks method, of class Notebooks. Returns the list of
+     * Test of getUsersNotebooks method, of class NotebookResource. Returns the list of
      * all notebooks owned by the current logged user. GET api/notebooks/owned
      */
     @Test
@@ -64,7 +67,7 @@ public class NotebooksTest extends JerseyTest {
     }
 
     /**
-     * Test of getReaders method, of class Notebooks. Returns the list of <uid>
+     * Test of getReaders method, of class NotebookResource. Returns the list of <uid>
      * who allowed to read the annotations from notebook. GET
      * api/notebooks/<nid>/readers
      */
@@ -77,7 +80,7 @@ public class NotebooksTest extends JerseyTest {
     }
 
     /**
-     * Test of getWriters method, of class Notebooks. Returns the list of <uid>
+     * Test of getWriters method, of class NotebookResource. Returns the list of <uid>
      * that can add annotations to the notebook. GET api/notebooks/<nid>/writers
      */
     @Test
@@ -89,7 +92,7 @@ public class NotebooksTest extends JerseyTest {
     }
 
     /**
-     * Test of getMetadata method, of class Notebooks. Get all metadata about a
+     * Test of getMetadata method, of class NotebookResource. Get all metadata about a
      * specified notebook <nid>, including the information if it is private or
      * not. GET api/notebooks/<nid>/metadata
      */
@@ -102,7 +105,7 @@ public class NotebooksTest extends JerseyTest {
     }
 
     /**
-     * Test of getAllAnnotations method, of class Notebooks. Get the list of all
+     * Test of getAllAnnotations method, of class NotebookResource. Get the list of all
      * annotations <aid>-s contained within a Notebook with related metadata.
      * Parameters: <nid>, optional maximumAnnotations specifies the maximum
      * number of annotations to retrieve (default -1, all annotations), optional
@@ -128,7 +131,7 @@ public class NotebooksTest extends JerseyTest {
     }
 
     /**
-     * Test of modifyNotebook method, of class Notebooks. Modify metadata of
+     * Test of modifyNotebook method, of class NotebookResource. Modify metadata of
      * <nid>. The new notebook’s name must be sent in request’s body. PUT
      * /notebooks/<nid>
      */
@@ -141,7 +144,7 @@ public class NotebooksTest extends JerseyTest {
     }
 
     /**
-     * Test of modifyNotebook method, of class Notebooks. Adds an annotation
+     * Test of modifyNotebook method, of class NotebookResource. Adds an annotation
      * <aid> to the list of annotations of <nid>. PUT /notebooks/<nid>/<aid>
      */
     @Test
@@ -153,7 +156,7 @@ public class NotebooksTest extends JerseyTest {
     }
 
     /**
-     * Test of createNotebook method, of class Notebooks. Creates a new
+     * Test of createNotebook method, of class NotebookResource. Creates a new
      * notebook. This API returns the <nid> of the created Notebook in
      * response’s payload and the full URL of the notebook adding a Location
      * header into the HTTP response. The name of the new notebook can be
@@ -168,7 +171,7 @@ public class NotebooksTest extends JerseyTest {
     }
 
     /**
-     * Test of createAnnotation method, of class Notebooks. Creates a new
+     * Test of createAnnotation method, of class NotebookResource. Creates a new
      * annotation in <nid>. The content of an annotation is given in the request
      * body. In fact this is a short cut of two actions: POST
      * api/notebooks/<nid>
@@ -182,7 +185,7 @@ public class NotebooksTest extends JerseyTest {
     }
 
     /**
-     * Test of deleteNotebook method, of class Notebooks. Delete <nid>.
+     * Test of deleteNotebook method, of class NotebookResource. Delete <nid>.
      * Annotations stay, they just lose connection to <nid>. DELETE
      * api/notebooks/<nid>
      */
