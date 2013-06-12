@@ -27,5 +27,6 @@ import java.util.List;
  */
 public interface NotebookDao {
 
-    List<Notebook> getNotbook(String userID);
+//    List<Notebook> getNotbook(String userID);
+    String getNotbook(String userID);
 }

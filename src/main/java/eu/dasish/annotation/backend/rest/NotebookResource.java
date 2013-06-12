@@ -28,12 +28,14 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  * Created on : Jun 11, 2013, 5:10:55 PM
  *
  * @author Peter Withers <peter.withers@mpi.nl>
  */
+@Component
 @Path("/notebooks")
 public class NotebookResource {
 
@@ -45,7 +47,7 @@ public class NotebookResource {
     @Path("")
     // Returns notebook-infos for the notebooks accessible to the current user.
     public String getNotebookInfo() {
-        return "notebook-info";
+        return notebookDao.getNotbook("userid");
     }
 
     @GET
