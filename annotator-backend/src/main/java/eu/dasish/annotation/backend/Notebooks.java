@@ -17,10 +17,15 @@
  */
 package eu.dasish.annotation.backend;
 
+import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 
 /**
  * Created on : Jun 11, 2013, 5:10:55 PM
@@ -68,5 +73,83 @@ public class Notebooks {
     // Get all metadata about a specified notebook _nid_, including the information if it is private or not.
     public String getMetadata(@PathParam("notebookid") String notebookId) {
         return "metadata for " + notebookId;
+    }
+
+    @GET
+    @Path("{notebookid: [a-zA-Z0-9_]*}")
+    /*
+     * Get the list of all annotations _aid_-s contained within a Notebook with related metadata. 
+     * Parameters: _nid_, 
+     * optional maximumAnnotations specifies the maximum number of annotations to retrieve (default -1, all annotations), 
+     * optional startAnnotation specifies the starting point from which the annotations will be retrieved (default: -1, start from the first annotation), 
+     * optional orderby, specifies the RDF property used to order the annotations (default: dc:created ), 
+     * optional orderingMode specifies if the results should be sorted using a descending order desc=1 or an ascending order desc=0 (default: 0 ).
+     * */
+    @Produces("text/html")
+    public String getAllAnnotations(@PathParam("notebookid") String notebookId, @DefaultValue("-1") @QueryParam(value = "maximumAnnotations") final int maximumAnnotations,
+            @DefaultValue("-1") @QueryParam(value = "startAnnotation") final int startAnnotation,
+            @DefaultValue("dc:created") @QueryParam(value = "orderby") final String orderby,
+            @DefaultValue("0") @QueryParam(value = "orderingMode") final int orderingMode) {
+        return "all annotations for " + notebookId + " : " + maximumAnnotations + " : " + startAnnotation + " : " + orderby + " : " + orderingMode;
+    }
+
+    @PUT
+    @Path("{notebookid: [a-zA-Z0-9_]*}")
+    /*
+     Modify metadata of _nid_. The new notebook?s name must be sent in request?s body.
+     */
+    public String modifyNotebook(@PathParam("notebookid") String notebookId) {
+        return "modifyNotebook " + notebookId;
+    }
+
+    @PUT
+    @Path("{notebookid: [a-zA-Z0-9_]*}/{annotationid: [a-zA-Z0-9_]*}")
+    /*
+     Adds an annotation _aid_ to the list of annotations of _nid_.
+     */
+    public String addAnnotation(@PathParam("notebookid") String notebookId, @PathParam("annotationid") String annotationId) {
+        return "addAnnotation " + notebookId + " : " + annotationId;
+    }
+
+//    @PUT
+//    @Path("{notebookid: [a-zA-Z0-9_]*}/setPrivate={isPrivate: true|false}")
+//    /*
+//     Sets the specified Notebook as private or not private.
+//     */
+//    public String setPrivate(@PathParam("notebookid") String notebookId, @PathParam("isPrivate") String isPrivate) {
+//        return "modifyNotebook " + notebookId + " : " + isPrivate;
+//    }
+    @POST
+    @Path("")
+    /*
+     * Creates a new notebook. 
+     * This API returns the _nid_ of the created Notebook in response?s payload and the full URL of the notebook adding a Location header into the HTTP response. 
+     * The name of the new notebook can be specified sending a specific payload.
+     */
+    public String createNotebook() {
+        String notebookId = "_nid_";
+        String fullUrlString = "api/notebooks/_nid_";
+        return "createNotebook " + notebookId + " : " + fullUrlString;
+    }
+
+    @POST
+    @Path("{notebookid: [a-zA-Z0-9_]*}")
+    /*
+     * Creates a new annotation in _nid_. 
+     * The content of an annotation is given in the request body. In fact this is a short cut of two actions:
+     */
+    public String createAnnotation() {
+        String notebookId = "_nid_";
+        String fullUrlString = "api/notebooks/_nid_";
+        return "annotation " + notebookId + " : " + fullUrlString;
+    }
+
+    @DELETE
+    @Path("{notebookid: [a-zA-Z0-9_]*}")
+    /*
+     Delete _nid_. Annotations stay, they just lose connection to _nid_.<br>
+     */
+    public String deleteNotebook(@PathParam("notebookid") String notebookId) {
+        return "deleteNotebook " + notebookId;
     }
 }
