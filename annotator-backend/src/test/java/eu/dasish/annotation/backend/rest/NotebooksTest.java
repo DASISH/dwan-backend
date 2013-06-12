@@ -17,14 +17,17 @@
  */
 package eu.dasish.annotation.backend.rest;
 
-import eu.dasish.annotation.backend.rest.NotebookResource;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.spi.spring.container.servlet.SpringServlet;
 import com.sun.jersey.test.framework.JerseyTest;
 import com.sun.jersey.test.framework.WebAppDescriptor;
+import eu.dasish.annotation.backend.dao.NotebookDao;
+import org.jmock.Expectations;
+import org.jmock.Mockery;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.springframework.web.context.ContextLoaderListener;
+import org.springframework.web.context.WebApplicationContext;
 
 /**
  * Created on : Jun 12, 2013, 11:31 AM
@@ -33,12 +36,22 @@ import org.springframework.web.context.ContextLoaderListener;
  */
 public class NotebooksTest extends JerseyTest {
 
+    private Mockery mockery;
+    private NotebookDao notebookDao;
+
     public NotebooksTest() {
         super(new WebAppDescriptor.Builder(NotebookResource.class.getPackage().getName())
-                 .servletClass(SpringServlet.class)
-                 .contextParam("contextConfigLocation", "classpath:notebooksTestApplicationContext.xml")
-                 .contextListenerClass(ContextLoaderListener.class)
+                .servletClass(SpringServlet.class)
+                .contextParam("contextConfigLocation", "classpath:notebooksTestApplicationContext.xml")
+                .contextListenerClass(ContextLoaderListener.class)
                 .build());
+
+        // Get the web application context that has been instantiated in the Grizzly container
+        final WebApplicationContext webAppContext = ContextLoaderListener.getCurrentWebApplicationContext();
+
+        // Get the context and mock objects from the context by their type
+        mockery = webAppContext.getBean(Mockery.class);
+        notebookDao = webAppContext.getBean(NotebookDao.class);
     }
 
     /**
@@ -49,14 +62,21 @@ public class NotebooksTest extends JerseyTest {
     @Test
     public void testGetNotebookInfo() {
         System.out.println("testGetNotebookInfo");
+        mockery.checking(new Expectations() {
+            {
+                oneOf(notebookDao).getNotbook("userid");
+                will(returnValue("notebook-info"));
+            }
+        });
         ClientResponse response = resource().path("notebooks").get(ClientResponse.class);
         assertEquals(200, response.getStatus());
         assertEquals("notebook-info", response.getEntity(String.class));
     }
 
     /**
-     * Test of getUsersNotebooks method, of class NotebookResource. Returns the list of
-     * all notebooks owned by the current logged user. GET api/notebooks/owned
+     * Test of getUsersNotebooks method, of class NotebookResource. Returns the
+     * list of all notebooks owned by the current logged user. GET
+     * api/notebooks/owned
      */
     @Test
     public void testGetUsersNotebooks() {
@@ -67,7 +87,8 @@ public class NotebooksTest extends JerseyTest {
     }
 
     /**
-     * Test of getReaders method, of class NotebookResource. Returns the list of <uid>
+     * Test of getReaders method, of class NotebookResource. Returns the list of
+     * <uid>
      * who allowed to read the annotations from notebook. GET
      * api/notebooks/<nid>/readers
      */
@@ -80,11 +101,12 @@ public class NotebooksTest extends JerseyTest {
     }
 
     /**
-     * Test of getWriters method, of class NotebookResource. Returns the list of <uid>
+     * Test of getWriters method, of class NotebookResource. Returns the list of
+     * <uid>
      * that can add annotations to the notebook. GET api/notebooks/<nid>/writers
      */
     @Test
-    public void testGetWriters() {        
+    public void testGetWriters() {
         System.out.println("testGetWriters");
         ClientResponse response = resource().path("notebooks/_nid_/writers").get(ClientResponse.class);
         assertEquals(200, response.getStatus());
@@ -92,9 +114,9 @@ public class NotebooksTest extends JerseyTest {
     }
 
     /**
-     * Test of getMetadata method, of class NotebookResource. Get all metadata about a
-     * specified notebook <nid>, including the information if it is private or
-     * not. GET api/notebooks/<nid>/metadata
+     * Test of getMetadata method, of class NotebookResource. Get all metadata
+     * about a specified notebook <nid>, including the information if it is
+     * private or not. GET api/notebooks/<nid>/metadata
      */
     @Test
     public void testGetMetadata() {
@@ -105,15 +127,15 @@ public class NotebooksTest extends JerseyTest {
     }
 
     /**
-     * Test of getAllAnnotations method, of class NotebookResource. Get the list of all
-     * annotations <aid>-s contained within a Notebook with related metadata.
-     * Parameters: <nid>, optional maximumAnnotations specifies the maximum
-     * number of annotations to retrieve (default -1, all annotations), optional
-     * startAnnotation specifies the starting point from which the annotations
-     * will be retrieved (default: -1, start from the first annotation),
-     * optional orderby, specifies the RDF property used to order the
-     * annotations (default: dc:created ), optional orderingMode specifies if
-     * the results should be sorted using a descending order desc=1 or an
+     * Test of getAllAnnotations method, of class NotebookResource. Get the list
+     * of all annotations <aid>-s contained within a Notebook with related
+     * metadata. Parameters: <nid>, optional maximumAnnotations specifies the
+     * maximum number of annotations to retrieve (default -1, all annotations),
+     * optional startAnnotation specifies the starting point from which the
+     * annotations will be retrieved (default: -1, start from the first
+     * annotation), optional orderby, specifies the RDF property used to order
+     * the annotations (default: dc:created ), optional orderingMode specifies
+     * if the results should be sorted using a descending order desc=1 or an
      * ascending order desc=0 (default: 0 ). GET
      * api/notebooks/<nid>?maximumAnnotations=limit&startAnnotation=offset&orderby=orderby&orderingMode=1|0
      */
@@ -131,7 +153,8 @@ public class NotebooksTest extends JerseyTest {
     }
 
     /**
-     * Test of modifyNotebook method, of class NotebookResource. Modify metadata of
+     * Test of modifyNotebook method, of class NotebookResource. Modify metadata
+     * of
      * <nid>. The new notebook’s name must be sent in request’s body. PUT
      * /notebooks/<nid>
      */
@@ -144,7 +167,8 @@ public class NotebooksTest extends JerseyTest {
     }
 
     /**
-     * Test of modifyNotebook method, of class NotebookResource. Adds an annotation
+     * Test of modifyNotebook method, of class NotebookResource. Adds an
+     * annotation
      * <aid> to the list of annotations of <nid>. PUT /notebooks/<nid>/<aid>
      */
     @Test
@@ -163,7 +187,7 @@ public class NotebooksTest extends JerseyTest {
      * specified sending a specific payload. POST api/notebooks/
      */
     @Test
-    public void testCreateNotebook() {        
+    public void testCreateNotebook() {
         System.out.println("testCreateNotebook");
         ClientResponse response = resource().path("notebooks").post(ClientResponse.class);
         assertEquals(200, response.getStatus());
@@ -177,7 +201,7 @@ public class NotebooksTest extends JerseyTest {
      * api/notebooks/<nid>
      */
     @Test
-    public void testCreateAnnotation() {    
+    public void testCreateAnnotation() {
         System.out.println("testCreateAnnotation");
         ClientResponse response = resource().path("notebooks/_nid_").post(ClientResponse.class);
         assertEquals(200, response.getStatus());
@@ -190,7 +214,7 @@ public class NotebooksTest extends JerseyTest {
      * api/notebooks/<nid>
      */
     @Test
-    public void testDeleteNotebook() {        
+    public void testDeleteNotebook() {
         System.out.println("testModifyNotebook_String");
         ClientResponse response = resource().path("notebooks/_nid_").delete(ClientResponse.class);
         assertEquals(200, response.getStatus());
