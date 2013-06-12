@@ -15,8 +15,9 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package eu.dasish.annotation.backend;
+package eu.dasish.annotation.backend.rest;
 
+import eu.dasish.annotation.backend.dao.NotebookDao;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -26,6 +27,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Created on : Jun 11, 2013, 5:10:55 PM
@@ -33,7 +35,10 @@ import javax.ws.rs.QueryParam;
  * @author Peter Withers <peter.withers@mpi.nl>
  */
 @Path("/notebooks")
-public class Notebooks {
+public class NotebookResource {
+
+    @Autowired
+    private NotebookDao notebookDao;
 
     @GET
     @Produces("text/html")
