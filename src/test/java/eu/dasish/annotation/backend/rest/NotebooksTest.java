@@ -18,11 +18,19 @@
 package eu.dasish.annotation.backend.rest;
 
 import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.GenericType;
+import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 import com.sun.jersey.spi.spring.container.servlet.SpringServlet;
 import com.sun.jersey.test.framework.JerseyTest;
 import com.sun.jersey.test.framework.WebAppDescriptor;
 import eu.dasish.annotation.backend.dao.NotebookDao;
+import eu.dasish.annotation.schema.Notebook;
+import eu.dasish.annotation.schema.NotebookInfo;
+import java.util.ArrayList;
+import java.util.List;
+import javax.ws.rs.core.MediaType;
 import org.jmock.Expectations;
+import static org.jmock.Expectations.returnValue;
 import org.jmock.Mockery;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -64,13 +72,15 @@ public class NotebooksTest extends JerseyTest {
         System.out.println("testGetNotebookInfo");
         mockery.checking(new Expectations() {
             {
-                oneOf(notebookDao).getNotbook("userid");
-                will(returnValue("notebook-info"));
+                oneOf(notebookDao).getNotebookInfos(null);
+                will(returnValue(new ArrayList<NotebookInfo>()));
             }
         });
-        ClientResponse response = resource().path("notebooks").get(ClientResponse.class);
+        client().addFilter(new HTTPBasicAuthFilter("userid", "userpass"));
+        ClientResponse response = resource().path("notebooks").accept(MediaType.TEXT_XML).get(ClientResponse.class);
         assertEquals(200, response.getStatus());
-        assertEquals("notebook-info", response.getEntity(String.class));
+        assertEquals(0, response.getEntity(new GenericType<List<NotebookInfo>>() {
+        }).size());
     }
 
     /**
@@ -81,9 +91,17 @@ public class NotebooksTest extends JerseyTest {
     @Test
     public void testGetUsersNotebooks() {
         System.out.println("testGetUsersNotebooks");
-        ClientResponse response = resource().path("notebooks/owned").get(ClientResponse.class);
+        mockery.checking(new Expectations() {
+            {
+                oneOf(notebookDao).getUsersNotebooks(null);
+                will(returnValue(new ArrayList<Notebook>()));
+            }
+        });
+        client().addFilter(new HTTPBasicAuthFilter("userid", "userpass"));
+        ClientResponse response = resource().path("notebooks/owned").accept(MediaType.TEXT_XML).get(ClientResponse.class);
         assertEquals(200, response.getStatus());
-        assertEquals("UsersNotebooks", response.getEntity(String.class));
+        assertEquals(0, response.getEntity(new GenericType<List<Notebook>>() {
+        }).size());
     }
 
     /**

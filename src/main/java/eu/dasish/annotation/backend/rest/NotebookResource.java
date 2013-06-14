@@ -18,6 +18,10 @@
 package eu.dasish.annotation.backend.rest;
 
 import eu.dasish.annotation.backend.dao.NotebookDao;
+import eu.dasish.annotation.schema.Notebook;
+import eu.dasish.annotation.schema.NotebookInfo;
+import java.util.List;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -27,6 +31,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -43,19 +49,19 @@ public class NotebookResource {
     private NotebookDao notebookDao;
 
     @GET
-    @Produces("text/html")
+    @Produces(MediaType.TEXT_XML)
     @Path("")
     // Returns notebook-infos for the notebooks accessible to the current user.
-    public String getNotebookInfo() {
-        return notebookDao.getNotbook("userid");
+    public List<NotebookInfo> getNotebookInfo(@Context HttpServletRequest httpServletRequest) {
+        return notebookDao.getNotebookInfos(httpServletRequest.getRemoteUser());
     }
 
     @GET
-    @Produces("text/html")
+    @Produces(MediaType.TEXT_XML)
     @Path("owned")
     // Returns the list of all notebooks owned by the current logged user.
-    public String getUsersNotebooks() {
-        return "UsersNotebooks";
+    public List<Notebook> getUsersNotebooks(@Context HttpServletRequest httpServletRequest) {
+        return notebookDao.getUsersNotebooks(httpServletRequest.getRemoteUser());
     }
 
     @GET
