@@ -18,6 +18,7 @@
 package eu.dasish.annotation.backend.dao;
 
 import eu.dasish.annotation.schema.Notebook;
+import eu.dasish.annotation.schema.NotebookInfo;
 import java.util.List;
 
 /**
@@ -26,7 +27,10 @@ import java.util.List;
  * @author Peter Withers <peter.withers@mpi.nl>
  */
 public interface NotebookDao {
+    // Returns a list of notebook-info for the notebooks accessible to the current user.
 
-//    List<Notebook> getNotbook(String userID);
-    String getNotbook(String userID);
+    List<NotebookInfo> getNotebookInfos(String userID);
+
+    // Returns the list of all notebooks owned by the current logged user.
+    List<Notebook> getUsersNotebooks(String userID);
 }
