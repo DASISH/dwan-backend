@@ -27,10 +27,13 @@ import java.util.List;
  * @author Peter Withers <peter.withers@mpi.nl>
  */
 public interface NotebookDao {
-    // Returns a list of notebook-info for the notebooks accessible to the current user.
 
+    // Returns a list of notebook-info for the notebooks accessible to the current user.
     List<NotebookInfo> getNotebookInfos(String userID);
 
     // Returns the list of all notebooks owned by the current logged user.
     List<Notebook> getUsersNotebooks(String userID);
+
+    // Creates a new notebook and returns the _nid_ of the created Notebook
+    String addNotebook(String userID);
 }

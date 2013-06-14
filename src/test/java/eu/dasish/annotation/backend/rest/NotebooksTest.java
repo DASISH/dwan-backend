@@ -50,7 +50,7 @@ public class NotebooksTest extends JerseyTest {
     public NotebooksTest() {
         super(new WebAppDescriptor.Builder(NotebookResource.class.getPackage().getName())
                 .servletClass(SpringServlet.class)
-                .contextParam("contextConfigLocation", "classpath:notebooksTestApplicationContext.xml")
+                .contextParam("contextConfigLocation", "classpath*:spring-test-config/**/*.xml")
                 .contextListenerClass(ContextLoaderListener.class)
                 .build());
 
