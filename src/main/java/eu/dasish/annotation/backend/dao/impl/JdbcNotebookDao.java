@@ -22,17 +22,17 @@ import eu.dasish.annotation.schema.Notebook;
 import eu.dasish.annotation.schema.NotebookInfo;
 import java.util.List;
 import javax.sql.DataSource;
-import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
+import org.springframework.jdbc.core.simple.SimpleJdbcDaoSupport;
 
 /**
  * Created on : Jun 14, 2013, 3:27:04 PM
  *
  * @author Peter Withers <peter.withers@mpi.nl>
  */
-public class JdbcNotebookDao extends SimpleJdbcTemplate implements NotebookDao {
+public class JdbcNotebookDao extends SimpleJdbcDaoSupport implements NotebookDao {
 
     public JdbcNotebookDao(DataSource dataSource) {
-        super(dataSource);
+        setDataSource(dataSource);
     }
 
     @Override
