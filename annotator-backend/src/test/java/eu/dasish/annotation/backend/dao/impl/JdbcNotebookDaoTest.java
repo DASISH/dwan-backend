@@ -17,11 +17,17 @@
  */
 package eu.dasish.annotation.backend.dao.impl;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.Scanner;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -37,17 +43,34 @@ public class JdbcNotebookDaoTest {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    private String getNormalisedSql() throws FileNotFoundException, URISyntaxException {
+        // remove the unsupported sql for the test
+        final URL sqlUrl = JdbcNotebookDaoTest.class.getResource("/sql/DashishAnnotatorCreate.sql");
+        String sqlString = new Scanner(new File(sqlUrl.toURI()), "UTF8").useDelimiter("\\Z").next();
+        for (String unknownToken : new String[]{
+            "SET client_encoding",
+            "CREATE DATABASE",
+            "\\\\connect",
+            "SET default_with_oids",
+            "ALTER SEQUENCE",
+            "ALTER TABLE ONLY",
+            "ADD CONSTRAINT",
+            "CREATE INDEX", 
+            // "ALTER TABLE ONLY [a-z]* ALTER COLUMN",
+            // "ALTER TABLE ONLY [^A]* ADD CONSTRAINT"
+        }) {
+            sqlString = sqlString.replaceAll(unknownToken, "-- " + unknownToken);
+        }
+        sqlString = sqlString.replaceAll("body_xml xml", "body_xml text");
+        sqlString = sqlString.replaceAll("CACHE 1;", "; -- CACHE 1;");
+        return sqlString;
+    }
+
     @Before
-    public void setUp() {
+    public void setUp() throws DataAccessException, FileNotFoundException, URISyntaxException {
         jdbcTemplate.execute("DROP SCHEMA PUBLIC CASCADE");
-        jdbcTemplate.execute("CREATE TABLE annotation (\n"
-                + "    annotation_id integer NOT NULL,\n"
-                + "    uri text,\n"
-                + "    time_stamp timestamp with time zone,\n"
-                + "    owner_id integer,\n"
-                + "    headline text,\n"
-                + "    body_xml text\n"
-                + ");\n"); // todo: consume the DashishAnnotatorCreate sql script here 
+        // consume the DashishAnnotatorCreate sql script to create the database
+        jdbcTemplate.execute(getNormalisedSql());
     }
 
     @After
@@ -73,6 +96,6 @@ public class JdbcNotebookDaoTest {
      * Test of addNotebook method, of class JdbcNotebookDao.
      */
     @Test
-    public void testAddNotebook() {
+    public void testAddNotebook() {      
     }
 }
