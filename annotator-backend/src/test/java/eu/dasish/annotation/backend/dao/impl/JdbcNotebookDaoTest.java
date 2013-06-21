@@ -19,6 +19,7 @@ package eu.dasish.annotation.backend.dao.impl;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Scanner;
@@ -31,6 +32,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import static org.junit.Assert.assertEquals;
 
 /**
  *
@@ -55,9 +57,8 @@ public class JdbcNotebookDaoTest {
             "ALTER SEQUENCE",
             "ALTER TABLE ONLY",
             "ADD CONSTRAINT",
-            "CREATE INDEX", 
-            // "ALTER TABLE ONLY [a-z]* ALTER COLUMN",
-            // "ALTER TABLE ONLY [^A]* ADD CONSTRAINT"
+            "CREATE INDEX", // "ALTER TABLE ONLY [a-z]* ALTER COLUMN",
+        // "ALTER TABLE ONLY [^A]* ADD CONSTRAINT"
         }) {
             sqlString = sqlString.replaceAll(unknownToken, "-- " + unknownToken);
         }
@@ -66,11 +67,18 @@ public class JdbcNotebookDaoTest {
         return sqlString;
     }
 
+    private String getTestDataInsertSql() throws FileNotFoundException, URISyntaxException {
+        final URL sqlUrl = JdbcNotebookDaoTest.class.getResource("/test-data/InsertTestData.sql");
+        String sqlString = new Scanner(new File(sqlUrl.toURI()), "UTF8").useDelimiter("\\Z").next();
+        return sqlString;
+    }
+
     @Before
     public void setUp() throws DataAccessException, FileNotFoundException, URISyntaxException {
         jdbcTemplate.execute("DROP SCHEMA PUBLIC CASCADE");
         // consume the DashishAnnotatorCreate sql script to create the database
         jdbcTemplate.execute(getNormalisedSql());
+        jdbcTemplate.execute(getTestDataInsertSql());
     }
 
     @After
@@ -96,6 +104,9 @@ public class JdbcNotebookDaoTest {
      * Test of addNotebook method, of class JdbcNotebookDao.
      */
     @Test
-    public void testAddNotebook() {      
+    public void testAddNotebook() throws URISyntaxException {
+        JdbcNotebookDao notebookDao = new JdbcNotebookDao(jdbcTemplate.getDataSource());
+        final Number addedNotebookId = notebookDao.addNotebook("a user id", new URI("http://123456"), "a title");
+        assertEquals(1, addedNotebookId);
     }
 }

@@ -19,6 +19,7 @@ package eu.dasish.annotation.backend.dao;
 
 import eu.dasish.annotation.schema.Notebook;
 import eu.dasish.annotation.schema.NotebookInfo;
+import java.net.URI;
 import java.util.List;
 
 /**
@@ -35,5 +36,5 @@ public interface NotebookDao {
     List<Notebook> getUsersNotebooks(String userID);
 
     // Creates a new notebook and returns the _nid_ of the created Notebook
-    String addNotebook(String userID);
+    Number addNotebook(String userID, URI notebookUri, String title);
 }
