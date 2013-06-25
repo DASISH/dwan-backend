@@ -28,12 +28,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.sql.DataSource;
+import org.springframework.jdbc.core.RowMapper;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.simple.ParameterizedRowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcDaoSupport;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 
@@ -46,8 +46,8 @@ public class JdbcNotebookDao extends SimpleJdbcDaoSupport implements NotebookDao
 
     @Autowired
 //    private TransactionTemplate transactionTemplate;
-    final private String notebookTableName = "notebook";
-    final private String notebook_id = "notebook_id";
+    final static private String notebookTableName = "notebook";
+    final static private String notebook_id = "notebook_id";
 
     public JdbcNotebookDao(DataSource dataSource) {
         setDataSource(dataSource);
@@ -73,7 +73,7 @@ public class JdbcNotebookDao extends SimpleJdbcDaoSupport implements NotebookDao
             params.put("URI", notebookUri.toString());
 //            params.put("time_stamp", System.);
             params.put("title", title);
-            params.put("owner_id", 1);
+            params.put("owner_id", userID);
 
             Number id = notebookInsert.executeAndReturnKey(params);
 //            txManager.commit(transaction);
@@ -83,7 +83,7 @@ public class JdbcNotebookDao extends SimpleJdbcDaoSupport implements NotebookDao
             throw ex;
         }
     }
-    private final ParameterizedRowMapper<Notebook> notebookRowMapper = new ParameterizedRowMapper<Notebook>() {
+    private final RowMapper<Notebook> notebookRowMapper = new RowMapper<Notebook>() {
         @Override
         public Notebook mapRow(ResultSet rs, int rowNumber) throws SQLException {
             Notebook notebook = new Notebook();
