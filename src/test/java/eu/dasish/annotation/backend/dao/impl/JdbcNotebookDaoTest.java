@@ -17,11 +17,14 @@
  */
 package eu.dasish.annotation.backend.dao.impl;
 
+import eu.dasish.annotation.schema.Notebook;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Calendar;
+import java.util.List;
 import java.util.Scanner;
 import org.junit.After;
 import org.junit.Before;
@@ -33,6 +36,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  *
@@ -98,6 +102,20 @@ public class JdbcNotebookDaoTest {
      */
     @Test
     public void testGetUsersNotebooks() {
+        int year = Calendar.getInstance().get(Calendar.YEAR);
+        int month = Calendar.getInstance().get(Calendar.MONTH);
+        int day = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
+        JdbcNotebookDao notebookDao = new JdbcNotebookDao(jdbcTemplate.getDataSource());
+        final List<Notebook> notebooks = notebookDao.getUsersNotebooks(1);
+        assertEquals(1, notebooks.size());
+        assertEquals("a notebook", notebooks.get(0).getTitle());
+        assertEquals("http://123456", notebooks.get(0).getURI());
+        assertNotNull(notebooks.get(0).getTimeStamp());
+        assertEquals(year, notebooks.get(0).getTimeStamp().getYear());
+        assertEquals(month + 1, notebooks.get(0).getTimeStamp().getMonth());
+        assertEquals(day, notebooks.get(0).getTimeStamp().getDay());
+        final List<Notebook> notebooksEmpty = notebookDao.getUsersNotebooks(0);
+        assertEquals(0, notebooksEmpty.size());
     }
 
     /**
@@ -106,7 +124,7 @@ public class JdbcNotebookDaoTest {
     @Test
     public void testAddNotebook() throws URISyntaxException {
         JdbcNotebookDao notebookDao = new JdbcNotebookDao(jdbcTemplate.getDataSource());
-        final Number addedNotebookId = notebookDao.addNotebook("a user id", new URI("http://123456"), "a title");
+        final Number addedNotebookId = notebookDao.addNotebook(1, new URI("http://123456"), "a title");
         assertEquals(1, addedNotebookId);
     }
 }

@@ -19,4 +19,4 @@
 INSERT INTO principal (principal_name) VALUES ('a user');
 INSERT INTO principal (principal_name) VALUES ('b user');
 
-INSERT INTO notebook ("URI", time_stamp, title, owner_id) VALUES (NULL, NULL, 'a notebook', 1);
+INSERT INTO notebook ("URI", title, owner_id) VALUES ('http://123456', 'a notebook', 1);
