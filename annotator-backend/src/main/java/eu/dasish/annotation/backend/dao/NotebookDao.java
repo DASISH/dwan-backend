@@ -30,11 +30,11 @@ import java.util.List;
 public interface NotebookDao {
 
     // Returns a list of notebook-info for the notebooks accessible to the current user.
-    List<NotebookInfo> getNotebookInfos(String userID);
+    List<NotebookInfo> getNotebookInfos(Number userID);
 
     // Returns the list of all notebooks owned by the current logged user.
-    List<Notebook> getUsersNotebooks(String userID);
+    List<Notebook> getUsersNotebooks(Number userID);
 
     // Creates a new notebook and returns the _nid_ of the created Notebook
-    Number addNotebook(String userID, URI notebookUri, String title);
+    Number addNotebook(Number userID, URI notebookUri, String title);
 }
