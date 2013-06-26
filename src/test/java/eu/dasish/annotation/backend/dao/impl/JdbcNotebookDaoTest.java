@@ -18,6 +18,7 @@
 package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.schema.Notebook;
+import eu.dasish.annotation.schema.NotebookInfo;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URI;
@@ -94,7 +95,10 @@ public class JdbcNotebookDaoTest {
      */
     @Test
     public void testGetNotebookInfos() {
-//        dataSourceer
+        JdbcNotebookDao notebookDao = new JdbcNotebookDao(jdbcTemplate.getDataSource());
+        final List<NotebookInfo> notebookInfoList = notebookDao.getNotebookInfos(1);
+        assertEquals(1, notebookInfoList.size());
+        assertEquals("a notebook", notebookInfoList.get(0).getTitle());
     }
 
     /**

@@ -20,3 +20,5 @@ INSERT INTO principal (principal_name) VALUES ('a user');
 INSERT INTO principal (principal_name) VALUES ('b user');
 
 INSERT INTO notebook ("URI", title, owner_id) VALUES ('http://123456', 'a notebook', 1);
+INSERT INTO annotation ("URI",owner_id,headline,body_xml) VALUES ('http://234567',0,'a headline','<html><body>some html</body></html>');
+INSERT INTO notebooks_annotations (notebook_id,annotation_id)VALUES(0,0);
