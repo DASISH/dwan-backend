@@ -55,7 +55,8 @@ public class JdbcNotebookDao extends SimpleJdbcDaoSupport implements NotebookDao
 
     @Override
     public List<NotebookInfo> getNotebookInfos(Number userID) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        String sql = "SELECT title, \"URI\" FROM notebook where owner_id = ?";
+        return getSimpleJdbcTemplate().query(sql, notebookInfoRowMapper, userID);
     }
 
     @Override
@@ -78,11 +79,21 @@ public class JdbcNotebookDao extends SimpleJdbcDaoSupport implements NotebookDao
             Number id = notebookInsert.executeAndReturnKey(params);
 //            txManager.commit(transaction);
             return id;
-        } catch (DataAccessException ex) {
+        } catch (DataAccessException exception) {
 //            txManager.rollback(transaction);
-            throw ex;
+            throw exception;
         }
     }
+    private final RowMapper<NotebookInfo> notebookInfoRowMapper = new RowMapper<NotebookInfo>() {
+        @Override
+        public NotebookInfo mapRow(ResultSet rs, int rowNumber) throws SQLException {
+            NotebookInfo notebookInfo = new NotebookInfo();
+//	    notebook.setId(rs.getInt("notebook_id"));
+            notebookInfo.setTitle(rs.getString("title"));
+            notebookInfo.setRef(rs.getString("URI"));
+            return notebookInfo;
+        }
+    };
     private final RowMapper<Notebook> notebookRowMapper = new RowMapper<Notebook>() {
         @Override
         public Notebook mapRow(ResultSet rs, int rowNumber) throws SQLException {
