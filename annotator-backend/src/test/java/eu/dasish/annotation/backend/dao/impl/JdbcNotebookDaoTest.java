@@ -97,7 +97,7 @@ public class JdbcNotebookDaoTest {
     public void testGetNotebookInfos() {
         JdbcNotebookDao notebookDao = new JdbcNotebookDao(jdbcTemplate.getDataSource());
         final List<NotebookInfo> notebookInfoList = notebookDao.getNotebookInfos(1);
-        assertEquals(1, notebookInfoList.size());
+        assertEquals(2, notebookInfoList.size());
         assertEquals("a notebook", notebookInfoList.get(0).getTitle());
     }
 
@@ -111,7 +111,7 @@ public class JdbcNotebookDaoTest {
         int day = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
         JdbcNotebookDao notebookDao = new JdbcNotebookDao(jdbcTemplate.getDataSource());
         final List<Notebook> notebooks = notebookDao.getUsersNotebooks(1);
-        assertEquals(1, notebooks.size());
+        assertEquals(2, notebooks.size());
         assertEquals("a notebook", notebooks.get(0).getTitle());
         assertEquals("http://123456", notebooks.get(0).getURI());
         assertNotNull(notebooks.get(0).getTimeStamp());
@@ -129,6 +129,18 @@ public class JdbcNotebookDaoTest {
     public void testAddNotebook() throws URISyntaxException {
         JdbcNotebookDao notebookDao = new JdbcNotebookDao(jdbcTemplate.getDataSource());
         final Number addedNotebookId = notebookDao.addNotebook(1, new URI("http://123456"), "a title");
-        assertEquals(1, addedNotebookId);
+        assertEquals(2, addedNotebookId);
+    }
+
+    /**
+     * Test of deleteNotebook method, of class JdbcNotebookDao.
+     */
+    @Test
+    public void testDeleteNotebook() {
+        System.out.println("deleteNotebook");
+        Number notebookId = 1;
+        JdbcNotebookDao instance = new JdbcNotebookDao(jdbcTemplate.getDataSource());;
+        int result = instance.deleteNotebook(notebookId);
+        assertEquals(1, result);
     }
 }
