@@ -26,6 +26,8 @@ import com.sun.jersey.test.framework.WebAppDescriptor;
 import eu.dasish.annotation.backend.dao.NotebookDao;
 import eu.dasish.annotation.schema.Notebook;
 import eu.dasish.annotation.schema.NotebookInfo;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.ws.rs.core.MediaType;
@@ -205,11 +207,17 @@ public class NotebooksTest extends JerseyTest {
      * specified sending a specific payload. POST api/notebooks/
      */
     @Test
-    public void testCreateNotebook() {
+    public void testCreateNotebook() throws URISyntaxException {
         System.out.println("testCreateNotebook");
+        mockery.checking(new Expectations() {
+            {
+                oneOf(notebookDao).addNotebook(null, null, null);
+                will(returnValue(1));
+            }
+        });
         ClientResponse response = resource().path("notebooks").post(ClientResponse.class);
         assertEquals(200, response.getStatus());
-        assertEquals("createNotebook _nid_ : api/notebooks/_nid_", response.getEntity(String.class));
+        assertEquals("/api/notebooks/1", new URI(response.getEntity(String.class)).getPath());
     }
 
     /**
@@ -234,8 +242,14 @@ public class NotebooksTest extends JerseyTest {
     @Test
     public void testDeleteNotebook() {
         System.out.println("testModifyNotebook_String");
+        mockery.checking(new Expectations() {
+            {
+                oneOf(notebookDao).deleteNotebook(1);
+                will(returnValue(1));
+            }
+        });
         ClientResponse response = resource().path("notebooks/_nid_").delete(ClientResponse.class);
         assertEquals(200, response.getStatus());
-        assertEquals("deleteNotebook _nid_", response.getEntity(String.class));
+        assertEquals("1", response.getEntity(String.class));
     }
 }
