@@ -17,28 +17,15 @@
  */
 package eu.dasish.annotation.backend.dao;
 
-import eu.dasish.annotation.schema.Notebook;
-import eu.dasish.annotation.schema.NotebookInfo;
-import java.net.URI;
-import java.util.List;
+import eu.dasish.annotation.schema.Annotations;
 
 /**
- * Created on : Jun 12, 2013, 1:40:09 PM
+ * Created on : Jun 27, 2013, 10:34:13 AM
  *
  * @author Peter Withers <peter.withers@mpi.nl>
  */
-public interface NotebookDao {
+public interface AnnotationDao {
 
-    // Returns a list of notebook-info for the notebooks accessible to the current user.
-    List<NotebookInfo> getNotebookInfos(Number userID);
-
-    // Returns the list of all notebooks owned by the current logged user.
-    List<Notebook> getUsersNotebooks(Number userID);
-
-    // Creates a new notebook and returns the _nid_ of the created Notebook
-    Number addNotebook(Number userID, URI notebookUri, String title);
-
-    // Delete _nid_. Annotations stay, they just lose connection to _nid_.<br>
-    // returns the number of records deleted
-    public int deleteNotebook(Number notebookId);
+    // Returns the annotations object for the notebook id.
+    Annotations getAnnotations(Number notebookID);
 }

@@ -109,7 +109,15 @@ public class JdbcNotebookDao extends SimpleJdbcDaoSupport implements NotebookDao
                 throw new SQLException(exception);
             }
             notebook.setURI(rs.getString("URI"));
+            notebook.setAnnotations(new JdbcAnnotationDao().getAnnotations(rs.getInt("notebook_id")));
             return notebook;
         }
     };
+
+    @Override
+    public int deleteNotebook(Number notebookId) {
+        String sql = "DELETE FROM notebook where notebook_id = ?";
+        // todo: also delete from the join table
+        return getSimpleJdbcTemplate().update(sql, notebookId);
+    }
 }
