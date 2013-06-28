@@ -24,6 +24,7 @@ import com.sun.jersey.spi.spring.container.servlet.SpringServlet;
 import com.sun.jersey.test.framework.JerseyTest;
 import com.sun.jersey.test.framework.WebAppDescriptor;
 import eu.dasish.annotation.backend.dao.NotebookDao;
+import eu.dasish.annotation.backend.identifiers.NotebookIdentifier;
 import eu.dasish.annotation.schema.Notebook;
 import eu.dasish.annotation.schema.NotebookInfo;
 import java.net.URI;
@@ -181,7 +182,9 @@ public class NotebooksTest extends JerseyTest {
     @Test
     public void testModifyNotebook_String() {
         System.out.println("testModifyNotebook_String");
-        ClientResponse response = resource().path("notebooks/_nid_").put(ClientResponse.class);
+        final Notebook notebook = new Notebook();
+        notebook.setTitle("a title");
+        ClientResponse response = resource().path("notebooks/_nid_").type(MediaType.APPLICATION_XML).accept(MediaType.APPLICATION_XML).put(ClientResponse.class, notebook);
         assertEquals(200, response.getStatus());
         assertEquals("modifyNotebook _nid_", response.getEntity(String.class));
     }
@@ -244,11 +247,11 @@ public class NotebooksTest extends JerseyTest {
         System.out.println("testModifyNotebook_String");
         mockery.checking(new Expectations() {
             {
-                oneOf(notebookDao).deleteNotebook(1);
+                oneOf(notebookDao).deleteNotebook(new NotebookIdentifier("_test_nid_2_"));
                 will(returnValue(1));
             }
         });
-        ClientResponse response = resource().path("notebooks/_nid_").delete(ClientResponse.class);
+        ClientResponse response = resource().path("notebooks/_test_nid_2_").delete(ClientResponse.class);
         assertEquals(200, response.getStatus());
         assertEquals("1", response.getEntity(String.class));
     }

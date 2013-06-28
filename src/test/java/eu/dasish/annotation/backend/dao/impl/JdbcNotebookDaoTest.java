@@ -17,11 +17,12 @@
  */
 package eu.dasish.annotation.backend.dao.impl;
 
+import eu.dasish.annotation.backend.identifiers.NotebookIdentifier;
+import eu.dasish.annotation.backend.identifiers.UserIdentifier;
 import eu.dasish.annotation.schema.Notebook;
 import eu.dasish.annotation.schema.NotebookInfo;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Calendar;
@@ -96,7 +97,7 @@ public class JdbcNotebookDaoTest {
     @Test
     public void testGetNotebookInfos() {
         JdbcNotebookDao notebookDao = new JdbcNotebookDao(jdbcTemplate.getDataSource());
-        final List<NotebookInfo> notebookInfoList = notebookDao.getNotebookInfos(1);
+        final List<NotebookInfo> notebookInfoList = notebookDao.getNotebookInfos(new UserIdentifier("_test_uid_2_"));
         assertEquals(2, notebookInfoList.size());
         assertEquals("a notebook", notebookInfoList.get(0).getTitle());
     }
@@ -110,15 +111,15 @@ public class JdbcNotebookDaoTest {
         int month = Calendar.getInstance().get(Calendar.MONTH);
         int day = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
         JdbcNotebookDao notebookDao = new JdbcNotebookDao(jdbcTemplate.getDataSource());
-        final List<Notebook> notebooks = notebookDao.getUsersNotebooks(1);
+        final List<Notebook> notebooks = notebookDao.getUsersNotebooks(new UserIdentifier("_test_uid_2_"));
         assertEquals(2, notebooks.size());
         assertEquals("a notebook", notebooks.get(0).getTitle());
-        assertEquals("http://123456", notebooks.get(0).getURI());
+//        assertEquals("http://123456", notebooks.get(0).getURI());
         assertNotNull(notebooks.get(0).getTimeStamp());
         assertEquals(year, notebooks.get(0).getTimeStamp().getYear());
         assertEquals(month + 1, notebooks.get(0).getTimeStamp().getMonth());
         assertEquals(day, notebooks.get(0).getTimeStamp().getDay());
-        final List<Notebook> notebooksEmpty = notebookDao.getUsersNotebooks(0);
+        final List<Notebook> notebooksEmpty = notebookDao.getUsersNotebooks(new UserIdentifier("_test_uid_1_"));
         assertEquals(0, notebooksEmpty.size());
     }
 
@@ -128,8 +129,8 @@ public class JdbcNotebookDaoTest {
     @Test
     public void testAddNotebook() throws URISyntaxException {
         JdbcNotebookDao notebookDao = new JdbcNotebookDao(jdbcTemplate.getDataSource());
-        final Number addedNotebookId = notebookDao.addNotebook(1, new URI("http://123456"), "a title");
-        assertEquals(2, addedNotebookId);
+        final NotebookIdentifier addedNotebookId = notebookDao.addNotebook(new UserIdentifier("_test_uid_2_"), new NotebookIdentifier("_test_nid_"), "a title");
+        assertEquals("_test_nid_", addedNotebookId.toString());
     }
 
     /**
@@ -138,7 +139,7 @@ public class JdbcNotebookDaoTest {
     @Test
     public void testDeleteNotebook() {
         System.out.println("deleteNotebook");
-        Number notebookId = 1;
+        NotebookIdentifier notebookId = new NotebookIdentifier("_test_nid_2_");
         JdbcNotebookDao instance = new JdbcNotebookDao(jdbcTemplate.getDataSource());;
         int result = instance.deleteNotebook(notebookId);
         assertEquals(1, result);
