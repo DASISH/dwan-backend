@@ -17,13 +17,16 @@
  */
 package eu.dasish.annotation.backend.rest;
 
+import eu.dasish.annotation.backend.identifiers.UserIdentifier;
 import eu.dasish.annotation.backend.dao.NotebookDao;
+import eu.dasish.annotation.backend.identifiers.NotebookIdentifier;
 import eu.dasish.annotation.schema.Notebook;
 import eu.dasish.annotation.schema.NotebookInfo;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -56,7 +59,7 @@ public class NotebookResource {
     // Returns notebook-infos for the notebooks accessible to the current user.
     public List<NotebookInfo> getNotebookInfo(@Context HttpServletRequest httpServletRequest) {
         // todo: sort out how the user id is obtained and how it is stored it the db
-        return notebookDao.getNotebookInfos(null/*httpServletRequest.getRemoteUser()*/);
+        return notebookDao.getNotebookInfos(null/*new UserIdentifier(httpServletRequest.getRemoteUser())*/);
     }
 
     @GET
@@ -112,11 +115,12 @@ public class NotebookResource {
 
     @PUT
     @Path("{notebookid: [a-zA-Z0-9_]*}")
+    @Consumes(MediaType.APPLICATION_XML)
     /*
      Modify metadata of _nid_. The new notebook?s name must be sent in request?s body.
      */
-    public String modifyNotebook(@PathParam("notebookid") String notebookId) {
-        return "modifyNotebook " + notebookId;
+    public String modifyNotebook(@PathParam("notebookid") String notebookId, Notebook notebook) {
+        return "modifyNotebook " + notebookId + notebook.getTitle();
     }
 
     @PUT
@@ -144,7 +148,7 @@ public class NotebookResource {
      * The name of the new notebook can be specified sending a specific payload.
      */
     public String createNotebook(@Context HttpServletRequest httpServletRequest) throws URISyntaxException {
-        Number notebookId = notebookDao.addNotebook(null, null, null);
+        NotebookIdentifier notebookId = notebookDao.addNotebook(null, null, null);
         final URI serverUri = new URI(httpServletRequest.getRequestURL().toString());
         String fullUrlString = "/api/notebooks/" + notebookId;
         return serverUri.resolve(fullUrlString).toString();
@@ -167,8 +171,8 @@ public class NotebookResource {
     /*
      Delete _nid_. Annotations stay, they just lose connection to _nid_.<br>
      */
-    public String deleteNotebook(@PathParam("notebookid") String notebookId) {
+    public String deleteNotebook(@PathParam("notebookid") NotebookIdentifier notebookId) {
         // todo: sort out how the id string passsed in here is mapped eg db column for _nid_
-        return Integer.toString(notebookDao.deleteNotebook(1));
+        return Integer.toString(notebookDao.deleteNotebook(notebookId));
     }
 }

@@ -17,9 +17,11 @@
  */
 package eu.dasish.annotation.backend.dao;
 
+import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
+import eu.dasish.annotation.backend.identifiers.NotebookIdentifier;
+import eu.dasish.annotation.backend.identifiers.UserIdentifier;
 import eu.dasish.annotation.schema.Notebook;
 import eu.dasish.annotation.schema.NotebookInfo;
-import java.net.URI;
 import java.util.List;
 
 /**
@@ -30,15 +32,18 @@ import java.util.List;
 public interface NotebookDao {
 
     // Returns a list of notebook-info for the notebooks accessible to the current user.
-    List<NotebookInfo> getNotebookInfos(Number userID);
+    List<NotebookInfo> getNotebookInfos(UserIdentifier userID);
 
     // Returns the list of all notebooks owned by the current logged user.
-    List<Notebook> getUsersNotebooks(Number userID);
+    List<Notebook> getUsersNotebooks(UserIdentifier userID);
 
     // Creates a new notebook and returns the _nid_ of the created Notebook
-    Number addNotebook(Number userID, URI notebookUri, String title);
+    NotebookIdentifier addNotebook(UserIdentifier userID, NotebookIdentifier notebookUri, String title);
 
     // Delete _nid_. Annotations stay, they just lose connection to _nid_.<br>
     // returns the number of records deleted
-    public int deleteNotebook(Number notebookId);
+    public int deleteNotebook(NotebookIdentifier notebookId);
+
+    // Adds an annotation _aid_ to the list of annotations of _nid_.
+    public int addAnnotation(NotebookIdentifier notebookId, AnnotationIdentifier annotationId);
 }
