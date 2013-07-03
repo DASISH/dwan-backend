@@ -49,6 +49,7 @@ public class JdbcNotebookDao extends SimpleJdbcDaoSupport implements NotebookDao
     @Autowired
 //    private TransactionTemplate transactionTemplate;
     final static private String notebookTableName = "notebook";
+    final static private String notebooksAnnotationsTableName = "notebooks_annotations";
     final static private String notebook_id = "notebook_id";
 
     public JdbcNotebookDao(DataSource dataSource) {
@@ -68,15 +69,16 @@ public class JdbcNotebookDao extends SimpleJdbcDaoSupport implements NotebookDao
     }
 
     @Override
-    public NotebookIdentifier addNotebook(UserIdentifier userID, NotebookIdentifier notebookId, String title) {
+    public NotebookIdentifier addNotebook(UserIdentifier userID, String title) {
         try {
+            final NotebookIdentifier notebookIdentifier = new NotebookIdentifier();
             String sql = "INSERT INTO notebook (external_id, title, owner_id) VALUES (:notebookId, :title, (SELECT principal_id FROM principal WHERE principal.external_id = :userID))";
             Map<String, Object> params = new HashMap<String, Object>();
-            params.put("notebookId", notebookId.toString());
+            params.put("notebookId", notebookIdentifier.toString());
             params.put("userID", userID.toString());
             params.put("title", title);
             final int updatedRowCount = getSimpleJdbcTemplate().update(sql, params);
-            return notebookId;
+            return notebookIdentifier;
         } catch (DataAccessException exception) {
             throw exception;
         }
@@ -111,28 +113,26 @@ public class JdbcNotebookDao extends SimpleJdbcDaoSupport implements NotebookDao
         }
     };
 
+    // returns the number of affected annotations
     @Override
     public int deleteNotebook(NotebookIdentifier notebookId) {
-        String sql = "DELETE FROM notebook where external_id = ?";
-        // todo: also delete from the join table
-        return getSimpleJdbcTemplate().update(sql, notebookId.toString());
+        String sql1 = "DELETE FROM " + notebooksAnnotationsTableName + " where notebook_id = (SELECT notebook_id FROM notebook WHERE external_id = ?)";
+        String sql2 = "DELETE FROM notebook where external_id = ?";
+        int affectedAnnotations = getSimpleJdbcTemplate().update(sql1, notebookId.toString());
+        int affectedNotebooks = getSimpleJdbcTemplate().update(sql2, notebookId.toString());
+        return affectedAnnotations;
     }
 
     @Override
     public int addAnnotation(NotebookIdentifier notebookId, AnnotationIdentifier annotationId) {
         try {
-            //SimpleJdbcInsert notebookInsert = new SimpleJdbcInsert(getDataSource()).withTableName(notebookTableName).usingGeneratedKeyColumns(notebook_id);
-            //Map<String, Object> params = new HashMap<String, Object>();
-//            params.put("URI_ID", notebookUri.toString());
-////            params.put("time_stamp", System.);
-//            params.put("title", title);
-//            params.put("owner_id", userID);
-
-            //int rowsAffected = notebookInsert.execute(params);
-//            txManager.commit(transaction);
-            //return rowsAffected;
+            SimpleJdbcInsert notebookInsert = new SimpleJdbcInsert(getDataSource()).withTableName(notebooksAnnotationsTableName);
+            Map<String, Object> params = new HashMap<String, Object>();
+            params.put("notebook_id", notebookId);
+            params.put("annotation_id", annotationId);
+            int rowsAffected = notebookInsert.execute(params);
+            return rowsAffected;
         } catch (DataAccessException exception) {
-//            txManager.rollback(transaction);
             throw exception;
         }
     }

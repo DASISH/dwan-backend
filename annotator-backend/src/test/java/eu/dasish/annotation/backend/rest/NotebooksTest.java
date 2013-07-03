@@ -25,6 +25,7 @@ import com.sun.jersey.test.framework.JerseyTest;
 import com.sun.jersey.test.framework.WebAppDescriptor;
 import eu.dasish.annotation.backend.dao.NotebookDao;
 import eu.dasish.annotation.backend.identifiers.NotebookIdentifier;
+import eu.dasish.annotation.backend.identifiers.UserIdentifier;
 import eu.dasish.annotation.schema.Notebook;
 import eu.dasish.annotation.schema.NotebookInfo;
 import java.net.URI;
@@ -75,7 +76,7 @@ public class NotebooksTest extends JerseyTest {
         System.out.println("testGetNotebookInfo");
         mockery.checking(new Expectations() {
             {
-                oneOf(notebookDao).getNotebookInfos(null);
+                oneOf(notebookDao).getNotebookInfos(new UserIdentifier(null));
                 will(returnValue(new ArrayList<NotebookInfo>()));
             }
         });
@@ -214,8 +215,8 @@ public class NotebooksTest extends JerseyTest {
         System.out.println("testCreateNotebook");
         mockery.checking(new Expectations() {
             {
-                oneOf(notebookDao).addNotebook(null, null, null);
-                will(returnValue(1));
+                oneOf(notebookDao).addNotebook(new UserIdentifier(null), null);
+                will(returnValue(new NotebookIdentifier("1")));
             }
         });
         ClientResponse response = resource().path("notebooks").post(ClientResponse.class);

@@ -59,7 +59,7 @@ public class NotebookResource {
     // Returns notebook-infos for the notebooks accessible to the current user.
     public List<NotebookInfo> getNotebookInfo(@Context HttpServletRequest httpServletRequest) {
         // todo: sort out how the user id is obtained and how it is stored it the db
-        return notebookDao.getNotebookInfos(null/*new UserIdentifier(httpServletRequest.getRemoteUser())*/);
+        return notebookDao.getNotebookInfos(new UserIdentifier(httpServletRequest.getRemoteUser()));
     }
 
     @GET
@@ -148,7 +148,7 @@ public class NotebookResource {
      * The name of the new notebook can be specified sending a specific payload.
      */
     public String createNotebook(@Context HttpServletRequest httpServletRequest) throws URISyntaxException {
-        NotebookIdentifier notebookId = notebookDao.addNotebook(null, null, null);
+        NotebookIdentifier notebookId = notebookDao.addNotebook(new UserIdentifier(httpServletRequest.getRemoteUser()), null);
         final URI serverUri = new URI(httpServletRequest.getRequestURL().toString());
         String fullUrlString = "/api/notebooks/" + notebookId;
         return serverUri.resolve(fullUrlString).toString();
