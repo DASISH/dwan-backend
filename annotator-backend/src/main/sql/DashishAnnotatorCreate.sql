@@ -36,7 +36,7 @@ SET client_encoding = 'UTF8';
 SET default_with_oids = false;
 
 CREATE TABLE annotation (
-    annotation_id SERIAL NOT NULL,
+    annotation_id SERIAL UNIQUE NOT NULL,
     external_id UUID UNIQUE NOT NULL,
     time_stamp timestamp with time zone default now(),
     owner_id integer,
@@ -44,15 +44,8 @@ CREATE TABLE annotation (
     body_xml xml
 );
 
-CREATE SEQUENCE annotation_annotation_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
 CREATE TABLE notebook (
-    notebook_id SERIAL NOT NULL,
+    notebook_id SERIAL UNIQUE NOT NULL,
     external_id UUID UNIQUE NOT NULL,
     time_stamp timestamp with time zone default now(),
     title text,
@@ -60,8 +53,8 @@ CREATE TABLE notebook (
 );
 
 CREATE TABLE notebooks_annotations (
-    notebook_id integer NOT NULL,
-    annotation_id integer NOT NULL
+    notebook_id integer REFERENCES notebook(notebook_id),
+    annotation_id integer REFERENCES annotation(annotation_id)
 );
 
 CREATE TABLE principal (
@@ -86,11 +79,11 @@ ALTER TABLE ONLY annotation
 ALTER TABLE ONLY notebook
     ADD CONSTRAINT fk_notebook_owner_id_principal_id FOREIGN KEY (owner_id) REFERENCES principal(principal_id);
 
-ALTER TABLE ONLY notebooks_annotations
-    ADD CONSTRAINT fk_notebooks_annotations_annotation_id FOREIGN KEY (annotation_id) REFERENCES annotation(annotation_id);
+-- ALTER TABLE ONLY notebooks_annotations
+--     ADD CONSTRAINT fk_notebooks_annotations_annotation_id FOREIGN KEY (annotation_id) REFERENCES annotation(annotation_id);
 
-ALTER TABLE ONLY notebooks_annotations
-    ADD CONSTRAINT fk_notebooks_annotations_notebook_id FOREIGN KEY (notebook_id) REFERENCES notebook(notebook_id);
+-- ALTER TABLE ONLY notebooks_annotations
+--     ADD CONSTRAINT fk_notebooks_annotations_notebook_id FOREIGN KEY (notebook_id) REFERENCES notebook(notebook_id);
 
 
 -- Completed on 2013-06-14 14:36:28 CEST
