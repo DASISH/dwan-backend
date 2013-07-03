@@ -17,6 +17,7 @@
  */
 package eu.dasish.annotation.backend.dao.impl;
 
+import eu.dasish.annotation.backend.dao.AnnotationDao;
 import eu.dasish.annotation.backend.dao.NotebookDao;
 import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
 import eu.dasish.annotation.backend.identifiers.NotebookIdentifier;
@@ -47,7 +48,7 @@ import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 public class JdbcNotebookDao extends SimpleJdbcDaoSupport implements NotebookDao {
 
     @Autowired
-//    private TransactionTemplate transactionTemplate;
+    private AnnotationDao jdbcAnnotationDao;
     final static private String notebookTableName = "notebook";
     final static private String notebooksAnnotationsTableName = "notebooks_annotations";
     final static private String notebook_id = "notebook_id";
@@ -108,7 +109,7 @@ public class JdbcNotebookDao extends SimpleJdbcDaoSupport implements NotebookDao
                 throw new SQLException(exception);
             }
 //            notebook.setURI(rs.getString("URI_ID"));
-            notebook.setAnnotations(new JdbcAnnotationDao().getAnnotations(rs.getInt("notebook_id")));
+            notebook.setAnnotations(jdbcAnnotationDao.getAnnotations(rs.getInt("notebook_id")));
             return notebook;
         }
     };

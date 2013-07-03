@@ -17,8 +17,10 @@
  */
 package eu.dasish.annotation.backend.dao.impl;
 
+import eu.dasish.annotation.backend.dao.AnnotationDao;
 import eu.dasish.annotation.backend.identifiers.NotebookIdentifier;
 import eu.dasish.annotation.backend.identifiers.UserIdentifier;
+import eu.dasish.annotation.schema.Annotations;
 import eu.dasish.annotation.schema.Notebook;
 import eu.dasish.annotation.schema.NotebookInfo;
 import java.io.File;
@@ -28,6 +30,9 @@ import java.net.URL;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Scanner;
+import org.jmock.Expectations;
+import static org.jmock.Expectations.returnValue;
+import org.jmock.Mockery;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -45,11 +50,17 @@ import static org.junit.Assert.assertNotNull;
  * @author Peter Withers <peter.withers@mpi.nl>
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration({"classpath*:spring-test-config/**/*.xml"})
+@ContextConfiguration({"/spring-test-config/mockery.xml", "/spring-test-config/mockAnnotationDao.xml", "/spring-test-config/dataSource.xml", "/spring-config/notebookDao.xml"})
 public class JdbcNotebookDaoTest {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+    @Autowired
+    JdbcNotebookDao jdbcNotebookDao;
+    @Autowired
+    private AnnotationDao annotationDao;
+    @Autowired
+    private Mockery mockery;
 
     private String getNormalisedSql() throws FileNotFoundException, URISyntaxException {
         // remove the unsupported sql for the test
@@ -98,8 +109,7 @@ public class JdbcNotebookDaoTest {
      */
     @Test
     public void testGetNotebookInfos() {
-        JdbcNotebookDao notebookDao = new JdbcNotebookDao(jdbcTemplate.getDataSource());
-        final List<NotebookInfo> notebookInfoList = notebookDao.getNotebookInfos(new UserIdentifier("_test_uid_2_"));
+        final List<NotebookInfo> notebookInfoList = jdbcNotebookDao.getNotebookInfos(new UserIdentifier("_test_uid_2_"));
         assertEquals(2, notebookInfoList.size());
         assertEquals("a notebook", notebookInfoList.get(0).getTitle());
     }
@@ -112,8 +122,17 @@ public class JdbcNotebookDaoTest {
         int year = Calendar.getInstance().get(Calendar.YEAR);
         int month = Calendar.getInstance().get(Calendar.MONTH);
         int day = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
-        JdbcNotebookDao notebookDao = new JdbcNotebookDao(jdbcTemplate.getDataSource());
-        final List<Notebook> notebooks = notebookDao.getUsersNotebooks(new UserIdentifier("_test_uid_2_"));
+        mockery.checking(new Expectations() {
+            {
+                oneOf(annotationDao).getAnnotations(1);
+                will(returnValue(new Annotations()));
+                oneOf(annotationDao).getAnnotations(2);
+                will(returnValue(new Annotations()));
+            }
+        });
+        final List<Notebook> notebooks = jdbcNotebookDao.getUsersNotebooks(new UserIdentifier("_test_uid_2_"));
+
+
         assertEquals(2, notebooks.size());
         assertEquals("a notebook", notebooks.get(0).getTitle());
 //        assertEquals("http://123456", notebooks.get(0).getURI());
@@ -121,7 +140,13 @@ public class JdbcNotebookDaoTest {
         assertEquals(year, notebooks.get(0).getTimeStamp().getYear());
         assertEquals(month + 1, notebooks.get(0).getTimeStamp().getMonth());
         assertEquals(day, notebooks.get(0).getTimeStamp().getDay());
-        final List<Notebook> notebooksEmpty = notebookDao.getUsersNotebooks(new UserIdentifier("_test_uid_1_"));
+        mockery.checking(new Expectations() {
+            {
+                oneOf(annotationDao).getAnnotations(0);
+                will(returnValue(new Annotations()));
+            }
+        });
+        final List<Notebook> notebooksEmpty = jdbcNotebookDao.getUsersNotebooks(new UserIdentifier("_test_uid_1_"));
         assertEquals(0, notebooksEmpty.size());
     }
 
@@ -130,8 +155,7 @@ public class JdbcNotebookDaoTest {
      */
     @Test
     public void testAddNotebook() throws URISyntaxException {
-        JdbcNotebookDao notebookDao = new JdbcNotebookDao(jdbcTemplate.getDataSource());
-        final NotebookIdentifier addedNotebookId = notebookDao.addNotebook(new UserIdentifier("_test_uid_2_"), "a title");
+        final NotebookIdentifier addedNotebookId = jdbcNotebookDao.addNotebook(new UserIdentifier("_test_uid_2_"), "a title");
         assertEquals(40, addedNotebookId.toString().length());
     }
 
@@ -142,8 +166,7 @@ public class JdbcNotebookDaoTest {
     public void testDeleteNotebook() {
         System.out.println("deleteNotebook");
         NotebookIdentifier notebookId = new NotebookIdentifier("_test_nid_2_");
-        JdbcNotebookDao instance = new JdbcNotebookDao(jdbcTemplate.getDataSource());;
-        int result = instance.deleteNotebook(notebookId);
+        int result = jdbcNotebookDao.deleteNotebook(notebookId);
         assertEquals(1, result);
     }
 }
