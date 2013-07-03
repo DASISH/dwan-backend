@@ -39,7 +39,7 @@ import static org.junit.Assert.*;
  * @author Peter Withers <peter.withers@mpi.nl>
  */
 @RunWith(value = SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = {"/spring-test-config/dataSource.xml", "/spring-test-config/notebooks.xml"})
+@ContextConfiguration(locations = {"/spring-test-config/dataSource.xml", "/spring-test-config/mockNotebookDao.xml", "/spring-test-config/mockery.xml"})
 public class NotebookResourceTest {
 
     @Autowired

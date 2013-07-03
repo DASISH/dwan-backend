@@ -19,6 +19,7 @@ package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.dao.AnnotationDao;
 import eu.dasish.annotation.schema.Annotations;
+import javax.sql.DataSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcDaoSupport;
 
 /**
@@ -27,6 +28,10 @@ import org.springframework.jdbc.core.simple.SimpleJdbcDaoSupport;
  * @author Peter Withers <peter.withers@mpi.nl>
  */
 public class JdbcAnnotationDao extends SimpleJdbcDaoSupport implements AnnotationDao {
+
+    public JdbcAnnotationDao(DataSource dataSource) {
+        setDataSource(dataSource);
+    }
 
     @Override
     public Annotations getAnnotations(Number notebookID) {

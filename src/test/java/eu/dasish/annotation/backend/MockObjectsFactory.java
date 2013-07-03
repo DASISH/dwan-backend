@@ -15,9 +15,9 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-
 package eu.dasish.annotation.backend;
 
+import eu.dasish.annotation.backend.dao.AnnotationDao;
 import eu.dasish.annotation.backend.dao.NotebookDao;
 import org.jmock.Mockery;
 
@@ -27,13 +27,18 @@ import org.jmock.Mockery;
  * @author Peter Withers <peter.withers@mpi.nl>
  */
 public class MockObjectsFactory {
-private final Mockery context;
-	
-	    public MockObjectsFactory(Mockery context) {
-	        this.context = context;
-	    }
-	
-	    public NotebookDao newNotebookDao() {
-	        return context.mock(NotebookDao.class);
-	    }
+
+    private final Mockery context;
+
+    public MockObjectsFactory(Mockery context) {
+        this.context = context;
+    }
+
+    public NotebookDao newNotebookDao() {
+        return context.mock(NotebookDao.class);
+    }
+
+    public AnnotationDao newAnnotationDao() {
+        return context.mock(AnnotationDao.class);
+    }
 }
