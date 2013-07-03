@@ -40,4 +40,26 @@ public class NotebookIdentifier {
     public String toString() {
         return identifier;
     }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 29 * hash + (this.identifier != null ? this.identifier.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final NotebookIdentifier other = (NotebookIdentifier) obj;
+        if ((this.identifier == null) ? (other.identifier != null) : !this.identifier.equals(other.identifier)) {
+            return false;
+        }
+        return true;
+    }
 }

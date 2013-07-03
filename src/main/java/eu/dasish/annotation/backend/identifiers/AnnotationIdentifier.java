@@ -40,4 +40,26 @@ public class AnnotationIdentifier {
     public String toString() {
         return identifier;
     }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 23 * hash + (this.identifier != null ? this.identifier.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final AnnotationIdentifier other = (AnnotationIdentifier) obj;
+        if ((this.identifier == null) ? (other.identifier != null) : !this.identifier.equals(other.identifier)) {
+            return false;
+        }
+        return true;
+    }
 }
