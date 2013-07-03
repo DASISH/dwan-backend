@@ -42,6 +42,5 @@
 	   
     <!-- Mocked notebooks -->
     <bean id="notebookDao" factory-bean="mockObjectsFactory" factory-method="newNotebookDao" />
-	   
-
+    
 </beans>

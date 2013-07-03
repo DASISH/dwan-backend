@@ -24,3 +24,4 @@ INSERT INTO annotation (owner_id,headline,body_xml, external_id) VALUES (1, 'a h
 INSERT INTO notebooks_annotations (notebook_id,annotation_id) VALUES (0,0);
 
 INSERT INTO notebook (title, owner_id, external_id) VALUES ('a second notebook', 1, '_test_nid_2_');
+INSERT INTO notebooks_annotations (notebook_id,annotation_id) VALUES (1,0);

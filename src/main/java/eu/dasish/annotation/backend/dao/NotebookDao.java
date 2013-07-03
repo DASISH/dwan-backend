@@ -38,7 +38,7 @@ public interface NotebookDao {
     List<Notebook> getUsersNotebooks(UserIdentifier userID);
 
     // Creates a new notebook and returns the _nid_ of the created Notebook
-    NotebookIdentifier addNotebook(UserIdentifier userID, NotebookIdentifier notebookUri, String title);
+    NotebookIdentifier addNotebook(UserIdentifier userID, String title);
 
     // Delete _nid_. Annotations stay, they just lose connection to _nid_.<br>
     // returns the number of records deleted

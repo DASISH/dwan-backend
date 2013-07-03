@@ -17,8 +17,6 @@
  */
 package eu.dasish.annotation.backend.identifiers;
 
-import javax.servlet.http.HttpServletRequest;
-
 /**
  * Created on : Jun 28, 2013, 2:06:32 PM
  *
@@ -32,13 +30,30 @@ public class UserIdentifier {
         this.identifier = identifier;
     }
 
-    public UserIdentifier(HttpServletRequest httpServletRequest) {
-        // todo: sort out how the user id is obtained and how it is stored it the db
-        this.identifier = httpServletRequest.getRemoteUser();
-    }
-
     @Override
     public String toString() {
         return identifier;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 19 * hash + (this.identifier != null ? this.identifier.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final UserIdentifier other = (UserIdentifier) obj;
+        if ((this.identifier == null) ? (other.identifier != null) : !this.identifier.equals(other.identifier)) {
+            return false;
+        }
+        return true;
     }
 }
