@@ -28,6 +28,10 @@ public class NotebookIdentifier {
 
     final private UUID identifier;
 
+    public NotebookIdentifier(String identifier) {
+        this.identifier = UUID.fromString(identifier);
+    }
+
     public NotebookIdentifier(UUID identifier) {
         this.identifier = identifier;
     }

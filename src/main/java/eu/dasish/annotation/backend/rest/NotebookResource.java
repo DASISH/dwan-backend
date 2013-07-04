@@ -179,7 +179,7 @@ public class NotebookResource {
     }
 
     @DELETE
-    @Path("{notebookid: [a-zA-Z0-9_]*}")
+    @Path("{notebookid: [a-zA-Z0-9_-]*}")
     /*
      Delete _nid_. Annotations stay, they just lose connection to _nid_.<br>
      */
