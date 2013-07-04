@@ -28,6 +28,7 @@ import eu.dasish.annotation.backend.identifiers.NotebookIdentifier;
 import eu.dasish.annotation.backend.identifiers.UserIdentifier;
 import eu.dasish.annotation.schema.Notebook;
 import eu.dasish.annotation.schema.NotebookInfo;
+import eu.dasish.annotation.schema.NotebookInfos;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -85,8 +86,8 @@ public class NotebooksTest extends JerseyTest {
         client().addFilter(new HTTPBasicAuthFilter("userid", "userpass"));
         ClientResponse response = resource().path("notebooks").accept(MediaType.TEXT_XML).get(ClientResponse.class);
         assertEquals(200, response.getStatus());
-        assertEquals(0, response.getEntity(new GenericType<List<NotebookInfo>>() {
-        }).size());
+        assertEquals(0, response.getEntity(new GenericType<NotebookInfos>() {
+        }).getNotebook().size());
     }
 
     /**
@@ -225,7 +226,7 @@ public class NotebooksTest extends JerseyTest {
         });
         ClientResponse response = resource().path("notebooks").post(ClientResponse.class);
         assertEquals(200, response.getStatus());
-        assertEquals("/api/notebooks/1", new URI(response.getEntity(String.class)).getPath());
+        assertEquals("/api/notebooks/00000000-0000-0000-0000-000000000001", new URI(response.getEntity(String.class)).getPath());
     }
 
     /**
@@ -256,7 +257,9 @@ public class NotebooksTest extends JerseyTest {
                 will(returnValue(1));
             }
         });
-        ClientResponse response = resource().path("notebooks/_test_nid_2_").delete(ClientResponse.class);
+        final String requestUrl = "notebooks/" + new UUID(0, 2).toString();
+        System.out.println("requestUrl: " + requestUrl);
+        ClientResponse response = resource().path(requestUrl).delete(ClientResponse.class);
         assertEquals(200, response.getStatus());
         assertEquals("1", response.getEntity(String.class));
     }
