@@ -26,18 +26,17 @@ import java.util.UUID;
  */
 public class NotebookIdentifier {
 
-    final private String identifier;
+    final private UUID identifier;
 
-    public NotebookIdentifier(String identifier) {
+    public NotebookIdentifier(UUID identifier) {
         this.identifier = identifier;
     }
 
     public NotebookIdentifier() {
-        this.identifier = "nid-" + UUID.randomUUID();
+        this.identifier = UUID.randomUUID();
     }
 
-    @Override
-    public String toString() {
+    public UUID getUUID() {
         return identifier;
     }
 

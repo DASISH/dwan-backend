@@ -22,8 +22,10 @@ import eu.dasish.annotation.backend.identifiers.NotebookIdentifier;
 import eu.dasish.annotation.backend.identifiers.UserIdentifier;
 import eu.dasish.annotation.schema.Notebook;
 import eu.dasish.annotation.schema.NotebookInfo;
+import eu.dasish.annotation.schema.NotebookInfos;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.junit.Test;
@@ -59,15 +61,15 @@ public class NotebookResourceTest {
     public void testGetNotebookInfo() {
         System.out.println("getNotebookInfo");
         final MockHttpServletRequest httpServletRequest = new MockHttpServletRequest();
-        httpServletRequest.setRemoteUser("_test_uid_2_");
+        httpServletRequest.setRemoteUser("_test_uid_1_");
         mockery.checking(new Expectations() {
             {
                 oneOf(notebookDao).getNotebookInfos(new UserIdentifier(httpServletRequest.getRemoteUser()));
                 will(returnValue(new ArrayList<NotebookInfo>()));
             }
         });
-        List result = notebookResource.getNotebookInfo(httpServletRequest);
-        assertEquals(0, result.size());
+        NotebookInfos result = notebookResource.getNotebookInfo(httpServletRequest);
+        assertEquals(0, result.getNotebook().size()); // todo: shoudnt this return 3 infos?
     }
 
     /**
@@ -78,7 +80,7 @@ public class NotebookResourceTest {
         System.out.println("getUsersNotebooks");
         mockery.checking(new Expectations() {
             {
-                oneOf(notebookDao).getUsersNotebooks(null);
+                oneOf(notebookDao).getUsersNotebooks(new UserIdentifier("_test_uid_2_"));
                 will(returnValue(new ArrayList<Notebook>()));
             }
         });
@@ -99,10 +101,10 @@ public class NotebookResourceTest {
         mockery.checking(new Expectations() {
             {
                 oneOf(notebookDao).addNotebook(new UserIdentifier(httpServletRequest.getRemoteUser()), null);
-                will(returnValue(new NotebookIdentifier("1")));
+                will(returnValue(new NotebookIdentifier(new UUID(0, 1))));
             }
         });
-        String expResult = "/api/notebooks/1";
+        String expResult = "/api/notebooks/00000000-0000-0000-0000-000000000001";
         String result = notebookResource.createNotebook(httpServletRequest);
         assertEquals(expResult, result.substring(result.length() - expResult.length()));
     }
@@ -113,7 +115,7 @@ public class NotebookResourceTest {
     @Test
     public void testDeleteNotebook() {
         System.out.println("deleteNotebook");
-        final NotebookIdentifier notebookIdentifier = new NotebookIdentifier("_test_nid_2_");
+        final NotebookIdentifier notebookIdentifier = new NotebookIdentifier(new UUID(0, 1));
         mockery.checking(new Expectations() {
             {
                 oneOf(notebookDao).deleteNotebook(notebookIdentifier);

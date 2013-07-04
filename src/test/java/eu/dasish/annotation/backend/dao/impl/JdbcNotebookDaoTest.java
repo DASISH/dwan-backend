@@ -30,6 +30,7 @@ import java.net.URL;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Scanner;
+import java.util.UUID;
 import org.jmock.Expectations;
 import static org.jmock.Expectations.returnValue;
 import org.jmock.Mockery;
@@ -156,7 +157,7 @@ public class JdbcNotebookDaoTest {
     @Test
     public void testAddNotebook() throws URISyntaxException {
         final NotebookIdentifier addedNotebookId = jdbcNotebookDao.addNotebook(new UserIdentifier("_test_uid_2_"), "a title");
-        assertEquals(40, addedNotebookId.toString().length());
+        assertEquals(36, addedNotebookId.getUUID().toString().length());
     }
 
     /**
@@ -165,7 +166,7 @@ public class JdbcNotebookDaoTest {
     @Test
     public void testDeleteNotebook() {
         System.out.println("deleteNotebook");
-        NotebookIdentifier notebookId = new NotebookIdentifier("_test_nid_2_");
+        NotebookIdentifier notebookId = new NotebookIdentifier(new UUID(0, 2));
         int result = jdbcNotebookDao.deleteNotebook(notebookId);
         assertEquals(1, result);
     }

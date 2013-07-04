@@ -75,7 +75,7 @@ public class JdbcNotebookDao extends SimpleJdbcDaoSupport implements NotebookDao
             final NotebookIdentifier notebookIdentifier = new NotebookIdentifier();
             String sql = "INSERT INTO notebook (external_id, title, owner_id) VALUES (:notebookId, :title, (SELECT principal_id FROM principal WHERE principal.external_id = :userID))";
             Map<String, Object> params = new HashMap<String, Object>();
-            params.put("notebookId", notebookIdentifier.toString());
+            params.put("notebookId", notebookIdentifier.getUUID().toString());
             params.put("userID", userID.toString());
             params.put("title", title);
             final int updatedRowCount = getSimpleJdbcTemplate().update(sql, params);
@@ -119,8 +119,8 @@ public class JdbcNotebookDao extends SimpleJdbcDaoSupport implements NotebookDao
     public int deleteNotebook(NotebookIdentifier notebookId) {
         String sql1 = "DELETE FROM " + notebooksAnnotationsTableName + " where notebook_id = (SELECT notebook_id FROM notebook WHERE external_id = ?)";
         String sql2 = "DELETE FROM notebook where external_id = ?";
-        int affectedAnnotations = getSimpleJdbcTemplate().update(sql1, notebookId.toString());
-        int affectedNotebooks = getSimpleJdbcTemplate().update(sql2, notebookId.toString());
+        int affectedAnnotations = getSimpleJdbcTemplate().update(sql1, notebookId.getUUID().toString());
+        int affectedNotebooks = getSimpleJdbcTemplate().update(sql2, notebookId.getUUID().toString());
         return affectedAnnotations;
     }
 

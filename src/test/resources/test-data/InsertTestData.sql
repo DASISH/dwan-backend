@@ -19,9 +19,11 @@
 INSERT INTO principal (principal_name, external_id) VALUES ('a user', '_test_uid_1_');
 INSERT INTO principal (principal_name, external_id) VALUES ('b user', '_test_uid_2_');
 
-INSERT INTO notebook (title, owner_id, external_id) VALUES ('a notebook', 1, '_test_nid_1_');
+INSERT INTO notebook (title, owner_id, external_id) VALUES ('a notebook', 1, '00000000-0000-0000-0000-000000000001');
+-- INSERT INTO notebook (title, owner_id, external_id) VALUES ('a notebook', 1, 1);
 INSERT INTO annotation (owner_id,headline,body_xml, external_id) VALUES (1, 'a headline','<html><body>some html</body></html>', '_test_aid_1_');
 
-INSERT INTO notebook (title, owner_id, external_id) VALUES ('a second notebook', 1, '_test_nid_2_');
+INSERT INTO notebook (title, owner_id, external_id) VALUES ('a second notebook', 1, '00000000-0000-0000-0000-000000000002');
+-- INSERT INTO notebook (title, owner_id, external_id) VALUES ('a second notebook', 1, 2);
 INSERT INTO notebooks_annotations (notebook_id,annotation_id) VALUES (1,1);
 INSERT INTO notebooks_annotations (notebook_id,annotation_id) VALUES (2,1);
