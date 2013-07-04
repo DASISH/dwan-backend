@@ -22,6 +22,7 @@ import eu.dasish.annotation.backend.dao.NotebookDao;
 import eu.dasish.annotation.backend.identifiers.NotebookIdentifier;
 import eu.dasish.annotation.schema.Notebook;
 import eu.dasish.annotation.schema.NotebookInfo;
+import eu.dasish.annotation.schema.NotebookInfos;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -57,9 +58,20 @@ public class NotebookResource {
     @Produces(MediaType.TEXT_XML)
     @Path("")
     // Returns notebook-infos for the notebooks accessible to the current user.
-    public List<NotebookInfo> getNotebookInfo(@Context HttpServletRequest httpServletRequest) {
-        // todo: sort out how the user id is obtained and how it is stored it the db
-        return notebookDao.getNotebookInfos(new UserIdentifier(httpServletRequest.getRemoteUser()));
+    public NotebookInfos getNotebookInfo(@Context HttpServletRequest httpServletRequest) {
+        final NotebookInfos notebookInfos = new NotebookInfos();
+        notebookInfos.getNotebook().addAll(notebookDao.getNotebookInfos(new UserIdentifier(httpServletRequest.getRemoteUser())));
+        return notebookInfos;
+    }
+
+    @GET
+    @Produces(MediaType.TEXT_XML)
+    @Path("test")
+    // This is not in the standards definition and is only used for testing
+    public NotebookInfos getNotebookInfo(@QueryParam("userid") String userId) {
+        final NotebookInfos notebookInfos = new NotebookInfos();
+        notebookInfos.getNotebook().addAll(notebookDao.getNotebookInfos(new UserIdentifier(userId)));
+        return notebookInfos;
     }
 
     @GET
@@ -68,7 +80,7 @@ public class NotebookResource {
     // Returns the list of all notebooks owned by the current logged user.
     public List<Notebook> getUsersNotebooks(@Context HttpServletRequest httpServletRequest) {
         // todo: sort out how the user id is obtained and how it is stored it the db
-        return notebookDao.getUsersNotebooks(null/*httpServletRequest.getRemoteUser()*/);
+        return notebookDao.getUsersNotebooks(new UserIdentifier(httpServletRequest.getRemoteUser()));
     }
 
     @GET
@@ -150,7 +162,7 @@ public class NotebookResource {
     public String createNotebook(@Context HttpServletRequest httpServletRequest) throws URISyntaxException {
         NotebookIdentifier notebookId = notebookDao.addNotebook(new UserIdentifier(httpServletRequest.getRemoteUser()), null);
         final URI serverUri = new URI(httpServletRequest.getRequestURL().toString());
-        String fullUrlString = "/api/notebooks/" + notebookId;
+        String fullUrlString = "/api/notebooks/" + notebookId.getUUID().toString();
         return serverUri.resolve(fullUrlString).toString();
     }
 
