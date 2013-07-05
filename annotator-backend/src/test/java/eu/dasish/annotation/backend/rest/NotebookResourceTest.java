@@ -26,6 +26,7 @@ import eu.dasish.annotation.schema.NotebookInfos;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import javax.xml.bind.JAXBElement;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.junit.Test;
@@ -68,8 +69,8 @@ public class NotebookResourceTest {
                 will(returnValue(new ArrayList<NotebookInfo>()));
             }
         });
-        NotebookInfos result = notebookResource.getNotebookInfo(httpServletRequest);
-        assertEquals(0, result.getNotebook().size()); // todo: shoudnt this return 3 infos?
+        JAXBElement<NotebookInfos> result = notebookResource.getNotebookInfo(httpServletRequest);
+        assertEquals(0, result.getValue().getNotebook().size()); // todo: shoudnt this return 3 infos?
     }
 
     /**
