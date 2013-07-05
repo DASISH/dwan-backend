@@ -21,8 +21,8 @@ import eu.dasish.annotation.backend.identifiers.UserIdentifier;
 import eu.dasish.annotation.backend.dao.NotebookDao;
 import eu.dasish.annotation.backend.identifiers.NotebookIdentifier;
 import eu.dasish.annotation.schema.Notebook;
-import eu.dasish.annotation.schema.NotebookInfo;
 import eu.dasish.annotation.schema.NotebookInfos;
+import eu.dasish.annotation.schema.ObjectFactory;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -39,6 +39,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.xml.bind.JAXBElement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -58,20 +59,20 @@ public class NotebookResource {
     @Produces(MediaType.TEXT_XML)
     @Path("")
     // Returns notebook-infos for the notebooks accessible to the current user.
-    public NotebookInfos getNotebookInfo(@Context HttpServletRequest httpServletRequest) {
+    public JAXBElement<NotebookInfos> getNotebookInfo(@Context HttpServletRequest httpServletRequest) {
         final NotebookInfos notebookInfos = new NotebookInfos();
         notebookInfos.getNotebook().addAll(notebookDao.getNotebookInfos(new UserIdentifier(httpServletRequest.getRemoteUser())));
-        return notebookInfos;
+        return new ObjectFactory().createNotebooks(notebookInfos);
     }
 
     @GET
     @Produces(MediaType.TEXT_XML)
     @Path("test")
     // This is not in the standards definition and is only used for testing
-    public NotebookInfos getNotebookInfo(@QueryParam("userid") String userId) {
+    public JAXBElement<NotebookInfos> getNotebookInfo(@QueryParam("userid") String userId) {
         final NotebookInfos notebookInfos = new NotebookInfos();
         notebookInfos.getNotebook().addAll(notebookDao.getNotebookInfos(new UserIdentifier(userId)));
-        return notebookInfos;
+        return new ObjectFactory().createNotebooks(notebookInfos);
     }
 
     @GET
