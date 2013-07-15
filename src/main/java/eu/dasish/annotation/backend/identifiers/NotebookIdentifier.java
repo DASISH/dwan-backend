@@ -17,6 +17,7 @@
  */
 package eu.dasish.annotation.backend.identifiers;
 
+import eu.dasish.annotation.backend.BackendConstants;
 import java.util.UUID;
 
 /**
@@ -24,45 +25,28 @@ import java.util.UUID;
  *
  * @author Peter Withers <peter.withers@mpi.nl>
  */
-public class NotebookIdentifier {
+public class NotebookIdentifier extends DasishIdentifier{
 
-    final private UUID identifier;
-
-    public NotebookIdentifier(String identifier) {
-        this.identifier = UUID.fromString(identifier);
+     public NotebookIdentifier(String identifier) {
+        super(identifier);
+        setHashParametersNotebookId();
     }
-
+   
+    
     public NotebookIdentifier(UUID identifier) {
-        this.identifier = identifier;
+        super(identifier);
+        setHashParametersNotebookId();
     }
 
-    public NotebookIdentifier() {
-        this.identifier = UUID.randomUUID();
-    }
+   
+     public NotebookIdentifier() {
+        super();
+        setHashParametersNotebookId();
+    } 
+    
+    private void setHashParametersNotebookId(){
+        setHashParameters(BackendConstants.NOTEBOOK_HASH_PARAM_1, BackendConstants.NOTEBOOK_HASH_PARAM_2);
+    }  
 
-    public UUID getUUID() {
-        return identifier;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 29 * hash + (this.identifier != null ? this.identifier.hashCode() : 0);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final NotebookIdentifier other = (NotebookIdentifier) obj;
-        if ((this.identifier == null) ? (other.identifier != null) : !this.identifier.equals(other.identifier)) {
-            return false;
-        }
-        return true;
-    }
+  
 }

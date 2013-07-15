@@ -17,6 +17,7 @@
  */
 package eu.dasish.annotation.backend.rest;
 
+import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.dao.NotebookDao;
 import eu.dasish.annotation.backend.identifiers.NotebookIdentifier;
 import eu.dasish.annotation.backend.identifiers.UserIdentifier;
@@ -62,10 +63,11 @@ public class NotebookResourceTest {
     public void testGetNotebookInfo() {
         System.out.println("getNotebookInfo");
         final MockHttpServletRequest httpServletRequest = new MockHttpServletRequest();
-        httpServletRequest.setRemoteUser("_test_uid_1_");
+        httpServletRequest.setRemoteUser(TestBackendConstants._TEST_UID_1_);
+        
         mockery.checking(new Expectations() {
             {
-                oneOf(notebookDao).getNotebookInfos(new UserIdentifier(httpServletRequest.getRemoteUser()));
+                oneOf(notebookDao).getNotebookInfos(new UserIdentifier(httpServletRequest.getRemoteUser()));                
                 will(returnValue(new ArrayList<NotebookInfo>()));
             }
         });
@@ -81,12 +83,12 @@ public class NotebookResourceTest {
         System.out.println("getUsersNotebooks");
         mockery.checking(new Expectations() {
             {
-                oneOf(notebookDao).getUsersNotebooks(new UserIdentifier("_test_uid_2_"));
+                oneOf(notebookDao).getUsersNotebooks(new UserIdentifier(TestBackendConstants._TEST_UID_2_));
                 will(returnValue(new ArrayList<Notebook>()));
             }
         });
         final MockHttpServletRequest httpServletRequest = new MockHttpServletRequest();
-        httpServletRequest.setRemoteUser("_test_uid_2_");
+        httpServletRequest.setRemoteUser(TestBackendConstants._TEST_UID_2_);
         List result = notebookResource.getUsersNotebooks(httpServletRequest);
         assertEquals(0, result.size());
     }
@@ -98,7 +100,7 @@ public class NotebookResourceTest {
     public void testCreateNotebook() throws Exception {
         System.out.println("createNotebook");
         final MockHttpServletRequest httpServletRequest = new MockHttpServletRequest();
-        httpServletRequest.setRemoteUser("_test_uid_2_");
+        httpServletRequest.setRemoteUser(TestBackendConstants._TEST_UID_2_);
         mockery.checking(new Expectations() {
             {
                 oneOf(notebookDao).addNotebook(new UserIdentifier(httpServletRequest.getRemoteUser()), null);
@@ -106,7 +108,7 @@ public class NotebookResourceTest {
             }
         });
         String expResult = "/api/notebooks/00000000-0000-0000-0000-000000000001";
-        String result = notebookResource.createNotebook(httpServletRequest);
+        String result = notebookResource.createNotebook(httpServletRequest);  
         assertEquals(expResult, result.substring(result.length() - expResult.length()));
     }
 

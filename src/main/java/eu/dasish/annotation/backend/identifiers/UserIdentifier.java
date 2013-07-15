@@ -17,43 +17,34 @@
  */
 package eu.dasish.annotation.backend.identifiers;
 
+import eu.dasish.annotation.backend.BackendConstants;
+import java.util.UUID;
+
 /**
  * Created on : Jun 28, 2013, 2:06:32 PM
  *
  * @author Peter Withers <peter.withers@mpi.nl>
  */
-public class UserIdentifier {
-
-    final private String identifier;
-
-    public UserIdentifier(String identifier) {
-        this.identifier = identifier;
+public class UserIdentifier extends DasishIdentifier {
+    
+     public UserIdentifier(String identifier) {
+        super(identifier);
+        setHashParametersUserId();
     }
+     
+    /* public UserIdentifier(UUID identifier) {
+        super(identifier);
+        setHashParametersUserId();
+    } */
 
-    @Override
-    public String toString() {
-        return identifier;
+    public UserIdentifier() {
+        super();
+        setHashParametersUserId();
     }
-
-    @Override
-    public int hashCode() {
-        int hash = 5;
-        hash = 19 * hash + (this.identifier != null ? this.identifier.hashCode() : 0);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final UserIdentifier other = (UserIdentifier) obj;
-        if ((this.identifier == null) ? (other.identifier != null) : !this.identifier.equals(other.identifier)) {
-            return false;
-        }
-        return true;
-    }
+    
+    private void setHashParametersUserId(){
+        setHashParameters(BackendConstants.USER_HASH_PARAM_1, BackendConstants.USER_HASH_PARAM_2);
+    }    
+    
+    
 }
