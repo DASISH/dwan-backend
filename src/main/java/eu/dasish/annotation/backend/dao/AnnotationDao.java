@@ -17,7 +17,10 @@
  */
 package eu.dasish.annotation.backend.dao;
 
+import eu.dasish.annotation.schema.AnnotationInfo;
 import eu.dasish.annotation.schema.Annotations;
+import eu.dasish.annotation.schema.ResourceREF;
+import java.util.List;
 
 /**
  * Created on : Jun 27, 2013, 10:34:13 AM
@@ -25,7 +28,18 @@ import eu.dasish.annotation.schema.Annotations;
  * @author Peter Withers <peter.withers@mpi.nl>
  */
 public interface AnnotationDao {
-
+    
+     // Returns the list of annotation Id-s  for the notebook id.
+    List<Number> getAnnotationIDs(Number notebookID);
+    
+     // Returns the list of annotation info-s  for the notebook id.
+    List<AnnotationInfo> getAnnotationInfos(Number notebookID);
+    
+     // Returns the list of annotations Id-s  for the notebook id.
+    List<ResourceREF> getAnnotationREFs(Number notebookID);
+    
     // Returns the annotations object for the notebook id.
     Annotations getAnnotations(Number notebookID);
+    
+   
 }
