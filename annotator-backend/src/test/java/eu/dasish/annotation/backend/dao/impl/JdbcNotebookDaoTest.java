@@ -17,6 +17,7 @@
  */
 package eu.dasish.annotation.backend.dao.impl;
 
+import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.dao.AnnotationDao;
 import eu.dasish.annotation.backend.identifiers.NotebookIdentifier;
 import eu.dasish.annotation.backend.identifiers.UserIdentifier;
@@ -110,7 +111,7 @@ public class JdbcNotebookDaoTest {
      */
     @Test
     public void testGetNotebookInfos() {
-        final List<NotebookInfo> notebookInfoList = jdbcNotebookDao.getNotebookInfos(new UserIdentifier("_test_uid_2_"));
+        final List<NotebookInfo> notebookInfoList = jdbcNotebookDao.getNotebookInfos(new UserIdentifier(TestBackendConstants._TEST_UID_2_));
         assertEquals(2, notebookInfoList.size());
         assertEquals("a notebook", notebookInfoList.get(0).getTitle());
     }
@@ -131,7 +132,7 @@ public class JdbcNotebookDaoTest {
                 will(returnValue(new Annotations()));
             }
         });
-        final List<Notebook> notebooks = jdbcNotebookDao.getUsersNotebooks(new UserIdentifier("_test_uid_2_"));
+        final List<Notebook> notebooks = jdbcNotebookDao.getUsersNotebooks(new UserIdentifier(TestBackendConstants._TEST_UID_2_));
 
 
         assertEquals(2, notebooks.size());
@@ -147,7 +148,7 @@ public class JdbcNotebookDaoTest {
                 will(returnValue(new Annotations()));
             }
         });
-        final List<Notebook> notebooksEmpty = jdbcNotebookDao.getUsersNotebooks(new UserIdentifier("_test_uid_1_"));
+        final List<Notebook> notebooksEmpty = jdbcNotebookDao.getUsersNotebooks(new UserIdentifier(TestBackendConstants._TEST_UID_1_));
         assertEquals(0, notebooksEmpty.size());
     }
 
@@ -156,7 +157,7 @@ public class JdbcNotebookDaoTest {
      */
     @Test
     public void testAddNotebook() throws URISyntaxException {
-        final NotebookIdentifier addedNotebookId = jdbcNotebookDao.addNotebook(new UserIdentifier("_test_uid_2_"), "a title");
+        final NotebookIdentifier addedNotebookId = jdbcNotebookDao.addNotebook(new UserIdentifier(TestBackendConstants._TEST_UID_2_), "a title");
         assertEquals(36, addedNotebookId.getUUID().toString().length());
     }
 
