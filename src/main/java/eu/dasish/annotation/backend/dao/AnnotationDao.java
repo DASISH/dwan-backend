@@ -27,16 +27,27 @@ import java.util.List;
  *
  * @author Peter Withers <peter.withers@mpi.nl>
  */
+
+// TODO: Getting Target Sources from Body and testing must be added!!!
+
+
 public interface AnnotationDao {
     
      // Returns the list of annotation Id-s  for the notebook id.
     List<Number> getAnnotationIDs(Number notebookID);
     
      // Returns the list of annotation info-s  for the notebook id.
-    List<AnnotationInfo> getAnnotationInfos(Number notebookID);
+    List<AnnotationInfo> getAnnotationInfos(List<Number> annotationIDs);    
+     
+     // Returns the list of annotation info-s  for the notebook id.
+    List<AnnotationInfo> getAnnotationInfosOfNotebook(Number notebookID);
+    
     
      // Returns the list of annotations Id-s  for the notebook id.
-    List<ResourceREF> getAnnotationREFs(Number notebookID);
+    List<ResourceREF> getAnnotationREFs(List<Number> annotationIDs);    
+    
+     // Returns the list of annotations Id-s  for the notebook id.
+    List<ResourceREF> getAnnotationREFsOfNotebook(Number notebookID);
     
     // Returns the annotations object for the notebook id.
     Annotations getAnnotations(Number notebookID);
