@@ -30,6 +30,32 @@ public class TestBackendConstants {
     public static final String _TEST_UID_2_ = "00000000-0000-0000-0000-000000000004";
     public static final String _TEST_AID_1_ =  "00000000-0000-0000-0000-000000000005"; 
     public static final String _TEST_NULL_UUID_ = "00000000-0000-0000-0000-000000000006";
-
+    
+    // testing jdbcAnnotationDao
+    public static final String _TEST_NOTEBOOK_1_EXT = "00000000-0000-0000-0000-000000000011";
+    public static final String _TEST_NOTEBOOK_2_EXT = "00000000-0000-0000-0000-000000000012";
+    public static final String _TEST_NOTEBOOK_3_EXT = "00000000-0000-0000-0000-000000000013";
+    
+    public static final int _TEST_NOTEBOOK_1_INT = 11;
+    public static final int _TEST_NOTEBOOK_2_INT = 12;
+    public static final int _TEST_NOTEBOOK_3_INT = 13;
+    
+    public static final String _TEST_ANNOT_1_EXT = "00000000-0000-0000-0000-000000000021";
+    public static final String _TEST_ANNOT_2_EXT = "00000000-0000-0000-0000-000000000022";
+    public static final String _TEST_ANNOT_3_EXT = "00000000-0000-0000-0000-000000000023";
+    
+    public static final int _TEST_ANNOT_1_INT = 21;
+    public static final int _TEST_ANNOT_2_INT = 22;
+    public static final int _TEST_ANNOT_3_INT = 23;
+    public static final int _TEST_ANNOT_4_INT_NOT_IN_THE_DB = 24;
+    
+    public static final String _TEST_ANNOT_1_HEADLINE = "Sagrada Famiglia";
+    public static final String _TEST_ANNOT_2_HEADLINE = "Gaudi";
+    public static final String _TEST_ANNOT_3_HEADLINE = "Art Nuveau";
+    
+    public static final int _TEST_ANNOT_1_OWNER = 111;
+    public static final int _TEST_ANNOT_2_OWNER = 112;
+    public static final int _TEST_ANNOT_3_OWNER = 113;
+    
 }
 

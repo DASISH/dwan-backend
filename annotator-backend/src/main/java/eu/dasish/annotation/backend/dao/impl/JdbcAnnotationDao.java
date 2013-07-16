@@ -18,13 +18,13 @@
 package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.dao.AnnotationDao;
-import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationInfo;
 import eu.dasish.annotation.schema.Annotations;
 import eu.dasish.annotation.schema.ResourceREF;
 import eu.dasish.annotation.schema.Sources;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import javax.sql.DataSource;
 import org.springframework.jdbc.core.RowMapper;
@@ -36,18 +36,7 @@ import org.springframework.jdbc.core.simple.SimpleJdbcDaoSupport;
  * @author Peter Withers <peter.withers@mpi.nl>
  */
 
-/*
- *  annotation (
-    annotation_id SERIAL UNIQUE NOT NULL,
-    external_id UUID UNIQUE NOT NULL,
-    time_stamp timestamp with time zone default now(),
-    owner_id integer,
-    headline tCRext,
-    body_xml xml
-);
- * 
- * 
- */
+
 
 
 public class JdbcAnnotationDao extends SimpleJdbcDaoSupport implements AnnotationDao {
@@ -57,8 +46,19 @@ public class JdbcAnnotationDao extends SimpleJdbcDaoSupport implements Annotatio
     }
     
     ////////////////////////////////////////////////////////////////////////
+    /**
+     * 
+     * @param notebookID
+     * @return the list of annotation-ids belonging to the notebook with notebookId
+     * returns null if notebookId is null
+     * returns empty list if notebookId is not in the DB: getSimpleJdbcTemplate().query is implemented in this way
+     * TODO: do we need to return null here? using an additional check.
+     */
      @Override            
     public List<Number> getAnnotationIDs(Number notebookID) {
+       if (notebookID == null) {
+           return null;
+       } 
        String sql = "SELECT notebooks_annotations.annotation_id  FROM notebooks_annotations where notebook_id = ?";
        return getSimpleJdbcTemplate().query(sql, annotationIDRowMapper, notebookID.toString()); 
     }
@@ -73,10 +73,27 @@ public class JdbcAnnotationDao extends SimpleJdbcDaoSupport implements Annotatio
     
     ////////////////////////////////////////////////////////////////////////////
 
+   /**
+    * 
+    * @param annotationIDs is a list of internal annotation identifiers 
+    * @return the list of the corresponding annotation-infos for the annotation identifiers from the list; 
+    * if the input list is null or empty (zero elements) returns an empty list
+    */
+    
     @Override
-    public List<AnnotationInfo> getAnnotationInfos(Number notebookID) {        
-        String sql = "SELECT annotation.* FROM annotation WHERE annotation.annotation_id  IN ?";
-        return getSimpleJdbcTemplate().query(sql, annotationInfoRowMapper, getAnnotationIDs(notebookID)); 
+    public List<AnnotationInfo> getAnnotationInfos(List<Number> annotationIDs) {
+        
+        if (annotationIDs == null) {
+            return null;
+        }
+        
+        if (annotationIDs.isEmpty()) {
+            return (new ArrayList<AnnotationInfo>());
+        }
+                
+        String values = makeListOfValues(annotationIDs);
+        String sql = "SELECT annotation.* FROM annotation WHERE annotation.annotation_id  IN "+values;
+        return getSimpleJdbcTemplate().query(sql, annotationInfoRowMapper); 
     }
     
     private final RowMapper<AnnotationInfo> annotationInfoRowMapper = new RowMapper<AnnotationInfo>() {        
@@ -91,12 +108,43 @@ public class JdbcAnnotationDao extends SimpleJdbcDaoSupport implements Annotatio
     };
     
     
-    /////////////////////////////////////////////////
+    //////////////////////////////////////////////////
+    
+    /**
+     * 
+     * @param notebookID
+     * @return the list of annotation-infos of the annotations from notebookID;
+     * if the notebook contains no annotations returns an empty list
+     */
     
     @Override
-    public List<ResourceREF> getAnnotationREFs(Number notebookID) {        
-        String sql = "SELECT annotation.annotation_id FROM annotation WHERE annotation.annotation_id  IN ?";
-        return getSimpleJdbcTemplate().query(sql, annotationREFRowMapper, getAnnotationIDs(notebookID)); 
+    public List<AnnotationInfo> getAnnotationInfosOfNotebook(Number notebookID) {   
+        return getAnnotationInfos(getAnnotationIDs(notebookID)); 
+    }
+    
+    /////////////////////////////////////////////////
+    
+    /**
+     * 
+     * @param annotationIDs
+     * @return list of annotation references corresponding to the annotation-ids from the input list
+     * if the input list is null or empty (zero elements) returns an empty list
+     */
+    
+    @Override
+    public List<ResourceREF> getAnnotationREFs(List<Number> annotationIDs) {
+        
+        if (annotationIDs == null) {
+            return null;
+        }
+        
+        if (annotationIDs.isEmpty()) {
+            return (new ArrayList<ResourceREF>());
+        }
+        
+        String values = makeListOfValues(annotationIDs);
+        String sql = "SELECT annotation.annotation_id FROM annotation WHERE annotation.annotation_id  IN "+values;
+        return getSimpleJdbcTemplate().query(sql, annotationREFRowMapper); 
     }
     
     private final RowMapper<ResourceREF> annotationREFRowMapper = new RowMapper<ResourceREF>() {        
@@ -108,6 +156,44 @@ public class JdbcAnnotationDao extends SimpleJdbcDaoSupport implements Annotatio
         }
     };
     
+    //////////////////////////////////////////////
+    /**
+     * 
+     * @param notebookID
+     * @return the list of annotation References from the notebookID
+     * returns null if notebookID == null
+     */
+    
+    @Override
+    public List<ResourceREF> getAnnotationREFsOfNotebook(Number notebookID) {   
+        return getAnnotationREFs(getAnnotationIDs(notebookID)); 
+    }
+    
+    
+     
+    ////////////////////////////////////////////////////////////////////////////
+    /**
+     * 
+     * @param notebookID
+     * @return the Annotations (as a list of references) from the notebookID     * 
+     * returns null if notebookID == null
+     */
+
+    @Override
+    public Annotations getAnnotations(Number notebookID) { 
+        
+        if (notebookID == null) {
+            return null;
+        }
+        
+        Annotations result =  new Annotations(); 
+        List<ResourceREF> annotREFs = result.getAnnotation();  
+        // TODO: what of annotREFS is null???? how to allocated emprey for it???
+        boolean test = annotREFs.addAll(getAnnotationREFsOfNotebook(notebookID));
+        return (test ? result : null);        
+    }
+    
+    
     /////////////////////////////////////////////////
     private ResourceREF getResourceREF(String resourceID){
        ResourceREF result = new ResourceREF();
@@ -117,20 +203,29 @@ public class JdbcAnnotationDao extends SimpleJdbcDaoSupport implements Annotatio
     
     //TODO implement when xml-body stucture is discussed!
     //BTW do we have to get source REF, not the whole sources here??
-    private Sources getSources(String some_xml) {
+    private Sources getSources(String someXml) {
         Sources result = new Sources();
         return result;
     }
     
-    
-    
-    ////////////////////////////////////////////////////////////////////////////
-
-    @Override
-    public Annotations getAnnotations(Number notebookID) {        
-        String sql = "SELECT annotation.* FROM annotation WHERE annotation.annotation_id  IN ?";
-        return null; // not omplemented yet
+    private <T> String makeListOfValues(List<T> vals) {
         
+        if (vals == null) {
+            return "()";
+        }
+        
+        if (vals.isEmpty()) {            
+            return "()";
+        }
+        
+        String result = "(";
+        int length = vals.size();
+        for (int i=0; i<length-1; i++){
+            result = result + vals.get(i).toString() +", ";
+        }
+        result = result +vals.get(length-1).toString()+")";
+        return result;
     }
+   
     
 }
