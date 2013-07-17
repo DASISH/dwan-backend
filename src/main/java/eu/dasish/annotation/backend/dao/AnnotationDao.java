@@ -33,23 +33,12 @@ import java.util.List;
 
 public interface AnnotationDao extends ResourceDao{
     
-     // Returns the list of annotation Id-s  for the notebook id.
-    List<Number> getAnnotationIDs(Number notebookID);
-    
-     // Returns the list of annotation info-s  for the notebook id.
+    // Returns the list of annotation info-s  for the notebook id.
     List<AnnotationInfo> getAnnotationInfos(List<Number> annotationIDs);    
      
-     // Returns the list of annotation info-s  for the notebook id.
-    List<AnnotationInfo> getAnnotationInfosOfNotebook(Number notebookID);    
-    
+   
      // Returns the list of annotations Id-s  for the notebook id.
     List<ResourceREF> getAnnotationREFs(List<Number> annotationIDs);    
-    
-     // Returns the list of annotations Id-s  for the notebook id.
-    List<ResourceREF> getAnnotationREFsOfNotebook(Number notebookID);
-    
-    // Returns the annotations object for the notebook id.
-    Annotations getAnnotations(Number notebookID);
     
    
 }
