@@ -18,8 +18,10 @@
 package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.dao.AnnotationDao;
+import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
+import eu.dasish.annotation.schema.Annotation;
+import eu.dasish.annotation.schema.AnnotationBody;
 import eu.dasish.annotation.schema.AnnotationInfo;
-import eu.dasish.annotation.schema.Annotations;
 import eu.dasish.annotation.schema.ResourceREF;
 import eu.dasish.annotation.schema.Sources;
 import java.sql.ResultSet;
@@ -28,7 +30,6 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.sql.DataSource;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.simple.SimpleJdbcDaoSupport;
 
 /**
  * Created on : Jun 27, 2013, 10:30:52 AM
@@ -120,10 +121,105 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         }
     };
     
+   //////////////////////////////////////////////
+   /* CREATE TABLE annotation (
+    annotation_id SERIAL UNIQUE NOT NULL,
+    external_id UUID UNIQUE NOT NULL,
+    time_stamp timestamp with time zone default now(),
+    owner_id integer,
+    headline text,
+    body_xml xml */
+
+   @Override
+    public Annotation getAnnotation(Number annotationID) throws SQLException{
+        if (annotationID == null) {
+            return null;
+        }
+       String sql = "SELECT * FROM annotation WHERE annotation.annotation_id  = ?";
+       List<Annotation> result= getSimpleJdbcTemplate().query(sql, annotationRowMapper, annotationID); 
+       
+       if (result == null) {
+           return null;
+       }
+       if (result.isEmpty()) {
+           return null;
+       } 
+       
+        if (result.size()>1) {
+           throw new SQLException("There are "+result.size()+" annotations with annotation_id "+annotationID);
+       }
+       return result.get(0);
+   }
+     
+      private final RowMapper<Annotation> annotationRowMapper = new RowMapper<Annotation>() {        
+        @Override
+        public Annotation mapRow(ResultSet rs, int rowNumber) throws SQLException {
+           Annotation result = new Annotation();
+           result.setHeadline(rs.getString("headline"));
+           
+           ResourceREF ownerREF = new ResourceREF();
+           ownerREF.setRef(String.valueOf(rs.getInt("owner_id")));
+           result.setOwner(ownerREF);
+           
+           /*TODO 
+            * Add permissions also to the database
+            * ResourceREF permissionsREF = new ResourceREF();
+           permissionsREF.setRef(String.valueOf(rs.getInt("permissions")));
+           result.setPermissions(permissionsREF);*/
+           
+           
+           // TODO: add source, also to the database
+           
+           result.setBody(convertToAnnotationBody(rs.getString("body_xml")));
+           return result;
+        }
+    };
    
+   // TODO: fill in the stub, when the annotation body is elaborated
+   private AnnotationBody convertToAnnotationBody(String input){
+     if (input == null) {
+         return null;
+     }  
+     
+     AnnotationBody result = new AnnotationBody();
+     List<Object> element =result.getAny();
+     element.add(input);
+     return result;
+   }  
+      
+      
+   //////////////////////////////////////////////////
+     @Override
+    public Number getAnnotationID(AnnotationIdentifier externalID) throws SQLException{
+        if (externalID == null) {
+            return null;
+        }
+        
+       String sql = "SELECT annotation.annotation_id FROM annotation WHERE annotation.external_id  = ?";
+       List<Number> result= getSimpleJdbcTemplate().query(sql, annotationIDRowMapper, externalID.toString());
+       if (result == null) {
+           return null;
+       }
+       if (result.isEmpty()) {
+           return null;
+       }
+       
+       if (result.size()>1) {
+           throw new SQLException("There are "+result.size()+" annotations with external_id "+externalID);
+       }
+       return result.get(0);
+   }
+     
+      private final RowMapper<Number> annotationIDRowMapper = new RowMapper<Number>() {        
+        @Override
+        public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
+           Number result = rs.getInt("annotation_id");
+           return result;
+        }
+    };
      
     
-    
+    //////////// helpers /////////////////////// 
     
     /////////////////////////////////////////////////
     private ResourceREF getResourceREF(String resourceID){

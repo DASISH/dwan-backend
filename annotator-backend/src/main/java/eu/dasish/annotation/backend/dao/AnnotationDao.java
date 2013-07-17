@@ -17,9 +17,11 @@
  */
 package eu.dasish.annotation.backend.dao;
 
+import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
+import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationInfo;
-import eu.dasish.annotation.schema.Annotations;
 import eu.dasish.annotation.schema.ResourceREF;
+import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -40,5 +42,19 @@ public interface AnnotationDao extends ResourceDao{
      // Returns the list of annotations Id-s  for the notebook id.
     List<ResourceREF> getAnnotationREFs(List<Number> annotationIDs);    
     
-   
+    /**
+     * 
+     * @param annotationID
+     * @return annotation which has an annotation ID "annotationID"
+     * if externalID is null or such annotation does not exist in the DB returns null;
+     */
+    Annotation getAnnotation(Number annotationID) throws SQLException;
+    
+    /**
+     * 
+     * @param externalID
+     * @return the internal annotationId for the annotation with the external Id "extrnalID"
+     * if annotationID is null or such annotation does not exist in the DB returns null;
+     */
+    Number getAnnotationID(AnnotationIdentifier externalID) throws SQLException;
 }
