@@ -45,7 +45,7 @@ import static org.junit.Assert.assertNotNull;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration({"/spring-test-config/mockery.xml", "/spring-test-config/mockAnnotationDao.xml", "/spring-test-config/dataSource.xml", "/spring-config/notebookDao.xml"})
-public class JdbcNotebookDaoTest extends JdbcResourceDaoTestBasic{
+public class JdbcNotebookDaoTest extends JdbcResourceDaoTest{
 
     @Autowired
     JdbcNotebookDao jdbcNotebookDao;
@@ -54,6 +54,11 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTestBasic{
     @Autowired
     private Mockery mockery;
 
+    @Test
+    public void testIsNotebookInTheDataBase(){
+        super.testIsNotebookInTheDataBase(jdbcNotebookDao);
+    }
+    
     
     /**
      * Test of getNotebookInfos method, of class JdbcNotebookDao.

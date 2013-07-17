@@ -45,7 +45,7 @@ import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
  *
  * @author Peter Withers <peter.withers@mpi.nl>
  */
-public class JdbcNotebookDao extends SimpleJdbcDaoSupport implements NotebookDao {
+public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
 
     @Autowired
     private AnnotationDao jdbcAnnotationDao;
