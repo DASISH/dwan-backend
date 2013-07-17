@@ -22,8 +22,11 @@ import eu.dasish.annotation.backend.dao.NotebookDao;
 import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
 import eu.dasish.annotation.backend.identifiers.NotebookIdentifier;
 import eu.dasish.annotation.backend.identifiers.UserIdentifier;
+import eu.dasish.annotation.schema.AnnotationInfo;
+import eu.dasish.annotation.schema.Annotations;
 import eu.dasish.annotation.schema.Notebook;
 import eu.dasish.annotation.schema.NotebookInfo;
+import eu.dasish.annotation.schema.ResourceREF;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.GregorianCalendar;
@@ -109,7 +112,7 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
                 throw new SQLException(exception);
             }
 //            notebook.setURI(rs.getString("URI_ID"));
-            notebook.setAnnotations(jdbcAnnotationDao.getAnnotations(rs.getInt("notebook_id")));
+            notebook.setAnnotations(getAnnotations(rs.getInt("notebook_id")));
             return notebook;
         }
     };
@@ -136,5 +139,94 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
         } catch (DataAccessException exception) {
             throw exception;
         }
+    }
+    
+     ////////////////////////////////////////////////////////////////////////
+    /**
+     * 
+     * @param notebookID
+     * @return the list of annotation-ids belonging to the notebook with notebookId
+     * returns null if notebookId is null or is not in the DB
+     * TODO: do we need to return null here? using an additional check.
+     */
+     @Override            
+    public List<Number> getAnnotationIDs(Number notebookID) {
+        if (notebookID == null) {
+            return null;
+        }
+
+        if (isNotebookInTheDataBase(notebookID)) {
+            String sql = "SELECT notebooks_annotations.annotation_id  FROM notebooks_annotations where notebook_id = ?";
+            return getSimpleJdbcTemplate().query(sql, annotationIDRowMapper, notebookID.toString());
+        } else {
+            return null;
+        }
+    }
+    
+    private final RowMapper<Number> annotationIDRowMapper = new RowMapper<Number>() {        
+        @Override
+        public Integer mapRow(ResultSet rs, int rowNumber) throws SQLException {
+            Integer annotationId = rs.getInt("annotation_id");
+            return annotationId;
+        }
+    };
+    
+     //////////////////////////////////////////////////
+    
+    /**
+     * 
+     * @param notebookID
+     * @return the list of annotation-infos of the annotations from notebookID;
+     * if notebook not in the DB or null returns null
+     * if the notebook contains no annotations returns an empty list
+     *
+    
+    @Override
+    public List<AnnotationInfo> getAnnotationInfosOfNotebook(Number notebookID) {   
+        return jdbcAnnotationDao.getAnnotationInfos(getAnnotationIDs(notebookID)); 
+    }*/
+    
+    
+     //////////////////////////////////////////////
+    /**
+     * 
+     * @param notebookID
+     * @return the list of annotation References from the notebookID
+     * returns null if notebookID == null or it does not exists in the DB
+     */
+    
+    @Override
+    public List<ResourceREF> getAnnotationREFsOfNotebook(Number notebookID) {   
+        return jdbcAnnotationDao.getAnnotationREFs(getAnnotationIDs(notebookID)); 
+    }
+    
+    ////////////////////////////////////////////////////////////////////////////
+    /**
+     * 
+     * @param notebookID
+     * @return the Annotations (as a list of references) from the notebookID     * 
+     * returns null if notebookID == null, or it does not exists in th DB, or the list of annotations is empty, 
+     * or something wrong happened when extracting annotations from the notebook 
+     * (according to dasish.xsd if an Annotation is created then its list of annotations must contain at least one element!)
+     * 
+     */
+
+    @Override
+    public Annotations getAnnotations(Number notebookID) {
+
+        if (notebookID == null) {
+            return null;
+        }
+
+        if (isNotebookInTheDataBase(notebookID)) {
+            Annotations result = new Annotations();
+            List<ResourceREF> annotREFs = result.getAnnotation();
+            // TODO: what of annotREFS is null???? 
+            boolean test = annotREFs.addAll(getAnnotationREFsOfNotebook(notebookID));
+            return (test ? result : null);
+        } else {
+            return null;
+        }
+
     }
 }
