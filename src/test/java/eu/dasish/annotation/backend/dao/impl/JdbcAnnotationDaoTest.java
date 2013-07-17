@@ -18,8 +18,11 @@
 package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.TestBackendConstants;
+import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
+import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationInfo;
 import eu.dasish.annotation.schema.ResourceREF;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import static org.junit.Assert.*;
@@ -111,6 +114,44 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest{
         assertEquals(null, testListThree);
         
     }
-
+    /**
+     * 
+     * Test of getAnnotationID method, of class JdbcAnnotationDao.
+     * Integer getAnnotationID(AnnotationIdentifier externalID)
+     */
+    @Test
+    public void getAnnotationID() throws SQLException{
+       System.out.println("getAnnotationID"); 
+       
+       final Number annotaionId = jdbcAnnotationDao.getAnnotationID(new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_1_EXT));
+       assertEquals(TestBackendConstants._TEST_ANNOT_1_INT, annotaionId.intValue());
+       
+       final Number annotaionIdNE = jdbcAnnotationDao.getAnnotationID(new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_4_EXT_NOT_IN_THE_DB));
+       assertEquals(null, annotaionIdNE);    
+      
+       final Number annotaionIdNull = jdbcAnnotationDao.getAnnotationID(null);
+       assertEquals(null, annotaionIdNull);
+    }
+    
+     /**
+     * 
+     * Test of getAnnotation method, of class JdbcAnnotationDao.
+     * Annotation getAnnotation(Number annotationlID)
+     */
+    @Test
+    public void getAnnotation() throws SQLException{
+       System.out.println("getAnnotation"); 
+       
+       final Annotation annotaion = jdbcAnnotationDao.getAnnotation(TestBackendConstants._TEST_ANNOT_1_INT);
+       assertEquals(TestBackendConstants._TEST_ANNOT_1_HEADLINE, annotaion.getHeadline());
+       assertEquals(String.valueOf(TestBackendConstants._TEST_ANNOT_1_OWNER), annotaion.getOwner().getRef());
+       assertEquals(TestBackendConstants._TEST_ANNOT_1_BODY, annotaion.getBody().getAny().get(0)); // when the body is elaborated it will be changed
+       
+       final Annotation annotaionNE = jdbcAnnotationDao.getAnnotation(TestBackendConstants._TEST_ANNOT_4_INT_NOT_IN_THE_DB);
+       assertEquals(null, annotaionNE); 
+       
+       final Annotation annotaionNull = jdbcAnnotationDao.getAnnotation(null);
+       assertEquals(null, annotaionNull);
+    }
     
 }
