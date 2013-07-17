@@ -39,42 +39,12 @@ import org.springframework.jdbc.core.simple.SimpleJdbcDaoSupport;
 
 
 
-public class JdbcAnnotationDao extends SimpleJdbcDaoSupport implements AnnotationDao {
+public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao {
 
     public JdbcAnnotationDao(DataSource dataSource) {
         setDataSource(dataSource);
     }
     
-    //////////////////////////////////////////
-    /**
-     * 
-     * @param notebookID
-     * @return false if notebookID == null or the notebook with notebookID is not in the DB;
-     * @return true if the notebook with notebookID in the DB
-     */
-    public boolean isNotebookInTheDataBase(Number notebookID){
-        
-        if (notebookID == null) {
-           return false;
-       } 
-       String sql = "SELECT notebook.notebook_id  FROM notebook where notebook_id = ?";
-       List<Number> result=getSimpleJdbcTemplate().query(sql, isNotebookInTheDataBaseRowMapper, notebookID.toString());
-       if (result == null) {
-           return false;
-       }
-       if (result.isEmpty()) {
-           return false;
-       }
-       return true; 
-    }
-    
-    private final RowMapper<Number> isNotebookInTheDataBaseRowMapper = new RowMapper<Number>() {        
-        @Override
-        public Integer mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            Integer notebookId = rs.getInt("notebook_id");
-            return notebookId;
-        } 
-    };
     
     ////////////////////////////////////////////////////////////////////////
     /**

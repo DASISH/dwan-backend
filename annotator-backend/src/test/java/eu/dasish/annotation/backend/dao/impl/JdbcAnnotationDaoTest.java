@@ -47,37 +47,16 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration({"/spring-test-config/dataSource.xml", "/spring-config/annotationDao.xml"})
 
-public class JdbcAnnotationDaoTest extends JdbcResourceDaoTestBasic{
+public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest{
     
     @Autowired
     JdbcAnnotationDao jdbcAnnotationDao;    
     
-    
-    
-     /**
-     * Test of getAnnotationIDs method, of class JdbcAnnotationDao.
-     * boolean isNotebookInTheDataBase(Number notebookID)
-     */
     @Test
-    public void testIsNotebookInTheDataBase() {
-        System.out.println("isNotebookInTheDataBase");
-        
-        final boolean testOne =  jdbcAnnotationDao.isNotebookInTheDataBase(TestBackendConstants._TEST_NOTEBOOK_1_INT);
-        assertEquals(true, testOne);
-        
-        final boolean testTwo =  jdbcAnnotationDao.isNotebookInTheDataBase(TestBackendConstants._TEST_NOTEBOOK_2_INT);
-        assertEquals(true, testTwo);
-        
-        final boolean testThree =  jdbcAnnotationDao.isNotebookInTheDataBase(TestBackendConstants._TEST_NOTEBOOK_3_INT);
-        assertEquals(true, testThree);
-        
-        final boolean testFour =  jdbcAnnotationDao.isNotebookInTheDataBase(TestBackendConstants._TEST_ANNOT_4_INT_NOT_IN_THE_DB);
-        assertEquals(false, testFour);
-        
-        final boolean testFive =  jdbcAnnotationDao.isNotebookInTheDataBase(null);
-        assertEquals(false, testFive);
+    public void testIsNotebookInTheDataBase(){
+        super.testIsNotebookInTheDataBase(jdbcAnnotationDao);
     }
-
+    
     /**
      * Test of getAnnotationIDs method, of class JdbcAnnotationDao.
      * List<Number> getAnnotationIDs(Number notebookID)

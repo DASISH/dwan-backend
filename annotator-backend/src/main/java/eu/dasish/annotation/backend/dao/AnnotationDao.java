@@ -31,7 +31,7 @@ import java.util.List;
 // TODO: Getting Target Sources from Body and testing must be added!!!
 
 
-public interface AnnotationDao {
+public interface AnnotationDao extends ResourceDao{
     
      // Returns the list of annotation Id-s  for the notebook id.
     List<Number> getAnnotationIDs(Number notebookID);
@@ -40,8 +40,7 @@ public interface AnnotationDao {
     List<AnnotationInfo> getAnnotationInfos(List<Number> annotationIDs);    
      
      // Returns the list of annotation info-s  for the notebook id.
-    List<AnnotationInfo> getAnnotationInfosOfNotebook(Number notebookID);
-    
+    List<AnnotationInfo> getAnnotationInfosOfNotebook(Number notebookID);    
     
      // Returns the list of annotations Id-s  for the notebook id.
     List<ResourceREF> getAnnotationREFs(List<Number> annotationIDs);    

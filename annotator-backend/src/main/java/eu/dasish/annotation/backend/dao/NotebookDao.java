@@ -29,7 +29,7 @@ import java.util.List;
  *
  * @author Peter Withers <peter.withers@mpi.nl>
  */
-public interface NotebookDao {
+public interface NotebookDao extends ResourceDao {
 
     // Returns a list of notebook-info for the notebooks accessible to the current user.
     List<NotebookInfo> getNotebookInfos(UserIdentifier userID);

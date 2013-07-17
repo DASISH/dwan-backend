@@ -17,6 +17,7 @@
  */
 package eu.dasish.annotation.backend.dao.impl;
 
+import eu.dasish.annotation.backend.TestBackendConstants;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URISyntaxException;
@@ -24,21 +25,19 @@ import java.net.URL;
 import java.util.Scanner;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
+import static org.junit.Assert.assertEquals;
 /**
  *
  * @author olhsha
  */
 
-public class JdbcResourceDaoTestBasic {
+public class JdbcResourceDaoTest {
+   
    @Autowired
-    private JdbcTemplate jdbcTemplate; 
+   private JdbcTemplate jdbcTemplate; 
    
    private String getNormalisedSql() throws FileNotFoundException, URISyntaxException {
         // remove the unsupported sql for the test
@@ -81,5 +80,30 @@ public class JdbcResourceDaoTestBasic {
     @After
     public void tearDown() {
     }
+    
+    
+     /**
+     * Test-helper of isNotebookInTheDataBase method, of class JdbcResourceDao.
+     * boolean isNotebookInTheDataBase(Number notebookID)
+     */
+    protected <T  extends JdbcResourceDao> void testIsNotebookInTheDataBase(T jdbcResourceDao) {
+        System.out.println("isNotebookInTheDataBase");
+        
+        final boolean testOne =  jdbcResourceDao.isNotebookInTheDataBase(TestBackendConstants._TEST_NOTEBOOK_1_INT);
+        assertEquals(true, testOne);
+        
+        final boolean testTwo =  jdbcResourceDao.isNotebookInTheDataBase(TestBackendConstants._TEST_NOTEBOOK_2_INT);
+        assertEquals(true, testTwo);
+        
+        final boolean testThree =  jdbcResourceDao.isNotebookInTheDataBase(TestBackendConstants._TEST_NOTEBOOK_3_INT);
+        assertEquals(true, testThree);
+        
+        final boolean testFour =  jdbcResourceDao.isNotebookInTheDataBase(TestBackendConstants._TEST_ANNOT_4_INT_NOT_IN_THE_DB);
+        assertEquals(false, testFour);
+        
+        final boolean testFive =  jdbcResourceDao.isNotebookInTheDataBase(null);
+        assertEquals(false, testFive);
+    }
+
 
 }
