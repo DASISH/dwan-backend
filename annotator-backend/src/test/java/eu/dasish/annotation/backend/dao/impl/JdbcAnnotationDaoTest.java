@@ -99,6 +99,31 @@ public class JdbcAnnotationDaoTest {
     @After
     public void tearDown() {
     }
+    
+    
+     /**
+     * Test of getAnnotationIDs method, of class JdbcAnnotationDao.
+     * boolean isNotebookInTheDataBase(Number notebookID)
+     */
+    @Test
+    public void testIsNotebookInTheDataBase() {
+        System.out.println("isNotebookInTheDataBase");
+        
+        final boolean testOne =  jdbcAnnotationDao.isNotebookInTheDataBase(TestBackendConstants._TEST_NOTEBOOK_1_INT);
+        assertEquals(true, testOne);
+        
+        final boolean testTwo =  jdbcAnnotationDao.isNotebookInTheDataBase(TestBackendConstants._TEST_NOTEBOOK_2_INT);
+        assertEquals(true, testTwo);
+        
+        final boolean testThree =  jdbcAnnotationDao.isNotebookInTheDataBase(TestBackendConstants._TEST_NOTEBOOK_3_INT);
+        assertEquals(true, testThree);
+        
+        final boolean testFour =  jdbcAnnotationDao.isNotebookInTheDataBase(TestBackendConstants._TEST_ANNOT_4_INT_NOT_IN_THE_DB);
+        assertEquals(false, testFour);
+        
+        final boolean testFive =  jdbcAnnotationDao.isNotebookInTheDataBase(null);
+        assertEquals(false, testFive);
+    }
 
     /**
      * Test of getAnnotationIDs method, of class JdbcAnnotationDao.
@@ -129,7 +154,7 @@ public class JdbcAnnotationDaoTest {
         
         //test five, the notebook not in the DB
         final List<Number> annotationIDsFive = jdbcAnnotationDao.getAnnotationIDs(TestBackendConstants._TEST_ANNOT_4_INT_NOT_IN_THE_DB);
-        assertEquals(new ArrayList<Number>(), annotationIDsFive);
+        assertEquals(null, annotationIDsFive);
         
     }
 
@@ -137,8 +162,7 @@ public class JdbcAnnotationDaoTest {
      * Test of getAnnotationInfos method, of class JdbcAnnotationDao.
      * List<AnnotationInfo> getAnnotationInfos(List<Number> annotationIDs)
      */
-    @Test
- 
+    @Test 
     public void testGetAnnotationInfos() {
         System.out.println("getAnnotationInfos");
         List<Number> annotIds = new ArrayList<Number>(); 
@@ -205,7 +229,7 @@ public class JdbcAnnotationDaoTest {
         
         //non-existing notebook
         final List<AnnotationInfo> annotationInfosFour = jdbcAnnotationDao.getAnnotationInfosOfNotebook(TestBackendConstants._TEST_ANNOT_4_INT_NOT_IN_THE_DB);
-        assertEquals(0, annotationInfosFour.size());
+        assertEquals(null, annotationInfosFour);
         
         
         //null notebook
@@ -265,9 +289,9 @@ public class JdbcAnnotationDaoTest {
         List<ResourceREF> testListThree = jdbcAnnotationDao.getAnnotationREFsOfNotebook(TestBackendConstants._TEST_NOTEBOOK_3_INT);
         assertEquals(0, testListThree.size()); 
         
-        // test Five, non-existing notebook
+        // test Four, non-existing notebook
         List<ResourceREF> testListFour = jdbcAnnotationDao.getAnnotationREFsOfNotebook(TestBackendConstants._TEST_ANNOT_4_INT_NOT_IN_THE_DB);
-        assertEquals(0, testListFour.size()); 
+        assertEquals(null, testListFour); 
         
         // test Five Null-notebook
         List<ResourceREF> testListFive = jdbcAnnotationDao.getAnnotationREFsOfNotebook(null);
@@ -276,17 +300,35 @@ public class JdbcAnnotationDaoTest {
 
     /**
      * Test of getAnnotations method, of class JdbcAnnotationDao.
+     * Annotations getAnnotations(Number notebookID)
      */
-    @Test    
-    @Ignore
+    @Test      
     public void testGetAnnotations() {
         System.out.println("getAnnotations");
-        Number notebookID = null;
-        JdbcAnnotationDao instance = null;
-        Annotations expResult = null;
-        Annotations result = instance.getAnnotations(notebookID);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        
+         // test One 
+        Annotations annotations = jdbcAnnotationDao.getAnnotations(TestBackendConstants._TEST_NOTEBOOK_1_INT);
+        assertEquals(2, annotations.getAnnotation().size());        
+        assertEquals(String.valueOf(TestBackendConstants._TEST_ANNOT_1_INT), annotations.getAnnotation().get(0).getRef());
+        assertEquals(String.valueOf(TestBackendConstants._TEST_ANNOT_2_INT), annotations.getAnnotation().get(1).getRef());
+        
+        // test One 
+        Annotations annotationsTwo = jdbcAnnotationDao.getAnnotations(TestBackendConstants._TEST_NOTEBOOK_2_INT);
+        assertEquals(1, annotationsTwo.getAnnotation().size());        
+        assertEquals(String.valueOf(TestBackendConstants._TEST_ANNOT_3_INT), annotationsTwo.getAnnotation().get(0).getRef());
+        
+        // test Three  "empty" list of annotations
+        // according to dasish.xsd if an Annotation is created then its list of annotations must contain at least one element!
+        // therefore: no annotations in the notebook ==> Annotations-pbject must be null :(
+        Annotations annotationsThree = jdbcAnnotationDao.getAnnotations(TestBackendConstants._TEST_NOTEBOOK_3_INT);
+        assertEquals(null, annotationsThree); 
+        
+        // test Five, non-existing notebook
+        Annotations annotationsFour = jdbcAnnotationDao.getAnnotations(TestBackendConstants._TEST_ANNOT_4_INT_NOT_IN_THE_DB);
+        assertEquals(null, annotationsFour); 
+        
+        // test Five Null-notebook
+        Annotations annotationsFive = jdbcAnnotationDao.getAnnotations(null);
+        assertEquals(null, annotationsFive);
     }
 }
