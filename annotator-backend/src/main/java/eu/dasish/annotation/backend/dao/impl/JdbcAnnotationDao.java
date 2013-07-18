@@ -170,6 +170,8 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
            
            // TODO: add source, also to the database
            
+           // TODO add external reference 
+           
            result.setBody(convertToAnnotationBody(rs.getString("body_xml")));
            return result;
         }
