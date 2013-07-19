@@ -38,6 +38,9 @@ INSERT INTO notebook (notebook_id, title, owner_id, external_id) VALUES (13, 'No
 INSERT INTO annotation (annotation_id, owner_id,headline,body_xml, external_id) VALUES (21, 111, 'Sagrada Famiglia','<html><body>some html 1</body></html>', '00000000-0000-0000-0000-000000000021');
 INSERT INTO annotation (annotation_id, owner_id,headline,body_xml, external_id) VALUES (22, 112, 'Gaudi','<html><body>some html 2 </body></html>', '00000000-0000-0000-0000-000000000022');
 INSERT INTO annotation (annotation_id, owner_id,headline,body_xml, external_id) VALUES (23, 113, 'Art Nuveau','<html><body>some html 3</body></html>', '00000000-0000-0000-0000-000000000023');
+INSERT INTO annotation (annotation_id, owner_id,headline,body_xml, external_id) VALUES (25, 111, 'Annotation to delete','<html><body>some html 4</body></html>', '00000000-0000-0000-0000-000000000025');
+
+
 
 INSERT INTO notebooks_annotations (notebook_id,annotation_id) VALUES (11,21);
 INSERT INTO notebooks_annotations (notebook_id,annotation_id) VALUES (11,22);
