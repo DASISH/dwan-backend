@@ -222,7 +222,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
     };
       
       
-     public int deleteNotebook(Number annotationId) throws SQLException{
+     public int deleteAnnotation(Number annotationId) throws SQLException{
         String sqlAnnotation = "DELETE FROM " + annotationTableName + " where "+annotation_id + " = ?";
         //String sqSources = "DELETE FROM " + sourceTableName + " where "+ notebook_id +"= ?";
         int affectedAnnotations = getSimpleJdbcTemplate().update(sqlAnnotation, annotationId);

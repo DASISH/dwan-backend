@@ -20,9 +20,6 @@ package eu.dasish.annotation.backend.rest;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.GenericType;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
-import com.sun.jersey.spi.spring.container.servlet.SpringServlet;
-import com.sun.jersey.test.framework.JerseyTest;
-import com.sun.jersey.test.framework.WebAppDescriptor;
 import eu.dasish.annotation.backend.dao.NotebookDao;
 import eu.dasish.annotation.backend.identifiers.NotebookIdentifier;
 import eu.dasish.annotation.backend.identifiers.UserIdentifier;
@@ -37,35 +34,21 @@ import java.util.UUID;
 import javax.ws.rs.core.MediaType;
 import org.jmock.Expectations;
 import static org.jmock.Expectations.returnValue;
-import org.jmock.Mockery;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Ignore;
-import org.springframework.web.context.ContextLoaderListener;
-import org.springframework.web.context.WebApplicationContext;
 
 /**
  * Created on : Jun 12, 2013, 11:31 AM
  *
  * @author Peter Withers <peter.withers@mpi.nl>
  */
-public class NotebooksTest extends JerseyTest {
+public class NotebooksTest extends ResourcesTest {
 
-    private Mockery mockery;
     private NotebookDao notebookDao;
 
     public NotebooksTest() {
-        super(new WebAppDescriptor.Builder(NotebookResource.class.getPackage().getName())
-                .servletClass(SpringServlet.class)
-                .contextParam("contextConfigLocation", "classpath*:spring-test-config/**/*.xml")
-                .contextListenerClass(ContextLoaderListener.class)
-                .build());
-
-        // Get the web application context that has been instantiated in the Grizzly container
-        final WebApplicationContext webAppContext = ContextLoaderListener.getCurrentWebApplicationContext();
-
-        // Get the context and mock objects from the context by their type
-        mockery = webAppContext.getBean(Mockery.class);
+        super(NotebookResource.class.getPackage().getName());
         notebookDao = webAppContext.getBean(NotebookDao.class);
     }
 

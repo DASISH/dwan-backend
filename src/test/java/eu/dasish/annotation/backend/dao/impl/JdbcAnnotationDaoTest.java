@@ -19,12 +19,14 @@ package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
+import eu.dasish.annotation.backend.identifiers.NotebookIdentifier;
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationInfo;
 import eu.dasish.annotation.schema.ResourceREF;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import static org.junit.Assert.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -154,4 +156,20 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest{
        assertEquals(null, annotaionNull);
     }
     
+    /**
+     * Test of deletAnnotation method, of class JdbcAnnotationDao.
+     */
+    @Test
+    public void testDeleteAnnotation() throws SQLException{
+        System.out.println("deleteAnnotation");        
+        int result = jdbcAnnotationDao.deleteAnnotation(TestBackendConstants._TEST_ANNOT_5_INT_TO_BE_DELETED);
+        assertEquals(1, result);
+        // now, try to delete the same annotation one more time
+        // if it has been already deleted then the method under testing should return 0
+        result = jdbcAnnotationDao.deleteAnnotation(TestBackendConstants._TEST_ANNOT_5_INT_TO_BE_DELETED);
+        assertEquals(0, result);
+    }
+    
 }
+
+

@@ -65,6 +65,6 @@ public interface AnnotationDao extends ResourceDao{
      * which no other annotations refers.
      */
     
-    public int deleteNotebook(Number annotationId) throws SQLException;
+    public int deleteAnnotation(Number annotationId) throws SQLException;
 
 }

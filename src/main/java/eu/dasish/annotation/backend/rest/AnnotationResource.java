@@ -17,11 +17,13 @@
  */
 package eu.dasish.annotation.backend.rest;
 
+import eu.dasish.annotation.backend.BackendConstants;
 import eu.dasish.annotation.backend.dao.AnnotationDao;
 import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.ObjectFactory;
 import java.sql.SQLException;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -44,10 +46,18 @@ public class AnnotationResource {
    
     @GET
     @Produces(MediaType.TEXT_XML)
-    @Path("{annotationid: [a-zA-Z0-9_-]*}")
+    @Path("{annotationid: "+BackendConstants.regExpIdentifier+"}")
     public JAXBElement<Annotation> getAnnotation(@PathParam("annotationid") String annotationIdentifier) throws SQLException{
         final Annotation annotation = annotationDao.getAnnotation(annotationDao.getAnnotationID(new AnnotationIdentifier(annotationIdentifier)));
         return new ObjectFactory().createAnnotation(annotation);
     }
     
+    @DELETE
+    @Path("{annotationid: "+BackendConstants.regExpIdentifier+"}")
+    /*
+     Delete _aid_. The related sources that are not related to other annotations must be deleted as well (TODO)
+     */
+    public String deleteAnnotation(@PathParam("annotationid") String annotationIdentifier) throws SQLException{
+        return Integer.toString(annotationDao.deleteAnnotation(annotationDao.getAnnotationID(new AnnotationIdentifier(annotationIdentifier))));
+    }
 }

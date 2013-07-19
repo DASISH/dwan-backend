@@ -18,46 +18,28 @@
 package eu.dasish.annotation.backend.rest;
 
 import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.GenericType;
-import com.sun.jersey.spi.spring.container.servlet.SpringServlet;
-import com.sun.jersey.test.framework.JerseyTest;
-import com.sun.jersey.test.framework.WebAppDescriptor;
 import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.dao.AnnotationDao;
 import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
+import eu.dasish.annotation.backend.identifiers.NotebookIdentifier;
 import eu.dasish.annotation.schema.Annotation;
-import eu.dasish.annotation.schema.NotebookInfos;
 import eu.dasish.annotation.schema.ObjectFactory;
 import java.sql.SQLException;
+import java.util.UUID;
 import javax.ws.rs.core.MediaType;
 import org.jmock.Expectations;
-import org.jmock.Mockery;
 import org.junit.Test;
-import org.springframework.web.context.ContextLoaderListener;
-import org.springframework.web.context.WebApplicationContext;
 import static org.junit.Assert.*;
 /**
  *
  * @author olhsha
  */
-public class AnnotationsURLTest extends JerseyTest{
+public class AnnotationsTest extends ResourcesTest{
     
-    private Mockery mockery;
     private AnnotationDao annotationDao;
     
-    public AnnotationsURLTest() {
-        
-        super(new WebAppDescriptor.Builder(AnnotationResource.class.getPackage().getName())
-                .servletClass(SpringServlet.class)
-                .contextParam("contextConfigLocation", "classpath*:spring-test-config/**/*.xml")
-                .contextListenerClass(ContextLoaderListener.class)
-                .build());
-
-        // Get the web application context that has been instantiated in the Grizzly container
-        final WebApplicationContext webAppContext = ContextLoaderListener.getCurrentWebApplicationContext();
-
-        // Get the context and mock objects from the context by their type
-        mockery = webAppContext.getBean(Mockery.class);
+    public AnnotationsTest() {
+        super(AnnotationResource.class.getPackage().getName());
         annotationDao = webAppContext.getBean(AnnotationDao.class);
     }
     
@@ -95,5 +77,47 @@ public class AnnotationsURLTest extends JerseyTest{
         assertEquals(testAnnotation.getTargetSources(), entity.getTargetSources());
         assertEquals(testAnnotation.getTimeStamp(), entity.getTimeStamp());
         assertEquals(testAnnotation.getURI(), entity.getURI());
-    }   
+    }  
+    
+     /**
+     * Test of deleteAnnotation method, of class AnnotationResource. Delete <nid>.
+     * DELETE api/annotations/<aid>
+     */
+    @Test
+    public void testDeleteAnnotation() throws SQLException{
+        System.out.println("testDeleteAnnotation");
+        
+        mockery.checking(new Expectations() {
+            {
+                oneOf(annotationDao).getAnnotationID(new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_5_EXT_TO_BE_DELETED));                
+                will(returnValue(TestBackendConstants._TEST_ANNOT_5_INT_TO_BE_DELETED));
+                
+                oneOf(annotationDao).deleteAnnotation(TestBackendConstants._TEST_ANNOT_5_INT_TO_BE_DELETED);
+                will(returnValue(1));
+            }
+        });
+        
+        final String requestUrl = "annotations/" + TestBackendConstants._TEST_ANNOT_5_EXT_TO_BE_DELETED;
+        System.out.println("requestUrl: " + requestUrl);
+        ClientResponse response = resource().path(requestUrl).delete(ClientResponse.class);
+        assertEquals(200, response.getStatus());
+        assertEquals("1", response.getEntity(String.class));
+        
+         // now, try to delete the same annotation one more time
+        // if it has been already deleted then the method under testing should return 0
+        
+        mockery.checking(new Expectations() {
+            {
+                oneOf(annotationDao).getAnnotationID(new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_5_EXT_TO_BE_DELETED));                
+                will(returnValue(TestBackendConstants._TEST_ANNOT_5_INT_TO_BE_DELETED));
+                
+                oneOf(annotationDao).deleteAnnotation(TestBackendConstants._TEST_ANNOT_5_INT_TO_BE_DELETED);
+                will(returnValue(0));
+            }
+        });
+       
+        response = resource().path(requestUrl).delete(ClientResponse.class);
+        assertEquals(200, response.getStatus());
+        assertEquals("0", response.getEntity(String.class));
+    }
 }
