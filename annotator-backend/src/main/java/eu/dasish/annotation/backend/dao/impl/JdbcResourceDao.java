@@ -29,6 +29,44 @@ import org.springframework.jdbc.core.simple.SimpleJdbcDaoSupport;
  * @author olhsha
  */
 public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao{
+    
+    // base string constants: table Names
+    final static protected String notebookTableName = "notebook";
+    final static protected String annotationTableName = "annotation";
+    final static protected String sourceTableName = "source";     
+    final static protected String principalTableName = "principal";    
+    final static protected String notebooksAnnotationsTableName = "notebooks_annotations";
+    
+    
+    // base string constants: field Names
+    final static protected String annotation_id = "annotation_id";
+    final static protected String notebook_id = "notebook_id";
+    final static protected String source_id = "source_id";
+    final static protected String external_id = "external_id";
+    final static protected String owner_id = "owner_id";
+    final static protected String headline = "headline";
+    final static protected String body_xml = "body_xml";
+    final static protected String title="title";
+    final static protected String principal_id = "principal_id";
+    final static protected String time_stamp = "time_stamp";
+    
+    // derived string constants: table+field names 
+    
+    final static protected String annotationStar = annotationTableName+".*";
+    final static protected String annotationAnnotation_id = annotationTableName+"."+annotation_id;
+    final static protected String annotationExternal_id = annotationTableName+"."+external_id;
+    
+    final static protected String notebookStar = notebookTableName+".*";
+    final static protected String notebookNotebook_id = notebookTableName+"."+notebook_id;
+    final static protected String notebookTitle=notebookTableName+"."+title;
+    final static protected String notebookExternal_id = notebookTableName+"."+external_id;
+    final static protected String notebookOwner_id = notebookTableName+"."+owner_id;
+    
+    final static protected String notebooksAnnotationsTableNameAnnotation_id = "notebooks_annotations.annotation_id";
+    
+    final static protected String principalPrincipal_id = principalTableName+"."+principal_id;
+    final static protected String principalExternal_id = principalTableName+"."+external_id;
+    
     //////////////////////////////////////////
     /**
      * 
@@ -42,7 +80,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
         if (notebookID == null) {
            return false;
        } 
-       String sql = "SELECT notebook.notebook_id  FROM notebook where notebook_id = ?";
+       String sql = "SELECT "+notebookNotebook_id+"  FROM notebook where "+notebook_id+" = ?";
        List<Number> result=getSimpleJdbcTemplate().query(sql, isNotebookInTheDataBaseRowMapper, notebookID.toString());
        if (result == null) {
            return false;
@@ -56,7 +94,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     private final RowMapper<Number> isNotebookInTheDataBaseRowMapper = new RowMapper<Number>() {        
         @Override
         public Integer mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            Integer notebookId = rs.getInt("notebook_id");
+            Integer notebookId = rs.getInt(notebook_id);
             return notebookId;
         } 
     };
