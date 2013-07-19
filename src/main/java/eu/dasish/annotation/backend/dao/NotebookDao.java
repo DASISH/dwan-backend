@@ -62,4 +62,5 @@ public interface NotebookDao extends ResourceDao {
     Annotations getAnnotations(Number notebookID);
     
    
+    
 }

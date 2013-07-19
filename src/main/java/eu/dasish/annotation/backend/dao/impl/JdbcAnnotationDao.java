@@ -42,6 +42,7 @@ import org.springframework.jdbc.core.RowMapper;
 
 public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao {
 
+    
     public JdbcAnnotationDao(DataSource dataSource) {
         setDataSource(dataSource);
     }
@@ -70,7 +71,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         }
                 
         String values = makeListOfValues(annotationIDs);
-        String sql = "SELECT annotation.* FROM annotation WHERE annotation.annotation_id  IN "+values;
+        String sql = "SELECT "+annotationStar+" FROM "+annotationTableName +" WHERE "+annotationAnnotation_id+"  IN "+values;
         return getSimpleJdbcTemplate().query(sql, annotationInfoRowMapper); 
     }
     
@@ -78,9 +79,9 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         @Override
         public AnnotationInfo mapRow(ResultSet rs, int rowNumber) throws SQLException {
            AnnotationInfo annotationInfo = new AnnotationInfo();
-           annotationInfo.setOwner(getResourceREF(Integer.toString(rs.getInt("owner_id"))));
-           annotationInfo.setHeadline(rs.getString("headline")); 
-           annotationInfo.setTargetSources(getSources(rs.getString("body_xml")));
+           annotationInfo.setOwner(getResourceREF(Integer.toString(rs.getInt(owner_id))));
+           annotationInfo.setHeadline(rs.getString(headline)); 
+           annotationInfo.setTargetSources(getSources(rs.getString(body_xml)));
            return annotationInfo;
         }
     };
@@ -108,7 +109,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         }
         
         String values = makeListOfValues(annotationIDs);
-        String sql = "SELECT annotation.annotation_id FROM annotation WHERE annotation.annotation_id  IN "+values;
+        String sql = "SELECT "+annotationAnnotation_id+" FROM "+annotationTableName+" WHERE "+annotationAnnotation_id+"  IN "+values;
         return getSimpleJdbcTemplate().query(sql, annotationREFRowMapper); 
     }
     
@@ -116,7 +117,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         @Override
         public ResourceREF mapRow(ResultSet rs, int rowNumber) throws SQLException {
            ResourceREF annotationREF = new ResourceREF();
-           annotationREF.setRef(Integer.toString(rs.getInt("annotation_id")));
+           annotationREF.setRef(Integer.toString(rs.getInt(annotation_id)));
            return annotationREF;
         }
     };
@@ -135,7 +136,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         if (annotationID == null) {
             return null;
         }
-       String sql = "SELECT * FROM annotation WHERE annotation.annotation_id  = ?";
+       String sql = "SELECT "+annotationStar+" FROM "+annotationTableName+" WHERE "+annotationAnnotation_id  +"= ?";
        List<Annotation> result= getSimpleJdbcTemplate().query(sql, annotationRowMapper, annotationID); 
        
        if (result == null) {
@@ -146,7 +147,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
        } 
        
         if (result.size()>1) {
-           throw new SQLException("There are "+result.size()+" annotations with annotation_id "+annotationID);
+           throw new SQLException("There are "+result.size()+" annotations with "+ annotation_id + " "+annotationID);
        }
        return result.get(0);
    }
@@ -155,10 +156,10 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         @Override
         public Annotation mapRow(ResultSet rs, int rowNumber) throws SQLException {
            Annotation result = new Annotation();
-           result.setHeadline(rs.getString("headline"));
+           result.setHeadline(rs.getString(headline));
            
            ResourceREF ownerREF = new ResourceREF();
-           ownerREF.setRef(String.valueOf(rs.getInt("owner_id")));
+           ownerREF.setRef(String.valueOf(rs.getInt(owner_id)));
            result.setOwner(ownerREF);
            
            /*TODO 
@@ -172,7 +173,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
            
            // TODO add external reference 
            
-           result.setBody(convertToAnnotationBody(rs.getString("body_xml")));
+           result.setBody(convertToAnnotationBody(rs.getString(body_xml)));
            return result;
         }
     };
@@ -197,7 +198,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
             return null;
         }
         
-       String sql = "SELECT annotation.annotation_id FROM annotation WHERE annotation.external_id  = ?";
+       String sql = "SELECT "+annotationAnnotation_id+" FROM "+annotationTableName+" WHERE "+annotationExternal_id+"  = ?";
        List<Number> result= getSimpleJdbcTemplate().query(sql, annotationIDRowMapper, externalID.toString());
        if (result == null) {
            return null;
@@ -207,7 +208,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
        }
        
        if (result.size()>1) {
-           throw new SQLException("There are "+result.size()+" annotations with external_id "+externalID);
+           throw new SQLException("There are "+result.size()+" annotations with"+ external_id +" "+externalID);
        }
        return result.get(0);
    }
@@ -215,10 +216,22 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
       private final RowMapper<Number> annotationIDRowMapper = new RowMapper<Number>() {        
         @Override
         public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
-           Number result = rs.getInt("annotation_id");
+           Number result = rs.getInt(annotation_id);
            return result;
         }
     };
+      
+      
+     public int deleteNotebook(Number annotationId) throws SQLException{
+        String sqlAnnotation = "DELETE FROM " + annotationTableName + " where "+annotation_id + " = ?";
+        //String sqSources = "DELETE FROM " + sourceTableName + " where "+ notebook_id +"= ?";
+        int affectedAnnotations = getSimpleJdbcTemplate().update(sqlAnnotation, annotationId);
+        if (affectedAnnotations>1) {
+            throw new SQLException("There was more than one annotation ("+affectedAnnotations+") with the same ID "+annotationId);
+        }
+        return affectedAnnotations;
+        //TODO implement deleting sources (see the specification document and the interfaces' javadoc
+    }
      
     
     //////////// helpers /////////////////////// 

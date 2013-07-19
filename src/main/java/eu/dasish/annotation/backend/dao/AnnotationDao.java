@@ -57,4 +57,14 @@ public interface AnnotationDao extends ResourceDao{
      * if annotationID is null or such annotation does not exist in the DB returns null;
      */
     Number getAnnotationID(AnnotationIdentifier externalID) throws SQLException;
+    
+    /**
+     * 
+     * @param annotationId
+     * @return the amount of deleted sources; removes _aid_ from the DB, together with its tagrget sources to
+     * which no other annotations refers.
+     */
+    
+    public int deleteNotebook(Number annotationId) throws SQLException;
+
 }
