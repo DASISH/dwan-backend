@@ -17,12 +17,14 @@
  */
 package eu.dasish.annotation.backend.rest;
 
+import com.sun.jersey.api.client.GenericType;
 import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.TestInstances;
 import eu.dasish.annotation.backend.dao.AnnotationDao;
 import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
 import eu.dasish.annotation.schema.Annotation;
 import java.sql.SQLException;
+import javax.ws.rs.core.Response;
 import javax.xml.bind.JAXBElement;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
@@ -32,7 +34,9 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
+import java.lang.InstantiationException;
+import java.util.ArrayList;
+import java.util.List;
 /**
  *
  * @author olhsha
@@ -47,7 +51,7 @@ public class AnnotationResourceTest {
     @Autowired
     private AnnotationDao annotationDao;
     @Autowired
-    private AnnotationResource annotationResource;
+    private AnnotationResource annotationResource;  
     
     public AnnotationResourceTest() {
     }
@@ -110,5 +114,30 @@ public class AnnotationResourceTest {
         
         result = annotationResource.deleteAnnotation(TestBackendConstants._TEST_ANNOT_5_EXT_TO_BE_DELETED);
         assertEquals("0", result);
+    }
+    
+    /**
+     * Test of createAnnotation method, of class AnnotationResource.
+     */
+    @Test
+    public void testCreateAnnotation() throws SQLException, InstantiationException, IllegalAccessException {
+        System.out.println("test createAnnotation");
+        final Annotation annotationToAdd = new GenericType<Annotation>(){}.getRawClass().newInstance();
+        final AnnotationIdentifier newAnnotationID = new GenericType<AnnotationIdentifier>(){}.getRawClass().newInstance();
+        
+        mockery.checking(new Expectations() {
+            {
+                oneOf(annotationDao).addAnnotation(annotationToAdd);
+                will(returnValue(newAnnotationID));
+            }
+        });
+        
+        ArrayList<Annotation> parameter = new ArrayList<Annotation>();
+        parameter.add(annotationToAdd);
+        
+        String result = annotationResource.createAnnotation(parameter);        
+        assertTrue(result=="OK");
+        //assertEquals(200, result.getStatus());
+        //assertTrue(annotationToAdd.equals(result.getEntity()));
     }
 }

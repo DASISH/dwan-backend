@@ -18,15 +18,14 @@
 package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.TestBackendConstants;
+import eu.dasish.annotation.backend.TestInstances;
 import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
-import eu.dasish.annotation.backend.identifiers.NotebookIdentifier;
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationInfo;
 import eu.dasish.annotation.schema.ResourceREF;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import static org.junit.Assert.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -44,7 +43,9 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest{
     
     @Autowired
-    JdbcAnnotationDao jdbcAnnotationDao;    
+    JdbcAnnotationDao jdbcAnnotationDao; 
+    
+    TestInstances testInstances = new TestInstances();
     
     @Test
     public void testIsNotebookInTheDataBase(){
@@ -170,6 +171,29 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest{
         assertEquals(0, result);
     }
     
+    
+    /**
+     * Test of addAnnotation method, of class JdbcAnnotationDao.
+     */
+    @Test
+    public void testAddAnnotation() throws SQLException{
+        System.out.println("test_addAnnotation"); 
+        Annotation annotationToAdd = testInstances.getAnnotationToAdd();
+        AnnotationIdentifier result = jdbcAnnotationDao.addAnnotation(annotationToAdd);
+        assertFalse(result == null);
+        
+        Annotation addedAnnotation = jdbcAnnotationDao.getAnnotation(jdbcAnnotationDao.getAnnotationID(result));        
+        assertEquals(annotationToAdd.getBody().getAny().get(0), addedAnnotation.getBody().getAny().get(0));
+        assertEquals(annotationToAdd.getHeadline(), addedAnnotation.getHeadline());
+        assertEquals(annotationToAdd.getOwner().getRef(), addedAnnotation.getOwner().getRef());
+        
+        // try to add an already existing annptation, should produce null
+        //Annotation annotationOne = testInstances.getAnnotationOne();
+        //AnnotationIdentifier resultOne = jdbcAnnotationDao.addAnnotation(annotationOne);
+        // TODO: why it doesp produce an annotation, it already exists!!
+        //assertTrue(resultOne == null);
+        
+    }
 }
 
 

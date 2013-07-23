@@ -27,8 +27,11 @@ import eu.dasish.annotation.schema.Sources;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.sql.DataSource;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 
 /**
@@ -121,16 +124,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
            return annotationREF;
         }
     };
-    
-   //////////////////////////////////////////////
-   /* CREATE TABLE annotation (
-    annotation_id SERIAL UNIQUE NOT NULL,
-    external_id UUID UNIQUE NOT NULL,
-    time_stamp timestamp with time zone default now(),
-    owner_id integer,
-    headline text,
-    body_xml xml */
-
+ 
    @Override
     public Annotation getAnnotation(Number annotationID) throws SQLException{
         if (annotationID == null) {
@@ -221,10 +215,9 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         }
     };
       
-      
+   @Override   
      public int deleteAnnotation(Number annotationId) throws SQLException{
         String sqlAnnotation = "DELETE FROM " + annotationTableName + " where "+annotation_id + " = ?";
-        //String sqSources = "DELETE FROM " + sourceTableName + " where "+ notebook_id +"= ?";
         int affectedAnnotations = getSimpleJdbcTemplate().update(sqlAnnotation, annotationId);
         if (affectedAnnotations>1) {
             throw new SQLException("There was more than one annotation ("+affectedAnnotations+") with the same ID "+annotationId);
@@ -233,8 +226,46 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         //TODO implement deleting sources (see the specification document and the interfaces' javadoc
     }
      
+      
+   //////////////////////////////////////////////
+   /* CREATE TABLE annotation (
+    annotation_id SERIAL UNIQUE NOT NULL,
+    external_id UUID UNIQUE NOT NULL,
+    time_stamp timestamp with time zone default now(),
+    owner_id integer,
+    headline text,
+    body_xml xml */
+
+   
+    @Override
+    public AnnotationIdentifier addAnnotation(Annotation annotation) {
+        try {
+            AnnotationIdentifier annotationIdentifier = new AnnotationIdentifier();
+            Map<String, Object> params = new HashMap<String, Object>();
+            params.put("externalId", annotationIdentifier.toString());
+            params.put("timeStamp", annotation.getTimeStamp());
+            params.put("ownerId", annotation.getOwner().getRef());
+            params.put("headline", annotation.getHeadline());
+            // may be changed once we elaborate the body
+            params.put("bodyXml", annotation.getBody().getAny().get(0).toString());
+            String sql = "INSERT INTO "+annotationTableName + "("+external_id+","+ time_stamp+"," + owner_id+","+headline+","+body_xml+" ) VALUES (:externalId, :timeStamp,  :ownerId, :headline, :bodyXml)";
+            final int affectedRows = getSimpleJdbcTemplate().update(sql, params);
+            if (affectedRows == 1) {
+                return annotationIdentifier;
+            }
+            else {
+                // something went wrong
+                return null;
+            }
+        } catch (DataAccessException exception) {
+            throw exception;
+        }
+    }
+     
+    
     
     //////////// helpers /////////////////////// 
+    
     
     /////////////////////////////////////////////////
     private ResourceREF getResourceREF(String resourceID){

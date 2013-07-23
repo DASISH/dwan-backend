@@ -24,10 +24,13 @@ import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.ObjectFactory;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import javax.ws.rs.core.MediaType;
 import org.jmock.Expectations;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.Ignore;
 /**
  *
  * @author olhsha
@@ -117,5 +120,38 @@ public class AnnotationsTest extends ResourcesTest{
         response = resource().path(requestUrl).delete(ClientResponse.class);
         assertEquals(200, response.getStatus());
         assertEquals("0", response.getEntity(String.class));
+    }
+    /**
+     * Test of createAnnotation method, of class AnnotationResource. 
+     * POST api/annotations/
+     */
+    @Test
+    @Ignore
+    public void testAddAnnotation() throws SQLException, InstantiationException, IllegalAccessException{
+        System.out.println("testDeleteAnnotation");
+        System.out.println("test createAnnotation");
+        //final Annotation annotationToAdd = new GenericType<Annotation>(){}.getRawClass().newInstance();
+        final Annotation annotationToAdd = new ObjectFactory().createAnnotation();
+        ///final AnnotationIdentifier newAnnotationID = new GenericType<AnnotationIdentifier>(){}.getRawClass().newInstance();
+        
+//        mockery.checking(new Expectations() {
+//            {
+//                oneOf(annotationDao).addAnnotation(annotationToAdd);
+//                will(returnValue(newAnnotationID));
+//            }
+//        });
+        
+       
+        final String requestUrl = "annotations/";
+        System.out.println("requestUrl: " + requestUrl);
+        
+        List<Annotation> parameter = new ArrayList<Annotation>();
+        parameter.add(annotationToAdd);
+        
+        String response = resource().path(requestUrl).type(MediaType.APPLICATION_XML).post(String.class, parameter);
+        //assertEquals(200, response.getStatus());
+        //assertEquals(annotationToAdd, response.getEntity(Annotation.class));
+        
+         
     }
 }
