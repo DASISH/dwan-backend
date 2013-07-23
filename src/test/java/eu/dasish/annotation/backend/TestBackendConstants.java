@@ -46,6 +46,7 @@ public class TestBackendConstants {
     public static final String _TEST_ANNOT_4_EXT_NOT_IN_THE_DB = "00000000-0000-0000-0000-000000000024";
     public static final String _TEST_ANNOT_5_EXT_TO_BE_DELETED = "00000000-0000-0000-0000-000000000025";
     
+    
     public static final int _TEST_ANNOT_1_INT = 21;
     public static final int _TEST_ANNOT_2_INT = 22;
     public static final int _TEST_ANNOT_3_INT = 23;    
@@ -55,12 +56,15 @@ public class TestBackendConstants {
     public static final String _TEST_ANNOT_1_HEADLINE = "Sagrada Famiglia";
     public static final String _TEST_ANNOT_2_HEADLINE = "Gaudi";
     public static final String _TEST_ANNOT_3_HEADLINE = "Art Nuveau";
+    public static final String _TEST_ANNOT_TO_ADD_HEADLINE = "Annotation to add to test DAO";
     
     public static final int _TEST_ANNOT_1_OWNER = 111;
     public static final int _TEST_ANNOT_2_OWNER = 112;
     public static final int _TEST_ANNOT_3_OWNER = 113;
+    public static final int _TEST_ANNOT_TO_ADD_OWNER = 117; 
     
     public static final String _TEST_ANNOT_1_BODY = "<html><body>some html 1</body></html>";
+    public static final String _TEST_ANNOT_TO_ADD_BODY = "<html><body>the stuff to be added</body></html>";
     
     public static final String annotaiontoDeleteInDB="INSERT INTO annotation (annotation_id, owner_id,headline,body_xml, external_id) VALUES (25, 111, 'Annotation to delete','<html><body>some html 4</body></html>', '00000000-0000-0000-0000-000000000025');";
     

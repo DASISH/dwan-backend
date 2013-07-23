@@ -18,6 +18,8 @@
 package eu.dasish.annotation.backend.dao;
 
 import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
+import eu.dasish.annotation.backend.identifiers.NotebookIdentifier;
+import eu.dasish.annotation.backend.identifiers.UserIdentifier;
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationInfo;
 import eu.dasish.annotation.schema.ResourceREF;
@@ -66,5 +68,14 @@ public interface AnnotationDao extends ResourceDao{
      */
     
     public int deleteAnnotation(Number annotationId) throws SQLException;
-
+    
+   
+    /**
+     * 
+     * @param annotation added to the table with annotations 
+     * @return annotationIdentifier of the newly added annotation; returns null if something went wrong and annotation was not added or more than one row in the annotation table was affected
+     */
+    public AnnotationIdentifier addAnnotation(Annotation annotation);
+ 
+    
 }

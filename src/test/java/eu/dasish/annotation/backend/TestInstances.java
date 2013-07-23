@@ -29,27 +29,45 @@ import java.util.List;
 public class TestInstances {
     
     final private Annotation _annotationOne;
+    final private Annotation _annotationToAdd;
     
     public TestInstances(){
         _annotationOne = makeAnnotationOne();
+        _annotationToAdd = makeAnnotationToAdd();
+        
     }
     
     
     private Annotation makeAnnotationOne(){
-        // add the other fields whengetAnnotation is completed
-        Annotation result = new Annotation();
-        AnnotationBody body = new AnnotationBody();
-        List<Object> bodyContent = body.getAny();
-        bodyContent.add(TestBackendConstants._TEST_ANNOT_1_BODY);        
-        result.setBody(body);
-        result.setHeadline(TestBackendConstants._TEST_ANNOT_1_HEADLINE);
-        ResourceREF owner = new ResourceREF();
-        owner.setRef(String.valueOf(TestBackendConstants._TEST_ANNOT_1_OWNER));
-        result.setOwner(owner);
+        Annotation result = makeAnnotation(TestBackendConstants._TEST_ANNOT_1_BODY, TestBackendConstants._TEST_ANNOT_1_HEADLINE, TestBackendConstants._TEST_ANNOT_1_OWNER);
         return result;
     }
     
+    private Annotation makeAnnotationToAdd(){
+        Annotation result = makeAnnotation(TestBackendConstants._TEST_ANNOT_TO_ADD_BODY, TestBackendConstants._TEST_ANNOT_TO_ADD_HEADLINE, TestBackendConstants._TEST_ANNOT_TO_ADD_OWNER);
+        return result;
+    }
+    
+    // add the other fields whengetAnnotation is completed
+    private Annotation makeAnnotation(String bodyTxt, String headline, int ownerId){
+        Annotation result = new Annotation();
+        AnnotationBody body = new AnnotationBody();
+        List<Object> bodyContent = body.getAny();
+        bodyContent.add(bodyTxt);        
+        result.setBody(body);
+        result.setHeadline(headline);
+        ResourceREF owner = new ResourceREF();
+        owner.setRef(String.valueOf(ownerId));
+        result.setOwner(owner); 
+        return result;
+    }
+    
+    
     public Annotation getAnnotationOne(){
         return _annotationOne;
+    }
+    
+    public Annotation getAnnotationToAdd(){
+        return _annotationToAdd;
     }
 }
