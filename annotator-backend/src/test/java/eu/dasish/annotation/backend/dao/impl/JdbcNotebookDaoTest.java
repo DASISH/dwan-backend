@@ -19,6 +19,7 @@ package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.dao.AnnotationDao;
+import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
 import eu.dasish.annotation.backend.identifiers.NotebookIdentifier;
 import eu.dasish.annotation.backend.identifiers.UserIdentifier;
 import eu.dasish.annotation.schema.Annotations;
@@ -290,6 +291,36 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest{
     }
     
     
+    @Test  
+    public void testGetAnnotationExternalIDs() {
+        System.out.println("test getExternalAnnotationIds");
+        
+         // test One 
+        mockery.checking(new Expectations() {
+            {
+              oneOf(annotationDao).getExternalID(TestBackendConstants._TEST_ANNOT_1_INT);
+              will(returnValue(new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_1_EXT)));
+              
+              oneOf(annotationDao).getExternalID(TestBackendConstants._TEST_ANNOT_2_INT);
+              will(returnValue(new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_2_EXT)));
+            }
+        }); 
+        
+        List<AnnotationIdentifier> resultOne= jdbcNotebookDao.getAnnotationExternalIDs(new NotebookIdentifier(TestBackendConstants._TEST_NOTEBOOK_1_EXT));
+        assertEquals(TestBackendConstants._TEST_ANNOT_1_EXT, resultOne.get(0).toString());
+        assertEquals(TestBackendConstants._TEST_ANNOT_2_EXT, resultOne.get(1).toString());
+        
+        
+        List<AnnotationIdentifier> resultTwo= jdbcNotebookDao.getAnnotationExternalIDs(new NotebookIdentifier(TestBackendConstants._TEST_ANNOT_4_EXT_NOT_IN_THE_DB));
+        assertEquals(null, resultTwo);
+        
+        // test Two, non-existing notebook
+        List<AnnotationIdentifier> resultThree= jdbcNotebookDao.getAnnotationExternalIDs(null);
+        assertEquals(null, resultThree);
+       
+    }
+    
+    
     ////////////////////////////////////////////////////////////////////
     //////// Setting Mockeries /////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////
@@ -310,7 +341,7 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest{
     }
 
      private void setMockeryNotebookTwo(){ 
-      ResourceREF testRef = new ResourceREF();
+        ResourceREF testRef = new ResourceREF();
         testRef.setRef(String.valueOf(TestBackendConstants._TEST_ANNOT_3_INT));
         final List<ResourceREF> testResultTwo = Arrays.asList(new ResourceREF[] {testRef});
         

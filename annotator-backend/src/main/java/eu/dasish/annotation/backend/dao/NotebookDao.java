@@ -75,4 +75,10 @@ public interface NotebookDao extends ResourceDao {
      * @return the notebook's internal ID, given its extrnalId
      */
     Number getNotebookID(NotebookIdentifier externalId);
+    
+     /**
+     * @param notebookId
+     * @return returns the externalIds of the annotations contained in the notebookId
+     */
+    List<AnnotationIdentifier> getAnnotationExternalIDs(NotebookIdentifier notebookId);
 }

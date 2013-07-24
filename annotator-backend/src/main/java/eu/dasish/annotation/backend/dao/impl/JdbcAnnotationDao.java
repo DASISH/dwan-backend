@@ -263,6 +263,32 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
     }
      
     
+      //////////////////////////////////////////////////
+    @Override
+    public AnnotationIdentifier getExternalID(Number internalID) {
+        if (internalID == null) {
+            return null;
+        }
+        
+       String sql = "SELECT "+annotationExternal_id+" FROM "+annotationTableName+" WHERE "+annotationAnnotation_id+"  = ?";
+       List<AnnotationIdentifier> result= getSimpleJdbcTemplate().query(sql, externalIDRowMapper, internalID.toString());
+       if (result == null) {
+           return null;
+       }
+       if (result.isEmpty()) {
+           return null;
+       }
+       return result.get(0);
+   }
+     
+      private final RowMapper<AnnotationIdentifier> externalIDRowMapper = new RowMapper<AnnotationIdentifier>() {        
+        @Override
+        public AnnotationIdentifier mapRow(ResultSet rs, int rowNumber) throws SQLException {
+           AnnotationIdentifier result = new AnnotationIdentifier(rs.getString(external_id));
+           return result;
+        }
+    };
+    
     
     //////////// helpers /////////////////////// 
     

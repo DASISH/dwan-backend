@@ -28,6 +28,7 @@ import eu.dasish.annotation.schema.NotebookInfo;
 import eu.dasish.annotation.schema.ResourceREF;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
@@ -227,7 +228,7 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
     }
     
     ///////////////////////////////////////////////////
-    // RESUSES notebookInfoRowMapper
+    // REUSES notebookInfoRowMapper
     @Override
     public NotebookInfo getNotebookInfo(Number notebookID) {
         if (notebookID == null) {
@@ -270,4 +271,19 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
            return result;
         }
     };
+      
+      
+    //////////////////////////////////////////////////////////////////
+    @Override
+    public  List<AnnotationIdentifier> getAnnotationExternalIDs(NotebookIdentifier notebookId){
+        List<Number> internalIds = getAnnotationIDs(getNotebookID(notebookId)); 
+        if (internalIds == null) {
+            return null;
+        }
+        List<AnnotationIdentifier> annotationIds  = new ArrayList<AnnotationIdentifier>();
+        for (Number internalId : internalIds) {
+            annotationIds.add(jdbcAnnotationDao.getExternalID(internalId));
+        }
+        return annotationIds;
+    }
 }
