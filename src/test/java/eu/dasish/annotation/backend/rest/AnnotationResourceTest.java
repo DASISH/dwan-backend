@@ -76,7 +76,7 @@ public class AnnotationResourceTest {
             }
         });
          
-        JAXBElement result = annotationResource.getAnnotation(annotationIdentifier);
+        JAXBElement<Annotation> result = annotationResource.getAnnotation(annotationIdentifier);
         assertEquals(expectedAnnotation, result.getValue());
     }
     
@@ -132,7 +132,7 @@ public class AnnotationResourceTest {
         });
         
         
-        JAXBElement result = annotationResource.createAnnotation(annotationToAdd); 
+        JAXBElement<Annotation> result = annotationResource.createAnnotation(annotationToAdd); 
         assertTrue(annotationToAdd.equals(result.getValue()));
     }
 }

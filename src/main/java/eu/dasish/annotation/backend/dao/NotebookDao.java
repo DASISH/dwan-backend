@@ -61,6 +61,18 @@ public interface NotebookDao extends ResourceDao {
     // Returns the Annotations object for the notebook id.
     Annotations getAnnotations(Number notebookID);
     
-   
+    /**
+     * 
+     * @param notebookID
+     * @return the Notebook information (title, owner (?), time_stamp(?), amount of annotations(?), their headlines (?) // TODO: discuss changing in the schema
+     * user in getting the metadata of a notebook
+     */
+    NotebookInfo getNotebookInfo(Number notebookID);
     
+    /**
+     * 
+     * @param externalId
+     * @return the notebook's internal ID, given its extrnalId
+     */
+    Number getNotebookID(NotebookIdentifier externalId);
 }

@@ -36,6 +36,10 @@ public class TestBackendConstants {
     public static final String _TEST_NOTEBOOK_2_EXT = "00000000-0000-0000-0000-000000000012";
     public static final String _TEST_NOTEBOOK_3_EXT = "00000000-0000-0000-0000-000000000013";
     
+    public static final String _TEST_NOTEBOOK_1_TITLE = "Notebook 11";
+    public static final String _TEST_NOTEBOOK_2_TITLE = "Notebook 12";
+    public static final String _TEST_NOTEBOOK_3_TITLE = "Notebook 13";
+    
     public static final int _TEST_NOTEBOOK_1_INT = 11;
     public static final int _TEST_NOTEBOOK_2_INT = 12;
     public static final int _TEST_NOTEBOOK_3_INT = 13;

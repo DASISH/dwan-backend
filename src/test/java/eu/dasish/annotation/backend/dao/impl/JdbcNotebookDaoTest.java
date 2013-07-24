@@ -21,7 +21,6 @@ import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.dao.AnnotationDao;
 import eu.dasish.annotation.backend.identifiers.NotebookIdentifier;
 import eu.dasish.annotation.backend.identifiers.UserIdentifier;
-import eu.dasish.annotation.schema.AnnotationInfo;
 import eu.dasish.annotation.schema.Annotations;
 import eu.dasish.annotation.schema.Notebook;
 import eu.dasish.annotation.schema.NotebookInfo;
@@ -171,57 +170,7 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest{
         
     }
     
-    /**
-     * Test of getAnnotationInfosOfNotebook method, of class JdbcAnnotationDao.
-     * List<AnnotationInfo> getAnnotationInfosOfNotebook(Number notebookID)
-     
-    @Test 
-    public void testGetAnnotationInfosOfNotebook() {
-        System.out.println("getAnnotationInfosOfNotebook");       
-        
-        mockery.checking(new Expectations() {
-            {
-                exactly(2).of(annotationDao).getAnnotationInfos(Arrays.asList(new Number[] {21, 22}));// exactly 2 notebooks (their id-s 1 and 2) contains the annotation 1
-                will(returnValue(testResult));
-            }
-        });
-        
-        //test One
-        final List<AnnotationInfo> annotationInfos = jdbcNotebookDao.getAnnotationInfosOfNotebook(TestBackendConstants._TEST_NOTEBOOK_1_INT);
-        assertEquals(2, annotationInfos.size());
-        
-        assertEquals(TestBackendConstants._TEST_ANNOT_1_HEADLINE, annotationInfos.get(0).getHeadline());
-        assertEquals(String.valueOf(TestBackendConstants._TEST_ANNOT_1_OWNER), annotationInfos.get(0).getOwner().getRef());
-        //assertEquals(TestBackendConstants._TEST_ANNOT_1_TARGETS, annotationInfos.get(0).getTargetSources());
-        
-        assertEquals(TestBackendConstants._TEST_ANNOT_2_HEADLINE, annotationInfos.get(1).getHeadline());
-        assertEquals(String.valueOf(TestBackendConstants._TEST_ANNOT_2_OWNER), annotationInfos.get(1).getOwner().getRef());
-        //assertEquals(TestBackendConstants._TEST_ANNOT_2_TARGETS, annotationInfos.get(1).getTargetSources());
-        
-        
-        //test Two
-        final List<AnnotationInfo> annotationInfosTwo = jdbcNotebookDao.getAnnotationInfosOfNotebook(TestBackendConstants._TEST_NOTEBOOK_2_INT);
-        assertEquals(1, annotationInfosTwo.size());
-        
-        assertEquals(TestBackendConstants._TEST_ANNOT_3_HEADLINE, annotationInfosTwo.get(0).getHeadline());
-        assertEquals(String.valueOf(TestBackendConstants._TEST_ANNOT_3_OWNER), annotationInfosTwo.get(0).getOwner().getRef());
-        //assertEquals(TestBackendConstants._TEST_ANNOT_3_TARGETS, annotationInfosTwo.get(0).getTargetSources());
-        
-        //test notebook with no annotations
-        final List<AnnotationInfo> annotationInfosThree = jdbcNotebookDao.getAnnotationInfosOfNotebook(TestBackendConstants._TEST_NOTEBOOK_3_INT);
-        assertEquals(0, annotationInfosThree.size());
-        
-        //non-existing notebook
-        final List<AnnotationInfo> annotationInfosFour = jdbcNotebookDao.getAnnotationInfosOfNotebook(TestBackendConstants._TEST_ANNOT_4_INT_NOT_IN_THE_DB);
-        assertEquals(null, annotationInfosFour);
-        
-        
-        //null notebook
-        final List<AnnotationInfo> annotationInfosFive = jdbcNotebookDao.getAnnotationInfosOfNotebook(null);
-        assertEquals(null, annotationInfosFive);        
-        
-    }
-    * */
+    
     
     /**
      * Test of getAnnotationREFsOfNotebook method, of class JdbcAnnotationDao.
@@ -261,7 +210,7 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest{
     }
 
     /**
-     * Test of getAnnotations method, of class JdbcAnnotationDao.
+     * Test of getAnnotations method, of class JdbcNotebookDao.
      * Annotations getAnnotations(Number notebookID)
      */
     @Test      
@@ -297,6 +246,47 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest{
         setMockeryNotebookNonExisting();
         Annotations annotationsFive = jdbcNotebookDao.getAnnotations(null);
         assertEquals(null, annotationsFive);
+    }
+    
+    /** Test of getNotebookInfo method, of class JdbcNotebookDao.
+     * 
+     */
+    @Test  
+    public void testGetNotebookInfo() {
+        System.out.println("test getNotebookInfo");
+        
+         // test One        
+        NotebookInfo info = jdbcNotebookDao.getNotebookInfo(TestBackendConstants._TEST_NOTEBOOK_1_INT);
+        assertEquals(String.valueOf(TestBackendConstants._TEST_NOTEBOOK_1_EXT), info.getRef());
+        assertEquals(String.valueOf(TestBackendConstants._TEST_NOTEBOOK_1_TITLE), info.getTitle());
+        
+        // test Two, non-existing notebook
+        NotebookInfo infoTwo = jdbcNotebookDao.getNotebookInfo(TestBackendConstants._TEST_ANNOT_4_INT_NOT_IN_THE_DB);
+        assertEquals(null, infoTwo); 
+        
+        // test Three Null-notebook
+       NotebookInfo infoThree = jdbcNotebookDao.getNotebookInfo(null);
+       assertEquals(null, infoThree);
+    }
+    
+    /** Test of getNotebookID method, of class JdbcNotebookDao.
+     * 
+     */
+    @Test  
+    public void testGetNotebookID() {
+        System.out.println("test getNotebookID");
+        
+         // test One        
+        Number resultOne= jdbcNotebookDao.getNotebookID(new NotebookIdentifier(TestBackendConstants._TEST_NOTEBOOK_1_EXT));
+        assertEquals(TestBackendConstants._TEST_NOTEBOOK_1_INT, resultOne.intValue());
+        
+        // test Two, non-existing notebook
+        Number resultTwo= jdbcNotebookDao.getNotebookID(new NotebookIdentifier(TestBackendConstants._TEST_ANNOT_4_EXT_NOT_IN_THE_DB));
+        assertEquals(null, resultTwo); 
+        
+        // test Three Null-notebook
+       Number resultThree= jdbcNotebookDao.getNotebookID(null);
+       assertEquals(null, resultThree);
     }
     
     
@@ -350,4 +340,5 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest{
         }); 
      }
         
+     
 }

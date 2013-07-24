@@ -21,6 +21,7 @@ import eu.dasish.annotation.backend.dao.ResourceDao;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcDaoSupport;
 
@@ -62,7 +63,9 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     final static protected String notebookExternal_id = notebookTableName+"."+external_id;
     final static protected String notebookOwner_id = notebookTableName+"."+owner_id;
     
-    final static protected String notebooksAnnotationsTableNameAnnotation_id = "notebooks_annotations.annotation_id";
+    
+    final static protected String notebooksAnnotationsTableNameAnnotation_id = notebooksAnnotationsTableName+"."+annotation_id;
+    
     
     final static protected String principalPrincipal_id = principalTableName+"."+principal_id;
     final static protected String principalExternal_id = principalTableName+"."+external_id;
@@ -99,4 +102,5 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
         } 
     };
     
+     
 }

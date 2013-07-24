@@ -20,12 +20,16 @@ package eu.dasish.annotation.backend.rest;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.GenericType;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
+import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.dao.NotebookDao;
+import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
 import eu.dasish.annotation.backend.identifiers.NotebookIdentifier;
 import eu.dasish.annotation.backend.identifiers.UserIdentifier;
+import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.Notebook;
 import eu.dasish.annotation.schema.NotebookInfo;
 import eu.dasish.annotation.schema.NotebookInfos;
+import eu.dasish.annotation.schema.ObjectFactory;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -131,10 +135,29 @@ public class NotebooksTest extends ResourcesTest {
      */
     @Test
     public void testGetMetadata() {
-        System.out.println("testGetMetadata");
-        ClientResponse response = resource().path("notebooks/_nid_/metadata").get(ClientResponse.class);
+        System.out.println("test GetMetadata");
+        
+        final String notebookIdentifier= TestBackendConstants._TEST_NOTEBOOK_1_EXT;
+        final int notebookID = TestBackendConstants._TEST_NOTEBOOK_1_INT;
+        final NotebookInfo testInfo = new ObjectFactory().createNotebookInfo();
+        
+        mockery.checking(new Expectations() {
+            {
+                oneOf(notebookDao).getNotebookID(new NotebookIdentifier(notebookIdentifier));                
+                will(returnValue(notebookID));
+                
+                oneOf(notebookDao).getNotebookInfo(notebookID); 
+               will(returnValue(testInfo)); 
+            }
+        });
+        
+        final String requestUrl = "notebooks/" + notebookIdentifier+"/metadata";
+        System.out.println("requestUrl: " + requestUrl);
+        ClientResponse response = resource().path(requestUrl).type(MediaType.TEXT_XML).get(ClientResponse.class);
         assertEquals(200, response.getStatus());
-        assertEquals("metadata for _nid_", response.getEntity(String.class));
+        NotebookInfo entity = response.getEntity(NotebookInfo.class);
+        assertEquals(testInfo.getRef(), entity.getRef());
+        assertEquals(testInfo.getTitle(), entity.getTitle());
     }
 
     /**

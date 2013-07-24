@@ -87,7 +87,7 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
         @Override
         public NotebookInfo mapRow(ResultSet rs, int rowNumber) throws SQLException {
             NotebookInfo notebookInfo = new NotebookInfo();
-            notebookInfo.setRef(rs.getString(external_id)); // todo: what is ref? should it be the external id?
+            notebookInfo.setRef(rs.getString(external_id)); // todo: what is ref? should it be the external id? Olha: "yes"
             notebookInfo.setTitle(rs.getString(title));
 //            notebookInfo.setRef(rs.getString("URI"));
             return notebookInfo;
@@ -225,4 +225,49 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
         }
 
     }
+    
+    ///////////////////////////////////////////////////
+    // RESUSES notebookInfoRowMapper
+    @Override
+    public NotebookInfo getNotebookInfo(Number notebookID) {
+        if (notebookID == null) {
+            return null;
+        }
+        String sql = "SELECT  "+notebookExternal_id+","+ notebookTitle + " FROM " + notebookTableName + " where " + notebook_id + " = ?";
+        List<NotebookInfo> result = getSimpleJdbcTemplate().query(sql, notebookInfoRowMapper, notebookID.toString());
+        if (result == null) {
+            return null;
+        }
+        if (result.isEmpty()) {
+            return null;
+        }
+        return result.get(0);
+    }
+    
+    //////////////////////////////////////////////////
+    @Override
+    public Number getNotebookID(NotebookIdentifier externalId) {
+        if (externalId == null) {
+            return null;
+        }
+        
+       String sql = "SELECT "+notebookNotebook_id+" FROM "+notebookTableName+" WHERE "+notebookExternal_id+"  = ?";
+       List<Number> result= getSimpleJdbcTemplate().query(sql, notebookIdRowMapper, externalId.toString());
+       if (result == null) {
+           return null;
+       }
+       if (result.isEmpty()) {
+           return null;
+       }
+       
+       return result.get(0);
+   }
+     
+      private final RowMapper<Number> notebookIdRowMapper = new RowMapper<Number>() {        
+        @Override
+        public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
+           Number result = rs.getInt(notebook_id);
+           return result;
+        }
+    };
 }

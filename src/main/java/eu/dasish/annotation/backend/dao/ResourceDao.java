@@ -17,6 +17,8 @@
  */
 package eu.dasish.annotation.backend.dao;
 
+import java.util.UUID;
+
 /**
  *
  * @author olhsha
@@ -30,4 +32,5 @@ public interface ResourceDao {
      */
     public boolean isNotebookInTheDataBase(Number notebookID);
     
+   
 }
