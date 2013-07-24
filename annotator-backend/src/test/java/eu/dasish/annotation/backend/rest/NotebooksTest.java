@@ -32,6 +32,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import javax.ws.rs.core.MediaType;
+import javax.xml.bind.JAXBElement;
+import javax.xml.namespace.QName;
 import org.jmock.Expectations;
 import static org.jmock.Expectations.returnValue;
 import org.junit.Test;
@@ -168,14 +170,16 @@ public class NotebooksTest extends ResourcesTest {
      * /notebooks/<nid>
      */
     @Test
-    @Ignore
     public void testModifyNotebook_String() {
         System.out.println("testModifyNotebook_String");
         final Notebook notebook = new Notebook();
+        // this JAXBElement should be returned by the generated ObjectFactory, however it is not. This could be due to name space polution in the schema?
+        // todo: this JAXBElement should be removed and replaced by the same as returned by the ObjectFactory when cause of it not being auto generated is resolved, in the mean time this line below makes it clear where the issue starts from.
+        final JAXBElement<Notebook> jaxbElement = new JAXBElement<Notebook>(new QName("http://www.dasish.eu/ns/addit", "notebook"), Notebook.class, null, notebook);
         notebook.setTitle("a title");
-        ClientResponse response = resource().path("notebooks/_nid_").type(MediaType.APPLICATION_XML).accept(MediaType.APPLICATION_XML).put(ClientResponse.class, notebook);
+        ClientResponse response = resource().path("notebooks/_nid_").type(MediaType.APPLICATION_XML).accept(MediaType.APPLICATION_XML).put(ClientResponse.class, jaxbElement);
         assertEquals(200, response.getStatus());
-        assertEquals("modifyNotebook _nid_", response.getEntity(String.class));
+        assertEquals("modifyNotebook _nid_a title", response.getEntity(String.class));
     }
 
     /**
