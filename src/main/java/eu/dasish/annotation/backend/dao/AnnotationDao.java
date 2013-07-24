@@ -75,5 +75,10 @@ public interface AnnotationDao extends ResourceDao{
      */
     public AnnotationIdentifier addAnnotation(Annotation annotation);
  
-    
+    /**
+     * 
+     * @param internalId
+     * @return the external identifier for the annotation with internalId
+     */
+    public AnnotationIdentifier getExternalID(Number internalId);
 }

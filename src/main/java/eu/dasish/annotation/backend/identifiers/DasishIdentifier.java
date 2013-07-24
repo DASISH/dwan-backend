@@ -17,6 +17,7 @@
  */
 package eu.dasish.annotation.backend.identifiers;
 import java.util.UUID;
+import javax.xml.bind.annotation.XmlElement;
 
 /**
  *
@@ -24,7 +25,9 @@ import java.util.UUID;
  */
 public class DasishIdentifier {
     
+    @XmlElement(required = true)
     final private UUID _identifier;
+    
     
     private int _hashParameterOne;
     private int _hashParameterTwo;

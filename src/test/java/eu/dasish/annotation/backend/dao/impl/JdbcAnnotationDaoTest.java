@@ -194,6 +194,21 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest{
         //assertTrue(resultOne == null);
         
     }
+    
+    @Test 
+    public void testGetExternalID(){
+       System.out.println("getAnnotationID"); 
+       
+       final AnnotationIdentifier externalId = jdbcAnnotationDao.getExternalID(TestBackendConstants._TEST_ANNOT_1_INT);
+       assertEquals(new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_1_EXT), externalId);
+       
+       final AnnotationIdentifier externalIdTwo = jdbcAnnotationDao.getExternalID(TestBackendConstants._TEST_ANNOT_4_INT_NOT_IN_THE_DB);
+       assertEquals(null, externalIdTwo);
+       
+       final AnnotationIdentifier externalIdThree = jdbcAnnotationDao.getExternalID(null);
+       assertEquals(null, externalIdThree);
+       
+    }
 }
 
 

@@ -19,12 +19,14 @@ package eu.dasish.annotation.backend.identifiers;
 
 import eu.dasish.annotation.backend.BackendConstants;
 import java.util.UUID;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Created on : Jun 28, 2013, 2:06:32 PM
  *
  * @author Peter Withers <peter.withers@mpi.nl>
  */
+@XmlRootElement (name = "AnnotationIdentifier")
 public class AnnotationIdentifier extends DasishIdentifier {    
 
     

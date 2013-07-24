@@ -17,9 +17,10 @@
  */
 package eu.dasish.annotation.backend.rest;
 
-import com.sun.jersey.api.client.ClientResponse;
 import eu.dasish.annotation.backend.TestBackendConstants;
+import eu.dasish.annotation.backend.dao.AnnotationDao;
 import eu.dasish.annotation.backend.dao.NotebookDao;
+import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
 import eu.dasish.annotation.backend.identifiers.NotebookIdentifier;
 import eu.dasish.annotation.backend.identifiers.UserIdentifier;
 import eu.dasish.annotation.schema.Notebook;
@@ -29,7 +30,6 @@ import eu.dasish.annotation.schema.ObjectFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import javax.ws.rs.core.MediaType;
 import javax.xml.bind.JAXBElement;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
@@ -53,6 +53,8 @@ public class NotebookResourceTest {
     private Mockery mockery;
     @Autowired
     private NotebookDao notebookDao;
+    @Autowired
+    private AnnotationDao annotationDao;    
     @Autowired
     private NotebookResource notebookResource;
 
@@ -162,4 +164,30 @@ public class NotebookResourceTest {
         assertEquals(testInfo.getTitle(), entity.getTitle());
     }
 
+    
+    @Test
+    public void testAllAnnotations() {
+        System.out.println("test getAllAnnotations");        
+        final String notebookIdentifier= TestBackendConstants._TEST_NOTEBOOK_1_EXT; 
+        final AnnotationIdentifier aIdOne= new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_1_EXT);
+        final AnnotationIdentifier aIdTwo= new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_2_EXT);
+        final List<AnnotationIdentifier> annotationIds = new ArrayList<AnnotationIdentifier>();
+        annotationIds.add(aIdOne);
+        annotationIds.add(aIdTwo);
+        
+        mockery.checking(new Expectations() {
+            {
+                oneOf(notebookDao).getAnnotationExternalIDs(new NotebookIdentifier(notebookIdentifier));                
+                will(returnValue(annotationIds));
+                
+            }
+        });
+        
+        List<AnnotationIdentifier> result= notebookResource.getAllAnnotations(notebookIdentifier, 0, 0, null, 0);
+        assertFalse(null==result);
+        assertEquals(aIdOne, result.get(0));
+        assertEquals(aIdTwo, result.get(1));
+        
+        
+    }
 }

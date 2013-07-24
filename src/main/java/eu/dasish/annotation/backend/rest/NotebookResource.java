@@ -18,8 +18,10 @@
 package eu.dasish.annotation.backend.rest;
 
 import eu.dasish.annotation.backend.BackendConstants;
+import eu.dasish.annotation.backend.dao.AnnotationDao;
 import eu.dasish.annotation.backend.identifiers.UserIdentifier;
 import eu.dasish.annotation.backend.dao.NotebookDao;
+import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
 import eu.dasish.annotation.backend.identifiers.NotebookIdentifier;
 import eu.dasish.annotation.schema.Notebook;
 import eu.dasish.annotation.schema.NotebookInfo;
@@ -27,6 +29,7 @@ import eu.dasish.annotation.schema.NotebookInfos;
 import eu.dasish.annotation.schema.ObjectFactory;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -56,6 +59,8 @@ public class NotebookResource {
 
     @Autowired
     private NotebookDao notebookDao;
+    @Autowired
+    private AnnotationDao annotationDao;
 
     @GET
     @Produces(MediaType.TEXT_XML)
@@ -114,7 +119,7 @@ public class NotebookResource {
     }
 
     @GET
-    @Path("{notebookid: [a-zA-Z0-9_]*}")
+    @Path("{notebookid: "+BackendConstants.regExpIdentifier+"}")
     /*
      * Get the list of all annotations _aid_-s contained within a Notebook with related metadata. 
      * Parameters: _nid_, 
@@ -123,12 +128,14 @@ public class NotebookResource {
      * optional orderby, specifies the RDF property used to order the annotations (default: dc:created ), 
      * optional orderingMode specifies if the results should be sorted using a descending order desc=1 or an ascending order desc=0 (default: 0 ).
      * */
-    @Produces("text/html")
-    public String getAllAnnotations(@PathParam("notebookid") String notebookId, @DefaultValue("-1") @QueryParam(value = "maximumAnnotations") final int maximumAnnotations,
+    @Produces(MediaType.TEXT_XML)
+    public List<AnnotationIdentifier> getAllAnnotations(@PathParam("notebookid") String notebookId, @DefaultValue("-1") @QueryParam(value = "maximumAnnotations") final int maximumAnnotations,
             @DefaultValue("-1") @QueryParam(value = "startAnnotation") final int startAnnotation,
             @DefaultValue("dc:created") @QueryParam(value = "orderby") final String orderby,
-            @DefaultValue("0") @QueryParam(value = "orderingMode") final int orderingMode) {
-        return "all annotations for " + notebookId + " : " + maximumAnnotations + " : " + startAnnotation + " : " + orderby + " : " + orderingMode;
+            @DefaultValue("0") @QueryParam(value = "orderingMode") final int orderingMode) { 
+        List<AnnotationIdentifier> annotationIds  = notebookDao.getAnnotationExternalIDs(new NotebookIdentifier(notebookId));                
+        return annotationIds;
+        // TODO implement optional parameters!!
     }
 
     @PUT
