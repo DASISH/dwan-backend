@@ -17,13 +17,13 @@
  */
 package eu.dasish.annotation.backend.rest;
 
+import eu.dasish.annotation.backend.AnnotationRooted;
 import eu.dasish.annotation.backend.BackendConstants;
 import eu.dasish.annotation.backend.dao.AnnotationDao;
 import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.ObjectFactory;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -46,8 +46,6 @@ public class AnnotationResource {
     
     @Autowired
     private AnnotationDao annotationDao;
-    
-    final private int charBufferSize = 128;
    
     @GET
     @Produces(MediaType.TEXT_XML)
@@ -71,51 +69,15 @@ public class AnnotationResource {
     @Consumes(MediaType.APPLICATION_XML)
     @Produces(MediaType.APPLICATION_XML)
     @Path("")
-    public String createAnnotation(ArrayList<Annotation> annotation) {
-        return "OK";
-        /*AnnotationIdentifier newAnnotationIdentifier = annotationDao.addAnnotation(annotation);
+    public JAXBElement<Annotation> createAnnotation(AnnotationRooted annotation) {
+        AnnotationIdentifier newAnnotationIdentifier = annotationDao.addAnnotation(annotation);
+        //return newAnnotationIdentifier.toString();
         if (newAnnotationIdentifier == null) {
             return null;
         } else {
-            return Response.status(Status.OK).entity(new ObjectFactory().createAnnotation(annotation)).build();
-        }*/
+            return (new ObjectFactory().createAnnotation(annotation));
+        }
     }
     
-    
-    /* helper: stolen from StackOverflow
-    private String getBody(HttpServletRequest request) throws IOException{
-        String body = null;
-        StringBuilder stringBuilder = new StringBuilder();
-        BufferedReader bufferedReader = null;
-
-        try {
-            InputStream inputStream = request.getInputStream();
-            if (inputStream != null) {
-                bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-                char[] charBuffer = new char[charBufferSize];
-                int bytesRead = -1;
-                while ((bytesRead = bufferedReader.read(charBuffer)) > 0) {
-                    stringBuilder.append(charBuffer, 0, bytesRead);
-                }
-            } else {
-                stringBuilder.append("");
-            }
-        } catch (IOException ex) {
-            throw ex;
-        } finally {
-            if (bufferedReader != null) {
-                try {
-                    bufferedReader.close();
-                } catch (IOException ex) {
-                    throw ex;
-                }
-            }
-        }
-
-        body = stringBuilder.toString();
-        return body;
-
-    }*/
-
-    
+  
 }
