@@ -17,6 +17,7 @@
  */
 package eu.dasish.annotation.backend.rest;
 
+import com.sun.jersey.api.client.ClientResponse;
 import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.dao.NotebookDao;
 import eu.dasish.annotation.backend.identifiers.NotebookIdentifier;
@@ -24,9 +25,11 @@ import eu.dasish.annotation.backend.identifiers.UserIdentifier;
 import eu.dasish.annotation.schema.Notebook;
 import eu.dasish.annotation.schema.NotebookInfo;
 import eu.dasish.annotation.schema.NotebookInfos;
+import eu.dasish.annotation.schema.ObjectFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import javax.ws.rs.core.MediaType;
 import javax.xml.bind.JAXBElement;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
@@ -129,4 +132,34 @@ public class NotebookResourceTest {
         String result = notebookResource.deleteNotebook(notebookIdentifier);
         assertEquals(expResult, result);
     }
+    
+    /**
+     * Test of getMetadata method, of class NotebookResource. Get all metadata
+     * about a specified notebook <nid>, including the information if it is
+     * private or not. GET api/notebooks/<nid>/metadata
+     */
+    @Test
+    public void testGetMetadata() {
+        System.out.println("test GetMetadata");
+        
+        final String notebookIdentifier= TestBackendConstants._TEST_NOTEBOOK_1_EXT;
+        final int notebookID = TestBackendConstants._TEST_NOTEBOOK_1_INT;
+        final NotebookInfo testInfo = new ObjectFactory().createNotebookInfo();
+        
+        mockery.checking(new Expectations() {
+            {
+                oneOf(notebookDao).getNotebookID(new NotebookIdentifier(notebookIdentifier));                
+                will(returnValue(notebookID));
+                
+                oneOf(notebookDao).getNotebookInfo(notebookID); 
+               will(returnValue(testInfo)); 
+            }
+        });
+        
+        JAXBElement<NotebookInfo> result = notebookResource.getMetadata(notebookIdentifier);
+        NotebookInfo entity = result.getValue();
+        assertEquals(testInfo.getRef(), entity.getRef());
+        assertEquals(testInfo.getTitle(), entity.getTitle());
+    }
+
 }

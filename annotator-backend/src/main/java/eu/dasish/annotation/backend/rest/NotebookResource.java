@@ -17,10 +17,12 @@
  */
 package eu.dasish.annotation.backend.rest;
 
+import eu.dasish.annotation.backend.BackendConstants;
 import eu.dasish.annotation.backend.identifiers.UserIdentifier;
 import eu.dasish.annotation.backend.dao.NotebookDao;
 import eu.dasish.annotation.backend.identifiers.NotebookIdentifier;
 import eu.dasish.annotation.schema.Notebook;
+import eu.dasish.annotation.schema.NotebookInfo;
 import eu.dasish.annotation.schema.NotebookInfos;
 import eu.dasish.annotation.schema.ObjectFactory;
 import java.net.URI;
@@ -101,11 +103,14 @@ public class NotebookResource {
     }
 
     @GET
-    @Produces("text/html")
-    @Path("{notebookid: [a-zA-Z0-9_]*}/metadata")
+    @Produces(MediaType.TEXT_XML)
+    @Path("{notebookid: "+BackendConstants.regExpIdentifier+"}/metadata")
     // Get all metadata about a specified notebook _nid_, including the information if it is private or not.
-    public String getMetadata(@PathParam("notebookid") String notebookId) {
-        return "metadata for " + notebookId;
+    public JAXBElement<NotebookInfo> getMetadata(@PathParam("notebookid") String notebookId) {
+        NotebookInfo result = notebookDao.getNotebookInfo(notebookDao.getNotebookID(new NotebookIdentifier(notebookId)));
+        // TODO change the name of the create method to createNotebookInfo!
+        return new ObjectFactory().createNotebook(result);
+        
     }
 
     @GET
