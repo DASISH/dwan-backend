@@ -18,13 +18,14 @@
 package eu.dasish.annotation.backend.rest;
 
 import com.sun.jersey.api.client.GenericType;
+import eu.dasish.annotation.backend.AnnotationRooted;
 import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.TestInstances;
 import eu.dasish.annotation.backend.dao.AnnotationDao;
 import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
 import eu.dasish.annotation.schema.Annotation;
+import eu.dasish.annotation.schema.ObjectFactory;
 import java.sql.SQLException;
-import javax.ws.rs.core.Response;
 import javax.xml.bind.JAXBElement;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
@@ -35,8 +36,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.lang.InstantiationException;
-import java.util.ArrayList;
-import java.util.List;
 /**
  *
  * @author olhsha
@@ -122,7 +121,7 @@ public class AnnotationResourceTest {
     @Test
     public void testCreateAnnotation() throws SQLException, InstantiationException, IllegalAccessException {
         System.out.println("test createAnnotation");
-        final Annotation annotationToAdd = new GenericType<Annotation>(){}.getRawClass().newInstance();
+        final AnnotationRooted annotationToAdd = new GenericType<AnnotationRooted>(){}.getRawClass().newInstance();
         final AnnotationIdentifier newAnnotationID = new GenericType<AnnotationIdentifier>(){}.getRawClass().newInstance();
         
         mockery.checking(new Expectations() {
@@ -132,12 +131,8 @@ public class AnnotationResourceTest {
             }
         });
         
-        ArrayList<Annotation> parameter = new ArrayList<Annotation>();
-        parameter.add(annotationToAdd);
         
-        String result = annotationResource.createAnnotation(parameter);        
-        assertTrue(result=="OK");
-        //assertEquals(200, result.getStatus());
-        //assertTrue(annotationToAdd.equals(result.getEntity()));
+        JAXBElement result = annotationResource.createAnnotation(annotationToAdd); 
+        assertTrue(annotationToAdd.equals(result.getValue()));
     }
 }

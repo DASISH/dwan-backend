@@ -18,19 +18,21 @@
 package eu.dasish.annotation.backend.rest;
 
 import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.GenericType;
+import eu.dasish.annotation.backend.AnnotationRooted;
 import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.dao.AnnotationDao;
 import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
 import eu.dasish.annotation.schema.Annotation;
+import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.ObjectFactory;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
+import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.MediaType;
+import javax.xml.bind.JAXBElement;
 import org.jmock.Expectations;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.junit.Ignore;
 /**
  *
  * @author olhsha
@@ -126,32 +128,34 @@ public class AnnotationsTest extends ResourcesTest{
      * POST api/annotations/
      */
     @Test
-    @Ignore
+    //@Ignore
     public void testAddAnnotation() throws SQLException, InstantiationException, IllegalAccessException{
-        System.out.println("testDeleteAnnotation");
         System.out.println("test createAnnotation");
-        //final Annotation annotationToAdd = new GenericType<Annotation>(){}.getRawClass().newInstance();
-        final Annotation annotationToAdd = new ObjectFactory().createAnnotation();
-        ///final AnnotationIdentifier newAnnotationID = new GenericType<AnnotationIdentifier>(){}.getRawClass().newInstance();
+        //final Annotation annotationToAdd = new ObjectFactory().createAnnotation();
+       final AnnotationRooted annotationToAdd = new GenericType<AnnotationRooted>(){}.getRawClass().newInstance();
+       final AnnotationIdentifier newAnnotationID = new GenericType<AnnotationIdentifier>(){}.getRawClass().newInstance();
         
-//        mockery.checking(new Expectations() {
-//            {
-//                oneOf(annotationDao).addAnnotation(annotationToAdd);
-//                will(returnValue(newAnnotationID));
-//            }
-//        });
+        mockery.checking(new Expectations() {
+            {
+                oneOf(annotationDao).addAnnotation(with(aNonNull(AnnotationRooted.class)));
+                will(returnValue(newAnnotationID));
+            }
+        });
         
-       
+        
+        
         final String requestUrl = "annotations/";
         System.out.println("requestUrl: " + requestUrl);
         
-        List<Annotation> parameter = new ArrayList<Annotation>();
-        parameter.add(annotationToAdd);
+        ClientResponse response = resource().path(requestUrl).type(MediaType.APPLICATION_XML).post(ClientResponse.class, new GenericEntity<AnnotationRooted>(annotationToAdd){});
+        assertEquals(200, response.getStatus());
         
-        String response = resource().path(requestUrl).type(MediaType.APPLICATION_XML).post(String.class, parameter);
-        //assertEquals(200, response.getStatus());
-        //assertEquals(annotationToAdd, response.getEntity(Annotation.class));
-        
-         
+        Annotation entity = response.getEntity(Annotation.class);
+        assertEquals(annotationToAdd.getBody(), entity.getBody());
+        assertEquals(annotationToAdd.getHeadline(), entity.getHeadline());
+        assertEquals(annotationToAdd.getPermissions(), entity.getPermissions());
+        assertEquals(annotationToAdd.getTargetSources(), entity.getTargetSources());
+        assertEquals(annotationToAdd.getTimeStamp(), entity.getTimeStamp());
+        assertEquals(annotationToAdd.getURI(), entity.getURI());
     }
 }
