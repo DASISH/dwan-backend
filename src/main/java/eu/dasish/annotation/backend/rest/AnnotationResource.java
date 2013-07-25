@@ -17,7 +17,6 @@
  */
 package eu.dasish.annotation.backend.rest;
 
-import eu.dasish.annotation.backend.AnnotationRooted;
 import eu.dasish.annotation.backend.BackendConstants;
 import eu.dasish.annotation.backend.dao.AnnotationDao;
 import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
@@ -69,7 +68,7 @@ public class AnnotationResource {
     @Consumes(MediaType.APPLICATION_XML)
     @Produces(MediaType.APPLICATION_XML)
     @Path("")
-    public JAXBElement<Annotation> createAnnotation(AnnotationRooted annotation) {
+    public JAXBElement<Annotation> createAnnotation(Annotation annotation) {
         AnnotationIdentifier newAnnotationIdentifier = annotationDao.addAnnotation(annotation);
         //return newAnnotationIdentifier.toString();
         if (newAnnotationIdentifier == null) {
