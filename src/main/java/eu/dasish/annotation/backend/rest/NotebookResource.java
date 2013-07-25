@@ -134,6 +134,7 @@ public class NotebookResource {
             @DefaultValue("dc:created") @QueryParam(value = "orderby") final String orderby,
             @DefaultValue("0") @QueryParam(value = "orderingMode") final int orderingMode) { 
         List<AnnotationIdentifier> annotationIds  = notebookDao.getAnnotationExternalIDs(new NotebookIdentifier(notebookId));                
+        
         return annotationIds;
         // TODO implement optional parameters!!
     }
