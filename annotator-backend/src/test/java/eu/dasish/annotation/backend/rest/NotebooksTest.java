@@ -25,7 +25,6 @@ import eu.dasish.annotation.backend.dao.NotebookDao;
 import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
 import eu.dasish.annotation.backend.identifiers.NotebookIdentifier;
 import eu.dasish.annotation.backend.identifiers.UserIdentifier;
-import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.Notebook;
 import eu.dasish.annotation.schema.NotebookInfo;
 import eu.dasish.annotation.schema.NotebookInfos;
@@ -35,6 +34,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.MediaType;
 import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
@@ -174,29 +174,24 @@ public class NotebooksTest extends ResourcesTest {
      * api/notebooks/<nid>?maximumAnnotations=limit&startAnnotation=offset&orderby=orderby&orderingMode=1|0
      */
     @Test
-    @Ignore
     public void testGetAllAnnotations() {
-        System.out.println("testGetAllAnnotations");
-        
-        System.out.println("test GetMetadata");
-        
-        final String notebookIdentifier= TestBackendConstants._TEST_NOTEBOOK_1_EXT;
-        /*final int notebookID = TestBackendConstants._TEST_NOTEBOOK_1_INT;
-        final NotebookInfo testInfo = new ObjectFactory().createNotebookInfo();
+        System.out.println("test GetMetadata");       
+        final String notebookIdentifier= TestBackendConstants._TEST_NOTEBOOK_1_EXT; 
+        final AnnotationIdentifier aIdOne= new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_1_EXT);
+        final AnnotationIdentifier aIdTwo= new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_2_EXT);
+        final List<AnnotationIdentifier> annotationIds = new ArrayList<AnnotationIdentifier>();
+        annotationIds.add(aIdOne);
+        annotationIds.add(aIdTwo);
         
         mockery.checking(new Expectations() {
             {
-                oneOf(notebookDao).getNotebookID(new NotebookIdentifier(notebookIdentifier));                
-                will(returnValue(notebookID));
+                oneOf(notebookDao).getAnnotationExternalIDs(new NotebookIdentifier(notebookIdentifier));                
+                will(returnValue(annotationIds));
                 
-                oneOf(notebookDao).getNotebookInfo(notebookID); 
-               will(returnValue(testInfo)); 
             }
-        });*/
+        });
         
         final String requestUrl = "notebooks/"+notebookIdentifier;
-        
-        
         ClientResponse response = resource().path(requestUrl)
                 .queryParam("maximumAnnotations", "123")
                 .queryParam("startAnnotation", "456")
@@ -204,10 +199,10 @@ public class NotebooksTest extends ResourcesTest {
                 .queryParam("orderingMode", "1")
                 .get(ClientResponse.class);
         System.out.println("requestUrl: " + requestUrl);
-        
-        
         assertEquals(200, response.getStatus());
-        
+        List<AnnotationIdentifier> result = response.getEntity(new GenericType<List<AnnotationIdentifier>>() {});
+        assertEquals(aIdOne, result.get(0));
+        assertEquals(aIdTwo, result.get(1));
     }
 
     /**

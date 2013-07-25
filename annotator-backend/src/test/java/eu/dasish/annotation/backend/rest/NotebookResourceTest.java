@@ -54,8 +54,6 @@ public class NotebookResourceTest {
     @Autowired
     private NotebookDao notebookDao;
     @Autowired
-    private AnnotationDao annotationDao;    
-    @Autowired
     private NotebookResource notebookResource;
 
     public NotebookResourceTest() {
@@ -166,7 +164,7 @@ public class NotebookResourceTest {
 
     
     @Test
-    public void testAllAnnotations() {
+    public void testGetAllAnnotations() {
         System.out.println("test getAllAnnotations");        
         final String notebookIdentifier= TestBackendConstants._TEST_NOTEBOOK_1_EXT; 
         final AnnotationIdentifier aIdOne= new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_1_EXT);
