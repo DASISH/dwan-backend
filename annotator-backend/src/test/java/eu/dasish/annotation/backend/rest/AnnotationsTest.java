@@ -19,15 +19,17 @@ package eu.dasish.annotation.backend.rest;
 
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.GenericType;
-import eu.dasish.annotation.backend.AnnotationRooted;
 import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.dao.AnnotationDao;
 import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
 import eu.dasish.annotation.schema.Annotation;
+import eu.dasish.annotation.schema.Notebook;
 import eu.dasish.annotation.schema.ObjectFactory;
 import java.sql.SQLException;
 import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.MediaType;
+import javax.xml.bind.JAXBElement;
+import javax.xml.namespace.QName;
 import org.jmock.Expectations;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -127,15 +129,15 @@ public class AnnotationsTest extends ResourcesTest{
      */
     @Test
     //@Ignore
-    public void testAddAnnotation() throws SQLException, InstantiationException, IllegalAccessException{
+    public void testCreateAnnotation() throws SQLException, InstantiationException, IllegalAccessException{
         System.out.println("test createAnnotation");
         //final Annotation annotationToAdd = new ObjectFactory().createAnnotation();
-       final AnnotationRooted annotationToAdd = new GenericType<AnnotationRooted>(){}.getRawClass().newInstance();
+       final Annotation annotationToAdd = new GenericType<Annotation>(){}.getRawClass().newInstance();
        final AnnotationIdentifier newAnnotationID = new GenericType<AnnotationIdentifier>(){}.getRawClass().newInstance();
         
         mockery.checking(new Expectations() {
             {
-                oneOf(annotationDao).addAnnotation(with(aNonNull(AnnotationRooted.class)));
+                oneOf(annotationDao).addAnnotation(with(aNonNull(Annotation.class)));
                 will(returnValue(newAnnotationID));
             }
         });
@@ -145,7 +147,10 @@ public class AnnotationsTest extends ResourcesTest{
         final String requestUrl = "annotations/";
         System.out.println("requestUrl: " + requestUrl);
         
-        ClientResponse response = resource().path(requestUrl).type(MediaType.APPLICATION_XML).post(ClientResponse.class, new GenericEntity<AnnotationRooted>(annotationToAdd){});
+        // Peter's workaround on absence of "PnjectFactory.create... for annotations
+        final JAXBElement<Annotation> jaxbElement = new JAXBElement<Annotation>(new QName("http://www.dasish.eu/ns/addit", "annotation"), Annotation.class, null, annotationToAdd);
+                
+        ClientResponse response = resource().path(requestUrl).type(MediaType.APPLICATION_XML).post(ClientResponse.class, jaxbElement);
         assertEquals(200, response.getStatus());
         
         Annotation entity = response.getEntity(Annotation.class);

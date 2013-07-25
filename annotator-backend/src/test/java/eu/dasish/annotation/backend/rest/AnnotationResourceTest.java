@@ -18,7 +18,6 @@
 package eu.dasish.annotation.backend.rest;
 
 import com.sun.jersey.api.client.GenericType;
-import eu.dasish.annotation.backend.AnnotationRooted;
 import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.TestInstances;
 import eu.dasish.annotation.backend.dao.AnnotationDao;
@@ -121,7 +120,7 @@ public class AnnotationResourceTest {
     @Test
     public void testCreateAnnotation() throws SQLException, InstantiationException, IllegalAccessException {
         System.out.println("test createAnnotation");
-        final AnnotationRooted annotationToAdd = new GenericType<AnnotationRooted>(){}.getRawClass().newInstance();
+        final Annotation annotationToAdd = new GenericType<Annotation>(){}.getRawClass().newInstance();
         final AnnotationIdentifier newAnnotationID = new GenericType<AnnotationIdentifier>(){}.getRawClass().newInstance();
         
         mockery.checking(new Expectations() {
