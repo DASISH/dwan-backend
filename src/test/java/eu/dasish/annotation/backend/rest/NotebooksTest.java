@@ -217,6 +217,7 @@ public class NotebooksTest extends ResourcesTest {
         final Notebook notebook = new Notebook();
         // this JAXBElement should be returned by the generated ObjectFactory, however it is not. This could be due to name space polution in the schema?
         // todo: this JAXBElement should be removed and replaced by the same as returned by the ObjectFactory when cause of it not being auto generated is resolved, in the mean time this line below makes it clear where the issue starts from.
+        // see ticket #348
         final JAXBElement<Notebook> jaxbElement = new JAXBElement<Notebook>(new QName("http://www.dasish.eu/ns/addit", "notebook"), Notebook.class, null, notebook);
         notebook.setTitle("a title");
         ClientResponse response = resource().path("notebooks/_nid_").type(MediaType.APPLICATION_XML).accept(MediaType.APPLICATION_XML).put(ClientResponse.class, jaxbElement);
