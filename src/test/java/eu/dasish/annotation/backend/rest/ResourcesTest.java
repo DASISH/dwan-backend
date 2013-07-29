@@ -34,6 +34,10 @@ public class ResourcesTest extends JerseyTest{
     final protected WebApplicationContext webAppContext;
     
     public ResourcesTest(String packageName) {
+        
+        // debug
+        
+        
         super(new WebAppDescriptor.Builder(packageName)
                 .servletClass(SpringServlet.class)
                 .contextParam("contextConfigLocation", "classpath*:spring-test-config/**/*.xml")

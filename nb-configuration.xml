@@ -15,4 +15,11 @@ Any value defined here will override the pom.xml file value but is only applicab
 -->
         <org-netbeans-modules-maven-jaxws.rest_2e_config_2e_type>ide</org-netbeans-modules-maven-jaxws.rest_2e_config_2e_type>
     </properties>
+    <spring-data xmlns="http://www.netbeans.org/ns/spring-data/1">
+        <config-files>
+            <config-file>src/main/resources/spring-config/userDao.xml</config-file>
+            <config-file>src/test/resources/mockUserDao.xml</config-file>
+        </config-files>
+        <config-file-groups/>
+    </spring-data>
 </project-shared-configuration>
