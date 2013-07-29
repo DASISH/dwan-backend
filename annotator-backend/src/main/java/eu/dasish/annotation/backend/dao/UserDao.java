@@ -15,35 +15,14 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package eu.dasish.annotation.backend;
+package eu.dasish.annotation.backend.dao;
 
-import eu.dasish.annotation.backend.dao.AnnotationDao;
-import eu.dasish.annotation.backend.dao.NotebookDao;
-import eu.dasish.annotation.backend.dao.UserDao;
-import org.jmock.Mockery;
+import eu.dasish.annotation.backend.identifiers.UserIdentifier;
 
 /**
- * Created on : Jun 12, 2013, 2:05:25 PM
  *
- * @author Peter Withers <peter.withers@mpi.nl>
+ * @author olhsha
  */
-public class MockObjectsFactory {
-
-    private final Mockery context;
-
-    public MockObjectsFactory(Mockery context) {
-        this.context = context;
-    }
-
-    public NotebookDao newNotebookDao() {
-        return context.mock(NotebookDao.class);
-    }
-
-    public AnnotationDao newAnnotationDao() {
-        return context.mock(AnnotationDao.class);
-    }
-    
-    public UserDao newUserDao() {
-        return context.mock(UserDao.class);
-    }
+public interface UserDao extends ResourceDao{
+    Number getInternalID(UserIdentifier userIDentifier);
 }
