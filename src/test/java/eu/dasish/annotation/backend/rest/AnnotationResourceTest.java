@@ -21,9 +21,11 @@ import com.sun.jersey.api.client.GenericType;
 import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.TestInstances;
 import eu.dasish.annotation.backend.dao.AnnotationDao;
+import eu.dasish.annotation.backend.dao.UserDao;
 import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
+import eu.dasish.annotation.backend.identifiers.UserIdentifier;
 import eu.dasish.annotation.schema.Annotation;
-import eu.dasish.annotation.schema.ObjectFactory;
+import eu.dasish.annotation.schema.ResourceREF;
 import java.sql.SQLException;
 import javax.xml.bind.JAXBElement;
 import org.jmock.Expectations;
@@ -35,13 +37,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.lang.InstantiationException;
+import javax.servlet.ServletException;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.web.context.ContextLoaderListener;
+import org.springframework.web.context.WebApplicationContext;
 /**
  *
  * @author olhsha
  */
 
 @RunWith(value = SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = {"/spring-test-config/dataSource.xml", "/spring-test-config/mockAnnotationDao.xml", "/spring-test-config/mockNotebookDao.xml", "/spring-test-config/mockery.xml"})
+@ContextConfiguration(locations = {"/spring-test-config/dataSource.xml", "/spring-test-config/mockAnnotationDao.xml", "/spring-test-config/mockUserDao.xml", "/spring-test-config/mockNotebookDao.xml", "/spring-test-config/mockery.xml"})
 public class AnnotationResourceTest {
     
     @Autowired
@@ -49,7 +55,10 @@ public class AnnotationResourceTest {
     @Autowired
     private AnnotationDao annotationDao;
     @Autowired
-    private AnnotationResource annotationResource;  
+    private UserDao userDao;
+    
+    @Autowired
+    private AnnotationResource annotationResource;
     
     public AnnotationResourceTest() {
     }
@@ -118,20 +127,38 @@ public class AnnotationResourceTest {
      * Test of createAnnotation method, of class AnnotationResource.
      */
     @Test
-    public void testCreateAnnotation() throws SQLException, InstantiationException, IllegalAccessException {
+    public void testCreateAnnotation() throws SQLException, InstantiationException, IllegalAccessException, ServletException {
         System.out.println("test createAnnotation");
         final Annotation annotationToAdd = new GenericType<Annotation>(){}.getRawClass().newInstance();
-        final AnnotationIdentifier newAnnotationID = new GenericType<AnnotationIdentifier>(){}.getRawClass().newInstance();
         
+        final Annotation addedAnnotation = annotationToAdd;
+        AnnotationIdentifier annotationIdentifier = new GenericType<AnnotationIdentifier>(){}.getRawClass().newInstance();
+        addedAnnotation.setURI(annotationIdentifier.toString());
+        ResourceREF ownerRef = new ResourceREF();
+        ownerRef.setRef(String.valueOf(TestBackendConstants._TEST_ANNOT_TO_ADD_OWNER));
+        addedAnnotation.setOwner(ownerRef);
+       
+      
         mockery.checking(new Expectations() {
             {
-                oneOf(annotationDao).addAnnotation(annotationToAdd);
-                will(returnValue(newAnnotationID));
+                oneOf(userDao).getInternalID(new UserIdentifier(TestBackendConstants._TEST_OWNER_5_EXT_ID));
+                will(returnValue(TestBackendConstants._TEST_ANNOT_TO_ADD_OWNER));
+                
+                oneOf(annotationDao).addAnnotation(annotationToAdd, TestBackendConstants._TEST_ANNOT_TO_ADD_OWNER);
+                will(returnValue(addedAnnotation));
             }
         });
         
         
+        
+        final MockHttpServletRequest httpServletRequest = new MockHttpServletRequest();
+        httpServletRequest.setRemoteUser(TestBackendConstants._TEST_OWNER_5_EXT_ID);        
+        annotationResource.setHttpRequest(httpServletRequest);
+        
         JAXBElement<Annotation> result = annotationResource.createAnnotation(annotationToAdd); 
-        assertTrue(annotationToAdd.equals(result.getValue()));
+        assertEquals(String.valueOf(TestBackendConstants._TEST_ANNOT_TO_ADD_OWNER), result.getValue().getOwner().getRef());
+        assertEquals(annotationIdentifier.toString(), result.getValue().getURI());
+        
+        
     }
 }

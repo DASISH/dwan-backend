@@ -48,7 +48,7 @@ public class ResourcesTest extends JerseyTest{
         webAppContext = ContextLoaderListener.getCurrentWebApplicationContext();
 
         // Get the context and mock objects from the context by their type
-        mockery = webAppContext.getBean(Mockery.class); 
+        mockery = webAppContext.getBean(Mockery.class);
     }
 
 }

@@ -179,13 +179,18 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest{
     public void testAddAnnotation() throws SQLException{
         System.out.println("test_addAnnotation"); 
         Annotation annotationToAdd = testInstances.getAnnotationToAdd();
-        AnnotationIdentifier result = jdbcAnnotationDao.addAnnotation(annotationToAdd);
+        Annotation result = jdbcAnnotationDao.addAnnotation(annotationToAdd, TestBackendConstants._TEST_ANNOT_TO_ADD_OWNER);
         assertFalse(result == null);
         
-        Annotation addedAnnotation = jdbcAnnotationDao.getAnnotation(jdbcAnnotationDao.getAnnotationID(result));        
+        AnnotationIdentifier generatedAnnotationExternalID  = new AnnotationIdentifier(result.getURI());
+        
+        Annotation addedAnnotation = jdbcAnnotationDao.getAnnotation(jdbcAnnotationDao.getAnnotationID(generatedAnnotationExternalID));        
         assertEquals(annotationToAdd.getBody().getAny().get(0), addedAnnotation.getBody().getAny().get(0));
         assertEquals(annotationToAdd.getHeadline(), addedAnnotation.getHeadline());
-        assertEquals(annotationToAdd.getOwner().getRef(), addedAnnotation.getOwner().getRef());
+        assertEquals(String.valueOf(TestBackendConstants._TEST_ANNOT_TO_ADD_OWNER), addedAnnotation.getOwner().getRef());
+        assertEquals(annotationToAdd.getPermissions(), addedAnnotation.getPermissions());
+        assertEquals(annotationToAdd.getTargetSources(), addedAnnotation.getTargetSources());
+        assertEquals(annotationToAdd.getTimeStamp(), addedAnnotation.getTimeStamp());
         
         // try to add an already existing annptation, should produce null
         //Annotation annotationOne = testInstances.getAnnotationOne();

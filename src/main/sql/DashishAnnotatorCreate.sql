@@ -35,14 +35,120 @@ SET client_encoding = 'UTF8';
 
 SET default_with_oids = false;
 
+
+---------- BASE TABLES ----------------------------------------------
+
+--<xs:complexType name="User">
+--        <xs:sequence>
+--            <xs:element name="additionalInfo">
+--                <xs:complexType>
+--                    <xs:sequence>
+--                        <xs:any processContents="lax" maxOccurs="unbounded"/>
+--                    </xs:sequence>
+--                    <xs:anyAttribute processContents="lax"/>
+--                </xs:complexType>
+--            </xs:element>
+--       </xs:sequence>
+--        <xs:attribute name="URI" type="xs:anyURI" use="required"/>
+--        <xs:attribute name="displayName" type="xs:string" use="required"/>
+--        <xs:attribute name="eMail" type="xs:string" use="required"/>
+--   </xs:complexType>
+
+
+CREATE TABLE principal (
+    principal_id SERIAL UNIQUE NOT NULL,
+    external_id UUID UNIQUE NOT NULL,
+    principal_name text,
+    e_mail text,
+    additional_info text
+);
+
+
+------------------------------------------------------------------------
+-- <xs:complexType name="Annotation">
+--        <xs:sequence>
+--            <xs:element name="owner" type="ResourceREF" minOccurs="1"/>
+--            <xs:element name="headline" type="xs:string" minOccurs="1"/>
+--            <!-- schematron checks the length <== 100 -->
+--            <xs:element name="body" type="AnnotationBody" minOccurs="1"/>
+--            <xs:element name="targetSources" type="NewOrExistingSourceInfos" minOccurs="1"/>
+--            <xs:element name="permissions" type="ResourceREF"/>
+--        </xs:sequence>
+--        <xs:attribute name="URI" type="xs:anyURI" use="required"/>
+--        <xs:attribute name="timeStamp" type="xs:dateTime" use="required"/>
+--    </xs:complexType>
+
+
 CREATE TABLE annotation (
-    annotation_id SERIAL UNIQUE NOT NULL,
+    annotation_id SERIAL UNIQUE NOT NULL, 
     external_id UUID UNIQUE NOT NULL,
     time_stamp timestamp with time zone default now(),
-    owner_id integer,
+    owner_id integer REFERENCES principal(principal_id), 
+    --  there must be exactly one owner ++ 
+     -- and this owner must be in the table "permissions" as owner!!
     headline text,
     body_xml xml
 );
+
+-----------------------------------------------------------------------
+-- <xs:complexType name="CachedRepresentationInfo">
+--        <xs:attribute name="ref" type="xs:anyURI" use="required"/>
+--        <xs:attribute name="mimeType" type="xs:string" use="required"/>
+--        <xs:attribute name="tool" type="xs:string" use="required"/>
+--        <xs:attribute name="type" type="xs:string" use="required"/>
+--    </xs:complexType>
+
+CREATE TABLE cached_representation_info (
+    cached_representation_id SERIAL UNIQUE NOT NULL,
+    external_id UUID UNIQUE NOT NULL,
+    mime_type text,
+    tool text,
+    type_ text, 
+    where_is_the_file text -- DIFFERS FROM the schema
+);
+
+-- soundness there must be at least one version referring to this cahced representation
+
+
+----------------------------------------------------------------------
+-- <xs:complexType name="Version">
+--        <xs:sequence>
+--            <xs:element name="version" type="xs:string"/>
+--            <xs:element name="cachedRepresentations" type="CachedRepresentations"/>
+--        </xs:sequence>
+--    </xs:complexType>
+
+CREATE TABLE version (
+    version_id SERIAL UNIQUE NOT NULL,
+    external_id UUID UNIQUE NOT NULL,
+    version text,
+    --  SOUNDNESS: there must be at least one row with this version_id in the verions_cached_representations table
+);
+
+----------------------------------------------------------------
+
+ -- <xs:complexType name="Source">
+ --       <xs:sequence>
+ --           <xs:element name="versions-siblings" type="ResourceREF" minOccurs="1"/>
+ --       </xs:sequence>
+ --       <xs:attribute name="URI" type="xs:anyURI" use="required"/>
+ --       <xs:attribute name="timeSatmp" type="xs:dateTime" use="required"/>
+ --       <xs:attribute name="link" type="xs:anyURI" use="required"/>
+ --       <xs:attribute name="version" type="xs:string" use="required"/>
+ --   </xs:complexType>
+
+CREATE TABLE target_source (
+    source_id SERIAL UNIQUE NOT NULL,
+    external_id UUID UNIQUE NOT NULL,
+    time_stamp timestamp with time zone default now(),
+    link_uri text,
+    version_id integer REFERENCES version(version_id), ---- DIFFERS from the xml structure, 
+    -- SOUNDNESS: there must be exactly version at the version table  ++   
+    -- soundness: there must be at least one annotation referring to this source
+);
+
+
+-----------------------------------------------------------------------------------
 
 CREATE TABLE notebook (
     notebook_id SERIAL UNIQUE NOT NULL,
@@ -50,19 +156,42 @@ CREATE TABLE notebook (
     time_stamp timestamp with time zone default now(),
     title text,
     owner_id integer NOT NULL
+-- soundness:  there must be at least one target source in the annotations_target_sources table
 );
+
+
+
+-----------------------------------------------------------------------
+--------------------- JOINT TABLES ------------------------------------
+
+CREATE TABLE annotations_target_sources (
+   annotation_id integer REFERENCES annotation(annotation_id), -- defining a foreign key: there must be a uniquely defined row in "annotation", that is defined by "annotation_id"
+   source_id integer REFERENCES target_source(source_id),
+   unique(annotation_id, source_id),
+);
+
+
 
 CREATE TABLE notebooks_annotations (
     notebook_id integer REFERENCES notebook(notebook_id),
-    annotation_id integer REFERENCES annotation(annotation_id)
+    annotation_id integer REFERENCES annotation(annotation_id),
+    unique(notebook_id, annotation_id),
 );
 
-CREATE TABLE principal (
-    principal_id SERIAL NOT NULL,
-    external_id UUID UNIQUE NOT NULL,
-    principal_name text
+CREATE TABLE sources_versions (
+    source_id integer REFERENCES target_source(source_id),
+    version_id integer REFERENCES version(version_id),
+    unique(source_id, version_id),
 );
 
+CREATE TABLE versions_cached_representations (
+    version_id integer REFERENCES version(version_id),
+    cached_representation_id integer REFERENCES cached_representation_info(cached_representation_id),
+    unique(version_id, cached_representation_id),
+);
+
+
+---------------------------------------------------------------------------------------------
 ALTER TABLE ONLY annotation
     ADD CONSTRAINT annotation_primary_key PRIMARY KEY (annotation_id);
 
@@ -91,4 +220,3 @@ ALTER TABLE ONLY notebook
 --
 -- PostgreSQL database dump complete
 --
-

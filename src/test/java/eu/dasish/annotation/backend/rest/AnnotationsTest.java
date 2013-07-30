@@ -21,12 +21,14 @@ import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.GenericType;
 import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.dao.AnnotationDao;
+import eu.dasish.annotation.backend.dao.UserDao;
 import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
+import eu.dasish.annotation.backend.identifiers.UserIdentifier;
 import eu.dasish.annotation.schema.Annotation;
-import eu.dasish.annotation.schema.Notebook;
 import eu.dasish.annotation.schema.ObjectFactory;
+import eu.dasish.annotation.schema.ResourceREF;
 import java.sql.SQLException;
-import javax.ws.rs.core.GenericEntity;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.MediaType;
 import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
@@ -40,10 +42,12 @@ import static org.junit.Assert.*;
 public class AnnotationsTest extends ResourcesTest{
     
     private AnnotationDao annotationDao;
+    private UserDao userDao;
     
     public AnnotationsTest() {
         super(AnnotationResource.class.getPackage().getName());
         annotationDao = webAppContext.getBean(AnnotationDao.class);
+        userDao = webAppContext.getBean(UserDao.class);
     }
     
 
@@ -131,26 +135,31 @@ public class AnnotationsTest extends ResourcesTest{
     //@Ignore
     public void testCreateAnnotation() throws SQLException, InstantiationException, IllegalAccessException{
         System.out.println("test createAnnotation");
-        //final Annotation annotationToAdd = new ObjectFactory().createAnnotation();
-       final Annotation annotationToAdd = new GenericType<Annotation>(){}.getRawClass().newInstance();
-       final AnnotationIdentifier newAnnotationID = new GenericType<AnnotationIdentifier>(){}.getRawClass().newInstance();
+        final Annotation annotationToAdd = new ObjectFactory().createAnnotation();
+        
+         // Peter's workaround on absence of "ObjectFactory.create... for annotations        
+        final JAXBElement<Annotation> jaxbElement = new JAXBElement<Annotation>(new QName("http://www.dasish.eu/ns/addit", "annotation"), Annotation.class, null, annotationToAdd);
+        
+        
+        final Annotation addedAnnotation = annotationToAdd;
+        AnnotationIdentifier annotationIdentifier = new GenericType<AnnotationIdentifier>(){}.getRawClass().newInstance();
+        addedAnnotation.setURI(annotationIdentifier.toString());
         
         mockery.checking(new Expectations() {
-            {
-                oneOf(annotationDao).addAnnotation(with(aNonNull(Annotation.class)));
-                will(returnValue(newAnnotationID));
+            {   
+                oneOf(annotationDao).addAnnotation(with(any(Annotation.class)), with(any(Number.class)));
+                will(returnValue(addedAnnotation));
             }
         });
+       
+     
         
-        
-        
-        final String requestUrl = "annotations/";
+        final String requestUrl = "annotations";
         System.out.println("requestUrl: " + requestUrl);
         
-        // Peter's workaround on absence of "PnjectFactory.create... for annotations
-        final JAXBElement<Annotation> jaxbElement = new JAXBElement<Annotation>(new QName("http://www.dasish.eu/ns/addit", "annotation"), Annotation.class, null, annotationToAdd);
-                
-        ClientResponse response = resource().path(requestUrl).type(MediaType.APPLICATION_XML).post(ClientResponse.class, jaxbElement);
+        // Peter's workaround on absence of "ObjectFactory.create... for annotations
+        
+        ClientResponse response = resource().path(requestUrl).accept(MediaType.APPLICATION_XML).type(MediaType.APPLICATION_XML).post(ClientResponse.class, jaxbElement);
         assertEquals(200, response.getStatus());
         
         Annotation entity = response.getEntity(Annotation.class);
@@ -159,6 +168,5 @@ public class AnnotationsTest extends ResourcesTest{
         assertEquals(annotationToAdd.getPermissions(), entity.getPermissions());
         assertEquals(annotationToAdd.getTargetSources(), entity.getTargetSources());
         assertEquals(annotationToAdd.getTimeStamp(), entity.getTimeStamp());
-        assertEquals(annotationToAdd.getURI(), entity.getURI());
     }
 }
