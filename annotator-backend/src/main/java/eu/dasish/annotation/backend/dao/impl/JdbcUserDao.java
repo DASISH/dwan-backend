@@ -22,38 +22,42 @@ import eu.dasish.annotation.backend.identifiers.UserIdentifier;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import javax.sql.DataSource;
 import org.springframework.jdbc.core.RowMapper;
 
 /**
  *
  * @author olhsha
  */
-public class JdbcUserDao extends JdbcResourceDao implements UserDao{
-    
+public class JdbcUserDao extends JdbcResourceDao implements UserDao {
+
+    public JdbcUserDao(DataSource dataSource) {
+        setDataSource(dataSource);
+    }
+
     @Override
     public Number getInternalID(UserIdentifier userIdentifier) {
         if (userIdentifier == null) {
             return null;
         }
-       String sql = "SELECT "+principal_id+" FROM "+principalTableName+" WHERE "+external_id  +"= ?";
-       List<Number> result= getSimpleJdbcTemplate().query(sql, userIDRowMapper, userIdentifier.toString());
-       
-       if (result==null){
-           return null;
-       }
-       
-       if (result.isEmpty()) {
-           return null;
-       }
-       
-       return result.get(0);
+        String sql = "SELECT " + principal_id + " FROM " + principalTableName + " WHERE " + external_id + "= ?";
+        List<Number> result = getSimpleJdbcTemplate().query(sql, userIDRowMapper, userIdentifier.toString());
+
+        if (result == null) {
+            return null;
+        }
+
+        if (result.isEmpty()) {
+            return null;
+        }
+
+        return result.get(0);
     }
-    
-     private final RowMapper<Number> userIDRowMapper = new RowMapper<Number>() {        
+    private final RowMapper<Number> userIDRowMapper = new RowMapper<Number>() {
         @Override
         public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
-           Number result = rs.getInt(principal_id);
-           return result;
+            Number result = rs.getInt(principal_id);
+            return result;
         }
-     };
+    };
 }
