@@ -19,11 +19,11 @@
 INSERT INTO principal (principal_name, external_id) VALUES ('a user', '00000000-0000-0000-0000-000000000003'); -- 1
 INSERT INTO principal (principal_name, external_id) VALUES ('b user', '00000000-0000-0000-0000-000000000004');-- 2
 
-INSERT INTO notebook (title, owner_id, external_id) VALUES ('a notebook', 2, '00000000-0000-0000-0000-000000000001');
+INSERT INTO notebook (title, owner_id, external_id) VALUES ('a notebook', 2, '00000000-0000-0000-0000-000000000001'); -- 1 
 -- INSERT INTO notebook (title, owner_id, external_id) VALUES ('a notebook', 1, 1);
-INSERT INTO annotation (owner_id,headline,body_xml, external_id) VALUES (1, 'a headline','<html><body>some html</body></html>', '00000000-0000-0000-0000-000000000005');
+INSERT INTO annotation (owner_id,headline,body_xml, external_id) VALUES (1, 'a headline','<html><body>some html</body></html>', '00000000-0000-0000-0000-000000000005'); --1 
 
-INSERT INTO notebook (title, owner_id, external_id) VALUES ('a second notebook', 2, '00000000-0000-0000-0000-000000000002');
+INSERT INTO notebook (title, owner_id, external_id) VALUES ('a second notebook', 2, '00000000-0000-0000-0000-000000000002'); --2
 -- INSERT INTO notebook (title, owner_id, external_id) VALUES ('a second notebook', 1, 2);
 INSERT INTO notebooks_annotations (notebook_id,annotation_id) VALUES (1,1);
 INSERT INTO notebooks_annotations (notebook_id,annotation_id) VALUES (2,1);
@@ -35,20 +35,20 @@ INSERT INTO principal (principal_name, external_id) VALUES ('Twan', '00000000-00
 INSERT INTO principal (principal_name, external_id) VALUES ('Peter', '00000000-0000-0000-0000-000000000112'); -- 4
 INSERT INTO principal (principal_name, external_id) VALUES ('Olha', '00000000-0000-0000-0000-000000000113'); -- 5
 
-INSERT INTO notebook (notebook_id, title, owner_id, external_id) VALUES (11, 'Notebook 11', 3, '00000000-0000-0000-0000-000000000011');
-INSERT INTO notebook (notebook_id, title, owner_id, external_id) VALUES (12, 'Notebook 12', 4, '00000000-0000-0000-0000-000000000012');
-INSERT INTO notebook (notebook_id, title, owner_id, external_id) VALUES (13, 'Notebook 13', 5, '00000000-0000-0000-0000-000000000013');
+INSERT INTO notebook (title, owner_id, external_id) VALUES ('Notebook 3', 3, '00000000-0000-0000-0000-000000000011'); -- 3
+INSERT INTO notebook (title, owner_id, external_id) VALUES ('Notebook 4', 4, '00000000-0000-0000-0000-000000000012'); --4
+INSERT INTO notebook (title, owner_id, external_id) VALUES ('Notebook 5', 5, '00000000-0000-0000-0000-000000000013'); --5
 
-INSERT INTO annotation (annotation_id, owner_id,headline,body_xml, external_id) VALUES (21, 3, 'Sagrada Famiglia','<html><body>some html 1</body></html>', '00000000-0000-0000-0000-000000000021');
-INSERT INTO annotation (annotation_id, owner_id,headline,body_xml, external_id) VALUES (22, 4, 'Gaudi','<html><body>some html 2 </body></html>', '00000000-0000-0000-0000-000000000022');
-INSERT INTO annotation (annotation_id, owner_id,headline,body_xml, external_id) VALUES (23, 5, 'Art Nuveau','<html><body>some html 3</body></html>', '00000000-0000-0000-0000-000000000023');
-INSERT INTO annotation (annotation_id, owner_id,headline,body_xml, external_id) VALUES (25, 3, 'Annotation to delete','<html><body>some html 4</body></html>', '00000000-0000-0000-0000-000000000025');
+INSERT INTO annotation (owner_id,headline,body_xml, external_id) VALUES (3, 'Sagrada Famiglia','<html><body>some html 1</body></html>', '00000000-0000-0000-0000-000000000021'); --2
+INSERT INTO annotation (owner_id,headline,body_xml, external_id) VALUES (4, 'Gaudi','<html><body>some html 2 </body></html>', '00000000-0000-0000-0000-000000000022'); --3
+INSERT INTO annotation (owner_id,headline,body_xml, external_id) VALUES (5, 'Art Nuveau','<html><body>some html 3</body></html>', '00000000-0000-0000-0000-000000000023'); --4
+INSERT INTO annotation (owner_id,headline,body_xml, external_id) VALUES (3, 'Annotation to delete','<html><body>some html 4</body></html>', '00000000-0000-0000-0000-000000000024'); --5
 
 
 
-INSERT INTO notebooks_annotations (notebook_id,annotation_id) VALUES (11,21);
-INSERT INTO notebooks_annotations (notebook_id,annotation_id) VALUES (11,22);
-INSERT INTO notebooks_annotations (notebook_id,annotation_id) VALUES (12,23);
+INSERT INTO notebooks_annotations (notebook_id,annotation_id) VALUES (3,2);
+INSERT INTO notebooks_annotations (notebook_id,annotation_id) VALUES (3,3);
+INSERT INTO notebooks_annotations (notebook_id,annotation_id) VALUES (4,4);
 
 
 
@@ -76,7 +76,18 @@ INSERT INTO version (external_id, version) VALUES ('00000000-0000-0000-0000-0000
 -- );
 
 
-INSERT INTO target_source (external_id, link_uri, version_id) VALUES ('00000000-0000-0000-0000-000000000031', 'http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia', 1);
-INSERT INTO target_source (external_id, link_uri, version_id) VALUES ('00000000-0000-0000-0000-000000000032', 'http://nl.wikipedia.org/wiki/Antoni_Gaud%C3%AD', 3);
-INSERT INTO target_source (external_id, link_uri, version_id) VALUES ('00000000-0000-0000-0000-000000000033', 'http://en.wikipedia.org/wiki/Art_Nouveau', 4);
+INSERT INTO target_source (external_id, link_uri, version_id) VALUES ('00000000-0000-0000-0000-000000000031', 'http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia', 1); -- 1
+INSERT INTO target_source (external_id, link_uri, version_id) VALUES ('00000000-0000-0000-0000-000000000032', 'http://nl.wikipedia.org/wiki/Antoni_Gaud%C3%AD', 3); --2
+INSERT INTO target_source (external_id, link_uri, version_id) VALUES ('00000000-0000-0000-0000-000000000033', 'http://en.wikipedia.org/wiki/Art_Nouveau', 4); --3
+
+-- CREATE TABLE annotations_target_sources (
+--    annotation_id integer REFERENCES annotation(annotation_id), -- defining a foreign key: there must be a uniquely defined row in "annotation", that is defined by "annotation_id"
+--    source_id integer REFERENCES target_source(source_id),
+--    unique(annotation_id, source_id),
+-- );
+
+-- INSERT INTO annotations_target_sources (annotation_id, source_id) VALUES (2, 1); 
+-- INSERT INTO annotations_target_sources (annotation_id, source_id) VALUES (2, 2); 
+-- INSERT INTO annotations_target_sources (annotation_id, source_id) VALUES (3, 2); 
+-- INSERT INTO annotations_target_sources (annotation_id, source_id) VALUES (4, 3); 
 

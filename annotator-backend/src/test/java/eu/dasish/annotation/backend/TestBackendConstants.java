@@ -32,49 +32,37 @@ public class TestBackendConstants {
     public static final String _TEST_NULL_UUID_ = "00000000-0000-0000-0000-000000000006";
     
     // testing jdbcAnnotationDao
-    public static final String _TEST_NOTEBOOK_1_EXT = "00000000-0000-0000-0000-000000000011";
-    public static final String _TEST_NOTEBOOK_2_EXT = "00000000-0000-0000-0000-000000000012";
-    public static final String _TEST_NOTEBOOK_3_EXT = "00000000-0000-0000-0000-000000000013";
+    public static final String _TEST_NOTEBOOK_3_EXT = "00000000-0000-0000-0000-000000000011";
+    public static final String _TEST_NOTEBOOK_4_EXT = "00000000-0000-0000-0000-000000000012";
+    public static final String _TEST_NOTEBOOK_5_EXT = "00000000-0000-0000-0000-000000000013";
     
-    public static final String _TEST_NOTEBOOK_1_TITLE = "Notebook 11";
-    public static final String _TEST_NOTEBOOK_2_TITLE = "Notebook 12";
-    public static final String _TEST_NOTEBOOK_3_TITLE = "Notebook 13";
+    public static final String _TEST_NOTEBOOK_3_TITLE = "Notebook 3";
+    public static final String _TEST_NOTEBOOK_4_TITLE = "Notebook 4";
+    public static final String _TEST_NOTEBOOK_5_TITLE = "Notebook 5";
     
-    public static final int _TEST_NOTEBOOK_1_INT = 11;
-    public static final int _TEST_NOTEBOOK_2_INT = 12;
-    public static final int _TEST_NOTEBOOK_3_INT = 13;
-    
-    public static final String _TEST_ANNOT_1_EXT = "00000000-0000-0000-0000-000000000021";
-    public static final String _TEST_ANNOT_2_EXT = "00000000-0000-0000-0000-000000000022";
-    public static final String _TEST_ANNOT_3_EXT = "00000000-0000-0000-0000-000000000023";
-    public static final String _TEST_ANNOT_4_EXT_NOT_IN_THE_DB = "00000000-0000-0000-0000-000000000024";
-    public static final String _TEST_ANNOT_5_EXT_TO_BE_DELETED = "00000000-0000-0000-0000-000000000025";
-    
-    
-    public static final int _TEST_ANNOT_1_INT = 21;
-    public static final int _TEST_ANNOT_2_INT = 22;
-    public static final int _TEST_ANNOT_3_INT = 23;    
-    public static final int _TEST_ANNOT_4_INT_NOT_IN_THE_DB = 24;
-    public static final int _TEST_ANNOT_5_INT_TO_BE_DELETED = 25;
-    
-    public static final String _TEST_ANNOT_1_HEADLINE = "Sagrada Famiglia";
-    public static final String _TEST_ANNOT_2_HEADLINE = "Gaudi";
-    public static final String _TEST_ANNOT_3_HEADLINE = "Art Nuveau";
+    public static final String _TEST_ANNOT_2_EXT = "00000000-0000-0000-0000-000000000021";
+    public static final String _TEST_ANNOT_3_EXT = "00000000-0000-0000-0000-000000000022";
+    public static final String _TEST_ANNOT_4_EXT = "00000000-0000-0000-0000-000000000023";
+    public static final String _TEST_ANNOT_5_EXT  = "00000000-0000-0000-0000-000000000024";
+    public static final String _TEST_ANNOT_7_EXT_NOT_IN_DB = "00000000-0000-0000-0000-000000000026";
+   
+    public static final String _TEST_ANNOT_2_HEADLINE = "Sagrada Famiglia";
+    public static final String _TEST_ANNOT_3_HEADLINE = "Gaudi";
+    public static final String _TEST_ANNOT_4_HEADLINE = "Art Nuveau";
     public static final String _TEST_ANNOT_TO_ADD_HEADLINE = "Annotation to add to test DAO";
     
-    public static final int _TEST_ANNOT_1_OWNER = 3;
-    public static final int _TEST_ANNOT_2_OWNER = 4;
-    public static final int _TEST_ANNOT_3_OWNER = 5;
-    public static final int _TEST_ANNOT_TO_ADD_OWNER = 5; 
+    public static final int _TEST_ANNOT_2_OWNER = 3;
+    public static final int _TEST_ANNOT_3_OWNER = 4;
+    public static final int _TEST_ANNOT_4_OWNER = 5;
     
-    public static final String _TEST_ANNOT_1_BODY = "<html><body>some html 1</body></html>";
+    public static final String _TEST_ANNOT_2_BODY = "<html><body>some html 1</body></html>";
     public static final String _TEST_ANNOT_TO_ADD_BODY = "<html><body>the stuff to be added</body></html>";
     
     public static final String annotaiontoDeleteInDB="INSERT INTO annotation (annotation_id, owner_id,headline,body_xml, external_id) VALUES (25, 111, 'Annotation to delete','<html><body>some html 4</body></html>', '00000000-0000-0000-0000-000000000025');";
     
     public static final String _TEST_USER_3_EXT_ID = "00000000-0000-0000-0000-000000000111";
-    public static final String _TEST_OWNER_4_EXT_ID = "00000000-0000-0000-0000-000000000112";  
-    public static final String _TEST_OWNER_5_EXT_ID = "00000000-0000-0000-0000-000000000113";  
+    public static final String _TEST_USER_4_EXT_ID = "00000000-0000-0000-0000-000000000112";  
+    public static final String _TEST_USER_5_EXT_ID = "00000000-0000-0000-0000-000000000113";  
     
     public static final String _TEST_USER_XXX_EXT_ID = "00000000-0000-0000-0000-000000000666";  
 }

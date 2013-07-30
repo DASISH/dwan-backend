@@ -137,8 +137,8 @@ public class NotebooksTest extends ResourcesTest {
     public void testGetMetadata() {
         System.out.println("test GetMetadata");
         
-        final String notebookIdentifier= TestBackendConstants._TEST_NOTEBOOK_1_EXT;
-        final int notebookID = TestBackendConstants._TEST_NOTEBOOK_1_INT;
+        final String notebookIdentifier= TestBackendConstants._TEST_NOTEBOOK_3_EXT;
+        final int notebookID = 3;
         final NotebookInfo testInfo = new ObjectFactory().createNotebookInfo();
         
         mockery.checking(new Expectations() {
@@ -176,9 +176,9 @@ public class NotebooksTest extends ResourcesTest {
     @Test
     public void testGetAllAnnotations() {
         System.out.println("test GetMetadata");       
-        final String notebookIdentifier= TestBackendConstants._TEST_NOTEBOOK_1_EXT; 
-        final AnnotationIdentifier aIdOne= new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_1_EXT);
-        final AnnotationIdentifier aIdTwo= new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_2_EXT);
+        final String notebookIdentifier= TestBackendConstants._TEST_NOTEBOOK_3_EXT; 
+        final AnnotationIdentifier aIdOne= new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_2_EXT);
+        final AnnotationIdentifier aIdTwo= new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_3_EXT);
         final List<AnnotationIdentifier> annotationIds = new ArrayList<AnnotationIdentifier>();
         annotationIds.add(aIdOne);
         annotationIds.add(aIdTwo);

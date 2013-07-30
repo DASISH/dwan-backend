@@ -58,8 +58,8 @@ public class AnnotationsTest extends ResourcesTest{
     @Test
     public void testGetAnnotation() throws SQLException{
         System.out.println("testGetAnnotation");
-        final String annotationIdentifier= TestBackendConstants._TEST_ANNOT_1_EXT;
-        final int annotationID = TestBackendConstants._TEST_ANNOT_1_INT;
+        final String annotationIdentifier= TestBackendConstants._TEST_ANNOT_2_EXT;
+        final int annotationID = 2;
         final Annotation testAnnotation = new ObjectFactory().createAnnotation();
         
         mockery.checking(new Expectations() {
@@ -96,15 +96,15 @@ public class AnnotationsTest extends ResourcesTest{
         
         mockery.checking(new Expectations() {
             {
-                oneOf(annotationDao).getAnnotationID(new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_5_EXT_TO_BE_DELETED));                
-                will(returnValue(TestBackendConstants._TEST_ANNOT_5_INT_TO_BE_DELETED));
+                oneOf(annotationDao).getAnnotationID(new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_5_EXT));                
+                will(returnValue(5));
                 
-                oneOf(annotationDao).deleteAnnotation(TestBackendConstants._TEST_ANNOT_5_INT_TO_BE_DELETED);
+                oneOf(annotationDao).deleteAnnotation(5);
                 will(returnValue(1));
             }
         });
         
-        final String requestUrl = "annotations/" + TestBackendConstants._TEST_ANNOT_5_EXT_TO_BE_DELETED;
+        final String requestUrl = "annotations/" + TestBackendConstants._TEST_ANNOT_5_EXT;
         System.out.println("requestUrl: " + requestUrl);
         ClientResponse response = resource().path(requestUrl).delete(ClientResponse.class);
         assertEquals(200, response.getStatus());
@@ -115,10 +115,10 @@ public class AnnotationsTest extends ResourcesTest{
         
         mockery.checking(new Expectations() {
             {
-                oneOf(annotationDao).getAnnotationID(new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_5_EXT_TO_BE_DELETED));                
-                will(returnValue(TestBackendConstants._TEST_ANNOT_5_INT_TO_BE_DELETED));
+                oneOf(annotationDao).getAnnotationID(new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_5_EXT));                
+                will(returnValue(5));
                 
-                oneOf(annotationDao).deleteAnnotation(TestBackendConstants._TEST_ANNOT_5_INT_TO_BE_DELETED);
+                oneOf(annotationDao).deleteAnnotation(5);
                 will(returnValue(0));
             }
         });

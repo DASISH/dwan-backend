@@ -59,11 +59,7 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest{
     @Autowired
     private Mockery mockery;
 
-    @Test
-    public void testIsNotebookInTheDataBase(){
-        super.testIsNotebookInTheDataBase(jdbcNotebookDao);
-    }
-    
+   
     
     /**
      * Test of getNotebookInfos method, of class JdbcNotebookDao.
@@ -147,27 +143,24 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest{
         System.out.println("getAnnotationIDs");
         
         // test one, 2-element notebook
-        final List<Number> annotationIDs = jdbcNotebookDao.getAnnotationIDs(TestBackendConstants._TEST_NOTEBOOK_1_INT);
+        final List<Number> annotationIDs = jdbcNotebookDao.getAnnotationIDs(3);
         assertEquals(2, annotationIDs.size());
-        assertEquals(TestBackendConstants._TEST_ANNOT_1_INT, annotationIDs.get(0).intValue());
-        assertEquals(TestBackendConstants._TEST_ANNOT_2_INT, annotationIDs.get(1).intValue());
+        assertEquals(2, annotationIDs.get(0).intValue());
+        assertEquals(3, annotationIDs.get(1).intValue());
         
         // test two, 1-element notebook
-        final List<Number> annotationIDsTwo = jdbcNotebookDao.getAnnotationIDs(TestBackendConstants._TEST_NOTEBOOK_2_INT);
+        final List<Number> annotationIDsTwo = jdbcNotebookDao.getAnnotationIDs(4);
         assertEquals(1, annotationIDsTwo.size());
-        assertEquals(TestBackendConstants._TEST_ANNOT_3_INT, annotationIDsTwo.get(0).intValue());
+        assertEquals(4, annotationIDsTwo.get(0).intValue());
         
         // test three, empty notebook
-        final List<Number> annotationIDsThree = jdbcNotebookDao.getAnnotationIDs(TestBackendConstants._TEST_NOTEBOOK_3_INT);
+        final List<Number> annotationIDsThree = jdbcNotebookDao.getAnnotationIDs(5);
         assertEquals(0, annotationIDsThree.size());
         
         // test four, null-notebook
         final List<Number> annotationIDsFour = jdbcNotebookDao.getAnnotationIDs(null);
         assertEquals(null, annotationIDsFour);
         
-        //test five, the notebook not in the DB
-        final List<Number> annotationIDsFive = jdbcNotebookDao.getAnnotationIDs(TestBackendConstants._TEST_ANNOT_4_INT_NOT_IN_THE_DB);
-        assertEquals(null, annotationIDsFive);
         
     }
     
@@ -183,27 +176,22 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest{
         
         // test One         
         setMockeryNotebookOne();         
-        List<ResourceREF> testList = jdbcNotebookDao.getAnnotationREFsOfNotebook(TestBackendConstants._TEST_NOTEBOOK_1_INT);
+        List<ResourceREF> testList = jdbcNotebookDao.getAnnotationREFsOfNotebook(3);
         assertEquals(2, testList.size());        
-        assertEquals(String.valueOf(TestBackendConstants._TEST_ANNOT_1_INT), testList.get(0).getRef());
-        assertEquals(String.valueOf(TestBackendConstants._TEST_ANNOT_2_INT), testList.get(1).getRef());
+        assertEquals(String.valueOf(2), testList.get(0).getRef());
+        assertEquals(String.valueOf(3), testList.get(1).getRef());
         
         // test Two
         setMockeryNotebookTwo(); 
-        List<ResourceREF> testListTwo = jdbcNotebookDao.getAnnotationREFsOfNotebook(TestBackendConstants._TEST_NOTEBOOK_2_INT);
+        List<ResourceREF> testListTwo = jdbcNotebookDao.getAnnotationREFsOfNotebook(4);
         assertEquals(1, testListTwo.size());        
-        assertEquals(String.valueOf(TestBackendConstants._TEST_ANNOT_3_INT), testListTwo.get(0).getRef());
+        assertEquals(String.valueOf(4), testListTwo.get(0).getRef());
         
         // test Three  "empty" 
         setMockeryNotebookThreeEmpty();         
-        List<ResourceREF> testListThree = jdbcNotebookDao.getAnnotationREFsOfNotebook(TestBackendConstants._TEST_NOTEBOOK_3_INT);
+        List<ResourceREF> testListThree = jdbcNotebookDao.getAnnotationREFsOfNotebook(5);
         assertEquals(0, testListThree.size()); 
-        
-        // test Four, non-existing notebook
-        setMockeryNotebookNonExisting();
-        List<ResourceREF> testListFour = jdbcNotebookDao.getAnnotationREFsOfNotebook(TestBackendConstants._TEST_ANNOT_4_INT_NOT_IN_THE_DB);
-        assertEquals(null, testListFour); 
-        
+       
         // test Five Null-notebook
         setMockeryNotebookNonExisting();
         List<ResourceREF> testListFive = jdbcNotebookDao.getAnnotationREFsOfNotebook(null);
@@ -220,29 +208,25 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest{
         
          // test One
         setMockeryNotebookOne(); 
-        Annotations annotations = jdbcNotebookDao.getAnnotations(TestBackendConstants._TEST_NOTEBOOK_1_INT);
+        Annotations annotations = jdbcNotebookDao.getAnnotations(3);
         assertEquals(2, annotations.getAnnotation().size());        
-        assertEquals(String.valueOf(TestBackendConstants._TEST_ANNOT_1_INT), annotations.getAnnotation().get(0).getRef());
-        assertEquals(String.valueOf(TestBackendConstants._TEST_ANNOT_2_INT), annotations.getAnnotation().get(1).getRef());
+        assertEquals(String.valueOf(2), annotations.getAnnotation().get(0).getRef());
+        assertEquals(String.valueOf(3), annotations.getAnnotation().get(1).getRef());
         
         // test Two
         setMockeryNotebookTwo(); 
-        Annotations annotationsTwo = jdbcNotebookDao.getAnnotations(TestBackendConstants._TEST_NOTEBOOK_2_INT);
+        Annotations annotationsTwo = jdbcNotebookDao.getAnnotations(4);
         assertEquals(1, annotationsTwo.getAnnotation().size());        
-        assertEquals(String.valueOf(TestBackendConstants._TEST_ANNOT_3_INT), annotationsTwo.getAnnotation().get(0).getRef());
+        assertEquals(String.valueOf(4), annotationsTwo.getAnnotation().get(0).getRef());
         
         // test Three  "empty" list of annotations
         // according to dasish.xsd if an Annotation is created then its list of annotations must contain at least one element!
         // therefore: no annotations in the notebook ==> Annotations-pbject must be null :(
         setMockeryNotebookThreeEmpty(); 
-        Annotations annotationsThree = jdbcNotebookDao.getAnnotations(TestBackendConstants._TEST_NOTEBOOK_3_INT);
+        Annotations annotationsThree = jdbcNotebookDao.getAnnotations(5);
         assertEquals(null, annotationsThree); 
         
-        // test Five, non-existing notebook
-        setMockeryNotebookNonExisting();
-        Annotations annotationsFour = jdbcNotebookDao.getAnnotations(TestBackendConstants._TEST_ANNOT_4_INT_NOT_IN_THE_DB);
-        assertEquals(null, annotationsFour); 
-        
+       
         // test Five Null-notebook
         setMockeryNotebookNonExisting();
         Annotations annotationsFive = jdbcNotebookDao.getAnnotations(null);
@@ -257,14 +241,11 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest{
         System.out.println("test getNotebookInfo");
         
          // test One        
-        NotebookInfo info = jdbcNotebookDao.getNotebookInfo(TestBackendConstants._TEST_NOTEBOOK_1_INT);
-        assertEquals(String.valueOf(TestBackendConstants._TEST_NOTEBOOK_1_EXT), info.getRef());
-        assertEquals(String.valueOf(TestBackendConstants._TEST_NOTEBOOK_1_TITLE), info.getTitle());
+        NotebookInfo info = jdbcNotebookDao.getNotebookInfo(3);
+        assertEquals(TestBackendConstants._TEST_NOTEBOOK_3_EXT, info.getRef());
+        assertEquals(TestBackendConstants._TEST_NOTEBOOK_3_TITLE, info.getTitle());
         
-        // test Two, non-existing notebook
-        NotebookInfo infoTwo = jdbcNotebookDao.getNotebookInfo(TestBackendConstants._TEST_ANNOT_4_INT_NOT_IN_THE_DB);
-        assertEquals(null, infoTwo); 
-        
+               
         // test Three Null-notebook
        NotebookInfo infoThree = jdbcNotebookDao.getNotebookInfo(null);
        assertEquals(null, infoThree);
@@ -278,13 +259,10 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest{
         System.out.println("test getNotebookID");
         
          // test One        
-        Number resultOne= jdbcNotebookDao.getNotebookID(new NotebookIdentifier(TestBackendConstants._TEST_NOTEBOOK_1_EXT));
-        assertEquals(TestBackendConstants._TEST_NOTEBOOK_1_INT, resultOne.intValue());
+        Number resultOne= jdbcNotebookDao.getNotebookID(new NotebookIdentifier(TestBackendConstants._TEST_NOTEBOOK_3_EXT));
+        assertEquals(3, resultOne.intValue());
         
-        // test Two, non-existing notebook
-        Number resultTwo= jdbcNotebookDao.getNotebookID(new NotebookIdentifier(TestBackendConstants._TEST_ANNOT_4_EXT_NOT_IN_THE_DB));
-        assertEquals(null, resultTwo); 
-        
+      
         // test Three Null-notebook
        Number resultThree= jdbcNotebookDao.getNotebookID(null);
        assertEquals(null, resultThree);
@@ -298,22 +276,20 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest{
          // test One 
         mockery.checking(new Expectations() {
             {
-              oneOf(annotationDao).getExternalID(TestBackendConstants._TEST_ANNOT_1_INT);
-              will(returnValue(new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_1_EXT)));
-              
-              oneOf(annotationDao).getExternalID(TestBackendConstants._TEST_ANNOT_2_INT);
+              oneOf(annotationDao).getExternalID(2);
               will(returnValue(new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_2_EXT)));
+              
+              oneOf(annotationDao).getExternalID(3);
+              will(returnValue(new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_3_EXT)));
             }
         }); 
         
-        List<AnnotationIdentifier> resultOne= jdbcNotebookDao.getAnnotationExternalIDs(new NotebookIdentifier(TestBackendConstants._TEST_NOTEBOOK_1_EXT));
-        assertEquals(TestBackendConstants._TEST_ANNOT_1_EXT, resultOne.get(0).toString());
-        assertEquals(TestBackendConstants._TEST_ANNOT_2_EXT, resultOne.get(1).toString());
+        List<AnnotationIdentifier> resultOne= jdbcNotebookDao.getAnnotationExternalIDs(new NotebookIdentifier(TestBackendConstants._TEST_NOTEBOOK_3_EXT));
+        assertEquals(TestBackendConstants._TEST_ANNOT_2_EXT, resultOne.get(0).toString());
+        assertEquals(TestBackendConstants._TEST_ANNOT_3_EXT, resultOne.get(1).toString());
         
         
-        List<AnnotationIdentifier> resultTwo= jdbcNotebookDao.getAnnotationExternalIDs(new NotebookIdentifier(TestBackendConstants._TEST_ANNOT_4_EXT_NOT_IN_THE_DB));
-        assertEquals(null, resultTwo);
-        
+      
         // test Two, non-existing notebook
         List<AnnotationIdentifier> resultThree= jdbcNotebookDao.getAnnotationExternalIDs(null);
         assertEquals(null, resultThree);
@@ -327,14 +303,14 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest{
     
     private void setMockeryNotebookOne(){        
         ResourceREF testRefOne = new ResourceREF();
-        testRefOne.setRef(String.valueOf(TestBackendConstants._TEST_ANNOT_1_INT));
+        testRefOne.setRef(String.valueOf(2));
         ResourceREF testRefTwo = new ResourceREF();
-        testRefTwo.setRef(String.valueOf(TestBackendConstants._TEST_ANNOT_2_INT));
+        testRefTwo.setRef(String.valueOf(3));
         final List<ResourceREF> testResult = Arrays.asList(new ResourceREF[] {testRefOne, testRefTwo});
         
         mockery.checking(new Expectations() {
             {
-              oneOf(annotationDao).getAnnotationREFs(Arrays.asList(new Number[] {TestBackendConstants._TEST_ANNOT_1_INT, TestBackendConstants._TEST_ANNOT_2_INT}));
+              oneOf(annotationDao).getAnnotationREFs(Arrays.asList(new Number[] {2, 3}));
               will(returnValue(testResult));
             }
         });    
@@ -342,12 +318,12 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest{
 
      private void setMockeryNotebookTwo(){ 
         ResourceREF testRef = new ResourceREF();
-        testRef.setRef(String.valueOf(TestBackendConstants._TEST_ANNOT_3_INT));
+        testRef.setRef(String.valueOf(4));
         final List<ResourceREF> testResultTwo = Arrays.asList(new ResourceREF[] {testRef});
         
         mockery.checking(new Expectations() {
             {
-              oneOf(annotationDao).getAnnotationREFs(Arrays.asList(new Number[] {TestBackendConstants._TEST_ANNOT_3_INT}));
+              oneOf(annotationDao).getAnnotationREFs(Arrays.asList(new Number[] {4}));
               will(returnValue(testResultTwo));
             }
         }); 
