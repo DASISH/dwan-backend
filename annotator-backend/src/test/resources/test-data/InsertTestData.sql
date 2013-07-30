@@ -86,8 +86,52 @@ INSERT INTO target_source (external_id, link_uri, version_id) VALUES ('00000000-
 --    unique(annotation_id, source_id),
 -- );
 
--- INSERT INTO annotations_target_sources (annotation_id, source_id) VALUES (2, 1); 
--- INSERT INTO annotations_target_sources (annotation_id, source_id) VALUES (2, 2); 
--- INSERT INTO annotations_target_sources (annotation_id, source_id) VALUES (3, 2); 
--- INSERT INTO annotations_target_sources (annotation_id, source_id) VALUES (4, 3); 
+INSERT INTO annotations_target_sources (annotation_id, source_id) VALUES (2, 1); 
+INSERT INTO annotations_target_sources (annotation_id, source_id) VALUES (2, 2); 
+INSERT INTO annotations_target_sources (annotation_id, source_id) VALUES (3, 2); 
+INSERT INTO annotations_target_sources (annotation_id, source_id) VALUES (4, 3); 
 
+
+----------------------------------------------------------------
+
+-- CREATE TABLE sources_versions (
+--     source_id integer REFERENCES target_source(source_id),
+--     version_id integer REFERENCES version(version_id),
+--     unique(source_id, version_id),
+-- );
+
+INSERT INTO sources_versions (source_id, version_id) VALUES (1, 1);
+INSERT INTO sources_versions (source_id, version_id) VALUES (1, 2);
+INSERT INTO sources_versions (source_id, version_id) VALUES (2, 3);
+INSERT INTO sources_versions (source_id, version_id) VALUES (3, 4);
+
+--------------------------------------------------------------
+
+-- CREATE TABLE cached_representation_info (
+--     cached_representation_id SERIAL UNIQUE NOT NULL,
+--     external_id UUID UNIQUE NOT NULL,
+--     mime_type text,
+--     tool text,
+--     type_ text, 
+--     where_is_the_file text -- DIFFERS FROM the schema
+-- );
+
+INSERT INTO cached_representation_info (external_id, mime_type, tool, type_, where_is_the_file) VALUES ('00000000-0000-0000-0000-000000000051', 'text/html', 'latex', 'text', 'corpus1'); --1
+INSERT INTO cached_representation_info (external_id, mime_type, tool, type_, where_is_the_file) VALUES ('00000000-0000-0000-0000-000000000052', 'text/html', 'vi', 'text', 'corpus1'); -- 2
+INSERT INTO cached_representation_info (external_id, mime_type, tool, type_, where_is_the_file) VALUES ('00000000-0000-0000-0000-000000000053', 'image/png', 'screenshooter', 'image', 'corpus1'); -- 3
+INSERT INTO cached_representation_info (external_id, mime_type, tool, type_, where_is_the_file) VALUES ('00000000-0000-0000-0000-000000000054', 'text/html', 'oxygen', 'text', 'corpus1'); --4 
+
+--------------------------------------------------------------
+
+
+
+-- CREATE TABLE versions_cached_representations (
+--     version_id integer REFERENCES version(version_id),
+--     cached_representation_id integer REFERENCES cached_representation_info(cached_representation_id),
+--     unique(version_id, cached_representation_id),
+-- );
+
+INSERT INTO versions_cached_representations (version_id, cached_representation_id) VALUES (1, 1);
+INSERT INTO versions_cached_representations (version_id, cached_representation_id) VALUES (2, 3);
+INSERT INTO versions_cached_representations (version_id, cached_representation_id) VALUES (3, 2);
+INSERT INTO versions_cached_representations (version_id, cached_representation_id) VALUES (4, 4);
