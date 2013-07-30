@@ -53,3 +53,30 @@ INSERT INTO notebooks_annotations (notebook_id,annotation_id) VALUES (12,23);
 
 
 
+-- CREATE TABLE version (
+--     version_id SERIAL UNIQUE NOT NULL,
+--     external_id UUID UNIQUE NOT NULL,
+--     version text,
+--     --  SOUNDNESS: there must be at least one row with this version_id in the verions_cached_representations table
+-- );
+
+INSERT INTO version (external_id, version) VALUES ('00000000-0000-0000-0000-000000000041', 'SF-version 2013'); -- 1
+INSERT INTO version (external_id, version) VALUES ('00000000-0000-0000-0000-000000000042', 'SF-version 2012'); -- 2
+INSERT INTO version (external_id, version) VALUES ('00000000-0000-0000-0000-000000000043', 'Gaudi wiki -version 2013'); -- 3
+INSERT INTO version (external_id, version) VALUES ('00000000-0000-0000-0000-000000000044', 'Art Nuveau wiki -version 2013'); --4 
+
+-- CREATE TABLE target_source (
+--     source_id SERIAL UNIQUE NOT NULL,
+--   external_id UUID UNIQUE NOT NULL,
+--     time_stamp timestamp with time zone default now(),
+--     link_uri text,
+--     version_id integer REFERENCES version(version_id), ---- DIFFERS from the xml structure, 
+--     -- SOUNDNESS: there must be exactly version at the version table  ++   
+--     -- soundness: there must be at least one annotation referring to this source
+-- );
+
+
+INSERT INTO target_source (external_id, link_uri, version_id) VALUES ('00000000-0000-0000-0000-000000000031', 'http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia', 1);
+INSERT INTO target_source (external_id, link_uri, version_id) VALUES ('00000000-0000-0000-0000-000000000032', 'http://nl.wikipedia.org/wiki/Antoni_Gaud%C3%AD', 3);
+INSERT INTO target_source (external_id, link_uri, version_id) VALUES ('00000000-0000-0000-0000-000000000033', 'http://en.wikipedia.org/wiki/Art_Nouveau', 4);
+

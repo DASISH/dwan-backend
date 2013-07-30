@@ -72,9 +72,10 @@ public class TestBackendConstants {
     
     public static final String annotaiontoDeleteInDB="INSERT INTO annotation (annotation_id, owner_id,headline,body_xml, external_id) VALUES (25, 111, 'Annotation to delete','<html><body>some html 4</body></html>', '00000000-0000-0000-0000-000000000025');";
     
-    public static final String _TEST_OWNER_3_EXT_ID = "00000000-0000-0000-0000-000000000111";
+    public static final String _TEST_USER_3_EXT_ID = "00000000-0000-0000-0000-000000000111";
     public static final String _TEST_OWNER_4_EXT_ID = "00000000-0000-0000-0000-000000000112";  
     public static final String _TEST_OWNER_5_EXT_ID = "00000000-0000-0000-0000-000000000113";  
     
+    public static final String _TEST_USER_XXX_EXT_ID = "00000000-0000-0000-0000-000000000666";  
 }
 
