@@ -73,7 +73,7 @@ public interface AnnotationDao extends ResourceDao{
      * @param annotation added to the table with annotations 
      * @return annotationIdentifier of the newly added annotation; returns null if something went wrong and annotation was not added or more than one row in the annotation table was affected
      */
-    public AnnotationIdentifier addAnnotation(Annotation annotation);
+    public Annotation addAnnotation(Annotation annotation, Number ownerID);
  
     /**
      * 

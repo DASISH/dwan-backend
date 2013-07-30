@@ -16,14 +16,14 @@
 -- Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 --
 
-INSERT INTO principal (principal_name, external_id) VALUES ('a user', '00000000-0000-0000-0000-000000000003');
-INSERT INTO principal (principal_name, external_id) VALUES ('b user', '00000000-0000-0000-0000-000000000004');
+INSERT INTO principal (principal_name, external_id) VALUES ('a user', '00000000-0000-0000-0000-000000000003'); -- 1
+INSERT INTO principal (principal_name, external_id) VALUES ('b user', '00000000-0000-0000-0000-000000000004');-- 2
 
-INSERT INTO notebook (title, owner_id, external_id) VALUES ('a notebook', 1, '00000000-0000-0000-0000-000000000001');
+INSERT INTO notebook (title, owner_id, external_id) VALUES ('a notebook', 2, '00000000-0000-0000-0000-000000000001');
 -- INSERT INTO notebook (title, owner_id, external_id) VALUES ('a notebook', 1, 1);
 INSERT INTO annotation (owner_id,headline,body_xml, external_id) VALUES (1, 'a headline','<html><body>some html</body></html>', '00000000-0000-0000-0000-000000000005');
 
-INSERT INTO notebook (title, owner_id, external_id) VALUES ('a second notebook', 1, '00000000-0000-0000-0000-000000000002');
+INSERT INTO notebook (title, owner_id, external_id) VALUES ('a second notebook', 2, '00000000-0000-0000-0000-000000000002');
 -- INSERT INTO notebook (title, owner_id, external_id) VALUES ('a second notebook', 1, 2);
 INSERT INTO notebooks_annotations (notebook_id,annotation_id) VALUES (1,1);
 INSERT INTO notebooks_annotations (notebook_id,annotation_id) VALUES (2,1);
@@ -31,19 +31,25 @@ INSERT INTO notebooks_annotations (notebook_id,annotation_id) VALUES (2,1);
 
 -- Test data for jdbcAnnotationDao --
 
-INSERT INTO notebook (notebook_id, title, owner_id, external_id) VALUES (11, 'Notebook 11', 111, '00000000-0000-0000-0000-000000000011');
-INSERT INTO notebook (notebook_id, title, owner_id, external_id) VALUES (12, 'Notebook 12', 112, '00000000-0000-0000-0000-000000000012');
-INSERT INTO notebook (notebook_id, title, owner_id, external_id) VALUES (13, 'Notebook 13', 113, '00000000-0000-0000-0000-000000000013');
+INSERT INTO principal (principal_name, external_id) VALUES ('Twan', '00000000-0000-0000-0000-000000000111'); --3 
+INSERT INTO principal (principal_name, external_id) VALUES ('Peter', '00000000-0000-0000-0000-000000000112'); -- 4
+INSERT INTO principal (principal_name, external_id) VALUES ('Olha', '00000000-0000-0000-0000-000000000113'); -- 5
 
-INSERT INTO annotation (annotation_id, owner_id,headline,body_xml, external_id) VALUES (21, 111, 'Sagrada Famiglia','<html><body>some html 1</body></html>', '00000000-0000-0000-0000-000000000021');
-INSERT INTO annotation (annotation_id, owner_id,headline,body_xml, external_id) VALUES (22, 112, 'Gaudi','<html><body>some html 2 </body></html>', '00000000-0000-0000-0000-000000000022');
-INSERT INTO annotation (annotation_id, owner_id,headline,body_xml, external_id) VALUES (23, 113, 'Art Nuveau','<html><body>some html 3</body></html>', '00000000-0000-0000-0000-000000000023');
-INSERT INTO annotation (annotation_id, owner_id,headline,body_xml, external_id) VALUES (25, 111, 'Annotation to delete','<html><body>some html 4</body></html>', '00000000-0000-0000-0000-000000000025');
+INSERT INTO notebook (notebook_id, title, owner_id, external_id) VALUES (11, 'Notebook 11', 3, '00000000-0000-0000-0000-000000000011');
+INSERT INTO notebook (notebook_id, title, owner_id, external_id) VALUES (12, 'Notebook 12', 4, '00000000-0000-0000-0000-000000000012');
+INSERT INTO notebook (notebook_id, title, owner_id, external_id) VALUES (13, 'Notebook 13', 5, '00000000-0000-0000-0000-000000000013');
+
+INSERT INTO annotation (annotation_id, owner_id,headline,body_xml, external_id) VALUES (21, 3, 'Sagrada Famiglia','<html><body>some html 1</body></html>', '00000000-0000-0000-0000-000000000021');
+INSERT INTO annotation (annotation_id, owner_id,headline,body_xml, external_id) VALUES (22, 4, 'Gaudi','<html><body>some html 2 </body></html>', '00000000-0000-0000-0000-000000000022');
+INSERT INTO annotation (annotation_id, owner_id,headline,body_xml, external_id) VALUES (23, 5, 'Art Nuveau','<html><body>some html 3</body></html>', '00000000-0000-0000-0000-000000000023');
+INSERT INTO annotation (annotation_id, owner_id,headline,body_xml, external_id) VALUES (25, 3, 'Annotation to delete','<html><body>some html 4</body></html>', '00000000-0000-0000-0000-000000000025');
 
 
 
 INSERT INTO notebooks_annotations (notebook_id,annotation_id) VALUES (11,21);
 INSERT INTO notebooks_annotations (notebook_id,annotation_id) VALUES (11,22);
 INSERT INTO notebooks_annotations (notebook_id,annotation_id) VALUES (12,23);
+
+
 
 

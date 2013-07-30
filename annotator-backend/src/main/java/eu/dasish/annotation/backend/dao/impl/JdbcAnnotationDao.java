@@ -226,32 +226,38 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         //TODO implement deleting sources (see the specification document and the interfaces' javadoc
     }
      
-      
-   //////////////////////////////////////////////
-   /* CREATE TABLE annotation (
-    annotation_id SERIAL UNIQUE NOT NULL,
-    external_id UUID UNIQUE NOT NULL,
-    time_stamp timestamp with time zone default now(),
-    owner_id integer,
-    headline text,
-    body_xml xml */
-
+ 
    
+   // TODO: so far URI in the xml is the same as the external_id in the DB!!
+   // Chnage it when the decision is taken!!!
     @Override
-    public AnnotationIdentifier addAnnotation(Annotation annotation) {
+    public Annotation addAnnotation(Annotation annotation, Number ownerID) {
+        
+        if (annotation == null) {
+            return null;
+        } 
+        
         try {
+            Annotation result = makeFreshCopy(annotation);
+            
+            ResourceREF ownerRef = new ResourceREF();
+            ownerRef.setRef(String.valueOf(ownerID));
+            result.setOwner(ownerRef);
+            
             AnnotationIdentifier annotationIdentifier = new AnnotationIdentifier();
+            result.setURI(annotationIdentifier.toString());
+            
             Map<String, Object> params = new HashMap<String, Object>();
             params.put("externalId", annotationIdentifier.toString());
-            params.put("timeStamp", annotation.getTimeStamp());
-            params.put("ownerId", annotation.getOwner().getRef());
+            params.put("timeStamp", annotation.getTimeStamp());           
+            params.put("ownerId", ownerID);
             params.put("headline", annotation.getHeadline());
             // may be changed once we elaborate the body
             params.put("bodyXml", annotation.getBody().getAny().get(0).toString());
             String sql = "INSERT INTO "+annotationTableName + "("+external_id+","+ time_stamp+"," + owner_id+","+headline+","+body_xml+" ) VALUES (:externalId, :timeStamp,  :ownerId, :headline, :bodyXml)";
             final int affectedRows = getSimpleJdbcTemplate().update(sql, params);
             if (affectedRows == 1) {
-                return annotationIdentifier;
+                return result;
             }
             else {
                 // something went wrong
@@ -326,6 +332,24 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         return result;
     }
    
+    //TODO: update when target sources and permissions are added
+    private  Annotation makeFreshCopy(Annotation annotation){
+        
+        if (annotation == null) {
+            return null;
+        }
+        
+        Annotation result = new Annotation();
+        result.setBody(annotation.getBody());
+        result.setHeadline(annotation.getHeadline());
+        result.setOwner(annotation.getOwner());
+        result.setPermissions(annotation.getPermissions());
+        result.setTargetSources(annotation.getTargetSources());
+        result.setTimeStamp(annotation.getTimeStamp());
+        result.setURI(annotation.getURI());
+        
+        return result;
+    }
     
 }
            
