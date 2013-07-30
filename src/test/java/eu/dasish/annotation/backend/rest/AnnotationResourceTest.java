@@ -70,8 +70,8 @@ public class AnnotationResourceTest {
     @Test
     public void testGetAnnotation() throws SQLException {
         System.out.println("getAnnotation");
-        final String annotationIdentifier= TestBackendConstants._TEST_ANNOT_1_EXT;
-        final int annotationID = TestBackendConstants._TEST_ANNOT_1_INT;        
+        final String annotationIdentifier= TestBackendConstants._TEST_ANNOT_2_EXT;
+        final int annotationID = 2;        
         final Annotation expectedAnnotation = (new TestInstances()).getAnnotationOne();
         // the result of the mocking chain is the same as the expected annotation.        
         mockery.checking(new Expectations() {
@@ -96,30 +96,30 @@ public class AnnotationResourceTest {
         System.out.println("deleteAnnotation");
         mockery.checking(new Expectations() {
             {
-                oneOf(annotationDao).getAnnotationID(new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_5_EXT_TO_BE_DELETED));                
-                will(returnValue(TestBackendConstants._TEST_ANNOT_5_INT_TO_BE_DELETED));
+                oneOf(annotationDao).getAnnotationID(new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_5_EXT));                
+                will(returnValue(5));
                 
-                oneOf(annotationDao).deleteAnnotation(TestBackendConstants._TEST_ANNOT_5_INT_TO_BE_DELETED);
+                oneOf(annotationDao).deleteAnnotation(5);
                 will(returnValue(1));
             }
         });
         
-        String result = annotationResource.deleteAnnotation(TestBackendConstants._TEST_ANNOT_5_EXT_TO_BE_DELETED);
+        String result = annotationResource.deleteAnnotation(TestBackendConstants._TEST_ANNOT_5_EXT);
         assertEquals("1", result);
         
          // now, try to delete the same annotation one more time
         // if it has been already deleted then the method under testing should return 0
         mockery.checking(new Expectations() {
             {
-                oneOf(annotationDao).getAnnotationID(new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_5_EXT_TO_BE_DELETED));                
-                will(returnValue(TestBackendConstants._TEST_ANNOT_5_INT_TO_BE_DELETED));
+                oneOf(annotationDao).getAnnotationID(new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_5_EXT));                
+                will(returnValue(5));
                 
-                oneOf(annotationDao).deleteAnnotation(TestBackendConstants._TEST_ANNOT_5_INT_TO_BE_DELETED);
+                oneOf(annotationDao).deleteAnnotation(5);
                 will(returnValue(0));
             }
         });
         
-        result = annotationResource.deleteAnnotation(TestBackendConstants._TEST_ANNOT_5_EXT_TO_BE_DELETED);
+        result = annotationResource.deleteAnnotation(TestBackendConstants._TEST_ANNOT_5_EXT);
         assertEquals("0", result);
     }
     
@@ -135,16 +135,16 @@ public class AnnotationResourceTest {
         AnnotationIdentifier annotationIdentifier = new GenericType<AnnotationIdentifier>(){}.getRawClass().newInstance();
         addedAnnotation.setURI(annotationIdentifier.toString());
         ResourceREF ownerRef = new ResourceREF();
-        ownerRef.setRef(String.valueOf(TestBackendConstants._TEST_ANNOT_TO_ADD_OWNER));
+        ownerRef.setRef(String.valueOf(5));
         addedAnnotation.setOwner(ownerRef);
        
       
         mockery.checking(new Expectations() {
             {
-                oneOf(userDao).getInternalID(new UserIdentifier(TestBackendConstants._TEST_OWNER_5_EXT_ID));
-                will(returnValue(TestBackendConstants._TEST_ANNOT_TO_ADD_OWNER));
+                oneOf(userDao).getInternalID(new UserIdentifier(TestBackendConstants._TEST_USER_5_EXT_ID));
+                will(returnValue(5));
                 
-                oneOf(annotationDao).addAnnotation(annotationToAdd, TestBackendConstants._TEST_ANNOT_TO_ADD_OWNER);
+                oneOf(annotationDao).addAnnotation(annotationToAdd, 5);
                 will(returnValue(addedAnnotation));
             }
         });
@@ -152,11 +152,11 @@ public class AnnotationResourceTest {
         
         
         final MockHttpServletRequest httpServletRequest = new MockHttpServletRequest();
-        httpServletRequest.setRemoteUser(TestBackendConstants._TEST_OWNER_5_EXT_ID);        
+        httpServletRequest.setRemoteUser(TestBackendConstants._TEST_USER_5_EXT_ID);        
         annotationResource.setHttpRequest(httpServletRequest);
         
         JAXBElement<Annotation> result = annotationResource.createAnnotation(annotationToAdd); 
-        assertEquals(String.valueOf(TestBackendConstants._TEST_ANNOT_TO_ADD_OWNER), result.getValue().getOwner().getRef());
+        assertEquals(String.valueOf(5), result.getValue().getOwner().getRef());
         assertEquals(annotationIdentifier.toString(), result.getValue().getURI());
         
         

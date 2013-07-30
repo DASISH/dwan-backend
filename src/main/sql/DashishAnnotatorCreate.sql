@@ -166,8 +166,8 @@ CREATE TABLE notebook (
 
 CREATE TABLE annotations_target_sources (
    annotation_id integer REFERENCES annotation(annotation_id), -- defining a foreign key: there must be a uniquely defined row in "annotation", that is defined by "annotation_id"
-   source_id integer REFERENCES target_source(source_id),
-   unique(annotation_id, source_id),
+   -- source_id integer REFERENCES target_source(source_id),
+   -- unique(annotation_id, source_id),
 );
 
 

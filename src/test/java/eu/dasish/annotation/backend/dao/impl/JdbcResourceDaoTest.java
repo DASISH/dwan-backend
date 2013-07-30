@@ -81,29 +81,6 @@ public class JdbcResourceDaoTest {
     public void tearDown() {
     }
     
-    
-     /**
-     * Test-helper of isNotebookInTheDataBase method, of class JdbcResourceDao.
-     * boolean isNotebookInTheDataBase(Number notebookID)
-     */
-    protected <T  extends JdbcResourceDao> void testIsNotebookInTheDataBase(T jdbcResourceDao) {
-        System.out.println("isNotebookInTheDataBase");
-        
-        final boolean testOne =  jdbcResourceDao.isNotebookInTheDataBase(TestBackendConstants._TEST_NOTEBOOK_1_INT);
-        assertEquals(true, testOne);
-        
-        final boolean testTwo =  jdbcResourceDao.isNotebookInTheDataBase(TestBackendConstants._TEST_NOTEBOOK_2_INT);
-        assertEquals(true, testTwo);
-        
-        final boolean testThree =  jdbcResourceDao.isNotebookInTheDataBase(TestBackendConstants._TEST_NOTEBOOK_3_INT);
-        assertEquals(true, testThree);
-        
-        final boolean testFour =  jdbcResourceDao.isNotebookInTheDataBase(TestBackendConstants._TEST_ANNOT_4_INT_NOT_IN_THE_DB);
-        assertEquals(false, testFour);
-        
-        final boolean testFive =  jdbcResourceDao.isNotebookInTheDataBase(null);
-        assertEquals(false, testFive);
-    }
-
+   
 
 }

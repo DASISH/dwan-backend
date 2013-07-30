@@ -38,8 +38,6 @@ public class JdbcUserDaoTest extends JdbcResourceDaoTest{
     
     @Autowired
     private JdbcUserDao jdbcUserDao;
-    
-  
     TestInstances testInstances = new TestInstances();
 
     /**

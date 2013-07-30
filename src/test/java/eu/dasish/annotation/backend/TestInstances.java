@@ -39,12 +39,12 @@ public class TestInstances {
     
     
     private Annotation makeAnnotationOne(){
-        Annotation result = makeAnnotation(TestBackendConstants._TEST_ANNOT_1_BODY, TestBackendConstants._TEST_ANNOT_1_HEADLINE, TestBackendConstants._TEST_ANNOT_1_OWNER);
+        Annotation result = makeAnnotation(TestBackendConstants._TEST_ANNOT_2_BODY, TestBackendConstants._TEST_ANNOT_2_HEADLINE, TestBackendConstants._TEST_ANNOT_2_OWNER);
         return result;
     }
     
     private Annotation makeAnnotationToAdd(){
-        Annotation result = makeAnnotation(TestBackendConstants._TEST_ANNOT_TO_ADD_BODY, TestBackendConstants._TEST_ANNOT_TO_ADD_HEADLINE, TestBackendConstants._TEST_ANNOT_TO_ADD_OWNER);
+        Annotation result = makeAnnotation(TestBackendConstants._TEST_ANNOT_TO_ADD_BODY, TestBackendConstants._TEST_ANNOT_TO_ADD_HEADLINE, 5);
         return result;
     }
     
