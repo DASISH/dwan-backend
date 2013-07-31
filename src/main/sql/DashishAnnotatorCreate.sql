@@ -64,6 +64,7 @@ CREATE TABLE principal (
 );
 
 
+
 ------------------------------------------------------------------------
 -- <xs:complexType name="Annotation">
 --        <xs:sequence>
@@ -190,6 +191,40 @@ CREATE TABLE versions_cached_representations (
     unique(version_id, cached_representation_id),
 );
 
+-------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------
+--  <xs:simpleType name="Permission">
+--         <xs:restriction base="xs:string">
+--             <xs:enumeration value="owner"/>
+--             <xs:enumeration value="reader"/>
+--             <xs:enumeration value="writer"/>
+--         </xs:restriction>
+--     </xs:simpleType>
+
+
+--     <xs:complexType name="UserWithPermission">
+--         <xs:complexContent>
+--             <xs:extension base="ResourceREF">
+--                 <xs:attribute name="permission" type="Permission" use="required"/>
+--             </xs:extension>
+--         </xs:complexContent>
+--     </xs:complexType>
+
+
+--     <xs:complexType name="PermissionList">
+--         <xs:sequence>
+--             <xs:element name="user" type="UserWithPermission" minOccurs="1" maxOccurs="unbounded"/>
+--         </xs:sequence>
+--         <xs:attribute name="URI" type="xs:anyURI" use="required"/>
+--     </xs:complexType>
+
+CREATE TABLE annotations_users_permissions (
+annotation_id integer REFERENCES annotation(annotation_id),
+principal_id integer REFERENCES principal(principal_id),
+permission_  text,
+unique(annotation_id, principal_id),
+CHECK(permission_ = 'reader' OR permission_='writer' OR permission_='owner')
+)
 
 ---------------------------------------------------------------------------------------------
 ALTER TABLE ONLY annotation
