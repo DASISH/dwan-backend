@@ -50,6 +50,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     final static protected String title="title";
     final static protected String principal_id = "principal_id";
     final static protected String time_stamp = "time_stamp";
+    final static protected String permission = "permission_";
     
     // derived string constants: table+field names 
     

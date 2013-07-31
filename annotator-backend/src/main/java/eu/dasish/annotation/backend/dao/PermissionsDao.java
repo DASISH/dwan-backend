@@ -17,27 +17,20 @@
  */
 package eu.dasish.annotation.backend.dao;
 
-import eu.dasish.annotation.backend.identifiers.UserIdentifier;
+import eu.dasish.annotation.schema.UserWithPermission;
+import java.util.List;
 
 /**
  *
  * @author olhsha
  */
-public interface UserDao extends ResourceDao{
+public interface PermissionsDao {
     
-    /**
+     /**
      * 
-     * @param userIDentifier
-     * @return the internal identifier of "userIDentifier"
+     * @param annotationId
+     * @return retrieves all the pairs (user-permission) for "annotationId" from the table annotations_principals permissions
      */
-    Number getInternalID(UserIdentifier userIDentifier);
+    public List<UserWithPermission>  retrievePermissions(Number annotationId);
     
-    /**
-     * 
-     * @param internalId
-     * @return the external UserIdentifier of internalId;
-     */
-    UserIdentifier getExternalID(Number internalId);
 }
-
-
