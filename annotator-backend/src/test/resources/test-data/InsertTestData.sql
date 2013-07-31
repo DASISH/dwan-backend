@@ -49,6 +49,7 @@ INSERT INTO annotation (owner_id,headline,body_xml, external_id) VALUES (3, 'Ann
 INSERT INTO notebooks_annotations (notebook_id,annotation_id) VALUES (3,2);
 INSERT INTO notebooks_annotations (notebook_id,annotation_id) VALUES (3,3);
 INSERT INTO notebooks_annotations (notebook_id,annotation_id) VALUES (4,4);
+INSERT INTO notebooks_annotations (notebook_id,annotation_id) VALUES (5,5);
 
 
 
@@ -135,3 +136,22 @@ INSERT INTO versions_cached_representations (version_id, cached_representation_i
 INSERT INTO versions_cached_representations (version_id, cached_representation_id) VALUES (2, 3);
 INSERT INTO versions_cached_representations (version_id, cached_representation_id) VALUES (3, 2);
 INSERT INTO versions_cached_representations (version_id, cached_representation_id) VALUES (4, 4);
+
+
+---- PERMISSIONS --------------------------------------------------------------------------------------------
+
+INSERT INTO annotations_principals_permissions (annotation_id, principal_id, permission_) VALUES (2, 3, 'owner');
+INSERT INTO annotations_principals_permissions (annotation_id, principal_id, permission_) VALUES (2, 4, 'writer');
+INSERT INTO annotations_principals_permissions (annotation_id, principal_id, permission_) VALUES (2, 5, 'reader');
+
+INSERT INTO annotations_principals_permissions (annotation_id, principal_id, permission_) VALUES (3, 4, 'owner');
+INSERT INTO annotations_principals_permissions (annotation_id, principal_id, permission_) VALUES (3, 3, 'reader');
+INSERT INTO annotations_principals_permissions (annotation_id, principal_id, permission_) VALUES (3, 5, 'writer');
+
+INSERT INTO annotations_principals_permissions (annotation_id, principal_id, permission_) VALUES (4, 5, 'owner');
+INSERT INTO annotations_principals_permissions (annotation_id, principal_id, permission_) VALUES (4, 3, 'reader');
+INSERT INTO annotations_principals_permissions (annotation_id, principal_id, permission_) VALUES (4, 4, 'reader');
+
+INSERT INTO annotations_principals_permissions (annotation_id, principal_id, permission_) VALUES (5, 3, 'owner');
+INSERT INTO annotations_principals_permissions (annotation_id, principal_id, permission_) VALUES (5, 4, 'writer');
+INSERT INTO annotations_principals_permissions (annotation_id, principal_id, permission_) VALUES (5, 5, 'writer');

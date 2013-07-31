@@ -218,13 +218,15 @@ CREATE TABLE versions_cached_representations (
 --         <xs:attribute name="URI" type="xs:anyURI" use="required"/>
 --     </xs:complexType>
 
-CREATE TABLE annotations_users_permissions (
+CREATE TABLE annotations_principals_permissions (
 annotation_id integer REFERENCES annotation(annotation_id),
 principal_id integer REFERENCES principal(principal_id),
 permission_  text,
 unique(annotation_id, principal_id),
-CHECK(permission_ = 'reader' OR permission_='writer' OR permission_='owner')
-)
+CHECK(permission_ = 'reader' OR permission_='writer' OR permission_='owner'),
+-- soundness: owner in this table must be the same as the owner in the annotation table ---
+-- check for any pair (annotation, principal) there must be exactly one row in this table -- ???
+);
 
 ---------------------------------------------------------------------------------------------
 ALTER TABLE ONLY annotation

@@ -218,6 +218,10 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
    @Override   
      public int deleteAnnotation(Number annotationId) throws SQLException{
         String sqlAnnotation = "DELETE FROM " + annotationTableName + " where "+annotation_id + " = ?";
+        String sqlPermissions = "DELETE FROM " + permissionsTableName + " where "+annotation_id + " = ?";
+        String sqlNotebooks = "DELETE FROM " + notebooksAnnotationsTableName + " where "+annotation_id + " = ?";
+        int affectedNotebooks = getSimpleJdbcTemplate().update(sqlNotebooks, annotationId);
+        int affectedPermissions = getSimpleJdbcTemplate().update(sqlPermissions, annotationId);
         int affectedAnnotations = getSimpleJdbcTemplate().update(sqlAnnotation, annotationId);
         if (affectedAnnotations>1) {
             throw new SQLException("There was more than one annotation ("+affectedAnnotations+") with the same ID "+annotationId);
