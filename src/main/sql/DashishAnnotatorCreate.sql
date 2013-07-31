@@ -161,6 +161,20 @@ CREATE TABLE notebook (
 );
 
 
+--------------------------------------------------------------------------------------------
+--  <xs:simpleType name="Permission">
+--         <xs:restriction base="xs:string">
+--             <xs:enumeration value="owner"/>
+--             <xs:enumeration value="reader"/>
+--             <xs:enumeration value="writer"/>
+--         </xs:restriction>
+--     </xs:simpleType>
+
+
+
+CREATE TABLE permission_ (
+  permission_mode text UNIQUE NOT NULL,
+)
 
 -----------------------------------------------------------------------
 --------------------- JOINT TABLES ------------------------------------
@@ -192,14 +206,6 @@ CREATE TABLE versions_cached_representations (
 );
 
 -------------------------------------------------------------------------------
---------------------------------------------------------------------------------------------
---  <xs:simpleType name="Permission">
---         <xs:restriction base="xs:string">
---             <xs:enumeration value="owner"/>
---             <xs:enumeration value="reader"/>
---             <xs:enumeration value="writer"/>
---         </xs:restriction>
---     </xs:simpleType>
 
 
 --     <xs:complexType name="UserWithPermission">
@@ -224,9 +230,8 @@ CREATE TABLE versions_cached_representations (
 CREATE TABLE annotations_principals_permissions (
 annotation_id integer REFERENCES annotation(annotation_id),
 principal_id integer REFERENCES principal(principal_id),
-permission_  text,
+permission_  text REFERENCES permission_(permission_mode),
 unique(annotation_id, principal_id),
-CHECK(permission_ = 'reader' OR permission_='writer' OR permission_='owner'),
 -- 1 soundness: ??? owner in this table must be the same as the owner in the annotation table ---
 -- 2 soundness ??? check for any pair (annotation, principal) there must be exactly one row in this table: 
 -- impossible because of deleting an nnotation: first we have to remove it from this table

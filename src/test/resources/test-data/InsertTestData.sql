@@ -141,6 +141,10 @@ INSERT INTO versions_cached_representations (version_id, cached_representation_i
 
 ---- PERMISSIONS --------------------------------------------------------------------------------------------
 
+INSERT INTO permission_(permission_mode) VALUES ('owner');
+INSERT INTO permission_(permission_mode) VALUES ('writer');
+INSERT INTO permission_(permission_mode) VALUES ('reader');
+
 INSERT INTO annotations_principals_permissions (annotation_id, principal_id, permission_) VALUES (2, 3, 'owner');
 INSERT INTO annotations_principals_permissions (annotation_id, principal_id, permission_) VALUES (2, 4, 'writer');
 INSERT INTO annotations_principals_permissions (annotation_id, principal_id, permission_) VALUES (2, 5, 'reader');
