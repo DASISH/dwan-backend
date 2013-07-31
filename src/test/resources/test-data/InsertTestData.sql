@@ -156,3 +156,5 @@ INSERT INTO annotations_principals_permissions (annotation_id, principal_id, per
 INSERT INTO annotations_principals_permissions (annotation_id, principal_id, permission_) VALUES (5, 3, 'owner');
 INSERT INTO annotations_principals_permissions (annotation_id, principal_id, permission_) VALUES (5, 4, 'writer');
 INSERT INTO annotations_principals_permissions (annotation_id, principal_id, permission_) VALUES (5, 5, 'writer');
+-- checking integrity control:
+-- INSERT INTO annotations_principals_permissions (annotation_id, principal_id, permission_) VALUES (5, 5, 'reader');
