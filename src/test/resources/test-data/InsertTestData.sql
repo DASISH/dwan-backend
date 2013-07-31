@@ -38,6 +38,7 @@ INSERT INTO principal (principal_name, external_id) VALUES ('Olha', '00000000-00
 INSERT INTO notebook (title, owner_id, external_id) VALUES ('Notebook 3', 3, '00000000-0000-0000-0000-000000000011'); -- 3
 INSERT INTO notebook (title, owner_id, external_id) VALUES ('Notebook 4', 4, '00000000-0000-0000-0000-000000000012'); --4
 INSERT INTO notebook (title, owner_id, external_id) VALUES ('Notebook 5', 5, '00000000-0000-0000-0000-000000000013'); --5
+INSERT INTO notebook (title, owner_id, external_id) VALUES ('Notebook 6', 5, '00000000-0000-0000-0000-000000000014'); --6
 
 INSERT INTO annotation (owner_id,headline,body_xml, external_id) VALUES (3, 'Sagrada Famiglia','<html><body>some html 1</body></html>', '00000000-0000-0000-0000-000000000021'); --2
 INSERT INTO annotation (owner_id,headline,body_xml, external_id) VALUES (4, 'Gaudi','<html><body>some html 2 </body></html>', '00000000-0000-0000-0000-000000000022'); --3

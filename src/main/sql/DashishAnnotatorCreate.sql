@@ -225,7 +225,8 @@ permission_  text,
 unique(annotation_id, principal_id),
 CHECK(permission_ = 'reader' OR permission_='writer' OR permission_='owner'),
 -- soundness: owner in this table must be the same as the owner in the annotation table ---
--- check for any pair (annotation, principal) there must be exactly one row in this table -- ???
+-- ??? check for any pair (annotation, principal) there must be exactly one row in this table: 
+-- impossible because of deleting an nnotation: first we have to remove it from this table
 );
 
 ---------------------------------------------------------------------------------------------
