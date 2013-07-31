@@ -154,7 +154,7 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest{
         assertEquals(4, annotationIDsTwo.get(0).intValue());
         
         // test three, empty notebook
-        final List<Number> annotationIDsThree = jdbcNotebookDao.getAnnotationIDs(5);
+        final List<Number> annotationIDsThree = jdbcNotebookDao.getAnnotationIDs(6);
         assertEquals(0, annotationIDsThree.size());
         
         // test four, null-notebook
@@ -189,7 +189,7 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest{
         
         // test Three  "empty" 
         setMockeryNotebookThreeEmpty();         
-        List<ResourceREF> testListThree = jdbcNotebookDao.getAnnotationREFsOfNotebook(5);
+        List<ResourceREF> testListThree = jdbcNotebookDao.getAnnotationREFsOfNotebook(6);
         assertEquals(0, testListThree.size()); 
        
         // test Five Null-notebook
@@ -223,7 +223,7 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest{
         // according to dasish.xsd if an Annotation is created then its list of annotations must contain at least one element!
         // therefore: no annotations in the notebook ==> Annotations-pbject must be null :(
         setMockeryNotebookThreeEmpty(); 
-        Annotations annotationsThree = jdbcNotebookDao.getAnnotations(5);
+        Annotations annotationsThree = jdbcNotebookDao.getAnnotations(6);
         assertEquals(null, annotationsThree); 
         
        
