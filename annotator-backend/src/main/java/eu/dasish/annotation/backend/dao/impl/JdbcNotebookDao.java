@@ -286,4 +286,12 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
         }
         return annotationIds;
     }
+    
+    ////////////////////////////////////////////////////////////
+    @Override
+    public int removeAnnotation(Number annotationID){        
+        String sqlNotebooks = "DELETE FROM " + notebooksAnnotationsTableName + " where "+annotation_id + " = ?";
+        int affectedNotebooks = getSimpleJdbcTemplate().update(sqlNotebooks, annotationID);
+        return affectedNotebooks;
+    }
 }

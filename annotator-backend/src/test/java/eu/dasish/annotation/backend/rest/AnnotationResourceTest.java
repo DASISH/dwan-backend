@@ -21,10 +21,13 @@ import com.sun.jersey.api.client.GenericType;
 import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.TestInstances;
 import eu.dasish.annotation.backend.dao.AnnotationDao;
+import eu.dasish.annotation.backend.dao.NotebookDao;
+import eu.dasish.annotation.backend.dao.PermissionsDao;
 import eu.dasish.annotation.backend.dao.UserDao;
 import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
 import eu.dasish.annotation.backend.identifiers.UserIdentifier;
 import eu.dasish.annotation.schema.Annotation;
+import eu.dasish.annotation.schema.Permission;
 import eu.dasish.annotation.schema.ResourceREF;
 import java.sql.SQLException;
 import javax.xml.bind.JAXBElement;
@@ -39,15 +42,13 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.lang.InstantiationException;
 import javax.servlet.ServletException;
 import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.web.context.ContextLoaderListener;
-import org.springframework.web.context.WebApplicationContext;
 /**
  *
  * @author olhsha
  */
 
 @RunWith(value = SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = {"/spring-test-config/dataSource.xml", "/spring-test-config/mockAnnotationDao.xml", "/spring-test-config/mockUserDao.xml", "/spring-test-config/mockNotebookDao.xml", "/spring-test-config/mockery.xml"})
+@ContextConfiguration(locations = {"/spring-test-config/dataSource.xml", "/spring-test-config/mockAnnotationDao.xml", "/spring-test-config/mockUserDao.xml", "/spring-test-config/mockPermissionsDao.xml", "/spring-test-config/mockNotebookDao.xml", "/spring-test-config/mockery.xml"})
 public class AnnotationResourceTest {
     
     @Autowired
@@ -56,6 +57,10 @@ public class AnnotationResourceTest {
     private AnnotationDao annotationDao;
     @Autowired
     private UserDao userDao;
+    @Autowired
+    private PermissionsDao permissionsDao;
+    @Autowired
+    private NotebookDao notebookDao;
     
     @Autowired
     private AnnotationResource annotationResource;
@@ -77,7 +82,7 @@ public class AnnotationResourceTest {
         mockery.checking(new Expectations() {
             {
                 oneOf(annotationDao).getAnnotationID(new AnnotationIdentifier(annotationIdentifier));                
-                will(returnValue(annotationID));
+                will(returnValue(annotationID));                
                 
                 oneOf(annotationDao).getAnnotation(annotationID);                
                 will(returnValue(expectedAnnotation));
@@ -94,10 +99,11 @@ public class AnnotationResourceTest {
     @Test
     public void testDeleteAnnotation() throws SQLException {
         System.out.println("deleteAnnotation");
+        
         mockery.checking(new Expectations() {
             {
                 oneOf(annotationDao).getAnnotationID(new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_5_EXT));                
-                will(returnValue(5));
+                will(returnValue(5));     
                 
                 oneOf(annotationDao).deleteAnnotation(5);
                 will(returnValue(1));
@@ -132,20 +138,24 @@ public class AnnotationResourceTest {
         final Annotation annotationToAdd = new GenericType<Annotation>(){}.getRawClass().newInstance();
         
         final Annotation addedAnnotation = annotationToAdd;
-        AnnotationIdentifier annotationIdentifier = new GenericType<AnnotationIdentifier>(){}.getRawClass().newInstance();
+        final AnnotationIdentifier annotationIdentifier = new GenericType<AnnotationIdentifier>(){}.getRawClass().newInstance();
         addedAnnotation.setURI(annotationIdentifier.toString());
         ResourceREF ownerRef = new ResourceREF();
         ownerRef.setRef(String.valueOf(5));
         addedAnnotation.setOwner(ownerRef);
        
-      
+        final UserIdentifier owner = new UserIdentifier(TestBackendConstants._TEST_USER_5_EXT_ID);
+        
         mockery.checking(new Expectations() {
             {
-                oneOf(userDao).getInternalID(new UserIdentifier(TestBackendConstants._TEST_USER_5_EXT_ID));
+                oneOf(userDao).getInternalID(owner);
                 will(returnValue(5));
                 
                 oneOf(annotationDao).addAnnotation(annotationToAdd, 5);
                 will(returnValue(addedAnnotation));
+            
+                oneOf(permissionsDao).addAnnotationPrincipalPermission(annotationIdentifier, owner, Permission.OWNER);
+                will(returnValue(1));
             }
         });
         

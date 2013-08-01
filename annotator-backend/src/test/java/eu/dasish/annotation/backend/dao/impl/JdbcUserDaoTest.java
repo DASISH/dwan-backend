@@ -37,7 +37,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 public class JdbcUserDaoTest extends JdbcResourceDaoTest{
     
     @Autowired
-    private JdbcUserDao jdbcUserDao;
+    JdbcUserDao jdbcUserDao;
     TestInstances testInstances = new TestInstances();
 
     /**
@@ -55,4 +55,19 @@ public class JdbcUserDaoTest extends JdbcResourceDaoTest{
         Number testThree = jdbcUserDao.getInternalID(null);
         assertEquals(null, testThree);
     }
+    
+    
+    /**
+     * public UserIdentifier getExternalID(Number internalId)
+     */
+    @Test
+    public void testGetExternalID() {
+        UserIdentifier testOne = jdbcUserDao.getExternalID(3);
+        assertEquals(TestBackendConstants._TEST_USER_3_EXT_ID, testOne.toString());
+        
+        UserIdentifier testTwo = jdbcUserDao.getExternalID(null);
+        assertEquals(null, testTwo);
+    }
+    
+    
 }

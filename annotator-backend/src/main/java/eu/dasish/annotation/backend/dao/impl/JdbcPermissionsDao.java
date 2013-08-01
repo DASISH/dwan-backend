@@ -17,13 +17,18 @@
  */
 package eu.dasish.annotation.backend.dao.impl;
 
+import eu.dasish.annotation.backend.dao.AnnotationDao;
 import eu.dasish.annotation.backend.dao.PermissionsDao;
 import eu.dasish.annotation.backend.dao.UserDao;
+import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
+import eu.dasish.annotation.backend.identifiers.UserIdentifier;
 import eu.dasish.annotation.schema.Permission;
 import eu.dasish.annotation.schema.UserWithPermission;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.sql.DataSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.RowMapper;
@@ -36,12 +41,16 @@ public class JdbcPermissionsDao extends JdbcResourceDao implements PermissionsDa
 
     @Autowired
     private UserDao jdbcUserDao;
+    
+    @Autowired
+    private AnnotationDao jdbcAnnotationDao;
    
     
     public JdbcPermissionsDao(DataSource dataSource) {
         setDataSource(dataSource);
     }
 
+    ///////////////////////////////////////////////////////////////////
     @Override
     public List<UserWithPermission> retrievePermissions(Number annotationId) {
         if (annotationId == null) {
@@ -60,5 +69,40 @@ public class JdbcPermissionsDao extends JdbcResourceDao implements PermissionsDa
             return result;
         }
     };
+    
+    /////////////////////////////////////////////////////////////////////////////////////////
+    @Override
+    public int addAnnotationPrincipalPermission(AnnotationIdentifier annotationIdenitifier, UserIdentifier userIdentifier, Permission permission) throws SQLException {
+        Map<String, Object> paramsPermissions = new HashMap<String, Object>();
+        paramsPermissions.put("annotationId", jdbcAnnotationDao.getAnnotationID(annotationIdenitifier));
+        paramsPermissions.put("principalId", jdbcUserDao.getInternalID(userIdentifier));
+        paramsPermissions.put("status", permission.value());
+        String sqlUpdatePermissionTable = "INSERT INTO " + permissionsTableName + " (" + annotation_id + "," + principal_id + "," + permission + ") VALUES (:annotationId, :principalId, :status)";
+        final int affectedPermissions = getSimpleJdbcTemplate().update(sqlUpdatePermissionTable, paramsPermissions);
+        return affectedPermissions;
+    }
+    
+    @Override
+    public int removeAnnotation(Number annotationID){        
+        String sqlPermissions = "DELETE FROM " + permissionsTableName + " where "+annotation_id + " = ?";        
+        int affectedPermissions = getSimpleJdbcTemplate().update(sqlPermissions, annotationID);
+        return affectedPermissions;
+    }
+   ///////////////////////////////////////////////////////////////////////////////// 
+    //TODO replace name "user" in the scheme beacuse it is misleading. E.g. replace it with 
+    // getUser actual gives you the list of PAIRS (user, permission) that are refferred from an annotation
+//   @Override 
+//   public PermissionList makeFreshPermissionList(UserIdentifier owner) {
+//       PermissionList result = new PermissionList();
+//       
+//       result.setURI((new PermissionListIdentifier()).toString());
+//       
+//       UserWithPermission idOwner = new UserWithPermission();
+//       idOwner.setPermission(Permission.fromValue("owner"));
+//       idOwner.setRef(owner.toString());
+//       
+//       result.getUser().add(idOwner);
+//       return result;
+//   }
     
 }

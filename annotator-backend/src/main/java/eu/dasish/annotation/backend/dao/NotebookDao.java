@@ -81,4 +81,11 @@ public interface NotebookDao extends ResourceDao {
      * @return returns the externalIds of the annotations contained in the notebookId
      */
     List<AnnotationIdentifier> getAnnotationExternalIDs(NotebookIdentifier notebookId);
+    
+    /**
+     * 
+     * @param annotationID
+     * @return removes the rows with annotationID from notebooks_annotations table
+     */
+    int removeAnnotation(Number annotationID);
 }

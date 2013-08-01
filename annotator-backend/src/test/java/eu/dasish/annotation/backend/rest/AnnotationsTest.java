@@ -21,14 +21,14 @@ import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.GenericType;
 import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.dao.AnnotationDao;
-import eu.dasish.annotation.backend.dao.UserDao;
+import eu.dasish.annotation.backend.dao.NotebookDao;
+import eu.dasish.annotation.backend.dao.PermissionsDao;
 import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
 import eu.dasish.annotation.backend.identifiers.UserIdentifier;
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.ObjectFactory;
-import eu.dasish.annotation.schema.ResourceREF;
+import eu.dasish.annotation.schema.Permission;
 import java.sql.SQLException;
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.MediaType;
 import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
@@ -42,12 +42,14 @@ import static org.junit.Assert.*;
 public class AnnotationsTest extends ResourcesTest{
     
     private AnnotationDao annotationDao;
-    private UserDao userDao;
+    private PermissionsDao permissionsDao;
+    private NotebookDao notebookDao;
     
     public AnnotationsTest() {
-        super(AnnotationResource.class.getPackage().getName());
+        super(AnnotationResource.class.getPackage().getName());        
         annotationDao = webAppContext.getBean(AnnotationDao.class);
-        userDao = webAppContext.getBean(UserDao.class);
+        permissionsDao = webAppContext.getBean(PermissionsDao.class);
+        notebookDao = webAppContext.getBean(NotebookDao.class);
     }
     
 
@@ -142,13 +144,18 @@ public class AnnotationsTest extends ResourcesTest{
         
         
         final Annotation addedAnnotation = annotationToAdd;
-        AnnotationIdentifier annotationIdentifier = new GenericType<AnnotationIdentifier>(){}.getRawClass().newInstance();
+        final AnnotationIdentifier annotationIdentifier = new GenericType<AnnotationIdentifier>(){}.getRawClass().newInstance();
         addedAnnotation.setURI(annotationIdentifier.toString());
-        
+        final UserIdentifier owner = new UserIdentifier(TestBackendConstants._TEST_USER_5_EXT_ID);
         mockery.checking(new Expectations() {
             {   
-                oneOf(annotationDao).addAnnotation(with(any(Annotation.class)), with(any(Number.class)));
+                
+            // TODO sould be mpre strict demands on  inputs  when the user handling mechanism is settled
+                oneOf(annotationDao).addAnnotation(with(aNonNull(Annotation.class)), with(any(Number.class)));
                 will(returnValue(addedAnnotation));
+                
+                oneOf(permissionsDao).addAnnotationPrincipalPermission(with(aNonNull(AnnotationIdentifier.class)), with(aNonNull(UserIdentifier.class)), with(aNonNull(Permission.class)));
+                will(returnValue(1));
             }
         });
        
