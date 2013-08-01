@@ -48,7 +48,7 @@ import static org.junit.Assert.assertNotNull;
  * @author Peter Withers <peter.withers@mpi.nl>
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration({"/spring-test-config/mockery.xml", "/spring-test-config/mockAnnotationDao.xml", "/spring-test-config/mockUserDao.xml",
+@ContextConfiguration({"/spring-test-config/mockery.xml", "/spring-test-config/mockAnnotationDao.xml", "/spring-test-config/mockUserDao.xml", "/spring-test-config/mockPermissionsDao.xml",
     "/spring-test-config/dataSource.xml", "/spring-config/notebookDao.xml"})
 public class JdbcNotebookDaoTest extends JdbcResourceDaoTest{
 

@@ -17,7 +17,11 @@
  */
 package eu.dasish.annotation.backend.dao;
 
+import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
+import eu.dasish.annotation.backend.identifiers.UserIdentifier;
+import eu.dasish.annotation.schema.Permission;
 import eu.dasish.annotation.schema.UserWithPermission;
+import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -33,4 +37,20 @@ public interface PermissionsDao {
      */
     public List<UserWithPermission>  retrievePermissions(Number annotationId);
     
+    /**
+     * 
+     * @param annotationIdenitifier
+     * @param userIdentifier
+     * @param permission
+     * @return the amount of rows added to the table annotations_principals_permissions
+     */
+    public int addAnnotationPrincipalPermission(AnnotationIdentifier annotationIdenitifier, UserIdentifier userIdentifier, Permission permission) throws SQLException;
+    
+    /**
+     * 
+     * @param annotationID
+     * @return remove all the rows with annotationID from the table annotations_principals_permissions
+     */
+    public int removeAnnotation(Number annotationID); 
+
 }

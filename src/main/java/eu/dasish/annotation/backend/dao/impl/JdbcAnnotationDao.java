@@ -18,6 +18,9 @@
 package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.dao.AnnotationDao;
+import eu.dasish.annotation.backend.dao.NotebookDao;
+import eu.dasish.annotation.backend.dao.PermissionsDao;
+import eu.dasish.annotation.backend.dao.UserDao;
 import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationBody;
@@ -31,6 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.sql.DataSource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 
@@ -44,8 +48,16 @@ import org.springframework.jdbc.core.RowMapper;
 
 
 public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao {
-
     
+   @Autowired 
+   PermissionsDao jdbcPermissionsDao;
+    
+   @Autowired 
+   UserDao jdbcUserDao;
+   
+   @Autowired 
+   NotebookDao jdbcNotebookDao;
+   
     public JdbcAnnotationDao(DataSource dataSource) {
         setDataSource(dataSource);
     }
@@ -125,6 +137,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         }
     };
  
+    //////////////////////////////////////////////////////////////////////////
    @Override
     public Annotation getAnnotation(Number annotationID) throws SQLException{
         if (annotationID == null) {
@@ -156,16 +169,15 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
            ownerREF.setRef(String.valueOf(rs.getInt(owner_id)));
            result.setOwner(ownerREF);
            
-           /*TODO 
-            * Add permissions also to the database
-            * ResourceREF permissionsREF = new ResourceREF();
-           permissionsREF.setRef(String.valueOf(rs.getInt("permissions")));
-           result.setPermissions(permissionsREF);*/
            
+//           ResourceREF permissionsREF = new ResourceREF();
+//           PermissionList permissionList = new PermissionList();
+//           permissionsREF.setRef(permissionList.getURI());
+//           result.setPermissions(permissionsREF);
+//           
+           //Permissions can be retrieved separately
            
            // TODO: add source, also to the database
-           
-           // TODO add external reference 
            
            result.setBody(convertToAnnotationBody(rs.getString(body_xml)));
            return result;
@@ -216,12 +228,16 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
     };
       
    @Override   
-     public int deleteAnnotation(Number annotationId) throws SQLException{
-        String sqlAnnotation = "DELETE FROM " + annotationTableName + " where "+annotation_id + " = ?";
-        String sqlPermissions = "DELETE FROM " + permissionsTableName + " where "+annotation_id + " = ?";
+     public int deleteAnnotation(Number annotationId) throws SQLException{          
+             
         String sqlNotebooks = "DELETE FROM " + notebooksAnnotationsTableName + " where "+annotation_id + " = ?";
         int affectedNotebooks = getSimpleJdbcTemplate().update(sqlNotebooks, annotationId);
+        
+               
+        String sqlPermissions = "DELETE FROM " + permissionsTableName + " where "+annotation_id + " = ?";        
         int affectedPermissions = getSimpleJdbcTemplate().update(sqlPermissions, annotationId);
+        
+        String sqlAnnotation = "DELETE FROM " + annotationTableName + " where "+annotation_id + " = ?";
         int affectedAnnotations = getSimpleJdbcTemplate().update(sqlAnnotation, annotationId);
         if (affectedAnnotations>1) {
             throw new SQLException("There was more than one annotation ("+affectedAnnotations+") with the same ID "+annotationId);
@@ -235,7 +251,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
    // TODO: so far URI in the xml is the same as the external_id in the DB!!
    // Chnage it when the decision is taken!!!
     @Override
-    public Annotation addAnnotation(Annotation annotation, Number ownerID) {
+    public Annotation addAnnotation(Annotation annotation, Number ownerID) throws SQLException{
         
         if (annotation == null) {
             return null;
@@ -248,6 +264,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
             ownerRef.setRef(String.valueOf(ownerID));
             result.setOwner(ownerRef);
             
+            // generate a new annotation ID 
             AnnotationIdentifier annotationIdentifier = new AnnotationIdentifier();
             result.setURI(annotationIdentifier.toString());
             
@@ -260,8 +277,9 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
             params.put("bodyXml", annotation.getBody().getAny().get(0).toString());
             String sql = "INSERT INTO "+annotationTableName + "("+external_id+","+ time_stamp+"," + owner_id+","+headline+","+body_xml+" ) VALUES (:externalId, :timeStamp,  :ownerId, :headline, :bodyXml)";
             final int affectedRows = getSimpleJdbcTemplate().update(sql, params);
+            
             if (affectedRows == 1) {
-                return result;
+                 return result;
             }
             else {
                 // something went wrong

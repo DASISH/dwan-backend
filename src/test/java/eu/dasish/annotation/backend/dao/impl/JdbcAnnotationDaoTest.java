@@ -19,6 +19,8 @@ package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.TestInstances;
+import eu.dasish.annotation.backend.dao.NotebookDao;
+import eu.dasish.annotation.backend.dao.PermissionsDao;
 import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationInfo;
@@ -26,6 +28,8 @@ import eu.dasish.annotation.schema.ResourceREF;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import org.jmock.Expectations;
+import org.jmock.Mockery;
 import static org.junit.Assert.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,12 +42,20 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @author olhsha
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration({"/spring-test-config/dataSource.xml", "/spring-config/annotationDao.xml"})
-
+@ContextConfiguration({"/spring-test-config/dataSource.xml", "/spring-test-config/mockery.xml", "/spring-test-config/mockNotebookDao.xml",  "/spring-test-config/mockUserDao.xml", "/spring-test-config/mockPermissionsDao.xml", "/spring-config/annotationDao.xml"})
 public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest{
     
     @Autowired
     JdbcAnnotationDao jdbcAnnotationDao; 
+    
+    @Autowired
+    private PermissionsDao permissionsDao;
+    
+    @Autowired
+    private NotebookDao notebookDao;
+    
+    @Autowired
+    private Mockery mockery;
     
     TestInstances testInstances = new TestInstances();
     
@@ -154,7 +166,18 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest{
      */
     @Test
     public void testDeleteAnnotation() throws SQLException{
-        System.out.println("deleteAnnotation");        
+        System.out.println("deleteAnnotation"); 
+        
+         mockery.checking(new Expectations() {
+            { 
+                oneOf(permissionsDao).removeAnnotation(5);
+                will(returnValue(1));
+                
+                oneOf(notebookDao).removeAnnotation(5);
+                will(returnValue(3));
+            }
+        });
+        
         int result = jdbcAnnotationDao.deleteAnnotation(5);
         assertEquals(1, result);
         // now, try to delete the same annotation one more time
@@ -170,12 +193,12 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest{
     @Test
     public void testAddAnnotation() throws SQLException{
         System.out.println("test_addAnnotation"); 
-        Annotation annotationToAdd = testInstances.getAnnotationToAdd();
+        final Annotation annotationToAdd = testInstances.getAnnotationToAdd();
+        
+        
         Annotation result = jdbcAnnotationDao.addAnnotation(annotationToAdd, 5);
-        assertFalse(result == null);
         
         AnnotationIdentifier generatedAnnotationExternalID  = new AnnotationIdentifier(result.getURI());
-        
         Annotation addedAnnotation = jdbcAnnotationDao.getAnnotation(jdbcAnnotationDao.getAnnotationID(generatedAnnotationExternalID));        
         assertEquals(annotationToAdd.getBody().getAny().get(0), addedAnnotation.getBody().getAny().get(0));
         assertEquals(annotationToAdd.getHeadline(), addedAnnotation.getHeadline());

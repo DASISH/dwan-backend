@@ -39,7 +39,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration({"/spring-test-config/mockery.xml", "/spring-test-config/dataSource.xml", "/spring-test-config/mockUserDao.xml", "/spring-test-config/mockAnnotationDao.xml", "/spring-test-config/mockNotebookDao.xml", "/spring-config/permissionsDao.xml"})
-public class PermissionsDaoTest extends JdbcResourceDaoTest{
+public class JdbcPermissionsDaoTest extends JdbcResourceDaoTest{
     
     @Autowired
     JdbcPermissionsDao jdbcPermissionsDao; 
