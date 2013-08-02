@@ -20,13 +20,16 @@ package eu.dasish.annotation.backend.dao.impl;
 import eu.dasish.annotation.backend.dao.AnnotationDao;
 import eu.dasish.annotation.backend.dao.NotebookDao;
 import eu.dasish.annotation.backend.dao.PermissionsDao;
+import eu.dasish.annotation.backend.dao.SourceDao;
 import eu.dasish.annotation.backend.dao.UserDao;
 import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationBody;
 import eu.dasish.annotation.schema.AnnotationInfo;
+import eu.dasish.annotation.schema.NewOrExistingSourceInfo;
+import eu.dasish.annotation.schema.NewOrExistingSourceInfos;
 import eu.dasish.annotation.schema.ResourceREF;
-import eu.dasish.annotation.schema.Sources;
+import eu.dasish.annotation.schema.SourceInfo;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -57,6 +60,9 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
    
    @Autowired 
    NotebookDao jdbcNotebookDao;
+   
+   @Autowired 
+   SourceDao jdbcSourceDao;
    
     public JdbcAnnotationDao(DataSource dataSource) {
         setDataSource(dataSource);
@@ -96,7 +102,6 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
            AnnotationInfo annotationInfo = new AnnotationInfo();
            annotationInfo.setOwner(getResourceREF(Integer.toString(rs.getInt(owner_id))));
            annotationInfo.setHeadline(rs.getString(headline)); 
-           annotationInfo.setTargetSources(getSources(rs.getString(body_xml)));
            return annotationInfo;
         }
     };
@@ -152,10 +157,6 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
        if (result.isEmpty()) {
            return null;
        } 
-       
-        if (result.size()>1) {
-           throw new SQLException("There are "+result.size()+" annotations with "+ annotation_id + " "+annotationID);
-       }
        return result.get(0);
    }
      
@@ -169,15 +170,21 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
            ownerREF.setRef(String.valueOf(rs.getInt(owner_id)));
            result.setOwner(ownerREF);
            
-           
-//           ResourceREF permissionsREF = new ResourceREF();
-//           PermissionList permissionList = new PermissionList();
-//           permissionsREF.setRef(permissionList.getURI());
-//           result.setPermissions(permissionsREF);
+           //////////////////////////
+           List<SourceInfo> sourceInfoList = jdbcSourceDao.getSourceInfos(rs.getInt(annotation_id));
+           NewOrExistingSourceInfos noeSourceInfos = jdbcSourceDao.contructNewOrExistingSourceInfo(sourceInfoList);
+//           List<NewOrExistingSourceInfo> noeSourceInfoList = new ArrayList<NewOrExistingSourceInfo>();
+//           for (SourceInfo sourceInfo: sourceInfoList) {
+//                NewOrExistingSourceInfo noeSourceInfo = new NewOrExistingSourceInfo();
+//                noeSourceInfo.setSource(sourceInfo);
+//                noeSourceInfoList.add(noeSourceInfo);
+//           }       
 //           
-           //Permissions can be retrieved separately
-           
-           // TODO: add source, also to the database
+//           
+//           NewOrExistingSourceInfos noeSourceInfos = new  NewOrExistingSourceInfos();
+//           noeSourceInfos.getTarget().addAll(noeSourceInfoList);
+           result.setTargetSources(noeSourceInfos);
+           ////////////////////////////////
            
            result.setBody(convertToAnnotationBody(rs.getString(body_xml)));
            return result;
@@ -229,13 +236,18 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
       
    @Override   
      public int deleteAnnotation(Number annotationId) throws SQLException{          
-             
+          
+       //TODO: why  does it not work via calling notebook and permissions "remove" methods??
+       
         String sqlNotebooks = "DELETE FROM " + notebooksAnnotationsTableName + " where "+annotation_id + " = ?";
         int affectedNotebooks = getSimpleJdbcTemplate().update(sqlNotebooks, annotationId);
-        
-               
+                       
         String sqlPermissions = "DELETE FROM " + permissionsTableName + " where "+annotation_id + " = ?";        
         int affectedPermissions = getSimpleJdbcTemplate().update(sqlPermissions, annotationId);
+        
+        // TODO make a separate methods in sources DAO so that it handles removal of sources which are not referered by annotations
+        String sqlTargetSources = "DELETE FROM " + annotationsSourcesTableName + " where "+annotation_id + " = ?";        
+        int affectedSources = getSimpleJdbcTemplate().update(sqlTargetSources, annotationId);
         
         String sqlAnnotation = "DELETE FROM " + annotationTableName + " where "+annotation_id + " = ?";
         int affectedAnnotations = getSimpleJdbcTemplate().update(sqlAnnotation, annotationId);
@@ -279,6 +291,8 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
             final int affectedRows = getSimpleJdbcTemplate().update(sql, params);
             
             if (affectedRows == 1) {
+                 //jdbcSourceDao method "addsources"                 
+                 // Consider two cases: the one which exists already in the Db and the one which does not exists
                  return result;
             }
             else {
@@ -328,31 +342,9 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
        return result;
     }
     
-    //TODO implement when xml-body stucture is discussed!
-    //BTW do we have to get source REF, not the whole sources here??
-    private Sources getSources(String someXml) {
-        Sources result = new Sources();
-        return result;
-    }
+   
     
-    private <T> String makeListOfValues(List<T> vals) {
-        
-        if (vals == null) {
-            return "()";
-        }
-        
-        if (vals.isEmpty()) {            
-            return "()";
-        }
-        
-        String result = "(";
-        int length = vals.size();
-        for (int i=0; i<length-1; i++){
-            result = result + vals.get(i).toString() +", ";
-        }
-        result = result +vals.get(length-1).toString()+")";
-        return result;
-    }
+   
    
     //TODO: update when target sources and permissions are added
     private  Annotation makeFreshCopy(Annotation annotation){

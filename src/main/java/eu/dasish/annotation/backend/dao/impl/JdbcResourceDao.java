@@ -38,6 +38,8 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     final static protected String principalTableName = "principal";    
     final static protected String notebooksAnnotationsTableName = "notebooks_annotations";
     final static protected String permissionsTableName = "annotations_principals_permissions";
+    final static protected String sourcesTableName = "target_source";
+    final static protected String annotationsSourcesTableName = "annotations_target_sources";
     
     // base string constants: field Names
     final static protected String annotation_id = "annotation_id";
@@ -51,6 +53,9 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     final static protected String principal_id = "principal_id";
     final static protected String time_stamp = "time_stamp";
     final static protected String permission = "permission_";
+    final static protected String target_source_id = "target_source_id";
+    final static protected String link = "link";
+    final static protected String version = "version";
     
     // derived string constants: table+field names 
     
@@ -103,5 +108,23 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
         } 
     };
     
-     
+    
+    protected <T> String makeListOfValues(List<T> vals) {
+        
+        if (vals == null) {
+            return "()";
+        }
+        
+        if (vals.isEmpty()) {            
+            return "()";
+        }
+        
+        String result = "(";
+        int length = vals.size();
+        for (int i=0; i<length-1; i++){
+            result = result + vals.get(i).toString() +", ";
+        }
+        result = result +vals.get(length-1).toString()+")";
+        return result;
+    }
 }

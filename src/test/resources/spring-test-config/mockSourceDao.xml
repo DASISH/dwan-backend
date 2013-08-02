@@ -23,9 +23,9 @@
 
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
 ">
-   <!-- Context for testing the sources service with mock implementations -->
+<!-- Context for testing the sources service with mock implementations -->
 	   
-    <!-- Mocked users -->
-    <bean id="userDao" factory-bean="mockObjectsFactory" factory-method="newUserDao" />
+    <!-- Mocked sources -->
+    <bean id="sourceDao" factory-bean="mockObjectsFactory" factory-method="newSourceDao" />
     
 </beans>

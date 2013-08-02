@@ -21,10 +21,14 @@ import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.TestInstances;
 import eu.dasish.annotation.backend.dao.NotebookDao;
 import eu.dasish.annotation.backend.dao.PermissionsDao;
+import eu.dasish.annotation.backend.dao.SourceDao;
 import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationInfo;
+import eu.dasish.annotation.schema.NewOrExistingSourceInfo;
+import eu.dasish.annotation.schema.NewOrExistingSourceInfos;
 import eu.dasish.annotation.schema.ResourceREF;
+import eu.dasish.annotation.schema.SourceInfo;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +46,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @author olhsha
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration({"/spring-test-config/dataSource.xml", "/spring-test-config/mockery.xml", "/spring-test-config/mockNotebookDao.xml",  "/spring-test-config/mockUserDao.xml", "/spring-test-config/mockPermissionsDao.xml", "/spring-config/annotationDao.xml"})
+@ContextConfiguration({"/spring-test-config/dataSource.xml", "/spring-test-config/mockery.xml", "/spring-test-config/mockNotebookDao.xml",  
+    "/spring-test-config/mockUserDao.xml", "/spring-test-config/mockPermissionsDao.xml", "/spring-test-config/mockSourceDao.xml","/spring-config/annotationDao.xml"})
 public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest{
     
     @Autowired
@@ -53,6 +58,9 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest{
     
     @Autowired
     private NotebookDao notebookDao;
+    
+    @Autowired
+    private SourceDao sourceDao;
     
     @Autowired
     private Mockery mockery;
@@ -152,10 +160,58 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest{
     public void getAnnotation() throws SQLException{
        System.out.println("getAnnotation"); 
        
-       final Annotation annotaion = jdbcAnnotationDao.getAnnotation(2);
-       assertEquals(TestBackendConstants._TEST_ANNOT_2_HEADLINE, annotaion.getHeadline());
-       assertEquals(String.valueOf(TestBackendConstants._TEST_ANNOT_2_OWNER), annotaion.getOwner().getRef());
-       assertEquals(TestBackendConstants._TEST_ANNOT_2_BODY, annotaion.getBody().getAny().get(0)); // when the body is elaborated it will be changed
+       final Number testAnnotationID = 2;
+       
+       
+       SourceInfo sourceOneInfo =  new SourceInfo();
+       sourceOneInfo.setLink(TestBackendConstants._TEST_SOURCE_1_LINK);
+       sourceOneInfo.setRef(TestBackendConstants._TEST_SOURCE_1_EXT_ID);
+       sourceOneInfo.setVersion(Integer.toString(TestBackendConstants._TEST_SOURCE_1_VERSION_ID));
+       
+       SourceInfo sourceTwoInfo =  new SourceInfo();
+       sourceTwoInfo.setLink(TestBackendConstants._TEST_SOURCE_2_LINK);
+       sourceTwoInfo.setRef(TestBackendConstants._TEST_SOURCE_2_EXT_ID);
+       sourceTwoInfo.setVersion(Integer.toString(TestBackendConstants._TEST_SOURCE_2_VERSION_ID));
+       
+       final List<SourceInfo> sourceInfoList = new ArrayList<SourceInfo>();
+       sourceInfoList.add(sourceOneInfo);
+       sourceInfoList.add(sourceTwoInfo);
+       
+       NewOrExistingSourceInfo noeSourceOneInfo =  new NewOrExistingSourceInfo();
+       noeSourceOneInfo.setSource(sourceOneInfo);
+       NewOrExistingSourceInfo noeSourceTwoInfo =  new NewOrExistingSourceInfo();
+       noeSourceTwoInfo.setSource(sourceTwoInfo);
+       
+       List<NewOrExistingSourceInfo> noeSourceInfoList = new ArrayList<NewOrExistingSourceInfo>();
+       noeSourceInfoList.add(noeSourceOneInfo);
+       noeSourceInfoList.add(noeSourceTwoInfo);
+       final NewOrExistingSourceInfos noeSourceInfos= new NewOrExistingSourceInfos();
+       noeSourceInfos.getTarget().addAll(noeSourceInfoList);
+       
+        mockery.checking(new Expectations() {
+            { 
+                oneOf(sourceDao).getSourceInfos(testAnnotationID );
+                will(returnValue(sourceInfoList));
+                
+                oneOf(sourceDao).contructNewOrExistingSourceInfo(sourceInfoList);
+                will(returnValue(noeSourceInfos));
+            }
+        });
+        
+       
+       final Annotation annotation = jdbcAnnotationDao.getAnnotation(testAnnotationID.intValue());
+       assertEquals(TestBackendConstants._TEST_ANNOT_2_HEADLINE, annotation.getHeadline());
+       assertEquals(String.valueOf(TestBackendConstants._TEST_ANNOT_2_OWNER), annotation.getOwner().getRef());
+       assertEquals(TestBackendConstants._TEST_ANNOT_2_BODY, annotation.getBody().getAny().get(0)); // when the body is elaborated it will be changed
+       
+       assertEquals(sourceOneInfo.getRef(), annotation.getTargetSources().getTarget().get(0).getSource().getRef());
+       assertEquals(sourceOneInfo.getLink(), annotation.getTargetSources().getTarget().get(0).getSource().getLink());
+       assertEquals(sourceOneInfo.getVersion(), annotation.getTargetSources().getTarget().get(0).getSource().getVersion());
+       
+       assertEquals(sourceTwoInfo.getRef(), annotation.getTargetSources().getTarget().get(1).getSource().getRef());
+       assertEquals(sourceTwoInfo.getLink(), annotation.getTargetSources().getTarget().get(1).getSource().getLink());
+       assertEquals(sourceTwoInfo.getVersion(), annotation.getTargetSources().getTarget().get(1).getSource().getVersion());
+       
               
        final Annotation annotaionNull = jdbcAnnotationDao.getAnnotation(null);
        assertEquals(null, annotaionNull);
@@ -195,6 +251,24 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest{
         System.out.println("test_addAnnotation"); 
         final Annotation annotationToAdd = testInstances.getAnnotationToAdd();
         
+        final Number testAnnotationID = 6;
+        
+        SourceInfo sourceInfo =  new SourceInfo();
+        sourceInfo.setLink(TestBackendConstants._TEST_SOURCE_1_LINK);
+        sourceInfo.setRef(TestBackendConstants._TEST_SOURCE_1_EXT_ID);
+        sourceInfo.setVersion(Integer.toString(TestBackendConstants._TEST_SOURCE_1_VERSION_ID)); 
+        final List<SourceInfo> sourceInfoList =  new ArrayList<SourceInfo>();
+        sourceInfoList.add(sourceInfo);
+        
+        mockery.checking(new Expectations() {
+            { 
+                oneOf(sourceDao).getSourceInfos(testAnnotationID);
+                will(returnValue(sourceInfoList));
+                
+                oneOf(sourceDao).contructNewOrExistingSourceInfo(sourceInfoList);
+                will(returnValue(annotationToAdd.getTargetSources()));
+            }
+        });
         
         Annotation result = jdbcAnnotationDao.addAnnotation(annotationToAdd, 5);
         
@@ -227,6 +301,10 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest{
        assertEquals(null, externalIdThree);
        
     }
+    
+    //////////// helpers //////////////////////
+    
+    
 }
 
 

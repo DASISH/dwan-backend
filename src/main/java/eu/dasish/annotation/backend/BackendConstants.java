@@ -30,5 +30,7 @@ public class BackendConstants {
     public static final int ANNOTATION_HASH_PARAM_2 =  23;
     public static final int USER_HASH_PARAM_1 =  5;
     public static final int USER_HASH_PARAM_2 =  19;
+    public static final int SOURCE_HASH_PARAM_1 =  7;
+    public static final int SOURCE_HASH_PARAM_2 =  23;
     public static final String regExpIdentifier = "[a-zA-Z0-9_-]*";
 }

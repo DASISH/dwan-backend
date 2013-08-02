@@ -64,6 +64,21 @@ public class TestBackendConstants {
     public static final String _TEST_USER_4_EXT_ID = "00000000-0000-0000-0000-000000000112";  
     public static final String _TEST_USER_5_EXT_ID = "00000000-0000-0000-0000-000000000113";  
     
-    public static final String _TEST_USER_XXX_EXT_ID = "00000000-0000-0000-0000-000000000666";  
+    public static final String _TEST_USER_XXX_EXT_ID = "00000000-0000-0000-0000-000000000666"; 
+    
+ ////////////////////////////////////////////////////////////////////////////////////////////////////////////   
+    
+//    INSERT INTO target_source (external_id, link_uri, version_id) VALUES ('00000000-0000-0000-0000-000000000031', 'http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia', 1); -- 1
+//    INSERT INTO target_source (external_id, link_uri, version_id) VALUES ('00000000-0000-0000-0000-000000000032', 'http://nl.wikipedia.org/wiki/Antoni_Gaud%C3%AD', 3); --2
+
+    
+    public static final String _TEST_SOURCE_1_EXT_ID = "00000000-0000-0000-0000-000000000031";
+    public static final String _TEST_SOURCE_2_EXT_ID = "00000000-0000-0000-0000-000000000032";
+    
+    public static final String _TEST_SOURCE_1_LINK = "http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia";
+    public static final String _TEST_SOURCE_2_LINK = "http://nl.wikipedia.org/wiki/Antoni_Gaud%C3%AD";
+    
+    public static final int _TEST_SOURCE_1_VERSION_ID = 1;
+    public static final int _TEST_SOURCE_2_VERSION_ID = 3;
 }
 
