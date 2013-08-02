@@ -170,21 +170,9 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
            ownerREF.setRef(String.valueOf(rs.getInt(owner_id)));
            result.setOwner(ownerREF);
            
-           //////////////////////////
            List<SourceInfo> sourceInfoList = jdbcSourceDao.getSourceInfos(rs.getInt(annotation_id));
            NewOrExistingSourceInfos noeSourceInfos = jdbcSourceDao.contructNewOrExistingSourceInfo(sourceInfoList);
-//           List<NewOrExistingSourceInfo> noeSourceInfoList = new ArrayList<NewOrExistingSourceInfo>();
-//           for (SourceInfo sourceInfo: sourceInfoList) {
-//                NewOrExistingSourceInfo noeSourceInfo = new NewOrExistingSourceInfo();
-//                noeSourceInfo.setSource(sourceInfo);
-//                noeSourceInfoList.add(noeSourceInfo);
-//           }       
-//           
-//           
-//           NewOrExistingSourceInfos noeSourceInfos = new  NewOrExistingSourceInfos();
-//           noeSourceInfos.getTarget().addAll(noeSourceInfoList);
            result.setTargetSources(noeSourceInfos);
-           ////////////////////////////////
            
            result.setBody(convertToAnnotationBody(rs.getString(body_xml)));
            return result;
