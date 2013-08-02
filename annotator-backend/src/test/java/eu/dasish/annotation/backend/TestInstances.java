@@ -19,7 +19,10 @@ package eu.dasish.annotation.backend;
 
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationBody;
+import eu.dasish.annotation.schema.NewOrExistingSourceInfo;
+import eu.dasish.annotation.schema.NewOrExistingSourceInfos;
 import eu.dasish.annotation.schema.ResourceREF;
+import eu.dasish.annotation.schema.SourceInfo;
 import java.util.List;
 
 /**
@@ -44,11 +47,25 @@ public class TestInstances {
     }
     
     private Annotation makeAnnotationToAdd(){
-        Annotation result = makeAnnotation(TestBackendConstants._TEST_ANNOT_TO_ADD_BODY, TestBackendConstants._TEST_ANNOT_TO_ADD_HEADLINE, 5);
-        return result;
+       Annotation result = makeAnnotation(TestBackendConstants._TEST_ANNOT_TO_ADD_BODY, TestBackendConstants._TEST_ANNOT_TO_ADD_HEADLINE, 5);
+       
+       SourceInfo sourceInfo =  new SourceInfo();
+       sourceInfo.setLink(TestBackendConstants._TEST_SOURCE_1_LINK);
+       sourceInfo.setRef(TestBackendConstants._TEST_SOURCE_1_EXT_ID);
+       sourceInfo.setVersion(Integer.toString(TestBackendConstants._TEST_SOURCE_1_VERSION_ID)); 
+       
+       NewOrExistingSourceInfo noeSourceInfo =  new NewOrExistingSourceInfo();
+       noeSourceInfo.setSource(sourceInfo);
+       NewOrExistingSourceInfos noeSourceInfos =  new NewOrExistingSourceInfos();
+       noeSourceInfos.getTarget().add(noeSourceInfo);
+       result.setTargetSources(noeSourceInfos);
+       
+       return result;
     }
     
-    // add the other fields whengetAnnotation is completed
+    
+    // so far tests only adding annot with existing sources!!!
+    // TOD: add non-existing sources
     private Annotation makeAnnotation(String bodyTxt, String headline, int ownerId){
         Annotation result = new Annotation();
         AnnotationBody body = new AnnotationBody();
@@ -58,9 +75,12 @@ public class TestInstances {
         result.setHeadline(headline);
         ResourceREF owner = new ResourceREF();
         owner.setRef(String.valueOf(ownerId));
-        result.setOwner(owner); 
-        return result;
+        result.setOwner(owner);        
+      
+       return result;
     }
+    
+    //private 
     
     
     public Annotation getAnnotationOne(){
