@@ -31,15 +31,21 @@ import org.springframework.jdbc.core.simple.SimpleJdbcDaoSupport;
  */
 public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao{
     
-    // base string constants: table Names
+    // base string constants: resource table Names
     final static protected String notebookTableName = "notebook";
     final static protected String annotationTableName = "annotation";
-    final static protected String sourceTableName = "source";     
-    final static protected String principalTableName = "principal";    
+    final static protected String sourceTableName = "source";    
+    final static protected String sourcesTableName = "target_source";
+    final static protected String cachedRepresentationTableName = "cached_representation_info";
+    final static protected String versionTableName = "version";
+    final static protected String principalTableName = "principal";
+    // joint tablenames
+    
     final static protected String notebooksAnnotationsTableName = "notebooks_annotations";
     final static protected String permissionsTableName = "annotations_principals_permissions";
-    final static protected String sourcesTableName = "target_source";
     final static protected String annotationsSourcesTableName = "annotations_target_sources";
+    final static protected String versionsCachedRepresentationsTableName = "versions+cached_representations";
+    
     
     // base string constants: field Names
     final static protected String annotation_id = "annotation_id";
@@ -56,6 +62,12 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     final static protected String target_source_id = "target_source_id";
     final static protected String link = "link";
     final static protected String version = "version";
+    final static protected String cached_representation_id = "cached_representation_id";
+    final static protected String version_id = "version_id";
+    final static protected String mime_type = "mime_type";
+    final static protected String tool = "tool";
+    final static protected String type_ = "type_";
+    final static protected String where_is_the_file = "where_is_the_file";
     
     // derived string constants: table+field names 
     
