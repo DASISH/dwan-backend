@@ -18,6 +18,7 @@
 package eu.dasish.annotation.backend.dao;
 
 import eu.dasish.annotation.backend.identifiers.VersionIdentifier;
+import eu.dasish.annotation.schema.Version;
 
 /**
  *
@@ -25,5 +26,27 @@ import eu.dasish.annotation.backend.identifiers.VersionIdentifier;
  */
 public interface VersionDao {
     
+      /**
+     * 
+     * @param internalID
+     * @return extrnalID identifier of the resource with internalID
+     */
+    
     public VersionIdentifier getExternalId(Number internalID);
+    
+    /**
+     * 
+     * @param externalID
+     * @return internal identifier of the resource with externalID
+     */
+    public  Number getExternalId(VersionIdentifier externalID);
+    
+    
+    /**
+     * 
+     * @param internalID
+     * @return the object which fields have the corresponding column values of the row internalID
+     */
+    public Version getVersion(Number internalID);
+    
 }

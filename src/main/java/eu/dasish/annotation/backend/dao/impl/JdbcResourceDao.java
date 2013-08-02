@@ -88,6 +88,11 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     final static protected String principalPrincipal_id = principalTableName+"."+principal_id;
     final static protected String principalExternal_id = principalTableName+"."+external_id;
     
+    
+    final static protected String cachedRepresentationStar = cachedRepresentationTableName+".*";
+    
+    final static protected String versionStar = versionTableName+".*";
+    
     //////////////////////////////////////////
     /**
      * 

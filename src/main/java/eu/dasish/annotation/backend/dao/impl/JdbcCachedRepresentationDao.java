@@ -19,12 +19,12 @@ package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.dao.CachedRepresentationDao;
 import eu.dasish.annotation.backend.identifiers.CachedRepresentationIdentifier;
-import eu.dasish.annotation.schema.Annotation;
-import eu.dasish.annotation.schema.NewOrExistingSourceInfos;
+import eu.dasish.annotation.schema.CachedRepresentationInfo;
+import eu.dasish.annotation.schema.CachedRepresentations;
 import eu.dasish.annotation.schema.ResourceREF;
-import eu.dasish.annotation.schema.SourceInfo;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import javax.sql.DataSource;
 import org.springframework.jdbc.core.RowMapper;
@@ -39,7 +39,8 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
         setDataSource(dataSource);
     }
      
- //////////////////////////////////////////////////////////////////////////////////////////////////////    
+   //////////////////////////////////////////////////////////////////////////////////////////////////////
+     @Override
      public CachedRepresentationIdentifier getExternalId(Number internalID){
        if (internalID == null) {
             return null;
@@ -64,4 +65,98 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
             return(rs.getString(external_id));
         }
      };  
+     
+      //////////////////////////////////////////////////////////////////////////////////////////////////////
+     @Override
+     public Number getExternalId(CachedRepresentationIdentifier externalID){
+       if (externalID == null) {
+            return null;
+        }
+       String sql = "SELECT "+cached_representation_id+" FROM "+cachedRepresentationTableName+" WHERE "+external_id  +"= ?";
+       List<Number> sqlResult= getSimpleJdbcTemplate().query(sql, internalIDRowMapper, externalID); 
+       
+       if (sqlResult == null) {
+           return null;
+       }
+       if (sqlResult.isEmpty()) {
+           return null;
+       } 
+        
+        Number result  = sqlResult.get(0);
+        return result;
+    }  
+     
+     private final RowMapper<Number> internalIDRowMapper = new RowMapper<Number>() {        
+        @Override
+        public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
+            return(rs.getInt(cached_representation_id));
+        }
+     }; 
+     
+     ///////////////////////////////////////////////////////////////
+     @Override
+     public CachedRepresentationInfo getCachedRepresentationInfo(Number internalID){
+         
+       String sql = "SELECT "+cachedRepresentationStar+" FROM "+cachedRepresentationTableName+" WHERE "+cached_representation_id  +"= ?";
+       List<CachedRepresentationInfo> result= getSimpleJdbcTemplate().query(sql, cachedRepresentationRowMapper, internalID); 
+       
+       if (result == null) {
+           return null;
+       }
+       if (result.isEmpty()) {
+           return null;
+       } 
+       return result.get(0);
+     }
+     
+     private final RowMapper<CachedRepresentationInfo> cachedRepresentationRowMapper = new RowMapper<CachedRepresentationInfo>() {        
+        @Override
+        public CachedRepresentationInfo mapRow(ResultSet rs, int rowNumber) throws SQLException {
+            CachedRepresentationInfo result = new CachedRepresentationInfo();
+            //external_id, mime_type, tool, type_, where_is_the_file
+            result.setMimeType(rs.getString(mime_type));
+            result.setRef(rs.getString(external_id));
+            result.setTool(rs.getString(tool));
+            result.setType(rs.getString(type_));
+            // TODO add where is the file when the schem is updated!!!!s
+            return result;
+        }
+     }; 
+     
+     
+     ////////////////////////////////////////////////////////////////////////////
+      @Override
+      public List<Number> retrieveCachedRepresentationList(Number versionID){
+       String sql = "SELECT "+cached_representation_id+" FROM "+versionsCachedRepresentationsTableName+" WHERE "+version_id  +"= ?";
+       List<Number> result= getSimpleJdbcTemplate().query(sql, internalIDRowMapper, versionID); 
+       
+       if (result == null) {
+           return null;
+       }
+       if (result.isEmpty()) {
+           return null;
+       } 
+       return result;
+      };
+      
+      
+      /////////////////////////////////////////////////////
+      
+      @Override
+      public CachedRepresentations retrieveCachedRepresentations(Number versionID){
+       CachedRepresentations result = new CachedRepresentations();
+       
+       List<Number> cachedRepresenationIDs = retrieveCachedRepresentationList(versionID);
+       List<ResourceREF> cachedRepresenationIdentifierList = new ArrayList<ResourceREF>();
+       
+       for (Number cachedRepresentationID :  cachedRepresenationIDs){
+           ResourceREF resourceREF = new ResourceREF();
+           resourceREF.setRef(getExternalId(cachedRepresentationID).toString());
+           cachedRepresenationIdentifierList.add(resourceREF);
+       }
+       
+       result.getCachedRepresentation().addAll(cachedRepresenationIdentifierList);
+       return result;
+      };
+      
 }
