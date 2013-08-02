@@ -18,6 +18,9 @@
 package eu.dasish.annotation.backend.dao;
 
 import eu.dasish.annotation.backend.identifiers.CachedRepresentationIdentifier;
+import eu.dasish.annotation.schema.CachedRepresentationInfo;
+import eu.dasish.annotation.schema.CachedRepresentations;
+import java.util.List;
 
 /**
  *
@@ -25,5 +28,40 @@ import eu.dasish.annotation.backend.identifiers.CachedRepresentationIdentifier;
  */
 public interface CachedRepresentationDao {
     
+    /**
+     * 
+     * @param internalID
+     * @return extrnalID identifier of the resource with internalID
+     */
     public CachedRepresentationIdentifier getExternalId(Number internalID);
+    
+    /**
+     * 
+     * @param externalID
+     * @return internal identifier of the resource with externalID
+     */
+    public  Number getExternalId(CachedRepresentationIdentifier externalID);
+    
+    /**
+     * 
+     * @param internalID
+     * @return the object which fields have the corresponding column values of the row internalID
+     */
+    public CachedRepresentationInfo getCachedRepresentationInfo(Number internalID);
+    
+    /**
+     * 
+     * @param versionID
+     * @return List of cached_representation_id-s of all the cached representations of the version with versionID
+     */
+    public List<Number> retrieveCachedRepresentationList(Number versionID);
+    
+    /**
+     * 
+     * @param versionID
+     * @return List of cached_representation_id-s of all the cached representations of the version with versionID
+     */
+    public CachedRepresentations retrieveCachedRepresentations(Number versionID);
+    
+   
 }

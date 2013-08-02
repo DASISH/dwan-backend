@@ -18,8 +18,9 @@
 package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.dao.VersionDao;
-import eu.dasish.annotation.backend.identifiers.CachedRepresentationIdentifier;
 import eu.dasish.annotation.backend.identifiers.VersionIdentifier;
+import eu.dasish.annotation.schema.CachedRepresentationInfo;
+import eu.dasish.annotation.schema.Version;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
@@ -61,5 +62,64 @@ public class JdbcVersionDao extends JdbcResourceDao implements VersionDao{
         public String mapRow(ResultSet rs, int rowNumber) throws SQLException {
             return(rs.getString(external_id));
         }
-     };  
+     }; 
+     
+      //////////////////////////////////////////////////////////////////////////////////////////////////////
+     @Override
+     public Number getExternalId(VersionIdentifier externalID){
+       if (externalID == null) {
+            return null;
+        }
+       String sql = "SELECT "+version_id+" FROM "+versionTableName+" WHERE "+external_id  +"= ?";
+       List<Number> sqlResult= getSimpleJdbcTemplate().query(sql, internalIDRowMapper, externalID); 
+       
+       if (sqlResult == null) {
+           return null;
+       }
+       if (sqlResult.isEmpty()) {
+           return null;
+       } 
+        
+        Number result  = sqlResult.get(0);
+        return result;
+    }  
+     
+     private final RowMapper<Number> internalIDRowMapper = new RowMapper<Number>() {        
+        @Override
+        public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
+            return(rs.getInt(version_id));
+        }
+     }; 
+     
+     
+      ///////////////////////////////////////////////////////////////
+     @Override
+     public Version getVersion(Number internalID){
+         
+       String sql = "SELECT "+versionStar+" FROM "+versionTableName+" WHERE "+version_id  +"= ?";
+       List<Version> result= getSimpleJdbcTemplate().query(sql, versionRowMapper, internalID); 
+       
+       if (result == null) {
+           return null;
+       }
+       if (result.isEmpty()) {
+           return null;
+       } 
+       return result.get(0);
+     }
+     
+     private final RowMapper<Version> versionRowMapper = new RowMapper<Version>() {        
+        @Override
+        public Version mapRow(ResultSet rs, int rowNumber) throws SQLException {
+            Version result = new Version();
+            //external_id, mime_type, tool, type_, where_is_the_file
+           // result.setCachedRepresentations((rs.get)
+          //  result.setRef(rs.getString(external_id));
+          //  result.setTool(rs.getString(tool));
+           // result.setType(rs.getString(type_));
+            // TODO add where is the file when the schem is updated!!!!s
+            return result;
+        }
+     }; 
+     
 }
