@@ -154,13 +154,40 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest{
     
     /**
      * Test of purge, of class JdbcCachedRepresentationDao.
-     * public CachedRepresentationInfo addCachedRepresentationInfo(CachedRepresentationInfo cached);    
+     *  public int purge(Number internalID) 
      */
     @Test  
     public void testPurge() {
-        System.out.println(" purge");
+        System.out.println("test purge");
         int result = jdbcCachedRepresentationDao.purge(6);
         assertEquals(1, result);
     }
     
+    /**
+     * test public List<Number> cachedRepresentationIDs()
+     * public List<Number> cachedRepresentationIDs()
+     */
+    @Test  
+    public void testCachedRepresentationIDs() {
+        System.out.println(" test cachedRepresentationIDs");
+        List<Number>  result = jdbcCachedRepresentationDao.cachedRepresentationIDs();
+        assertEquals(6, result.size());
+        assertEquals(1, result.get(0));
+        assertEquals(2, result.get(1));
+        assertEquals(3, result.get(2));
+        assertEquals(4, result.get(3));
+        assertEquals(5, result.get(4));
+        assertEquals(6, result.get(5));
+    }
+    
+     /**
+     * Test of purgeAll, of class JdbcCachedRepresentationDao.
+     * public  int purgeAll() 
+     */
+    @Test  
+    public void testPurgeAll() {
+        System.out.println("test purge All");
+        int result = jdbcCachedRepresentationDao.purgeAll();
+        assertEquals(1, result);
+    }
 }
