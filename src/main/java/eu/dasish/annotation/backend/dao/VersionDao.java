@@ -79,5 +79,17 @@ public interface VersionDao {
      * Removes the all the rows in the internal ID "internalID" if no references to this versions from the table sources.
      * @return the amount of removed rows
      */
-    public int purgeVersions(Number internalID);
+    public int purge(Number internalID);
+    
+    /**
+     * 
+     * @return the list of all the internal-ids of all the versions
+     */
+    public List<Number> versionIDs();
+    
+    /**
+     * removes all the versions which are not referred from the sources_versions table
+     * @return 
+     */
+    public int purgeAll();
 }
