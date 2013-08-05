@@ -124,6 +124,7 @@ INSERT INTO cached_representation_info (external_id, mime_type, tool, type_, whe
 INSERT INTO cached_representation_info (external_id, mime_type, tool, type_, where_is_the_file) VALUES ('00000000-0000-0000-0000-000000000054', 'text/html', 'oxygen', 'text', 'corpus1'); --4 
 INSERT INTO cached_representation_info (external_id, mime_type, tool, type_, where_is_the_file) VALUES ('00000000-0000-0000-0000-000000000055', 'image/jpg', 'photomaster', 'image', 'TLAscratch'); --5 
 INSERT INTO cached_representation_info (external_id, mime_type, tool, type_, where_is_the_file) VALUES ('00000000-0000-0000-0000-000000000056', 'text/plain', 'some tool', 'text', 'TLAscratch'); --6 
+INSERT INTO cached_representation_info (external_id, mime_type, tool, type_, where_is_the_file) VALUES ('00000000-0000-0000-0000-000000000057', 'text/html', 'some tool 2', 'text', 'TLAscratch'); --7 
 
 --------------------------------------------------------------
 

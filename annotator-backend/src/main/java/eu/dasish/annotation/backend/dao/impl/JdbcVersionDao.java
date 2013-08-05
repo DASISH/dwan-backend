@@ -140,7 +140,17 @@ public class JdbcVersionDao extends JdbcResourceDao implements VersionDao{
     }
      
     @Override
-    public int purgeVersions(Number internalID){
+    public int purge(Number internalID){
+        return -1;
+    }
+    
+    @Override 
+    public List<Number> versionIDs(){
+       return null; 
+    }
+    
+    @Override
+    public int purgeAll(){
         return -1;
     }
 }

@@ -171,13 +171,14 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest{
     public void testCachedRepresentationIDs() {
         System.out.println(" test cachedRepresentationIDs");
         List<Number>  result = jdbcCachedRepresentationDao.cachedRepresentationIDs();
-        assertEquals(6, result.size());
+        assertEquals(7, result.size());
         assertEquals(1, result.get(0));
         assertEquals(2, result.get(1));
         assertEquals(3, result.get(2));
         assertEquals(4, result.get(3));
         assertEquals(5, result.get(4));
-        assertEquals(6, result.get(5));
+        assertEquals(6, result.get(5));        
+        assertEquals(7, result.get(6));
     }
     
      /**
@@ -188,6 +189,6 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest{
     public void testPurgeAll() {
         System.out.println("test purge All");
         int result = jdbcCachedRepresentationDao.purgeAll();
-        assertEquals(1, result);
+        assertEquals(2, result);
     }
 }
