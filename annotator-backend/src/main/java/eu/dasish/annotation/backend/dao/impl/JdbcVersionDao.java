@@ -19,7 +19,6 @@ package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.dao.VersionDao;
 import eu.dasish.annotation.backend.identifiers.VersionIdentifier;
-import eu.dasish.annotation.schema.CachedRepresentationInfo;
 import eu.dasish.annotation.schema.Version;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -66,7 +65,7 @@ public class JdbcVersionDao extends JdbcResourceDao implements VersionDao{
      
       //////////////////////////////////////////////////////////////////////////////////////////////////////
      @Override
-     public Number getExternalId(VersionIdentifier externalID){
+     public Number getInternalId(VersionIdentifier externalID){
        if (externalID == null) {
             return null;
         }
@@ -120,4 +119,28 @@ public class JdbcVersionDao extends JdbcResourceDao implements VersionDao{
         }
      }; 
      
+     
+     
+     /////////////////////////////////////////
+     
+    @Override
+    public List<Number> retrieveVersionList(Number sourceID){
+        return null;
+    }
+            
+     /////////////////////////////////////////        
+    @Override
+    public int deleteVersion(Number versionID){
+        return -1;
+    }
+    
+    @Override
+    public Version addVersion(Version version){
+        return null;
+    }
+     
+    @Override
+    public int purgeVersions(Number internalID){
+        return -1;
+    }
 }

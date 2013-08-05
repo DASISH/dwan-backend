@@ -19,6 +19,7 @@ package eu.dasish.annotation.backend.dao;
 
 import eu.dasish.annotation.backend.identifiers.VersionIdentifier;
 import eu.dasish.annotation.schema.Version;
+import java.util.List;
 
 /**
  *
@@ -39,14 +40,44 @@ public interface VersionDao {
      * @param externalID
      * @return internal identifier of the resource with externalID
      */
-    public  Number getExternalId(VersionIdentifier externalID);
+    public  Number getInternalId(VersionIdentifier externalID);
     
     
     /**
      * 
      * @param internalID
-     * @return the object which fields have the corresponding column values of the row internalID
+     * @return the insance of Version.class  where the veriosn internal Id is "internalID"
+     * 
      */
     public Version getVersion(Number internalID);
     
+    /**
+     * 
+     * @param sourceID
+     * @return the list of the internal version id-s for the  target source with the internal Id "sourceID" 
+     */
+    public List<Number> retrieveVersionList(Number sourceID);
+    
+    /**
+     * 
+     * @param versionID
+     * removes the version with the internal id "versionID". Obligatory side effect: removes the corresponding rows in the tables
+     * "versions_cached_representations" and "sources_versions"
+     * @return the number of affected rows in "version" table, which normally must be 1 (or 0 if there is no version with this inut "versionID")
+     */
+    public int deleteVersion(Number versionID);
+    
+    /**
+     * 
+     * @param version
+     * @return the copy of "version" with the new external Id set in "version" text field  (for now)
+     * 
+     */
+    public Version addVersion(Version version);
+    
+    /**
+     * Removes the all the rows in the internal ID "internalID" if no references to this versions from the table sources.
+     * @return the amount of removed rows
+     */
+    public int purgeVersions(Number internalID);
 }
