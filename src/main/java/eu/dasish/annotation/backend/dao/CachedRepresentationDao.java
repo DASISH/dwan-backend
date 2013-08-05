@@ -19,7 +19,6 @@ package eu.dasish.annotation.backend.dao;
 
 import eu.dasish.annotation.backend.identifiers.CachedRepresentationIdentifier;
 import eu.dasish.annotation.schema.CachedRepresentationInfo;
-import eu.dasish.annotation.schema.CachedRepresentations;
 import java.util.List;
 
 /**
@@ -81,4 +80,15 @@ public interface CachedRepresentationDao {
      */
     public int purge(Number internalID);
    
+    /**
+     * 
+     * @return the list of all the internal id-s of the cached representations. 
+     */
+    public List<Number> cachedRepresentationIDs();
+    
+    /**
+     * removes all the cahed representations which are not referred from the versions_cached_representations table
+     * @return the number of affected rows
+     */
+    public int purgeAll();
 }
