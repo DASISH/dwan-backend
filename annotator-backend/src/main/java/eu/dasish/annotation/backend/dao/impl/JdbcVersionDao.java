@@ -112,12 +112,10 @@ public class JdbcVersionDao extends JdbcResourceDao implements VersionDao{
         @Override
         public Version mapRow(ResultSet rs, int rowNumber) throws SQLException {
             Version result = new Version();
-            //external_id, mime_type, tool, type_, where_is_the_file
-           // result.setCachedRepresentations((rs.get)
-          //  result.setRef(rs.getString(external_id));
-          //  result.setTool(rs.getString(tool));
-           // result.setType(rs.getString(type_));
-            // TODO add where is the file when the schem is updated!!!!s
+            // TODO: clarify situation with the attribute cached representation
+            //result.setCachedRepresentations!!! The same situation as with permissions lists: we cannot refer from a filed to a list of smth, we have a separate joint table
+            // TODO: attribute URI (external-id is missing)
+            result.setVersion(rs.getString("external_id"));
             return result;
         }
      }; 

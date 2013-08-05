@@ -332,9 +332,8 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
     
    
     
+ //////////////////////////////////////////  
    
-   
-    //TODO: update when target sources and permissions are added
     private  Annotation makeFreshCopy(Annotation annotation){
         
         if (annotation == null) {

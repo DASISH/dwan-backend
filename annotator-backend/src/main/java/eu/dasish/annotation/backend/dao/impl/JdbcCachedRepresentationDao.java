@@ -20,12 +20,11 @@ package eu.dasish.annotation.backend.dao.impl;
 import eu.dasish.annotation.backend.dao.CachedRepresentationDao;
 import eu.dasish.annotation.backend.identifiers.CachedRepresentationIdentifier;
 import eu.dasish.annotation.schema.CachedRepresentationInfo;
-import eu.dasish.annotation.schema.CachedRepresentations;
-import eu.dasish.annotation.schema.ResourceREF;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.sql.DataSource;
 import org.springframework.jdbc.core.RowMapper;
 
@@ -68,12 +67,12 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
      
       //////////////////////////////////////////////////////////////////////////////////////////////////////
      @Override
-     public Number getExternalId(CachedRepresentationIdentifier externalID){
+     public Number getInternalId(CachedRepresentationIdentifier externalID){
        if (externalID == null) {
             return null;
         }
        String sql = "SELECT "+cached_representation_id+" FROM "+cachedRepresentationTableName+" WHERE "+external_id  +"= ?";
-       List<Number> sqlResult= getSimpleJdbcTemplate().query(sql, internalIDRowMapper, externalID); 
+       List<Number> sqlResult= getSimpleJdbcTemplate().query(sql, internalIDRowMapper, externalID.toString()); 
        
        if (sqlResult == null) {
            return null;
@@ -89,7 +88,9 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
      private final RowMapper<Number> internalIDRowMapper = new RowMapper<Number>() {        
         @Override
         public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            return(rs.getInt(cached_representation_id));
+            int result = rs.getInt(cached_representation_id); 
+            Number resultNumber =  result;
+            return resultNumber;
         }
      }; 
      
@@ -139,24 +140,40 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
        return result;
       };
       
-      
-      /////////////////////////////////////////////////////
-      
+      ////////////////////////////////////////////////////////////////////////////
       @Override
-      public CachedRepresentations retrieveCachedRepresentations(Number versionID){
-       CachedRepresentations result = new CachedRepresentations();
-       
-       List<Number> cachedRepresenationIDs = retrieveCachedRepresentationList(versionID);
-       List<ResourceREF> cachedRepresenationIdentifierList = new ArrayList<ResourceREF>();
-       
-       for (Number cachedRepresentationID :  cachedRepresenationIDs){
-           ResourceREF resourceREF = new ResourceREF();
-           resourceREF.setRef(getExternalId(cachedRepresentationID).toString());
-           cachedRepresenationIdentifierList.add(resourceREF);
-       }
-       
-       result.getCachedRepresentation().addAll(cachedRepresenationIdentifierList);
-       return result;
+      public int deleteCachedRepresentationInfo(Number internalID){
+        String sql = "DELETE FROM " + cachedRepresentationTableName + " where "+cached_representation_id + " = ?";
+        String sqlVersionsCachedRepresentations = "DELETE FROM " + versionsCachedRepresentationsTableName + " where "+cached_representation_id + " = ?";        
+        getSimpleJdbcTemplate().update(sqlVersionsCachedRepresentations, internalID);
+        return (getSimpleJdbcTemplate().update(sql, internalID));
       };
+     
+      ////////////////////////////////////////////////////////////////////////////
+      @Override
+      public CachedRepresentationInfo addCachedRepresentationInfo(CachedRepresentationInfo cached){
+          
+          CachedRepresentationIdentifier externalIdentifier = new CachedRepresentationIdentifier();
+          
+          Map<String, Object> params = new HashMap<String, Object>();
+          params.put("externalId", externalIdentifier.toString());
+          params.put("mime_type", cached.getMimeType());
+          params.put("tool", cached.getTool());
+          params.put("type", cached.getType());
+          String sql = "INSERT INTO "+cachedRepresentationTableName + "("+external_id+","+ mime_type+"," + tool+","+type_+" ) VALUES (:externalId, :mime_type,  :tool, :type)";
+          final int affectedRows = getSimpleJdbcTemplate().update(sql, params);
+          CachedRepresentationInfo cachedNew = makeFreshCopy(cached);          
+          return cachedNew;
+      }
       
+      ////////// Helpers ///////////////////
+      
+      private CachedRepresentationInfo makeFreshCopy(CachedRepresentationInfo cached){
+          CachedRepresentationInfo result = new CachedRepresentationInfo();
+          result.setMimeType(cached.getMimeType());
+          result.setRef(cached.getRef());
+          result.setTool(cached.getTool());
+          result.setType(cached.getType());
+          return result;
+      }
 }

@@ -40,28 +40,35 @@ public interface CachedRepresentationDao {
      * @param externalID
      * @return internal identifier of the resource with externalID
      */
-    public  Number getExternalId(CachedRepresentationIdentifier externalID);
+    public  Number getInternalId(CachedRepresentationIdentifier externalID);
     
     /**
      * 
      * @param internalID
-     * @return the object which fields have the corresponding column values of the row internalID
+     * @return the object "cached representation info"  with the internal id "internalID"
      */
     public CachedRepresentationInfo getCachedRepresentationInfo(Number internalID);
     
     /**
      * 
      * @param versionID
-     * @return List of cached_representation_id-s of all the cached representations of the version with versionID
+     * @return The list list of cached representation internal id-s of all the cached representations of the version with versionID
      */
     public List<Number> retrieveCachedRepresentationList(Number versionID);
     
     /**
      * 
-     * @param versionID
-     * @return List of cached_representation_id-s of all the cached representations of the version with versionID
+     * @param internalID
+     * @return the amount of rows affected by removing from the DB the cached representation with the id "intenalID"
+     * should be "1" (or 0 with  a non-existing id on the input)
      */
-    public CachedRepresentations retrieveCachedRepresentations(Number versionID);
+    public int deleteCachedRepresentationInfo(Number internalID);
     
+    /**
+     * 
+     * @param cached
+     * @return copy of "cached" after "cached" is added to the DB; the internal id is set in the return copy
+     */
+    public CachedRepresentationInfo addCachedRepresentationInfo(CachedRepresentationInfo cached);
    
 }
