@@ -65,8 +65,8 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest{
     }
 
     /**
-     * Test of getExternalId method, of class JdbcCachedRepresentationDao.
-     * public  Number getExternalId(CachedRepresentationIdentifier externalID);
+     * Test of getInternalId method, of class JdbcCachedRepresentationDao.
+     * public  Number getInternalId(CachedRepresentationIdentifier externalID);
      */
     @Test
     public void testGetInternalId() {
@@ -137,8 +137,7 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest{
      * Test of addCachedRepresentationInfo method, of class JdbcCachedRepresentationDao.
      * public CachedRepresentationInfo addCachedRepresentationInfo(CachedRepresentationInfo cached);    
      */
-    @Test    
-    @Ignore
+    @Test  
     public void testAddCachedRepresentationInfo() {
         System.out.println("addCachedRepresentationInfo");
         
@@ -152,4 +151,16 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest{
         assertEquals("vi", result.getTool());
         assertEquals("text", result.getType());
     }
+    
+    /**
+     * Test of purge, of class JdbcCachedRepresentationDao.
+     * public CachedRepresentationInfo addCachedRepresentationInfo(CachedRepresentationInfo cached);    
+     */
+    @Test  
+    public void testPurge() {
+        System.out.println(" purge");
+        int result = jdbcCachedRepresentationDao.purge(6);
+        assertEquals(1, result);
+    }
+    
 }

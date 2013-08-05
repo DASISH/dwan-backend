@@ -166,6 +166,28 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
           return cachedNew;
       }
       
+      //////////////////////////////////////////////////////////////////////////////////////////////
+      @Override
+      public int purge(Number internalID){        
+       String sqlCheck = "SELECT "+cached_representation_id+" FROM "+versionsCachedRepresentationsTableName+" WHERE "+cached_representation_id  +"= ?";
+       List<Number> result= getSimpleJdbcTemplate().query(sqlCheck, cachedRepresentationCheckerRowMapper, internalID); 
+       if (result.size() < 1) {
+           String sql ="DELETE FROM " + cachedRepresentationTableName + " where "+cached_representation_id + " = ?";
+           return getSimpleJdbcTemplate().update(sql,  internalID);
+       }
+       else {
+           return 0;
+       }
+     }
+     
+     private final RowMapper<Number> cachedRepresentationCheckerRowMapper = new RowMapper<Number>() {        
+        @Override
+        public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
+            Number result = rs.getInt(cached_representation_id);
+            return result;
+        }
+     }; 
+      
       ////////// Helpers ///////////////////
       
       private CachedRepresentationInfo makeFreshCopy(CachedRepresentationInfo cached){
