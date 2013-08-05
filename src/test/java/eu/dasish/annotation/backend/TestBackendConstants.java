@@ -80,5 +80,13 @@ public class TestBackendConstants {
     
     public static final int _TEST_SOURCE_1_VERSION_ID = 1;
     public static final int _TEST_SOURCE_2_VERSION_ID = 3;
+    
+    public static final String _TEST_CACHED_REPRESENTATION_1_EXT_ID_ = "00000000-0000-0000-0000-000000000051";
+    // INSERT INTO cached_representation_info (external_id, mime_type, tool, type_, where_is_the_file) VALUES ('00000000-0000-0000-0000-000000000051', 'text/html', 'latex', 'text', 'corpus1'); --1
+    public static final String _TEST_CACHED_REPRESENTATION_1_MIME_TYPE_ =  "text/html";
+    public static final String _TEST_CACHED_REPRESENTATION_1_TOOL_ =  "latex";
+    public static final String _TEST_CACHED_REPRESENTATION_1_TYPE_ =  "text";
+    
+    
 }
 

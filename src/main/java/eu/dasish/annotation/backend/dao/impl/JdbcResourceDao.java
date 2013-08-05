@@ -44,7 +44,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     final static protected String notebooksAnnotationsTableName = "notebooks_annotations";
     final static protected String permissionsTableName = "annotations_principals_permissions";
     final static protected String annotationsSourcesTableName = "annotations_target_sources";
-    final static protected String versionsCachedRepresentationsTableName = "versions+cached_representations";
+    final static protected String versionsCachedRepresentationsTableName = "versions_cached_representations";
     
     
     // base string constants: field Names

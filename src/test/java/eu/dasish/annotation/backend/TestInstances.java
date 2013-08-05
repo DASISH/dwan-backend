@@ -65,7 +65,7 @@ public class TestInstances {
     
     
     // so far tests only adding annot with existing sources!!!
-    // TOD: add non-existing sources
+    // TODO: add non-existing sources
     private Annotation makeAnnotation(String bodyTxt, String headline, int ownerId){
         Annotation result = new Annotation();
         AnnotationBody body = new AnnotationBody();
@@ -90,4 +90,6 @@ public class TestInstances {
     public Annotation getAnnotationToAdd(){
         return _annotationToAdd;
     }
+    
+   
 }
