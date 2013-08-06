@@ -17,7 +17,9 @@
  */
 package eu.dasish.annotation.backend.dao;
 
+import eu.dasish.annotation.backend.identifiers.SourceIdentifier;
 import eu.dasish.annotation.schema.NewOrExistingSourceInfos;
+import eu.dasish.annotation.schema.Source;
 import eu.dasish.annotation.schema.SourceInfo;
 import java.util.List;
 
@@ -26,6 +28,36 @@ import java.util.List;
  * @author olhsha
  */
 public interface SourceDao extends ResourceDao{
+    
+     /**
+     * 
+     * @param internalID
+     * @return extrnalID identifier of the resource with internalID
+     */
+    public SourceIdentifier getExternalID(Number internalID);
+    
+    
+    public List<Number> retrieveSourceIDs(Number annotationID);
+    
+    
+    public Source getSource(Number inernalID);
+    
+    
+    public int deleteSource(Number internalID);
+    
+    
+    public Source addSource(Source freshSource);
+    
+    
+    public int purge(Number internalId);
+    
+    
+    public List<Number> sourceIDs();
+    
+    
+    public int purgeAll();
+    
+    
     
     /**
      * 
