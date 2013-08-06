@@ -42,31 +42,9 @@ public class JdbcVersionDao extends JdbcResourceDao implements VersionDao{
       
        //////////////////////////////////////////////////////////////////////////////////////////////////////    
       @Override
-      public VersionIdentifier getExternalId(Number internalID){
-       if (internalID == null) {
-            return null;
-        }
-       String sql = "SELECT "+external_id+" FROM "+versionTableName+" WHERE "+version_id  +"= ?";
-       List<String> sqlResult= getSimpleJdbcTemplate().query(sql, externalIDRowMapper, internalID); 
-       
-       if (sqlResult == null) {
-           return null;
-       }
-       if (sqlResult.isEmpty()) {
-           return null;
-       } 
-        
-        VersionIdentifier result  = new VersionIdentifier(sqlResult.get(0));
-        return result;
-    }  
-     
-     private final RowMapper<String> externalIDRowMapper = new RowMapper<String>() {        
-        @Override
-        public String mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            return(rs.getString(external_id));
-        }
-     }; 
-   
+      public VersionIdentifier getExternalID(Number internalID){
+          return new VersionIdentifier(super.getExternalIdentifier(internalID));
+      }
       ///////////////////////////////////////////////////////////////
      @Override
      public Version getVersion(Number internalID){

@@ -65,7 +65,9 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
    SourceDao jdbcSourceDao;
    
     public JdbcAnnotationDao(DataSource dataSource) {
-        setDataSource(dataSource);
+        setDataSource(dataSource);        
+        internalIdName = annotation_id;
+        resourceTableName = annotationTableName;
     }
     
     

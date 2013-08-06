@@ -42,30 +42,9 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////
     @Override
-    public CachedRepresentationIdentifier getExternalId(Number internalID) {
-        if (internalID == null) {
-            return null;
-        }
-        String sql = "SELECT " + external_id + " FROM " + cachedRepresentationTableName + " WHERE " + cached_representation_id + "= ?";
-        List<String> sqlResult = getSimpleJdbcTemplate().query(sql, externalIDRowMapper, internalID);
-
-        if (sqlResult == null) {
-            return null;
-        }
-        if (sqlResult.isEmpty()) {
-            return null;
-        }
-
-        CachedRepresentationIdentifier result = new CachedRepresentationIdentifier(sqlResult.get(0));
-        return result;
+    public CachedRepresentationIdentifier getExternalID(Number internalID) {
+      return new CachedRepresentationIdentifier(super.getExternalIdentifier(internalID));
     }
-    private final RowMapper<String> externalIDRowMapper = new RowMapper<String>() {
-        @Override
-        public String mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            return (rs.getString(external_id));
-        }
-    };
-
     
     @Override
     public CachedRepresentationInfo getCachedRepresentationInfo(Number internalID) {

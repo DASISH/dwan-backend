@@ -32,7 +32,7 @@ public interface CachedRepresentationDao {
      * @param internalID
      * @return extrnalID identifier of the resource with internalID
      */
-    public CachedRepresentationIdentifier getExternalId(Number internalID);
+    public CachedRepresentationIdentifier getExternalID(Number internalID);
   
     /**
      * 

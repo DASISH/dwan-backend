@@ -60,7 +60,7 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest{
         System.out.println("getExternalId");
         Number internalID = 1;
         CachedRepresentationIdentifier expResult = new CachedRepresentationIdentifier(TestBackendConstants._TEST_CACHED_REPRESENTATION_1_EXT_ID_);
-        CachedRepresentationIdentifier result = jdbcCachedRepresentationDao.getExternalId(internalID);
+        CachedRepresentationIdentifier result = jdbcCachedRepresentationDao.getExternalID(internalID);
         assertEquals(expResult, result);
     }
 
