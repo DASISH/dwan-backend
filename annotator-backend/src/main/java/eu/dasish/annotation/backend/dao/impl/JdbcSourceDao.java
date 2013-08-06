@@ -19,7 +19,6 @@ package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.dao.SourceDao;
 import eu.dasish.annotation.backend.identifiers.SourceIdentifier;
-import eu.dasish.annotation.backend.identifiers.VersionIdentifier;
 import eu.dasish.annotation.schema.NewOrExistingSourceInfo;
 import eu.dasish.annotation.schema.NewOrExistingSourceInfos;
 import eu.dasish.annotation.schema.Source;
@@ -29,6 +28,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.sql.DataSource;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
 import org.springframework.jdbc.core.RowMapper;
 
 /**
@@ -50,19 +52,53 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao{
     }
     
  
-    
+    @Override
     public List<Number> retrieveSourceIDs(Number annotationID){
-        return null;
+       String sql = "SELECT "+source_id+" FROM "+annotationsSourcesTableName+" WHERE "+annotation_id  +"= ?";
+       List<Number> result= getSimpleJdbcTemplate().query(sql, annotationSourceRowMapper, annotationID); 
+       
+       if (result == null) {
+           return null;
+       }
+       if (result.isEmpty()) {
+           return null;
+       } 
+       return result;
+     }
+     
+     private final RowMapper<Number> annotationSourceRowMapper = new RowMapper<Number>() {        
+        @Override
+        public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
+            Number result = rs.getInt(source_id);
+            return result;
+        }
+     }; 
+    
+    public Source getSource(Number internalID) {
+       String sql = "SELECT "+sourceStar+"FROM "+sourcesTableName+" WHERE "+source_id  +" = ?";
+       List<Source> result= getSimpleJdbcTemplate().query(sql, SourceRowMapper, internalID);       
+       return result.get(0);
     }
     
-    
-    public Source getSource(Number inernalID) {
-        return null;
-    }
+      private final RowMapper<Source> SourceRowMapper = new RowMapper<Source>() {        
+        @Override
+        public Source mapRow(ResultSet rs, int rowNumber) throws SQLException {            
+            try {
+                Source result = constructSource(new SourceIdentifier(rs.getString(external_id)), rs.getString(link), rs.getString(version), rs.getString(time_stamp));
+                return result;
+            }
+            catch (DatatypeConfigurationException e) {
+                // TODO: what logger are we going to use
+                System.out.println("Cannot construct time stam: probably worng date/time format");
+                return null;
+            }
+        }
+    }; 
     
     
     public int deleteSource(Number internalID){
-        return -1;
+        String sql = "DELETE FROM " + sourceTableName + " where " + source_id + " = ?";
+        return (getSimpleJdbcTemplate().update(sql, internalID));
     }
     
     
@@ -88,7 +124,7 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao{
     ////////////////////////////////////////////////////////////////
     
     public List<SourceInfo> getSourceInfos(Number annotationID){
-       String sourceIDs = makeListOfValues(getSourceInternalIdentifiers(annotationID)); 
+       String sourceIDs = makeListOfValues(retrieveSourceIDs(annotationID)); 
        String sql = "SELECT "+external_id+","+ link +"," + version+"FROM "+sourcesTableName+" WHERE "+source_id  +" IN "+sourceIDs;
        List<SourceInfo> result= getSimpleJdbcTemplate().query(sql, SourceInfoRowMapper);       
        return result;
@@ -120,21 +156,7 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao{
       
     //////// HELPERS //////////////////////
     
-    
-    private List<Number> getSourceInternalIdentifiers(Number annotationID){
-        String sql = "SELECT "+target_source_id+" FROM "+annotationsSourcesTableName+" WHERE "+annotationAnnotation_id  +"= ?"; 
-        List<Number> result = getSimpleJdbcTemplate().query(sql, SourceIDRowMapper, annotationID);
-        return result;
-    }
-    
-    private final RowMapper<Number> SourceIDRowMapper = new RowMapper<Number>() {        
-        @Override
-        public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
-           return rs.getInt(target_source_id);
-        }
-    }; 
-    
-    
+  
     ////////////////////////////////////////////////////////
     private SourceInfo constructSourceInfo(SourceIdentifier sourceIdentifier, String link, String version){
         SourceInfo sourceInfo = new SourceInfo();
@@ -142,5 +164,15 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao{
         sourceInfo.setLink(link);
         sourceInfo.setVersion(version);
         return sourceInfo;
+    }
+    
+    private Source constructSource(SourceIdentifier sourceIdentifier, String link, String version, String timeStamp) throws DatatypeConfigurationException{
+        Source source = new Source();         
+        XMLGregorianCalendar xmlTimeStamp = DatatypeFactory.newInstance().newXMLGregorianCalendar(timeStamp);
+        source.setURI(sourceIdentifier.toString());
+        source.setTimeSatmp(xmlTimeStamp);
+        source.setLink(link);
+        source.setVersion(version);
+        return source;
     }
 }
