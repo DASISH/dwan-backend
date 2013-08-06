@@ -98,7 +98,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     protected String internalIdName=null;
     protected String resourceTableName=null;
     
-    
+    //////////////////////////////////////////////////////////////////////////////////
     @Override
     public <T extends DasishIdentifier> Number getInternalID(T externalId){
        if (externalId == null) {
@@ -126,6 +126,36 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
             return resultNumber;
         }
      }; 
+     
+     
+     /////////////////////////////////////////////
+     
+   
+    protected String getExternalIdentifier(Number internalId){
+      if (internalId == null) {
+            return null;
+        }
+        String sql = "SELECT " + external_id + " FROM " + resourceTableName + " WHERE " + internalIdName + "= ?";
+        List<String> sqlResult = getSimpleJdbcTemplate().query(sql, externalIDRowMapper, internalId);
+
+        if (sqlResult == null) {
+            return null;
+        }
+        if (sqlResult.isEmpty()) {
+            return null;
+        }
+
+        return (sqlResult.get(0));
+    }
+    
+    protected final RowMapper<String> externalIDRowMapper = new RowMapper<String>() {
+        @Override
+        public String mapRow(ResultSet rs, int rowNumber) throws SQLException {
+            return (rs.getString(external_id));
+        }
+    };
+    
+    
     
     //////////////////////////////////////////
     /**

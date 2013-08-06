@@ -33,13 +33,13 @@ public interface VersionDao {
      * @return extrnalID identifier of the resource with internalID
      */
     
-    public VersionIdentifier getExternalId(Number internalID);    
+    public VersionIdentifier getExternalID(Number internalID);    
    
    
     /**
      * 
      * @param internalID
-     * @return the insance of Version.class  where the veriosn internal Id is "internalID"
+     * @return the instance of Version.class  where the version internal Id is "internalID"
      * 
      */
     public Version getVersion(Number internalID);

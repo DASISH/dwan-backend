@@ -33,9 +33,6 @@ public interface ResourceDao {
     public <T extends DasishIdentifier> Number getInternalID(T externalId);
     
     
-    
-    
-    
      /**   
      * @param notebookID
      * @return false if notebookID == null or the notebook with notebookID is not in the DB;
