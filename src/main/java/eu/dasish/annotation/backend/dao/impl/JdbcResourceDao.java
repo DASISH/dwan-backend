@@ -45,7 +45,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     final static protected String permissionsTableName = "annotations_principals_permissions";
     final static protected String annotationsSourcesTableName = "annotations_target_sources";
     final static protected String versionsCachedRepresentationsTableName = "versions_cached_representations";
-    
+    final static protected String sourcesVersionsTableName = "sources_versions";
     
     // base string constants: field Names
     final static protected String annotation_id = "annotation_id";
@@ -143,5 +143,19 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
         }
         result = result +vals.get(length-1).toString()+")";
         return result;
+    }
+    
+    ///////////////////////////////////////////////
+    
+    protected int purge(Number id){
+        return 0;
+    }
+    
+    protected <T extends JdbcResourceDao> int purgeAll(List<Number> ids, T instance) {
+         int countRemoved = 0;
+         for (Number id: ids){
+             countRemoved = countRemoved + instance.purge(id);
+         }
+         return countRemoved;
     }
 }

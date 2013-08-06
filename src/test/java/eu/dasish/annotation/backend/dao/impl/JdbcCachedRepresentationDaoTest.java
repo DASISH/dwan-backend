@@ -150,6 +150,7 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest{
         assertEquals("text/plain", result.getMimeType());
         assertEquals("vi", result.getTool());
         assertEquals("text", result.getType());
+        assertFalse(result.getRef() == null); // new non-null external identifier should be assigned
     }
     
     /**

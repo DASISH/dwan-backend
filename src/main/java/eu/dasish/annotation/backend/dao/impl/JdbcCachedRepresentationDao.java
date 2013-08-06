@@ -162,7 +162,10 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
           params.put("type", cached.getType());
           String sql = "INSERT INTO "+cachedRepresentationTableName + "("+external_id+","+ mime_type+"," + tool+","+type_+" ) VALUES (:externalId, :mime_type,  :tool, :type)";
           final int affectedRows = getSimpleJdbcTemplate().update(sql, params);
-          CachedRepresentationInfo cachedNew = makeFreshCopy(cached);          
+          
+          CachedRepresentationInfo cachedNew = makeFreshCopy(cached);
+          cachedNew.setRef(externalIdentifier.toString());
+          
           return cachedNew;
       }
       
@@ -207,12 +210,8 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
      
      @Override
      public int purgeAll(){
-         List<Number> ids = cachedRepresentationIDs();
-         int countRemoved = 0;
-         for (Number id: ids){
-             countRemoved = countRemoved + purge(id);
-         }
-         return countRemoved;
+         List<Number> ids = cachedRepresentationIDs();         
+         return super.purgeAll(ids, this);
      }
       
       ////////// Helpers ///////////////////
