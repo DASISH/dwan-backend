@@ -125,7 +125,7 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest{
     @Test  
     public void testDeleteCachedRepresentationInfo() {
         System.out.println("deleteCachedRepresentationInfo");
-        Number internalID = 1;
+        Number internalID = 6; /// safe to deleate becasue no version refers to it
         int result = jdbcCachedRepresentationDao.deleteCachedRepresentationInfo(internalID);
         assertEquals(1, result);
         
