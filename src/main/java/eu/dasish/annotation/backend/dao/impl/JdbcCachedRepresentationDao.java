@@ -144,8 +144,6 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
       @Override
       public int deleteCachedRepresentationInfo(Number internalID){
         String sql = "DELETE FROM " + cachedRepresentationTableName + " where "+cached_representation_id + " = ?";
-        String sqlVersionsCachedRepresentations = "DELETE FROM " + versionsCachedRepresentationsTableName + " where "+cached_representation_id + " = ?";        
-        getSimpleJdbcTemplate().update(sqlVersionsCachedRepresentations, internalID);
         return (getSimpleJdbcTemplate().update(sql, internalID));
       };
      

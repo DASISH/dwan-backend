@@ -66,7 +66,8 @@ INSERT INTO version (external_id, version) VALUES ('00000000-0000-0000-0000-0000
 INSERT INTO version (external_id, version) VALUES ('00000000-0000-0000-0000-000000000042', 'SF-version 2012'); -- 2
 INSERT INTO version (external_id, version) VALUES ('00000000-0000-0000-0000-000000000043', 'Gaudi wiki -version 2013'); -- 3
 INSERT INTO version (external_id, version) VALUES ('00000000-0000-0000-0000-000000000044', 'Art Nuveau wiki -version 2013'); --4 
-INSERT INTO version (external_id, version) VALUES ('00000000-0000-0000-0000-000000000045', 'Art Nuveau wiki -version 2012'); --5 
+INSERT INTO version (external_id, version) VALUES ('00000000-0000-0000-0000-000000000045', 'Art Nuveau wiki -version 2012'); --5 not used
+INSERT INTO version (external_id, version) VALUES ('00000000-0000-0000-0000-000000000046', 'Art Nuveau wiki -version 2011'); --6  note used
 
 -- CREATE TABLE target_source (
 --     source_id SERIAL UNIQUE NOT NULL,

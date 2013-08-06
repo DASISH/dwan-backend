@@ -73,7 +73,7 @@ public class JdbcVersionDao extends JdbcResourceDao implements VersionDao{
             return null;
         }
        String sql = "SELECT "+version_id+" FROM "+versionTableName+" WHERE "+external_id  +"= ?";
-       List<Number> sqlResult= getSimpleJdbcTemplate().query(sql, internalIDRowMapper, externalID); 
+       List<Number> sqlResult= getSimpleJdbcTemplate().query(sql, internalIDRowMapper, externalID.toString()); 
        
        if (sqlResult == null) {
            return null;
@@ -146,9 +146,7 @@ public class JdbcVersionDao extends JdbcResourceDao implements VersionDao{
      /////////////////////////////////////////        
     @Override
     public int deleteVersion(Number internalID){
-        String sql = "DELETE FROM " + versionTableName + " where "+version_id + " = ?";
-        String sqlSourcesVersions = "DELETE FROM " + sourcesVersionsTableName + " where "+version_id + " = ?";        
-        getSimpleJdbcTemplate().update(sqlSourcesVersions, internalID);
+        String sql = "DELETE FROM " + versionTableName + " where "+version_id + " = ?"; 
         return (getSimpleJdbcTemplate().update(sql, internalID));
     }
     
@@ -166,7 +164,7 @@ public class JdbcVersionDao extends JdbcResourceDao implements VersionDao{
           Version versionAdded = makeFreshCopy(freshVersion); 
           // TODO change for external identifier when the shcem is fixed
           versionAdded.setVersion(newExternalIdentifier);
-        return null;
+        return versionAdded;
     }
      
     ///////////////////////////////////////////////////////////////////
