@@ -17,7 +17,7 @@
  */
 package eu.dasish.annotation.backend.dao;
 
-import java.util.UUID;
+import eu.dasish.annotation.backend.identifiers.DasishIdentifier;
 
 /**
  *
@@ -25,11 +25,24 @@ import java.util.UUID;
  */
 public interface ResourceDao {
     
+     /**
+     * 
+     * @param externalID
+     * @return internal identifier of the resource with externalID
+     */
+    public <T extends DasishIdentifier> Number getInternalID(T externalId);
+    
+    
+    
+    
+    
      /**   
      * @param notebookID
      * @return false if notebookID == null or the notebook with notebookID is not in the DB;
      * @return true if the notebook with notebookID in the DB
      */
+    
+    // TODO: remoev this after notebooks are corrected so they do not use it!!
     public boolean isNotebookInTheDataBase(Number notebookID);
     
    
