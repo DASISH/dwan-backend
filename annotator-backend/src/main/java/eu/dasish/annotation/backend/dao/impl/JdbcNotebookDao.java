@@ -152,6 +152,7 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
             return null;
         }
 
+        // TODO remove "isNoteBookInTheDB"
         if (isNotebookInTheDataBase(notebookID)) {
             String sql = "SELECT "+notebooksAnnotationsTableNameAnnotation_id+"  FROM "+notebooksAnnotationsTableName+" where "+notebook_id+" = ?";
             return getSimpleJdbcTemplate().query(sql, annotationIDRowMapper, notebookID.toString());
@@ -215,6 +216,8 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
             return null;
         }
 
+        
+        // TODO remove "isNoteBookInTheDB"
         if (isNotebookInTheDataBase(notebookID)) {
             Annotations result = new Annotations();
             List<ResourceREF> annotREFs = result.getAnnotation();
