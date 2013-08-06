@@ -98,7 +98,7 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
         return (getSimpleJdbcTemplate().update(sql, internalID));
     }
 
-    ;
+    
      
       ////////////////////////////////////////////////////////////////////////////
       @Override

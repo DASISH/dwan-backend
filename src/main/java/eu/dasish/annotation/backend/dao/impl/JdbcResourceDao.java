@@ -59,7 +59,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     final static protected String principal_id = "principal_id";
     final static protected String time_stamp = "time_stamp";
     final static protected String permission = "permission_";
-    final static protected String target_source_id = "target_source_id";
+    //final static protected String target_source_id = "target_source_id";
     final static protected String link = "link";
     final static protected String version = "version";
     final static protected String cached_representation_id = "cached_representation_id";
@@ -89,9 +89,9 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     final static protected String principalExternal_id = principalTableName+"."+external_id;
     
     
-    final static protected String cachedRepresentationStar = cachedRepresentationTableName+".*";
-    
+    final static protected String cachedRepresentationStar = cachedRepresentationTableName+".*";    
     final static protected String versionStar = versionTableName+".*";
+    final static protected String sourceStar = sourceTableName+".*";
     
     ///////////////////////////////////////////////////
     

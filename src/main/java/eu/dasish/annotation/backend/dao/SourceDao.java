@@ -36,28 +36,56 @@ public interface SourceDao extends ResourceDao{
      */
     public SourceIdentifier getExternalID(Number internalID);
     
-    
+    /**
+     * 
+     * @param annotationID
+     * @return the list of the source's internal IDs of all the target sources of annotationID
+     */
     public List<Number> retrieveSourceIDs(Number annotationID);
     
+    /**
+     * 
+     * @param inernalID
+     * @return the object containing the source with the intrenal Id "internalId"
+     */
+    public Source getSource(Number internalID);
     
-    public Source getSource(Number inernalID);
-    
-    
+    /**
+     * 
+     * @param internalID
+     * @return delete the source with the internal ID "internalID"
+     */
     public int deleteSource(Number internalID);
     
-    
+    /**
+     * 
+     * @param freshSource
+     * adds freshSource to the DB and assigns the fresh external Identifier to it
+     * @return the copy of freshSource with the assigned external identifier 
+     */
     public Source addSource(Source freshSource);
     
-    
+    /**
+     * 
+     * @param internalId
+     * removes the source with the ID "internalId" from the DB, if it is not a target source of some annotation
+     * @return the amount of affected rows in the "source" table
+     */
     public int purge(Number internalId);
     
-    
+    /**
+     * 
+     * @return the list of all internal sourceIDs
+     */
     public List<Number> sourceIDs();
     
-    
+    /**
+     * removes  all the sources from the DAb which are  not target sources of some annotations
+     * @return 
+     */
     public int purgeAll();
     
-    
+    //////////////////////////////////////////////
     
     /**
      * 
