@@ -62,7 +62,7 @@ public class JdbcVersionDaoTest extends JdbcResourceDaoTest{
         System.out.println("getInternalId");
         VersionIdentifier externalID = new VersionIdentifier(TestBackendConstants._TEST_VERSION_1_EXT_ID);
         Number expResult = 1;
-        Number result = jdbcVersionDao.getInternalId(externalID);
+        Number result = jdbcVersionDao.getInternalID(externalID);
         assertEquals(expResult, result);
     }
 

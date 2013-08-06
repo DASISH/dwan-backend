@@ -19,7 +19,6 @@ package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.dao.VersionDao;
 import eu.dasish.annotation.backend.identifiers.VersionIdentifier;
-import eu.dasish.annotation.schema.CachedRepresentationInfo;
 import eu.dasish.annotation.schema.Version;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -35,8 +34,10 @@ import org.springframework.jdbc.core.RowMapper;
  */
 public class JdbcVersionDao extends JdbcResourceDao implements VersionDao{
     
-      public JdbcVersionDao(DataSource dataSource) {
-        setDataSource(dataSource);
+      public JdbcVersionDao(DataSource dataSource) {          
+        setDataSource(dataSource);        
+        internalIdName = version_id;
+        resourceTableName = versionTableName;
     }
       
        //////////////////////////////////////////////////////////////////////////////////////////////////////    
@@ -65,35 +66,7 @@ public class JdbcVersionDao extends JdbcResourceDao implements VersionDao{
             return(rs.getString(external_id));
         }
      }; 
-     
-      //////////////////////////////////////////////////////////////////////////////////////////////////////
-     @Override
-     public Number getInternalId(VersionIdentifier externalID){
-       if (externalID == null) {
-            return null;
-        }
-       String sql = "SELECT "+version_id+" FROM "+versionTableName+" WHERE "+external_id  +"= ?";
-       List<Number> sqlResult= getSimpleJdbcTemplate().query(sql, internalIDRowMapper, externalID.toString()); 
-       
-       if (sqlResult == null) {
-           return null;
-       }
-       if (sqlResult.isEmpty()) {
-           return null;
-       } 
-        
-        Number result  = sqlResult.get(0);
-        return result;
-    }  
-     
-     private final RowMapper<Number> internalIDRowMapper = new RowMapper<Number>() {        
-        @Override
-        public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            return(rs.getInt(version_id));
-        }
-     }; 
-     
-     
+   
       ///////////////////////////////////////////////////////////////
      @Override
      public Version getVersion(Number internalID){

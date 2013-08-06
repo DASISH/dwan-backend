@@ -18,10 +18,10 @@
 package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.dao.ResourceDao;
+import eu.dasish.annotation.backend.identifiers.DasishIdentifier;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.UUID;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcDaoSupport;
 
@@ -92,6 +92,40 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     final static protected String cachedRepresentationStar = cachedRepresentationTableName+".*";
     
     final static protected String versionStar = versionTableName+".*";
+    
+    ///////////////////////////////////////////////////
+    
+    protected String internalIdName=null;
+    protected String resourceTableName=null;
+    
+    
+    @Override
+    public <T extends DasishIdentifier> Number getInternalID(T externalId){
+       if (externalId == null) {
+            return null;
+        }
+       String sql = "SELECT "+internalIdName+" FROM "+resourceTableName+" WHERE "+external_id  +"= ?";
+       List<Number> sqlResult= getSimpleJdbcTemplate().query(sql, internalIDRowMapper, externalId.toString()); 
+       
+       if (sqlResult == null) {
+           return null;
+       }
+       if (sqlResult.isEmpty()) {
+           return null;
+       } 
+        
+        Number result  = sqlResult.get(0);
+        return result;
+    }  
+     
+     protected final RowMapper<Number> internalIDRowMapper = new RowMapper<Number>() {        
+        @Override
+        public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
+            int result = rs.getInt(internalIdName); 
+            Number resultNumber =  result;
+            return resultNumber;
+        }
+     }; 
     
     //////////////////////////////////////////
     /**
