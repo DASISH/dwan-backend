@@ -87,6 +87,6 @@ public class TestBackendConstants {
     public static final String _TEST_CACHED_REPRESENTATION_1_TOOL_ =  "latex";
     public static final String _TEST_CACHED_REPRESENTATION_1_TYPE_ =  "text";
     
-    
+    public static final String _TEST_VERSION_1_EXT_ID = "00000000-0000-0000-0000-000000000041";
 }
 
