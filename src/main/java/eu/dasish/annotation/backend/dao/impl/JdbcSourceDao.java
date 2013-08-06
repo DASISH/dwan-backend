@@ -18,11 +18,11 @@
 package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.dao.SourceDao;
-import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
 import eu.dasish.annotation.backend.identifiers.SourceIdentifier;
-import eu.dasish.annotation.schema.Annotation;
+import eu.dasish.annotation.backend.identifiers.VersionIdentifier;
 import eu.dasish.annotation.schema.NewOrExistingSourceInfo;
 import eu.dasish.annotation.schema.NewOrExistingSourceInfos;
+import eu.dasish.annotation.schema.Source;
 import eu.dasish.annotation.schema.SourceInfo;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -38,10 +38,54 @@ import org.springframework.jdbc.core.RowMapper;
 public class JdbcSourceDao extends JdbcResourceDao implements SourceDao{
     
      public JdbcSourceDao(DataSource dataSource) {
-        setDataSource(dataSource);
+        setDataSource(dataSource);        
+        internalIdName = source_id;
+        resourceTableName = sourceTableName;
+    }
+    
+     //////////////////////////////////////////////////////////////////////////////////////////////////////
+    @Override
+    public SourceIdentifier getExternalID(Number internalID) {
+      return new SourceIdentifier(super.getExternalIdentifier(internalID));
+    }
+    
+ 
+    
+    public List<Number> retrieveSourceIDs(Number annotationID){
+        return null;
     }
     
     
+    public Source getSource(Number inernalID) {
+        return null;
+    }
+    
+    
+    public int deleteSource(Number internalID){
+        return -1;
+    }
+    
+    
+    public Source addSource(Source freshSource){
+        return null;
+    }
+    
+    
+    public int purge(Number internalId){
+        return -1;
+    }
+    
+    
+    public List<Number> sourceIDs(){
+        return null;
+    }
+    
+    
+    public int purgeAll(){
+        return -1;
+    }
+    
+    ////////////////////////////////////////////////////////////////
     
     public List<SourceInfo> getSourceInfos(Number annotationID){
        String sourceIDs = makeListOfValues(getSourceInternalIdentifiers(annotationID)); 
