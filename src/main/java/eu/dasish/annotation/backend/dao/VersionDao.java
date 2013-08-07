@@ -51,13 +51,12 @@ public interface VersionDao {
      */
     public List<Number> retrieveVersionList(Number sourceID);
     
-    /**
-     * 
-     * @param versionID
-     * removes the version with the internal id "versionID". Obligatory side effect: removes the corresponding rows in the tables
-     * "versions_cached_representations" and "sources_versions"
-     * @return the number of affected rows in "version" table, which normally must be 1 (or 0 if there is no version with this inut "versionID")
+     
+    /** @param versionID
+     * removes the row of "version" with the internal ID "internalID" if no references to this version from the tables "sources_versions" and "source"
+     * @return the amount of removed rows
      */
+    
     public int deleteVersion(Number versionID);
     
     /**
@@ -67,12 +66,8 @@ public interface VersionDao {
      * 
      */
     public Version addVersion(Version version);
-    
-    /**
-     * Removes the all the rows in the internal ID "internalID" if no references to this versions from the table sources.
-     * @return the amount of removed rows
-     */
-    public int purge(Number internalID);
+   
+
     
     /**
      * 
@@ -80,9 +75,4 @@ public interface VersionDao {
      */
     public List<Number> versionIDs();
     
-    /**
-     * removes all the versions which are not referred from the sources_versions table
-     * @return 
-     */
-    public int purgeAll();
 }

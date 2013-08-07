@@ -125,12 +125,16 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest{
     @Test  
     public void testDeleteCachedRepresentationInfo() {
         System.out.println("deleteCachedRepresentationInfo");
-        Number internalID = 6; /// safe to deleate becasue no version refers to it
+        Number internalID = 6; /// deleted because no version refers to it
         int result = jdbcCachedRepresentationDao.deleteCachedRepresentationInfo(internalID);
         assertEquals(1, result);
         
         int resultTwo = jdbcCachedRepresentationDao.deleteCachedRepresentationInfo(internalID);
         assertEquals(0, resultTwo);
+        
+        Number internalIDDoNotDelete = 5;
+        int resultThree =jdbcCachedRepresentationDao.deleteCachedRepresentationInfo(internalIDDoNotDelete);
+        assertEquals(0, resultThree);
     }
 
     /**
@@ -153,16 +157,7 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest{
         assertFalse(result.getRef() == null); // new non-null external identifier should be assigned
     }
     
-    /**
-     * Test of purge, of class JdbcCachedRepresentationDao.
-     *  public int purge(Number internalID) 
-     */
-    @Test  
-    public void testPurge() {
-        System.out.println("test purge");
-        int result = jdbcCachedRepresentationDao.purge(6);
-        assertEquals(1, result);
-    }
+  
     
     /**
      * test public List<Number> cachedRepresentationIDs()
@@ -182,14 +177,5 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest{
         assertEquals(7, result.get(6));
     }
     
-     /**
-     * Test of purgeAll, of class JdbcCachedRepresentationDao.
-     * public  int purgeAll() 
-     */
-    @Test  
-    public void testPurgeAll() {
-        System.out.println("test purge All");
-        int result = jdbcCachedRepresentationDao.purgeAll();
-        assertEquals(2, result);
-    }
+    
 }

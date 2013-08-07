@@ -75,7 +75,7 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao{
      }; 
     
     public Source getSource(Number internalID) {
-       String sql = "SELECT "+sourceStar+"FROM "+sourcesTableName+" WHERE "+source_id  +" = ?";
+       String sql = "SELECT "+sourceStar+"FROM "+sourceTableName+" WHERE "+source_id  +" = ?";
        List<Source> result= getSimpleJdbcTemplate().query(sql, SourceRowMapper, internalID);       
        return result.get(0);
     }
@@ -107,11 +107,6 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao{
     }
     
     
-    public int purge(Number internalId){
-        return -1;
-    }
-    
-    
     public List<Number> sourceIDs(){
         return null;
     }
@@ -125,7 +120,7 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao{
     
     public List<SourceInfo> getSourceInfos(Number annotationID){
        String sourceIDs = makeListOfValues(retrieveSourceIDs(annotationID)); 
-       String sql = "SELECT "+external_id+","+ link +"," + version+"FROM "+sourcesTableName+" WHERE "+source_id  +" IN "+sourceIDs;
+       String sql = "SELECT "+external_id+","+ link +"," + version+"FROM "+sourceTableName+" WHERE "+source_id  +" IN "+sourceIDs;
        List<SourceInfo> result= getSimpleJdbcTemplate().query(sql, SourceInfoRowMapper);       
        return result;
     }
