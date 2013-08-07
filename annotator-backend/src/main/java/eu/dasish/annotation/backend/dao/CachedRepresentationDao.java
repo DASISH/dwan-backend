@@ -48,12 +48,12 @@ public interface CachedRepresentationDao {
      */
     public List<Number> retrieveCachedRepresentationList(Number versionID);
     
+     
     /**
      * 
      * @param internalID
-     * @return the amount of rows affected by removing from the DB the cached representation with the id "intenalID"
-     * should be "1" (or 0 with  a non-existing id on the input)
-     * as a obligadory side-effect: deletes all the rows in the table versions_cached_representations containing "internalId" as a cached_representaton_ID
+     * removes the cached representation with internalId from the DB if there is no reference to it in the table "versions_cached_representations"
+     * @return the amount of removed rows in the table "cached_representation"
      */
     public int deleteCachedRepresentationInfo(Number internalID);
     
@@ -64,14 +64,6 @@ public interface CachedRepresentationDao {
      */
     public CachedRepresentationInfo addCachedRepresentationInfo(CachedRepresentationInfo cached);
     
-    
-    /**
-     * 
-     * @param internalID
-     * removes the version with internalId from the DB is there is no reference to to it n the table versions_cached_representations
-     * @return the amount of removed rows
-     */
-    public int purge(Number internalID);
    
     /**
      * 
@@ -79,9 +71,5 @@ public interface CachedRepresentationDao {
      */
     public List<Number> cachedRepresentationIDs();
     
-    /**
-     * removes all the cahed representations which are not referred from the versions_cached_representations table
-     * @return the number of affected rows
-     */
-    public int purgeAll();
+  
 }

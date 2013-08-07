@@ -34,8 +34,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     // base string constants: resource table Names
     final static protected String notebookTableName = "notebook";
     final static protected String annotationTableName = "annotation";
-    final static protected String sourceTableName = "source";    
-    final static protected String sourcesTableName = "target_source";
+    final static protected String sourceTableName = "target_source"; 
     final static protected String cachedRepresentationTableName = "cached_representation_info";
     final static protected String versionTableName = "version";
     final static protected String principalTableName = "principal";
@@ -209,17 +208,4 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
         return result;
     }
     
-    ///////////////////////////////////////////////
-    
-    protected int purge(Number id){
-        return 0;
-    }
-    
-    protected <T extends JdbcResourceDao> int purgeAll(List<Number> ids, T instance) {
-         int countRemoved = 0;
-         for (Number id: ids){
-             countRemoved = countRemoved + instance.purge(id);
-         }
-         return countRemoved;
-    }
 }

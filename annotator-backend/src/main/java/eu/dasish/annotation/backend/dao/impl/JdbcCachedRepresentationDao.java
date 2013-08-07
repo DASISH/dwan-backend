@@ -90,15 +90,6 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
     }
 
     ;
-      
-      ////////////////////////////////////////////////////////////////////////////
-      @Override
-    public int deleteCachedRepresentationInfo(Number internalID) {
-        String sql = "DELETE FROM " + cachedRepresentationTableName + " where " + cached_representation_id + " = ?";
-        return (getSimpleJdbcTemplate().update(sql, internalID));
-    }
-
-    
      
       ////////////////////////////////////////////////////////////////////////////
       @Override
@@ -122,16 +113,21 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
 
     //////////////////////////////////////////////////////////////////////////////////////////////
     @Override
-    public int purge(Number internalID) {
+    public int deleteCachedRepresentationInfo(Number internalID) {
+        //check if there are versions referring to the cached with the "internalID"
         String sqlCheck = "SELECT " + cached_representation_id + " FROM " + versionsCachedRepresentationsTableName + " WHERE " + cached_representation_id + "= ?";
         List<Number> result = getSimpleJdbcTemplate().query(sqlCheck, cachedRepresentationCheckerRowMapper, internalID);
-        if (result.size() < 1) {
+        
+        if (result.isEmpty()) {
+            // remove the cached representation safely 
             String sql = "DELETE FROM " + cachedRepresentationTableName + " where " + cached_representation_id + " = ?";
             return getSimpleJdbcTemplate().update(sql, internalID);
         } else {
+            // do not delete, it is in use!!
             return 0;
         }
     }
+    
     private final RowMapper<Number> cachedRepresentationCheckerRowMapper = new RowMapper<Number>() {
         @Override
         public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
@@ -155,11 +151,7 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
         }
     };
 
-    @Override
-    public int purgeAll() {
-        List<Number> ids = cachedRepresentationIDs();
-        return super.purgeAll(ids, this);
-    }
+   
 
     ////////// Helpers ///////////////////
     private CachedRepresentationInfo makeFreshCopy(CachedRepresentationInfo cached) {

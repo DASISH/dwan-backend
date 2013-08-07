@@ -18,12 +18,15 @@
 package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.TestBackendConstants;
+import eu.dasish.annotation.backend.dao.CachedRepresentationDao;
 import eu.dasish.annotation.backend.identifiers.VersionIdentifier;
 import eu.dasish.annotation.schema.Version;
+import java.util.ArrayList;
 import java.util.List;
+import org.jmock.Expectations;
+import org.jmock.Mockery;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -34,15 +37,22 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @author olhsha
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-//@ContextConfiguration({"/spring-test-config/dataSource.xml", "/spring-test-config/mockery.xml", "/spring-test-config/mockAnnotationDao.xml",
-//    "/spring-test-config/mockUserDao.xml", "/spring-test-config/mockPermissionsDao.xml", "/spring-test-config/mockNotebookDao.xml", "/spring-config/cachedRepresentationDao.xml"})
-@ContextConfiguration({"/spring-test-config/dataSource.xml", "/spring-config/versionDao.xml"})
+@ContextConfiguration({"/spring-test-config/dataSource.xml", "/spring-test-config/mockery.xml", "/spring-test-config/mockAnnotationDao.xml",
+    "/spring-test-config/mockUserDao.xml", "/spring-test-config/mockPermissionsDao.xml", "/spring-test-config/mockNotebookDao.xml",
+    "/spring-test-config/mockCachedRepresentationDao.xml", "/spring-config/versionDao.xml"})
 
 public class JdbcVersionDaoTest extends JdbcResourceDaoTest{
     
     @Autowired
     JdbcVersionDao jdbcVersionDao;
-
+    
+    @Autowired
+    private CachedRepresentationDao cachedRepresentationDao;    
+    
+    @Autowired
+    private Mockery mockery;
+    
+    
     /**
      * Test of getExternalId method, of class JdbcVersionDao.
      */
@@ -99,13 +109,43 @@ public class JdbcVersionDaoTest extends JdbcResourceDaoTest{
     @Test
     public void testDeleteVersion() {
         System.out.println("deleteVersion");
-        Number internalID = 5; // there is no sources (in target_source and sources_versions - sibling table) connected to this version in the test table
-        int result = jdbcVersionDao.deleteVersion(internalID);
+        final Number internalID = 5; // there is no sources (in target_source and sources_versions - sibling table) connected to this version in the test table
+        final Number cachedID =5;
+        final List<Number> versions = new ArrayList<Number>();
+        versions.add(cachedID);
+        
+        //jdbcCachedRepresentationDao.retrieveCachedRepresentationList(internalID);
+        //jdbcCachedRepresentationDao.deleteCachedRepresentationInfo(cachedID);
+        
+        mockery.checking(new Expectations() {
+            { 
+                oneOf(cachedRepresentationDao).retrieveCachedRepresentationList(internalID);
+                will(returnValue(versions));
+                
+                oneOf(cachedRepresentationDao).deleteCachedRepresentationInfo(cachedID);
+                will(returnValue(0));
+                
+            }
+        });
+        
+        int result = jdbcVersionDao.deleteVersion(internalID); 
         assertEquals(1, result);
         
         // try to delete one more time
+         mockery.checking(new Expectations() {
+            { 
+                oneOf(cachedRepresentationDao).retrieveCachedRepresentationList(internalID);
+                will(returnValue(new ArrayList<Number>()));
+                
+            }
+        });
         int resultTwo = jdbcVersionDao.deleteVersion(internalID);
         assertEquals(0, resultTwo);
+        
+        // the version in use, shoul not be deleted
+        final Number internalIDNotToDelete = 4;          
+        int resultThree = jdbcVersionDao.deleteVersion(internalIDNotToDelete);
+        assertEquals(0, resultThree);
     }
 
     /**
@@ -124,20 +164,7 @@ public class JdbcVersionDaoTest extends JdbcResourceDaoTest{
         assertEquals(result.getVersion(), (new VersionIdentifier(result.getVersion())).toString());
     }
 
-    /**
-     * Test of purge method, of class JdbcVersionDao.
-     */
-    @Test
-    public void testPurge() {
-        System.out.println("purge");
-        Number internalID = 5;
-        int result = jdbcVersionDao.purge(internalID);
-        assertEquals(1, result);
-        
-        int resultTwo = jdbcVersionDao.purge(internalID);
-        assertEquals(0, resultTwo);
-    }
-
+  
     /**
      * Test of versionIDs method, of class JdbcVersionDao.
      */
@@ -154,13 +181,5 @@ public class JdbcVersionDaoTest extends JdbcResourceDaoTest{
         assertEquals(6, result.get(5));
     }
 
-    /**
-     * Test of purgeAll method, of class JdbcVersionDao.
-     */
-    @Test
-    public void testPurgeAll() {
-        System.out.println("purgeAll");
-        int result = jdbcVersionDao.purgeAll();
-        assertEquals(2, result);
-    }
+  
 }

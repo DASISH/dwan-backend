@@ -52,8 +52,9 @@ public interface SourceDao extends ResourceDao{
     
     /**
      * 
-     * @param internalID
-     * @return delete the source with the internal ID "internalID"
+     * @param internalId
+     * removes the source with the ID "internalId" from the DB, if it is not a target source of some annotation
+     * @return the amount of affected rows in the "source" table
      */
     public int deleteSource(Number internalID);
     
@@ -65,14 +66,7 @@ public interface SourceDao extends ResourceDao{
      */
     public Source addSource(Source freshSource);
     
-    /**
-     * 
-     * @param internalId
-     * removes the source with the ID "internalId" from the DB, if it is not a target source of some annotation
-     * @return the amount of affected rows in the "source" table
-     */
-    public int purge(Number internalId);
-    
+   
     /**
      * 
      * @return the list of all internal sourceIDs
