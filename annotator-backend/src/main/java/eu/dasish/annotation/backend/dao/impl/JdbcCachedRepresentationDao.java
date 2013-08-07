@@ -119,7 +119,7 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
         List<Number> result = getSimpleJdbcTemplate().query(sqlCheck, cachedRepresentationCheckerRowMapper, internalID);
         
         if (result.isEmpty()) {
-            // remove the cached representation safely 
+            // rou can remove the cached representation
             String sql = "DELETE FROM " + cachedRepresentationTableName + " where " + cached_representation_id + " = ?";
             return getSimpleJdbcTemplate().update(sql, internalID);
         } else {
@@ -136,21 +136,7 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
         }
     };
 
-    //////////////////////////////////////////////////////////////////////////////////////////////
-    @Override
-    public List<Number> cachedRepresentationIDs() {
-        String sqlCheck = "SELECT " + cached_representation_id + " FROM " + cachedRepresentationTableName;
-        List<Number> result = getSimpleJdbcTemplate().query(sqlCheck, cachedRepresentationRunnerRowMapper);
-        return result;
-    }
-    private final RowMapper<Number> cachedRepresentationRunnerRowMapper = new RowMapper<Number>() {
-        @Override
-        public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            Number result = rs.getInt(cached_representation_id);
-            return result;
-        }
-    };
-
+   
    
 
     ////////// Helpers ///////////////////
