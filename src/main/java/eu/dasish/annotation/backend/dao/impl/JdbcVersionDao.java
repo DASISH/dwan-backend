@@ -173,22 +173,6 @@ public class JdbcVersionDao extends JdbcResourceDao implements VersionDao {
 
    
 
-    //////////////////////////////////////////////////////
-    @Override
-    public List<Number> versionIDs() {
-        String sqlCheck = "SELECT " + version_id + " FROM " + versionTableName;
-        List<Number> result = getSimpleJdbcTemplate().query(sqlCheck, versionRunnerRowMapper);
-        return result;
-    }
-    private final RowMapper<Number> versionRunnerRowMapper = new RowMapper<Number>() {
-        @Override
-        public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            Number result = rs.getInt(version_id);
-            return result;
-        }
-    };
-
-   
 
     private Version makeFreshCopy(Version version) {
         Version result = new Version();

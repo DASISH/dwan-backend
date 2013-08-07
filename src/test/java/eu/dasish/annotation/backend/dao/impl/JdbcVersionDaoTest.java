@@ -165,21 +165,6 @@ public class JdbcVersionDaoTest extends JdbcResourceDaoTest{
     }
 
   
-    /**
-     * Test of versionIDs method, of class JdbcVersionDao.
-     */
-    @Test
-    public void testVersionIDs() {
-        System.out.println("versionIDs");
-        List result = jdbcVersionDao.versionIDs();
-        assertEquals(6, result.size());
-        assertEquals(1, result.get(0));
-        assertEquals(2, result.get(1));
-        assertEquals(3, result.get(2));
-        assertEquals(4, result.get(3));
-        assertEquals(5, result.get(4));
-        assertEquals(6, result.get(5));
-    }
-
+ 
   
 }

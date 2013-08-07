@@ -18,6 +18,7 @@
 package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.dao.SourceDao;
+import eu.dasish.annotation.backend.dao.VersionDao;
 import eu.dasish.annotation.backend.identifiers.SourceIdentifier;
 import eu.dasish.annotation.schema.NewOrExistingSourceInfo;
 import eu.dasish.annotation.schema.NewOrExistingSourceInfos;
@@ -26,11 +27,14 @@ import eu.dasish.annotation.schema.SourceInfo;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.sql.DataSource;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.RowMapper;
 
 /**
@@ -38,6 +42,9 @@ import org.springframework.jdbc.core.RowMapper;
  * @author olhsha
  */
 public class JdbcSourceDao extends JdbcResourceDao implements SourceDao{
+    
+    @Autowired
+    VersionDao versionDao;
     
      public JdbcSourceDao(DataSource dataSource) {
         setDataSource(dataSource);        
@@ -74,6 +81,8 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao{
         }
      }; 
     
+    ///////////////////////////////////////////////////////////////////////////////
+    @Override
     public Source getSource(Number internalID) {
        String sql = "SELECT "+sourceStar+"FROM "+sourceTableName+" WHERE "+source_id  +" = ?";
        List<Source> result= getSimpleJdbcTemplate().query(sql, SourceRowMapper, internalID);       
@@ -84,7 +93,7 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao{
         @Override
         public Source mapRow(ResultSet rs, int rowNumber) throws SQLException {            
             try {
-                Source result = constructSource(new SourceIdentifier(rs.getString(external_id)), rs.getString(link), rs.getString(version), rs.getString(time_stamp));
+                Source result = constructSource(new SourceIdentifier(rs.getString(external_id)), rs.getString(link_uri), rs.getString(version), rs.getString(time_stamp));
                 return result;
             }
             catch (DatatypeConfigurationException e) {
@@ -95,32 +104,83 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao{
         }
     }; 
     
-    
+     ///////////////////////////////////////////////////////////////////
+    @Override
     public int deleteSource(Number internalID){
-        String sql = "DELETE FROM " + sourceTableName + " where " + source_id + " = ?";
-        return (getSimpleJdbcTemplate().update(sql, internalID));
+        
+        // check if there are annotations referring to the source with "internalID", in the table "annotations_sources"
+        String sqlAnnotationsSources = "SELECT " + annotation_id + " FROM " + annotationsSourcesTableName + " WHERE " + source_id + "= ?";
+        List<Number> resultAnnotationsSources = getSimpleJdbcTemplate().query(sqlAnnotationsSources, annotationsSourcesRowMapper, internalID);
+        
+        if (resultAnnotationsSources.isEmpty()) {
+
+            // You can remove the source!
+
+            // retrieve the list of versions of the source to be deleted
+            List<Number> versions = versionDao.retrieveVersionList(internalID);
+
+            // remove all the pairs (internalID, version_id) from the joint table        
+            String sqlSourcesVersions = "DELETE FROM " + sourcesVersionsTableName + " where " + source_id + " = ?";
+            int affected_sources_versions_rows = getSimpleJdbcTemplate().update(sqlSourcesVersions, internalID);
+
+            // the main action: remove the source with internalID from "source" table
+            String sql = "DELETE FROM " + sourceTableName + " where " + source_id + " = ?";
+            int affected_source_rows = getSimpleJdbcTemplate().update(sql, internalID);
+
+            // remove the versions of "versions" from the DB unless they are still mentioned in "sources_versions"
+            for (Number versionID : versions) {
+                versionDao.deleteVersion(versionID);
+            }
+
+            return (affected_source_rows);
+        } else {
+            // do not remove 
+            return 0;
+        }
     }
     
+    private final RowMapper<Number> annotationsSourcesRowMapper = new RowMapper<Number>() {
+        @Override
+        public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
+            Number result = rs.getInt(annotation_id);
+            return result;
+        }
+    };
     
+    
+     ///////////////////////////////////////////////////////////////////
+    @Override
     public Source addSource(Source freshSource){
-        return null;
+        
+        SourceIdentifier externalIdentifier = new SourceIdentifier();
+
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("externalId", externalIdentifier.toString());
+        params.put("linkUri", freshSource.getLink());
+        params.put("versionId", freshSource.getVersion());
+        String sql = "INSERT INTO " + sourceTableName + "(" + external_id + "," + link_uri + "," + version_id + " ) VALUES (:externalId, :linkUri,  :versionId)";
+        final int affectedRows = getSimpleJdbcTemplate().update(sql, params);
+
+        Map<String, Object> paramsJoint = new HashMap<String, Object>();
+        paramsJoint.put("sourceId", getInternalID(externalIdentifier));
+        paramsJoint.put("versionId", freshSource.getVersion());
+        String sqlSourceVersion = "INSERT INTO " + sourcesVersionsTableName + "(" + source_id + "," + version_id + " ) VALUES (:sourceId, :versionId)";
+        int affectedRowsJoint = getSimpleJdbcTemplate().update(sqlSourceVersion, paramsJoint);
+        
+        Source result = makeFreshCopy(freshSource);
+        result.setURI(externalIdentifier.toString());
+
+        return result;
+    
     }
-    
-    
-    public List<Number> sourceIDs(){
-        return null;
-    }
-    
-    
-    public int purgeAll(){
-        return -1;
-    }
+   
     
     ////////////////////////////////////////////////////////////////
-    
+     ///////////////////////////////////////////////////////////////////
+    @Override
     public List<SourceInfo> getSourceInfos(Number annotationID){
        String sourceIDs = makeListOfValues(retrieveSourceIDs(annotationID)); 
-       String sql = "SELECT "+external_id+","+ link +"," + version+"FROM "+sourceTableName+" WHERE "+source_id  +" IN "+sourceIDs;
+       String sql = "SELECT "+external_id+","+ link_uri +"," + version+"FROM "+sourceTableName+" WHERE "+source_id  +" IN "+sourceIDs;
        List<SourceInfo> result= getSimpleJdbcTemplate().query(sql, SourceInfoRowMapper);       
        return result;
     }
@@ -128,7 +188,7 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao{
       private final RowMapper<SourceInfo> SourceInfoRowMapper = new RowMapper<SourceInfo>() {        
         @Override
         public SourceInfo mapRow(ResultSet rs, int rowNumber) throws SQLException {
-          return constructSourceInfo(new SourceIdentifier(rs.getString(external_id)), rs.getString(link), rs.getString(version));
+          return constructSourceInfo(new SourceIdentifier(rs.getString(external_id)), rs.getString(link_uri), rs.getString(version));
         }
     }; 
     
@@ -169,5 +229,15 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao{
         source.setLink(link);
         source.setVersion(version);
         return source;
+    }
+    
+     private Source makeFreshCopy(Source source) {
+        Source result = new Source();
+        result.setLink(source.getLink());
+        result.setURI(source.getURI());
+        result.setVersion(source.getVersion());
+        result.setTimeSatmp(source.getTimeSatmp());
+        //versions-siblings are mentioned in the table sources_versions
+        return result;
     }
 }

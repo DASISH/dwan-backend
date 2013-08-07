@@ -67,18 +67,7 @@ public interface SourceDao extends ResourceDao{
     public Source addSource(Source freshSource);
     
    
-    /**
-     * 
-     * @return the list of all internal sourceIDs
-     */
-    public List<Number> sourceIDs();
-    
-    /**
-     * removes  all the sources from the DAb which are  not target sources of some annotations
-     * @return 
-     */
-    public int purgeAll();
-    
+   
     //////////////////////////////////////////////
     
     /**

@@ -65,11 +65,6 @@ public interface CachedRepresentationDao {
     public CachedRepresentationInfo addCachedRepresentationInfo(CachedRepresentationInfo cached);
     
    
-    /**
-     * 
-     * @return the list of all the internal id-s of the cached representations. 
-     */
-    public List<Number> cachedRepresentationIDs();
-    
+  
   
 }
