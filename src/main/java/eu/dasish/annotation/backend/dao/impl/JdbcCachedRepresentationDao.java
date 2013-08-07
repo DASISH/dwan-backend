@@ -43,9 +43,9 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
     //////////////////////////////////////////////////////////////////////////////////////////////////////
     @Override
     public CachedRepresentationIdentifier getExternalID(Number internalID) {
-      return new CachedRepresentationIdentifier(super.getExternalIdentifier(internalID));
+        return new CachedRepresentationIdentifier(super.getExternalIdentifier(internalID));
     }
-    
+
     @Override
     public CachedRepresentationInfo getCachedRepresentationInfo(Number internalID) {
 
@@ -105,10 +105,13 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
         String sql = "INSERT INTO " + cachedRepresentationTableName + "(" + external_id + "," + mime_type + "," + tool + "," + type_ + " ) VALUES (:externalId, :mime_type,  :tool, :type)";
         final int affectedRows = getSimpleJdbcTemplate().update(sql, params);
 
-        CachedRepresentationInfo cachedNew = makeFreshCopy(cached);
-        cachedNew.setRef(externalIdentifier.toString());
-
-        return cachedNew;
+        if (affectedRows == 1) {
+            CachedRepresentationInfo cachedNew = makeFreshCopy(cached);
+            cachedNew.setRef(externalIdentifier.toString());
+            return cachedNew;
+        } else {
+            return null;
+        }
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////
@@ -117,7 +120,7 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
         //check if there are versions referring to the cached with the "internalID"
         String sqlCheck = "SELECT " + cached_representation_id + " FROM " + versionsCachedRepresentationsTableName + " WHERE " + cached_representation_id + "= ?";
         List<Number> result = getSimpleJdbcTemplate().query(sqlCheck, cachedRepresentationCheckerRowMapper, internalID);
-        
+
         if (result.isEmpty()) {
             // rou can remove the cached representation
             String sql = "DELETE FROM " + cachedRepresentationTableName + " where " + cached_representation_id + " = ?";
@@ -127,7 +130,6 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
             return 0;
         }
     }
-    
     private final RowMapper<Number> cachedRepresentationCheckerRowMapper = new RowMapper<Number>() {
         @Override
         public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
@@ -135,9 +137,6 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
             return result;
         }
     };
-
-   
-   
 
     ////////// Helpers ///////////////////
     private CachedRepresentationInfo makeFreshCopy(CachedRepresentationInfo cached) {

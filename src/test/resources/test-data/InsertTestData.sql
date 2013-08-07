@@ -66,7 +66,7 @@ INSERT INTO version (external_id, version) VALUES ('00000000-0000-0000-0000-0000
 INSERT INTO version (external_id, version) VALUES ('00000000-0000-0000-0000-000000000042', 'SF-version 2012'); -- 2
 INSERT INTO version (external_id, version) VALUES ('00000000-0000-0000-0000-000000000043', 'Gaudi wiki -version 2013'); -- 3
 INSERT INTO version (external_id, version) VALUES ('00000000-0000-0000-0000-000000000044', 'Art Nuveau wiki -version 2013'); --4 
-INSERT INTO version (external_id, version) VALUES ('00000000-0000-0000-0000-000000000045', 'Art Nuveau wiki -version 2012'); --5 not used
+INSERT INTO version (external_id, version) VALUES ('00000000-0000-0000-0000-000000000045', 'Art Nuveau wiki -version 2012'); --5 
 INSERT INTO version (external_id, version) VALUES ('00000000-0000-0000-0000-000000000046', 'Art Nuveau wiki -version 2011'); --6  not used
 
 -- CREATE TABLE target_source (
@@ -83,6 +83,7 @@ INSERT INTO version (external_id, version) VALUES ('00000000-0000-0000-0000-0000
 INSERT INTO target_source (external_id, link_uri, version_id) VALUES ('00000000-0000-0000-0000-000000000031', 'http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia', 1); -- 1
 INSERT INTO target_source (external_id, link_uri, version_id) VALUES ('00000000-0000-0000-0000-000000000032', 'http://nl.wikipedia.org/wiki/Antoni_Gaud%C3%AD', 3); --2
 INSERT INTO target_source (external_id, link_uri, version_id) VALUES ('00000000-0000-0000-0000-000000000033', 'http://en.wikipedia.org/wiki/Art_Nouveau', 4); --3
+INSERT INTO target_source (external_id, link_uri, version_id) VALUES ('00000000-0000-0000-0000-000000000034', '???', 5); --4
 
 -- CREATE TABLE annotations_target_sources (
 --    annotation_id integer REFERENCES annotation(annotation_id), -- defining a foreign key: there must be a uniquely defined row in "annotation", that is defined by "annotation_id"
@@ -94,7 +95,6 @@ INSERT INTO annotations_target_sources (annotation_id, source_id) VALUES (2, 1);
 INSERT INTO annotations_target_sources (annotation_id, source_id) VALUES (2, 2); 
 INSERT INTO annotations_target_sources (annotation_id, source_id) VALUES (3, 2); 
 INSERT INTO annotations_target_sources (annotation_id, source_id) VALUES (4, 3); 
-
 
 ----------------------------------------------------------------
 
@@ -108,6 +108,7 @@ INSERT INTO sources_versions (source_id, version_id) VALUES (1, 1);
 INSERT INTO sources_versions (source_id, version_id) VALUES (1, 2);
 INSERT INTO sources_versions (source_id, version_id) VALUES (2, 3);
 INSERT INTO sources_versions (source_id, version_id) VALUES (3, 4);
+INSERT INTO sources_versions (source_id, version_id) VALUES (4, 5);
 
 --------------------------------------------------------------
 
@@ -143,7 +144,8 @@ INSERT INTO versions_cached_representations (version_id, cached_representation_i
 INSERT INTO versions_cached_representations (version_id, cached_representation_id) VALUES (3, 2);
 INSERT INTO versions_cached_representations (version_id, cached_representation_id) VALUES (4, 4);
 INSERT INTO versions_cached_representations (version_id, cached_representation_id) VALUES (1, 5);
-INSERT INTO versions_cached_representations (version_id, cached_representation_id) VALUES (5, 5);
+INSERT INTO versions_cached_representations (version_id, cached_representation_id) VALUES (6, 5);
+
 
 ---- PERMISSIONS --------------------------------------------------------------------------------------------
 

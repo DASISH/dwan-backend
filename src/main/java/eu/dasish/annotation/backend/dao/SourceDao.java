@@ -84,5 +84,12 @@ public interface SourceDao extends ResourceDao{
     */
    
     public NewOrExistingSourceInfos contructNewOrExistingSourceInfo(List<SourceInfo> sourceInfoList);
+    
+    /**
+     * 
+     * @param sourceID
+     * @return delete all the rows in "sources_versions" table with sourceID
+     */
+    public int deleteSourceVersionRows(Number sourceID);
         
 }

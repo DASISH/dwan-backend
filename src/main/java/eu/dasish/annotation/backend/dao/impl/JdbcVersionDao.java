@@ -93,6 +93,14 @@ public class JdbcVersionDao extends JdbcResourceDao implements VersionDao {
         }
     };
 
+    /////////////////////////////////////////
+    @Override
+    public int deleteVersionCachedRepresentationRow(Number versionID) {
+        // remove all the pairs (internalID, cached_representation) from the joint table        
+        String sqlVersionsCachedRepresentations = "DELETE FROM " + versionsCachedRepresentationsTableName + " where " + version_id + " = ?";
+        return (getSimpleJdbcTemplate().update(sqlVersionsCachedRepresentations, versionID));
+    }
+
     ///////////////////////////////////////// 
     //TODO: refactor ???
     @Override
@@ -101,11 +109,11 @@ public class JdbcVersionDao extends JdbcResourceDao implements VersionDao {
         // check if there are sources referring to the version with "internalID", in the table "sources"versions"
         String sqlSourcesVersions = "SELECT " + source_id + " FROM " + sourcesVersionsTableName + " WHERE " + version_id + "= ?";
         List<Number> resultSourcesVersions = getSimpleJdbcTemplate().query(sqlSourcesVersions, sourcesVersionsRowMapper, internalID);
-        
+
         // check if there is a source referring to the version "intrenalID", in the table "source"
         String sqlSource = "SELECT " + source_id + " FROM " + sourceTableName + " WHERE " + version_id + "= ?";
         List<Number> resultSource = getSimpleJdbcTemplate().query(sqlSource, sourceRowMapper, internalID);
-        
+
 
         if (resultSourcesVersions.isEmpty() && resultSource.isEmpty()) {
 
@@ -115,8 +123,7 @@ public class JdbcVersionDao extends JdbcResourceDao implements VersionDao {
             List<Number> cachedRepresentations = jdbcCachedRepresentationDao.retrieveCachedRepresentationList(internalID);
 
             // remove all the pairs (internalID, cached_representation) from the joint table        
-            String sqlVersionsCachedRepresentations = "DELETE FROM " + versionsCachedRepresentationsTableName + " where " + version_id + " = ?";
-            int affected_versions_cached_representations_rows = getSimpleJdbcTemplate().update(sqlVersionsCachedRepresentations, internalID);
+            deleteVersionCachedRepresentationRow(internalID);
 
             // the main action: remove the version with internalID from "version" table
             String sql = "DELETE FROM " + versionTableName + " where " + version_id + " = ?";
@@ -133,8 +140,6 @@ public class JdbcVersionDao extends JdbcResourceDao implements VersionDao {
             return 0;
         }
     }
-      
-    
     private final RowMapper<Number> sourcesVersionsRowMapper = new RowMapper<Number>() {
         @Override
         public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
@@ -142,8 +147,6 @@ public class JdbcVersionDao extends JdbcResourceDao implements VersionDao {
             return result;
         }
     };
-    
-    
     private final RowMapper<Number> sourceRowMapper = new RowMapper<Number>() {
         @Override
         public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
@@ -151,7 +154,6 @@ public class JdbcVersionDao extends JdbcResourceDao implements VersionDao {
             return result;
         }
     };
-    
 
     /////////////////////////////////////////////////
     @Override
@@ -165,14 +167,16 @@ public class JdbcVersionDao extends JdbcResourceDao implements VersionDao {
         params.put("version", newExternalIdentifier);
         String sql = "INSERT INTO " + versionTableName + "(" + external_id + "," + version + " ) VALUES (:externalId, :version)";
         final int affectedRows = getSimpleJdbcTemplate().update(sql, params);
-        Version versionAdded = makeFreshCopy(freshVersion);
-        // TODO change for external identifier when the shcem is fixed
-        versionAdded.setVersion(newExternalIdentifier);
-        return versionAdded;
+
+        if (affectedRows == 1) {
+            Version versionAdded = makeFreshCopy(freshVersion);
+            // TODO change for external identifier when the shcem is fixed
+            versionAdded.setVersion(newExternalIdentifier);
+            return versionAdded;
+        } else {
+            return null;
+        }
     }
-
-   
-
 
     private Version makeFreshCopy(Version version) {
         Version result = new Version();
