@@ -67,7 +67,11 @@ public interface VersionDao {
      */
     public Version addVersion(Version version);
    
-
-   
+    /**
+     * 
+     * @param versionID
+     * @return removes the rows (versionID, some cached representation id) from the joint table "versions_cached_representations"
+     */
+    public int deleteVersionCachedRepresentationRow(Number versionID);
     
 }

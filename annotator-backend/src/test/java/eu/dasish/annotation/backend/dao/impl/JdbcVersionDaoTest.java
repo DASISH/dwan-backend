@@ -103,13 +103,24 @@ public class JdbcVersionDaoTest extends JdbcResourceDaoTest{
         assertEquals(2, result.get(1));
     }
 
+     /**
+     * Test of deleteVersionCachedRepresentationRows method, of class JdbcVersionDao.
+     */
+    @Test
+    public void testDeleteVersionCachedRepresentationRows() {
+        System.out.println("deleteVersion");
+        Number internalID = 6; // there is no sources (in target_source and sources_versions - sibling table) connected to this version in the test table
+        int result = jdbcVersionDao.deleteVersionCachedRepresentationRow(internalID);
+        assertEquals(1, result);
+    }
+    
     /**
      * Test of deleteVersion method, of class JdbcVersionDao.
      */
     @Test
     public void testDeleteVersion() {
         System.out.println("deleteVersion");
-        final Number internalID = 5; // there is no sources (in target_source and sources_versions - sibling table) connected to this version in the test table
+        final Number internalID = 6; // there is no sources (in target_source and sources_versions - sibling table) connected to this version in the test table
         final Number cachedID =5;
         final List<Number> versions = new ArrayList<Number>();
         versions.add(cachedID);

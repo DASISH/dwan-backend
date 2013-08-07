@@ -191,11 +191,11 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     protected <T> String makeListOfValues(List<T> vals) {
         
         if (vals == null) {
-            return "()";
+            return null;
         }
         
         if (vals.isEmpty()) {            
-            return "()";
+            return null;
         }
         
         String result = "(";
