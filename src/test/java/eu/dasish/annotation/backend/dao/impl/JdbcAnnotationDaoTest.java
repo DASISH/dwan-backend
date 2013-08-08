@@ -141,13 +141,13 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest{
     public void getAnnotationID() throws SQLException{
        System.out.println("getAnnotationID"); 
        
-       final Number annotaionId = jdbcAnnotationDao.getAnnotationID(new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_2_EXT));
+       final Number annotaionId = jdbcAnnotationDao.getInternalID(new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_2_EXT));
        assertEquals(2, annotaionId.intValue());
        
-       final Number annotaionIdNE = jdbcAnnotationDao.getAnnotationID(new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_7_EXT_NOT_IN_DB));
+       final Number annotaionIdNE = jdbcAnnotationDao.getInternalID(new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_7_EXT_NOT_IN_DB));
        assertEquals(null, annotaionIdNE);    
       
-       final Number annotaionIdNull = jdbcAnnotationDao.getAnnotationID(null);
+       final Number annotaionIdNull = jdbcAnnotationDao.getInternalID(null);
        assertEquals(null, annotaionIdNull);
     }
     
@@ -273,7 +273,7 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest{
         Annotation result = jdbcAnnotationDao.addAnnotation(annotationToAdd, 5);
         
         AnnotationIdentifier generatedAnnotationExternalID  = new AnnotationIdentifier(result.getURI());
-        Annotation addedAnnotation = jdbcAnnotationDao.getAnnotation(jdbcAnnotationDao.getAnnotationID(generatedAnnotationExternalID));        
+        Annotation addedAnnotation = jdbcAnnotationDao.getAnnotation(jdbcAnnotationDao.getInternalID(generatedAnnotationExternalID));        
         assertEquals(annotationToAdd.getBody().getAny().get(0), addedAnnotation.getBody().getAny().get(0));
         assertEquals(annotationToAdd.getHeadline(), addedAnnotation.getHeadline());
         assertEquals(String.valueOf(5), addedAnnotation.getOwner().getRef());
@@ -298,7 +298,7 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest{
        
        
        final AnnotationIdentifier externalIdThree = jdbcAnnotationDao.getExternalID(null);
-       assertEquals(null, externalIdThree);
+       assertEquals(null, externalIdThree.getUUID());
        
     }
     

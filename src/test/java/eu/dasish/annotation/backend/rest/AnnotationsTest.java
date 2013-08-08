@@ -66,7 +66,7 @@ public class AnnotationsTest extends ResourcesTest{
         
         mockery.checking(new Expectations() {
             {
-                oneOf(annotationDao).getAnnotationID(new AnnotationIdentifier(annotationIdentifier));                
+                oneOf(annotationDao).getInternalID(new AnnotationIdentifier(annotationIdentifier));                
                 will(returnValue(annotationID));
                 
                 oneOf(annotationDao).getAnnotation(annotationID); 
@@ -98,7 +98,7 @@ public class AnnotationsTest extends ResourcesTest{
         
         mockery.checking(new Expectations() {
             {
-                oneOf(annotationDao).getAnnotationID(new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_5_EXT));                
+                oneOf(annotationDao).getInternalID(new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_5_EXT));                
                 will(returnValue(5));
                 
                 oneOf(annotationDao).deleteAnnotation(5);
@@ -117,7 +117,7 @@ public class AnnotationsTest extends ResourcesTest{
         
         mockery.checking(new Expectations() {
             {
-                oneOf(annotationDao).getAnnotationID(new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_5_EXT));                
+                oneOf(annotationDao).getInternalID(new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_5_EXT));                
                 will(returnValue(5));
                 
                 oneOf(annotationDao).deleteAnnotation(5);
