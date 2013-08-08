@@ -23,6 +23,7 @@ import eu.dasish.annotation.backend.dao.NotebookDao;
 import eu.dasish.annotation.backend.dao.PermissionsDao;
 import eu.dasish.annotation.backend.dao.SourceDao;
 import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
+import eu.dasish.annotation.backend.identifiers.SourceIdentifier;
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationInfo;
 import eu.dasish.annotation.schema.NewOrExistingSourceInfo;
@@ -249,7 +250,7 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest{
     @Test
     public void testAddAnnotation() throws SQLException{
         System.out.println("test_addAnnotation"); 
-        final Annotation annotationToAdd = testInstances.getAnnotationToAdd();
+        final Annotation annotationToAdd = testInstances.getAnnotationToAdd();// existing sources
         
         final Number testAnnotationID = 6;
         
@@ -267,6 +268,10 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest{
                 
                 oneOf(sourceDao).contructNewOrExistingSourceInfo(sourceInfoList);
                 will(returnValue(annotationToAdd.getTargetSources()));
+                
+               oneOf(sourceDao).getInternalID(new SourceIdentifier(TestBackendConstants._TEST_SOURCE_1_EXT_ID));
+               will(returnValue(1));  
+                
             }
         });
         
@@ -281,11 +286,7 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest{
         assertEquals(annotationToAdd.getTargetSources(), addedAnnotation.getTargetSources());
         assertEquals(annotationToAdd.getTimeStamp(), addedAnnotation.getTimeStamp());
         
-        // try to add an already existing annptation, should produce null
-        //Annotation annotationOne = testInstances.getAnnotationOne();
-        //AnnotationIdentifier resultOne = jdbcAnnotationDao.addAnnotation(annotationOne);
-        // TODO: why it doesp produce an annotation, it already exists!!
-        //assertTrue(resultOne == null);
+        
         
     }
     

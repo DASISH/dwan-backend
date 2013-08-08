@@ -147,4 +147,5 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
         result.setType(cached.getType());
         return result;
     }
+    
 }
