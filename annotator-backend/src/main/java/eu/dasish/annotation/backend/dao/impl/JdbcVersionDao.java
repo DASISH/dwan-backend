@@ -170,12 +170,15 @@ public class JdbcVersionDao extends JdbcResourceDao implements VersionDao {
 
         if (affectedRows == 1) {
             Version versionAdded = makeFreshCopy(freshVersion);
-            // TODO change for external identifier when the shcem is fixed
+            // TODO change for external identifier when the schema is fixed
             versionAdded.setVersion(newExternalIdentifier);
             return versionAdded;
         } else {
             return null;
         }
+        
+        // adding the corresponding cached representation is initiated from the separate service POST api/sources/<sid>/cached
+        // so it is not implemented here
     }
 
     private Version makeFreshCopy(Version version) {

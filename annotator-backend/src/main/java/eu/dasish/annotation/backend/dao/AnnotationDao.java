@@ -18,9 +18,11 @@
 package eu.dasish.annotation.backend.dao;
 
 import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
+import eu.dasish.annotation.backend.identifiers.SourceIdentifier;
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationInfo;
 import eu.dasish.annotation.schema.ResourceREF;
+import eu.dasish.annotation.schema.SourceInfo;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -60,6 +62,15 @@ public interface AnnotationDao extends ResourceDao{
      */
     
     public int deleteAnnotation(Number annotationId) throws SQLException;
+    
+    /**
+     * 
+     * @param annotationIdentifier
+     * @param sourceInfo
+     * Only the table "annotations_target_sources" is affected
+     * @return the amount of affected rows in the table "annotations_target_sources". Must be 1 if everything went well.
+     */
+    public int addAnnotationSourcePair(AnnotationIdentifier annotationIdentifier, SourceIdentifier sourceIdentifier);
     
    
     /**
