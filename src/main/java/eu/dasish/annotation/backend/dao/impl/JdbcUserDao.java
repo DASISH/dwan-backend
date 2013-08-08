@@ -33,58 +33,13 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
 
     public JdbcUserDao(DataSource dataSource) {
         setDataSource(dataSource);
+        internalIdName = principal_id;
+        resourceTableName = principalTableName;
     }
 
-    @Override
-    public Number getInternalID(UserIdentifier userIdentifier) {
-        if (userIdentifier == null) {
-            return null;
-        }
-        String sql = "SELECT " + principal_id + " FROM " + principalTableName + " WHERE " + external_id + "= ?";
-        List<Number> result = getSimpleJdbcTemplate().query(sql, userIDRowMapper, userIdentifier.toString());
-
-        if (result == null) {
-            return null;
-        }
-
-        if (result.isEmpty()) {
-            return null;
-        }
-
-        return result.get(0);
-    }
-    private final RowMapper<Number> userIDRowMapper = new RowMapper<Number>() {
-        @Override
-        public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            Number result = rs.getInt(principal_id);
-            return result;
-        }
-    };
-    
     /////////////////////////////////////////////////////////////////// 
     @Override
-    public UserIdentifier getExternalID(Number internalId) {
-        if (internalId == null) {
-            return null;
-        }
-        String sql = "SELECT " + external_id + " FROM " + principalTableName + " WHERE " + principal_id + "= ?";
-        List<UserIdentifier> result = getSimpleJdbcTemplate().query(sql, internalIDRowMapper, internalId.toString());
-
-        if (result == null) {
-            return null;
-        }
-
-        if (result.isEmpty()) {
-            return null;
-        }
-
-        return result.get(0);
+    public UserIdentifier getExternalID(Number internalID) {
+        return new UserIdentifier(super.getExternalIdentifier(internalID));
     }
-    private final RowMapper<UserIdentifier> internalIDRowMapper = new RowMapper<UserIdentifier>() {
-        @Override
-        public UserIdentifier mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            UserIdentifier result = new UserIdentifier(rs.getString(external_id));
-            return result;
-        }
-    };
 }

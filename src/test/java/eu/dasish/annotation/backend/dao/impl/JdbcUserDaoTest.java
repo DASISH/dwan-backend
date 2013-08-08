@@ -66,7 +66,7 @@ public class JdbcUserDaoTest extends JdbcResourceDaoTest{
         assertEquals(TestBackendConstants._TEST_USER_3_EXT_ID, testOne.toString());
         
         UserIdentifier testTwo = jdbcUserDao.getExternalID(null);
-        assertEquals(null, testTwo);
+        assertEquals(null, testTwo.getUUID());
     }
     
     

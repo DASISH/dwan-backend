@@ -35,12 +35,13 @@ import java.util.List;
 
 public interface AnnotationDao extends ResourceDao{
     
-    // Returns the list of annotation info-s  for the notebook id.
-    List<AnnotationInfo> getAnnotationInfos(List<Number> annotationIDs);    
-     
-   
-     // Returns the list of annotations Id-s  for the notebook id.
-    List<ResourceREF> getAnnotationREFs(List<Number> annotationIDs);    
+     /**
+     * 
+     * @param internalId
+     * @return the external identifier for the annotation with internalId
+     */
+    public AnnotationIdentifier getExternalID(Number internalId);
+    
     
     /**
      * 
@@ -68,10 +69,13 @@ public interface AnnotationDao extends ResourceDao{
      */
     public Annotation addAnnotation(Annotation annotation, Number ownerID) throws SQLException;
  
-    /**
-     * 
-     * @param internalId
-     * @return the external identifier for the annotation with internalId
-     */
-    public AnnotationIdentifier getExternalID(Number internalId);
+   
+    
+    
+    List<AnnotationInfo> getAnnotationInfos(List<Number> annotationIDs);    
+     
+   
+    
+    List<ResourceREF> getAnnotationREFs(List<Number> annotationIDs);    
+    
 }
