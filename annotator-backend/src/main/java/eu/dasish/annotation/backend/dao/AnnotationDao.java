@@ -50,14 +50,7 @@ public interface AnnotationDao extends ResourceDao{
      */
     Annotation getAnnotation(Number annotationID) throws SQLException;
     
-    /**
-     * 
-     * @param externalID
-     * @return the internal annotationId for the annotation with the external Id "extrnalID"
-     * if annotationID is null or such annotation does not exist in the DB returns null;
-     */
-    Number getAnnotationID(AnnotationIdentifier externalID) throws SQLException;
-    
+       
     /**
      * 
      * @param annotationId

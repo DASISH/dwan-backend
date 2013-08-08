@@ -194,35 +194,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
    }  
       
       
-   //////////////////////////////////////////////////
-     @Override
-    public Number getAnnotationID(AnnotationIdentifier externalID) throws SQLException{
-        if (externalID == null) {
-            return null;
-        }
-        
-       String sql = "SELECT "+annotationAnnotation_id+" FROM "+annotationTableName+" WHERE "+annotationExternal_id+"  = ?";
-       List<Number> result= getSimpleJdbcTemplate().query(sql, annotationIDRowMapper, externalID.toString());
-       if (result == null) {
-           return null;
-       }
-       if (result.isEmpty()) {
-           return null;
-       }
-       
-       if (result.size()>1) {
-           throw new SQLException("There are "+result.size()+" annotations with"+ external_id +" "+externalID);
-       }
-       return result.get(0);
-   }
-     
-      private final RowMapper<Number> annotationIDRowMapper = new RowMapper<Number>() {        
-        @Override
-        public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
-           Number result = rs.getInt(annotation_id);
-           return result;
-        }
-    };
+   
       
    @Override   
      public int deleteAnnotation(Number annotationId) throws SQLException{          
@@ -298,29 +270,10 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
       //////////////////////////////////////////////////
     @Override
     public AnnotationIdentifier getExternalID(Number internalID) {
-        if (internalID == null) {
-            return null;
-        }
-        
-       String sql = "SELECT "+annotationExternal_id+" FROM "+annotationTableName+" WHERE "+annotationAnnotation_id+"  = ?";
-       List<AnnotationIdentifier> result= getSimpleJdbcTemplate().query(sql, externalIDRowMapper, internalID.toString());
-       if (result == null) {
-           return null;
-       }
-       if (result.isEmpty()) {
-           return null;
-       }
-       return result.get(0);
+        return new AnnotationIdentifier(super.getExternalIdentifier(internalID));
    }
      
-      private final RowMapper<AnnotationIdentifier> externalIDRowMapper = new RowMapper<AnnotationIdentifier>() {        
-        @Override
-        public AnnotationIdentifier mapRow(ResultSet rs, int rowNumber) throws SQLException {
-           AnnotationIdentifier result = new AnnotationIdentifier(rs.getString(external_id));
-           return result;
-        }
-    };
-    
+   
     
     //////////// helpers /////////////////////// 
     

@@ -76,7 +76,7 @@ public class AnnotationResource {
     @Produces(MediaType.TEXT_XML)
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}")
     public JAXBElement<Annotation> getAnnotation(@PathParam("annotationid") String annotationIdentifier) throws SQLException {
-        final Annotation annotation = annotationDao.getAnnotation(annotationDao.getAnnotationID(new AnnotationIdentifier(annotationIdentifier)));
+        final Annotation annotation = annotationDao.getAnnotation(annotationDao.getInternalID(new AnnotationIdentifier(annotationIdentifier)));
         return new ObjectFactory().createAnnotation(annotation);
     }
 
@@ -86,7 +86,7 @@ public class AnnotationResource {
      Delete _aid_. The related sources that are not related to other annotations must be deleted as well (TODO)
      */
     public String deleteAnnotation(@PathParam("annotationid") String annotationIdentifier) throws SQLException {
-        Number annotationID = annotationDao.getAnnotationID(new AnnotationIdentifier(annotationIdentifier));        
+        Number annotationID = annotationDao.getInternalID(new AnnotationIdentifier(annotationIdentifier));        
         String result = Integer.toString(annotationDao.deleteAnnotation(annotationID));
         return result;
     }

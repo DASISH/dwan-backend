@@ -81,7 +81,7 @@ public class AnnotationResourceTest {
         // the result of the mocking chain is the same as the expected annotation.        
         mockery.checking(new Expectations() {
             {
-                oneOf(annotationDao).getAnnotationID(new AnnotationIdentifier(annotationIdentifier));                
+                oneOf(annotationDao).getInternalID(new AnnotationIdentifier(annotationIdentifier));                
                 will(returnValue(annotationID));                
                 
                 oneOf(annotationDao).getAnnotation(annotationID);                
@@ -102,7 +102,7 @@ public class AnnotationResourceTest {
         
         mockery.checking(new Expectations() {
             {
-                oneOf(annotationDao).getAnnotationID(new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_5_EXT));                
+                oneOf(annotationDao).getInternalID(new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_5_EXT));                
                 will(returnValue(5));     
                 
                 oneOf(annotationDao).deleteAnnotation(5);
@@ -117,7 +117,7 @@ public class AnnotationResourceTest {
         // if it has been already deleted then the method under testing should return 0
         mockery.checking(new Expectations() {
             {
-                oneOf(annotationDao).getAnnotationID(new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_5_EXT));                
+                oneOf(annotationDao).getInternalID(new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_5_EXT));                
                 will(returnValue(5));
                 
                 oneOf(annotationDao).deleteAnnotation(5);
