@@ -65,8 +65,6 @@ public interface SourceDao extends ResourceDao{
      * @return the copy of freshSource with the assigned external identifier 
      */
     public Source addSource(Source freshSource);
-    
-   
    
     //////////////////////////////////////////////
     
