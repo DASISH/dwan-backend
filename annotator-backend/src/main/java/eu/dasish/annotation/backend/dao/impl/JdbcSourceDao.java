@@ -17,6 +17,7 @@
  */
 package eu.dasish.annotation.backend.dao.impl;
 
+import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.dao.SourceDao;
 import eu.dasish.annotation.backend.dao.VersionDao;
 import eu.dasish.annotation.backend.identifiers.SourceIdentifier;
@@ -28,14 +29,11 @@ import eu.dasish.annotation.schema.SourceInfo;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.sql.DataSource;
 import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.RowMapper;
@@ -93,12 +91,7 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
         @Override
         public Source mapRow(ResultSet rs, int rowNumber) throws SQLException {
             try {
-
-                Date date = rs.getDate(time_stamp);
-                GregorianCalendar c = new GregorianCalendar();
-                c.setTime(date);
-                XMLGregorianCalendar xmlDate = DatatypeFactory.newInstance().newXMLGregorianCalendar(c);
-
+                XMLGregorianCalendar xmlDate = Helpers.setXMLGregorianCalendar(rs.getDate(time_stamp));
                 Source result = constructSource(new SourceIdentifier(rs.getString(external_id)), rs.getString(link_uri),
                         versionDao.getExternalID(rs.getInt(version_id)), xmlDate);
                 return result;
@@ -216,6 +209,8 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
         result.getTarget().addAll(noeSourceInfoList);
         return result;
     }
+    
+  
 
     /////////////////////////////////////////////////
     @Override

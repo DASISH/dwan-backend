@@ -21,6 +21,7 @@ import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationBody;
 import eu.dasish.annotation.schema.NewOrExistingSourceInfo;
 import eu.dasish.annotation.schema.NewOrExistingSourceInfos;
+import eu.dasish.annotation.schema.NewSourceInfo;
 import eu.dasish.annotation.schema.ResourceREF;
 import eu.dasish.annotation.schema.SourceInfo;
 import java.util.List;
@@ -33,11 +34,12 @@ public class TestInstances {
     
     final private Annotation _annotationOne;
     final private Annotation _annotationToAdd;
+    final private Annotation _annotationToAddNewSource;
     
     public TestInstances(){
         _annotationOne = makeAnnotationOne();
         _annotationToAdd = makeAnnotationToAdd();
-        
+        _annotationToAddNewSource = makeAnnotationToAddNewSource();        
     }
     
     
@@ -63,6 +65,26 @@ public class TestInstances {
        return result;
     }
     
+    private Annotation makeAnnotationToAddNewSource(){
+       Annotation result = makeAnnotation(TestBackendConstants._TEST_ANNOT_TO_ADD_NEW_SOURCE_BODY, TestBackendConstants._TEST_ANNOT_TO_ADD_NEW_SOURCE_HEADLINE, 5);
+       
+       NewSourceInfo newSourceInfo =  new NewSourceInfo();
+       newSourceInfo.setLink(TestBackendConstants._TEST_NEW_SOURCE_LINK);
+       newSourceInfo.setId(TestBackendConstants._TEST_TEMP_SOURCE_ID);
+       // TODO: so far, the version is the external version id generated when a version is added
+       // because for now the version is used to keep external id of the version, not is human-friendly headline
+       // fix it by adding external Id to the version
+       newSourceInfo.setVersion(null); 
+       
+       NewOrExistingSourceInfo noeSourceInfo =  new NewOrExistingSourceInfo();
+       noeSourceInfo.setNewSource(newSourceInfo);
+       NewOrExistingSourceInfos noeSourceInfos =  new NewOrExistingSourceInfos();
+       noeSourceInfos.getTarget().add(noeSourceInfo);
+       result.setTargetSources(noeSourceInfos);
+       
+       return result;
+    }
+    
     
     // so far tests only adding annot with existing sources!!!
     // TODO: add non-existing sources
@@ -75,8 +97,13 @@ public class TestInstances {
         result.setHeadline(headline);
         ResourceREF owner = new ResourceREF();
         owner.setRef(String.valueOf(ownerId));
-        result.setOwner(owner);        
-      
+        result.setOwner(owner); 
+        
+        result.setTimeStamp(null); 
+        result.setURI(null);
+        result.setTargetSources(null);
+        result.setURI(null);
+        
        return result;
     }
     
@@ -91,5 +118,8 @@ public class TestInstances {
         return _annotationToAdd;
     }
     
-   
+   public Annotation getAnnotationToAddNewSource(){
+        return _annotationToAddNewSource;
+    }
+    
 }

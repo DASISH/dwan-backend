@@ -91,6 +91,10 @@ public class TestBackendConstants {
     public static final String _TEST_VERSION_2_EXT_ID = "00000000-0000-0000-0000-000000000042";
     public static final String _TEST_VERSION_3_EXT_ID = "00000000-0000-0000-0000-000000000043";
     
-   
+    
+    public static final String _TEST_TEMP_SOURCE_ID = "Barcelona-1";
+    public static final String _TEST_ANNOT_TO_ADD_NEW_SOURCE_BODY = "refers to "+_TEST_TEMP_SOURCE_ID;
+    public static final String _TEST_ANNOT_TO_ADD_NEW_SOURCE_HEADLINE = "SF in Catalan";
+    public static final String _TEST_NEW_SOURCE_LINK = "http://www.sagradafamilia.cat/docs_instit/historia.php ";
 }
 
