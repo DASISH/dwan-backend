@@ -82,7 +82,7 @@ public interface SourceDao extends ResourceDao{
     * @param sourceInfoList
     * @return the list of NewOrExistingSourceo objects in such a way  that an element of the sourceInfoList is injected into an element of the return list
     */
-   
+   //TODO: add non-existing sources!! now is implemented only for existing sources
     public NewOrExistingSourceInfos contructNewOrExistingSourceInfo(List<SourceInfo> sourceInfoList);
     
     /**

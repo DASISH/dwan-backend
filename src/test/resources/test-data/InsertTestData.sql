@@ -144,6 +144,7 @@ INSERT INTO versions_cached_representations (version_id, cached_representation_i
 INSERT INTO versions_cached_representations (version_id, cached_representation_id) VALUES (3, 2);
 INSERT INTO versions_cached_representations (version_id, cached_representation_id) VALUES (4, 4);
 INSERT INTO versions_cached_representations (version_id, cached_representation_id) VALUES (1, 5);
+INSERT INTO versions_cached_representations (version_id, cached_representation_id) VALUES (5, 5);
 INSERT INTO versions_cached_representations (version_id, cached_representation_id) VALUES (6, 5);
 
 

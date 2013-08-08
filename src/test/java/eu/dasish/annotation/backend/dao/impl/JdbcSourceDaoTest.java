@@ -199,6 +199,10 @@ public class JdbcSourceDaoTest extends JdbcResourceDaoTest {
         assertEquals(2, result.size());
         assertEquals(TestBackendConstants._TEST_SOURCE_1_EXT_ID, result.get(0).getRef());
         assertEquals(TestBackendConstants._TEST_SOURCE_2_EXT_ID, result.get(1).getRef());
+        assertEquals(TestBackendConstants._TEST_VERSION_1_EXT_ID, result.get(0).getVersion());
+        assertEquals(TestBackendConstants._TEST_VERSION_3_EXT_ID, result.get(1).getVersion());
+        assertEquals(TestBackendConstants._TEST_SOURCE_1_LINK, result.get(0).getLink());
+        assertEquals(TestBackendConstants._TEST_SOURCE_2_LINK, result.get(1).getLink());
         
     }
 
@@ -206,15 +210,28 @@ public class JdbcSourceDaoTest extends JdbcResourceDaoTest {
      * Test of contructNewOrExistingSourceInfo method, of class JdbcSourceDao.
      */
     @Test
-    @Ignore
     public void testContructNewOrExistingSourceInfo() {
         System.out.println("contructNewOrExistingSourceInfo");
-        List<SourceInfo> sourceInfoList = null;
-        JdbcSourceDao instance = null;
-        NewOrExistingSourceInfos expResult = null;
-        NewOrExistingSourceInfos result = instance.contructNewOrExistingSourceInfo(sourceInfoList);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        
+        List<SourceInfo> sourceInfoList = new ArrayList<SourceInfo>();
+        
+        SourceInfo sourceInfoOne = new SourceInfo();
+        sourceInfoOne.setLink(TestBackendConstants._TEST_SOURCE_1_LINK);
+        sourceInfoOne.setRef(TestBackendConstants._TEST_SOURCE_1_EXT_ID);
+        sourceInfoOne.setRef(TestBackendConstants._TEST_VERSION_1_EXT_ID);
+        
+        SourceInfo sourceInfoTwo = new SourceInfo();
+        sourceInfoTwo.setLink(TestBackendConstants._TEST_SOURCE_2_LINK);
+        sourceInfoTwo.setRef(TestBackendConstants._TEST_SOURCE_2_EXT_ID);
+        sourceInfoTwo.setRef(TestBackendConstants._TEST_VERSION_3_EXT_ID);
+        
+        sourceInfoList.add(sourceInfoOne);
+        sourceInfoList.add(sourceInfoTwo);
+        
+        NewOrExistingSourceInfos result = jdbcSourceDao.contructNewOrExistingSourceInfo(sourceInfoList);
+        assertEquals(2, result.getTarget().size());
+        assertEquals(sourceInfoOne, result.getTarget().get(0).getSource());
+        assertEquals(sourceInfoTwo, result.getTarget().get(1).getSource());
+        
     }
 }
