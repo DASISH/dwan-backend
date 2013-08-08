@@ -18,6 +18,7 @@
 package eu.dasish.annotation.backend.dao;
 
 import eu.dasish.annotation.backend.identifiers.SourceIdentifier;
+import eu.dasish.annotation.schema.NewOrExistingSourceInfo;
 import eu.dasish.annotation.schema.NewOrExistingSourceInfos;
 import eu.dasish.annotation.schema.Source;
 import eu.dasish.annotation.schema.SourceInfo;
@@ -82,6 +83,8 @@ public interface SourceDao extends ResourceDao{
     */
    //TODO: add non-existing sources!! now is implemented only for existing sources
     public NewOrExistingSourceInfos contructNewOrExistingSourceInfo(List<SourceInfo> sourceInfoList);
+    
+    
     
     /**
      * 

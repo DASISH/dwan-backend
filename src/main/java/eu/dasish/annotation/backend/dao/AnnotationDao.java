@@ -21,8 +21,8 @@ import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
 import eu.dasish.annotation.backend.identifiers.SourceIdentifier;
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationInfo;
+import eu.dasish.annotation.schema.NewOrExistingSourceInfo;
 import eu.dasish.annotation.schema.ResourceREF;
-import eu.dasish.annotation.schema.SourceInfo;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -81,12 +81,25 @@ public interface AnnotationDao extends ResourceDao{
     public Annotation addAnnotation(Annotation annotation, Number ownerID) throws SQLException;
  
    
+    /**
+     * 
+     * @param annotation
+     * @param sources
+     * @param clear
+     * @return annotation which target sources replaced (if clear == true) or extended (if clear -- false) by "sources" 
+     * side-effects: updates the annotation_target_source table in the DB
+     * adds a source if it is not in the DB
+     * in the body (both, annotation-class, and in the table "annotation" replaced temporary sourceIDs of new sources
+     * with persistent once once they are added to the DB
+     */
+    public Annotation updateSourceInfo(Annotation annotation, List<NewOrExistingSourceInfo> sources, boolean clear);
+            
     
     
-    List<AnnotationInfo> getAnnotationInfos(List<Number> annotationIDs);    
+    public List<AnnotationInfo> getAnnotationInfos(List<Number> annotationIDs);    
      
    
     
-    List<ResourceREF> getAnnotationREFs(List<Number> annotationIDs);    
+    public List<ResourceREF> getAnnotationREFs(List<Number> annotationIDs);    
     
 }
