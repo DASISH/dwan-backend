@@ -22,6 +22,7 @@ import eu.dasish.annotation.schema.NewOrExistingSourceInfo;
 import eu.dasish.annotation.schema.NewOrExistingSourceInfos;
 import eu.dasish.annotation.schema.Source;
 import eu.dasish.annotation.schema.SourceInfo;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
@@ -104,7 +105,7 @@ public interface SourceDao extends ResourceDao{
      * The already existing source is mapped onto itself.
      * The side-effect: the joint table "annotations_target_sources" is extended by the pairs (annotationID, addedSoiurceID).
      */
-    public Map<NewOrExistingSourceInfo, NewOrExistingSourceInfo> addTargetSources(Number annotationID, List<NewOrExistingSourceInfo> sources);        
+    public Map<NewOrExistingSourceInfo, NewOrExistingSourceInfo> addTargetSources(Number annotationID, List<NewOrExistingSourceInfo> sources) throws SQLException;        
     
         
 }

@@ -27,13 +27,17 @@ import eu.dasish.annotation.backend.identifiers.SourceIdentifier;
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationInfo;
 import eu.dasish.annotation.schema.NewOrExistingSourceInfo;
+import eu.dasish.annotation.schema.NewOrExistingSourceInfo;
 import eu.dasish.annotation.schema.NewOrExistingSourceInfos;
+import eu.dasish.annotation.schema.NewSourceInfo;
 import eu.dasish.annotation.schema.ResourceREF;
 import eu.dasish.annotation.schema.Source;
 import eu.dasish.annotation.schema.SourceInfo;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import static org.junit.Assert.*;
@@ -250,7 +254,6 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest{
      * Test of addAnnotation method, of class JdbcAnnotationDao.
      */
     @Test
-    @Ignore
     public void testAddAnnotationExistingSource() throws SQLException{
         System.out.println("test_addAnnotation with an existing source");
         
@@ -258,21 +261,37 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest{
         assertEquals(null, annotationToAdd.getURI());
         assertEquals(null, annotationToAdd.getTimeStamp());
         
+        NewOrExistingSourceInfo noesi = new NewOrExistingSourceInfo();
+        SourceInfo si = new SourceInfo();
+        si.setLink(TestBackendConstants._TEST_SOURCE_1_LINK);
+        si.setRef(TestBackendConstants._TEST_SOURCE_1_EXT_ID);
+        si.setVersion(TestBackendConstants._TEST_VERSION_1_EXT_ID);
+        noesi.setSource(si);
+        
+        final Map<NewOrExistingSourceInfo, NewOrExistingSourceInfo> map = new HashMap<NewOrExistingSourceInfo, NewOrExistingSourceInfo>();
+        map.put(noesi, noesi);
+        
+        
         mockery.checking(new Expectations() {
             {  
-               oneOf(sourceDao).getInternalID(new SourceIdentifier(TestBackendConstants._TEST_SOURCE_1_EXT_ID));
-                will(returnValue(1)); 
+               oneOf(sourceDao).addTargetSources(with(aNonNull(Number.class)), with(aNonNull(List.class)));
+                will(returnValue(map)); 
             }
         });
         
         Annotation result = jdbcAnnotationDao.addAnnotation(annotationToAdd, 5);        
         assertFalse(null==result.getURI());
-        assertFalse(null==result.getTimeStamp());
+        assertFalse(null==result.getTimeStamp());        
         assertEquals(annotationToAdd.getBody().getAny().get(0), result.getBody().getAny().get(0));
         assertEquals(annotationToAdd.getHeadline(), result.getHeadline());
         assertEquals(String.valueOf(5), result.getOwner().getRef());
         assertEquals(annotationToAdd.getPermissions(), result.getPermissions());
-        assertEquals(annotationToAdd.getTargetSources(), result.getTargetSources());
+        
+        SourceInfo expectedSi = annotationToAdd.getTargetSources().getTarget().get(0).getSource();
+        SourceInfo resultSi = result.getTargetSources().getTarget().get(0).getSource();
+        assertEquals(expectedSi.getLink(), resultSi.getLink()); 
+        assertEquals(expectedSi.getRef(), resultSi.getRef()); 
+        assertEquals(expectedSi.getVersion(), resultSi.getVersion()); 
     }
     
     
@@ -280,38 +299,59 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest{
      * Test of addAnnotation method, of class JdbcAnnotationDao.
      */
     @Test
-    @Ignore
     public void testAddAnnotationNewSource() throws SQLException{
         System.out.println("test_addAnnotation with a new source");
         
-        final Annotation annotationToAddNewSource = testInstances.getAnnotationToAddNewSource();// existing sources
-       
-       
-        final Source addedSource  = new Source();
-        final SourceIdentifier sourceIdentifier = new SourceIdentifier();
-        addedSource.setLink(TestBackendConstants._TEST_NEW_SOURCE_LINK);
-        addedSource.setURI(sourceIdentifier.toString());
+        
+        Annotation annotationToAdd = testInstances.getAnnotationToAddNewSource();// existing sources
+        assertEquals(null, annotationToAdd.getURI());
+        assertEquals(null, annotationToAdd.getTimeStamp());
+        
+        
+        NewOrExistingSourceInfo noesi = new NewOrExistingSourceInfo();
+        NewSourceInfo nsi = new NewSourceInfo();
+        nsi.setLink(TestBackendConstants._TEST_NEW_SOURCE_LINK);
+        nsi.setId(TestBackendConstants._TEST_TEMP_SOURCE_ID);
+        nsi.setVersion(null);
+        noesi.setNewSource(nsi);
+        
+        
+        NewOrExistingSourceInfo noesiTwo = new NewOrExistingSourceInfo();
+        SourceInfo si = new SourceInfo();
+        si.setLink(TestBackendConstants._TEST_NEW_SOURCE_LINK);
+        si.setRef((new SourceIdentifier()).toString());
+        si.setVersion(null);
+        noesiTwo.setSource(si);
+        
+        final Map<NewOrExistingSourceInfo, NewOrExistingSourceInfo> map = new HashMap<NewOrExistingSourceInfo, NewOrExistingSourceInfo>();
+        map.put(noesi, noesiTwo);
+        
         
         mockery.checking(new Expectations() {
-            { 
-               oneOf(sourceDao).addSource(with(aNonNull(Source.class))); 
-               will(returnValue(addedSource));
-               
-               oneOf(sourceDao).getInternalID(sourceIdentifier);
-               will(returnValue(5));  
-                
+            {  
+               oneOf(sourceDao).addTargetSources(with(aNonNull(Number.class)), with(aNonNull(List.class)));
+                will(returnValue(map)); 
             }
         });
         
-        Annotation result = jdbcAnnotationDao.addAnnotation(annotationToAddNewSource, 5);
+        Annotation result = jdbcAnnotationDao.addAnnotation(annotationToAdd, 5);        
         assertFalse(null==result.getURI());
         assertFalse(null==result.getTimeStamp());
-        //assertEquals(annotationToAddNewSource.getBody().getAny().get(0).toString(), result.getBody().getAny().get(0));
-        assertEquals(annotationToAddNewSource.getHeadline(), result.getHeadline());
+        assertEquals(annotationToAdd.getHeadline(), result.getHeadline());
         assertEquals(String.valueOf(5), result.getOwner().getRef());
-        assertEquals(annotationToAddNewSource.getPermissions(), result.getPermissions());
-        //assertEquals(annotationToAddNewSource.getTargetSources(), result.getTargetSources());
+        assertEquals(annotationToAdd.getPermissions(), result.getPermissions());
         
+        NewSourceInfo expectedSi = annotationToAdd.getTargetSources().getTarget().get(0).getNewSource();
+        SourceInfo resultSi = result.getTargetSources().getTarget().get(0).getSource();
+        assertEquals(expectedSi.getLink(), resultSi.getLink());        
+        assertEquals(expectedSi.getVersion(), resultSi.getVersion());   
+        //the reference is replaced with the persistent one
+        assertEquals(si.getRef(), resultSi.getRef()); 
+        /////  
+        
+        // checking the bodies: the temporary reference should be replaced
+        String expBody = annotationToAdd.getBody().getAny().get(0).toString().replaceAll(TestBackendConstants._TEST_TEMP_SOURCE_ID, si.getRef());
+        assertEquals(expBody, result.getBody().getAny().get(0).toString());
     }
     
     
