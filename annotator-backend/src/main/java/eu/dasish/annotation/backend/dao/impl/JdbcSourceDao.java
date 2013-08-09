@@ -229,7 +229,7 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
     
      ////////////////////////////////////////////////////////////////////////
     @Override
-    public Map<NewOrExistingSourceInfo, NewOrExistingSourceInfo> addTargetSources(Number annotationID, List<NewOrExistingSourceInfo> sources) {
+    public Map<NewOrExistingSourceInfo, NewOrExistingSourceInfo> addTargetSources(Number annotationID, List<NewOrExistingSourceInfo> sources) throws SQLException {
 
         Map<NewOrExistingSourceInfo, NewOrExistingSourceInfo> result = new HashMap<NewOrExistingSourceInfo, NewOrExistingSourceInfo>();
         
@@ -242,7 +242,8 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
             } else {
                 Source newSource = constructNewSource(noeSourceInfo.getNewSource());
                 Source addedSource = addSource(newSource);
-                addAnnotationSourcePair(annotationID, getInternalID(new SourceIdentifier(addedSource.getURI())));
+                int affectedRows = addAnnotationSourcePair(annotationID, getInternalID(new SourceIdentifier(addedSource.getURI())));
+                
                 //  create updated source info
                 SourceInfo updatedSourceInfo = new SourceInfo();
                 updatedSourceInfo.setLink(addedSource.getLink());
@@ -255,8 +256,6 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
             }
             
         }
-        
-        
         return result;
     }
 
@@ -267,13 +266,18 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
     ////////////////////////////////////////////////////////
     
   
-    private int addAnnotationSourcePair(Number annotationID, Number sourceID) {
+    private int addAnnotationSourcePair(Number annotationID, Number sourceID) throws SQLException{
         // source is "old" i.e. exists in the DB, onlu the table annotations_target_sources should be updated
         Map<String, Object> paramsAnnotationsSources = new HashMap<String, Object>();
         paramsAnnotationsSources.put("annotationId", annotationID);
         paramsAnnotationsSources.put("sourceId",  sourceID);
         String sqlAnnotationsSources = "INSERT INTO " + annotationsSourcesTableName + "(" + annotation_id + "," + source_id + " ) VALUES (:annotationId, :sourceId)";
-        return (getSimpleJdbcTemplate().update(sqlAnnotationsSources, paramsAnnotationsSources));
+        int affectedRows = getSimpleJdbcTemplate().update(sqlAnnotationsSources, paramsAnnotationsSources);
+        if (affectedRows != 1) {
+            throw (new SQLException("Cannot add annotation properly"));
+
+        }        
+        return (affectedRows);
     }
     
     
