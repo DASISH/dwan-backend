@@ -23,6 +23,7 @@ import eu.dasish.annotation.schema.NewOrExistingSourceInfos;
 import eu.dasish.annotation.schema.Source;
 import eu.dasish.annotation.schema.SourceInfo;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -92,5 +93,18 @@ public interface SourceDao extends ResourceDao{
      * @return delete all the rows in "sources_versions" table with sourceID
      */
     public int deleteSourceVersionRows(Number sourceID);
+    
+    
+    /**
+     * 
+     * @param annotationID
+     * @param sources
+     * @return the mapping of a (possible new, freshly added) source onto the corresponding same source in the DB.
+     * The difference between the argument/key source and the value source is just their internal and external identifiers.
+     * The already existing source is mapped onto itself.
+     * The side-effect: the joint table "annotations_target_sources" is extended by the pairs (annotationID, addedSoiurceID).
+     */
+    public Map<NewOrExistingSourceInfo, NewOrExistingSourceInfo> addTargetSources(Number annotationID, List<NewOrExistingSourceInfo> sources);        
+    
         
 }

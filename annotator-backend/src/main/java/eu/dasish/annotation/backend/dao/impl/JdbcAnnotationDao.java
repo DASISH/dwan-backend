@@ -24,7 +24,6 @@ import eu.dasish.annotation.backend.dao.PermissionsDao;
 import eu.dasish.annotation.backend.dao.SourceDao;
 import eu.dasish.annotation.backend.dao.UserDao;
 import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
-import eu.dasish.annotation.backend.identifiers.SourceIdentifier;
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationBody;
 import eu.dasish.annotation.schema.AnnotationInfo;
@@ -32,12 +31,10 @@ import eu.dasish.annotation.schema.NewOrExistingSourceInfo;
 import eu.dasish.annotation.schema.NewOrExistingSourceInfos;
 import eu.dasish.annotation.schema.NewSourceInfo;
 import eu.dasish.annotation.schema.ResourceREF;
-import eu.dasish.annotation.schema.Source;
 import eu.dasish.annotation.schema.SourceInfo;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -207,17 +204,6 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         //TODO implement deleting sources (see the specification document and the interfaces' javadoc
     }
 
-    ////////////////////////////////////////////////////////////////////////
-    @Override
-    public int addAnnotationSourcePair(AnnotationIdentifier annotationIdentifier, SourceIdentifier sourceIdentifier) {
-        // source is "old" i.e. exists in the DB, onlu the table annotations_target_sources should be updated
-        Map<String, Object> paramsAnnotationsSources = new HashMap<String, Object>();
-        paramsAnnotationsSources.put("annotationId", getInternalID(annotationIdentifier));
-        paramsAnnotationsSources.put("sourceId", jdbcSourceDao.getInternalID(sourceIdentifier));
-        String sqlAnnotationsSources = "INSERT INTO " + annotationsSourcesTableName + "(" + annotation_id + "," + source_id + " ) VALUES (:annotationId, :sourceId)";
-        return (getSimpleJdbcTemplate().update(sqlAnnotationsSources, paramsAnnotationsSources));
-    }
-
     // TODO: so far URI in the xml is the same as the external_id in the DB!!
     // Change it when the decision is taken!!!
     @Override
@@ -246,69 +232,33 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
             String sql = "INSERT INTO " + annotationTableName + "(" + external_id + "," + owner_id + "," + headline + "," + body_xml + " ) VALUES (:externalId, :ownerId, :headline, :bodyXml)";
             final int affectedRows = getSimpleJdbcTemplate().update(sql, params);
 
-            result.setTimeStamp(retrieveTimeStamp(getInternalID(annotationIdentifier)));
+            Number internalID = getInternalID(annotationIdentifier);
 
+
+            //retrieve taime stamp for the just added annotation
+            result.setTimeStamp(retrieveTimeStamp(internalID));
+
+            // place new target sources in the DB, when necessary, update the corresponding target source info for the result
+            // the joint annotations_target_sources" tabel is updated.
             List<NewOrExistingSourceInfo> sources = result.getTargetSources().getTarget();
-            result = updateSourceInfo(result, sources, true);
+            Map<NewOrExistingSourceInfo, NewOrExistingSourceInfo> sourcePairs = jdbcSourceDao.addTargetSources(internalID, sources);
+            sources.clear();
+            sources.addAll(sourcePairs.values());
 
+            //replace the temporary sourceId-references in the body with the persistent externalId
+            String body = annotation.getBody().getAny().get(0).toString();
+            String newBody =  updateTargetRefsInBody(body, sourcePairs);
+            List<Object> bodyXML = result.getBody().getAny();
+            bodyXML.clear();
+            bodyXML.add(newBody);
+            String sqlUpdate = "UPDATE " + annotationTableName + " SET " + body_xml + "= ? WHERE " + annotation_id + "= " + internalID;
+            int affectedRowsBodyUpd = getSimpleJdbcTemplate().update(sqlUpdate, bodyXML);
+            
+            
             return result;
         } catch (DataAccessException exception) {
             throw exception;
         }
-    }
-
-    ////////////////////////////////////////////////////////////////////////
-    @Override
-    public Annotation updateSourceInfo(Annotation annotation, List<NewOrExistingSourceInfo> sources, boolean clear) {
-
-        AnnotationIdentifier annotationIdentifier = new AnnotationIdentifier(annotation.getURI());
-        List<NewOrExistingSourceInfo> sourcesUpdated = new ArrayList<NewOrExistingSourceInfo>();
-        String bodyXML = annotation.getBody().getAny().get(0).toString();
-
-        for (NewOrExistingSourceInfo noeSourceInfo : sources) {
-            SourceInfo sourceInfo = noeSourceInfo.getSource();
-            if (sourceInfo != null) {
-                // this is an old source, already exists in the DB
-                int affectedRowsAnnotationsSources = addAnnotationSourcePair(annotationIdentifier, new SourceIdentifier(sourceInfo.getRef()));
-                sourcesUpdated.add(noeSourceInfo);
-            } else {
-                Source newSource = constructNewSource(noeSourceInfo.getNewSource());
-                Source addedSource = jdbcSourceDao.addSource(newSource);
-                int affectedRowsAnnotationsSources = addAnnotationSourcePair(annotationIdentifier, new SourceIdentifier(addedSource.getURI()));
-
-                //  create updated source info
-                SourceInfo updatedSourceInfo = new SourceInfo();
-                updatedSourceInfo.setLink(addedSource.getLink());
-                updatedSourceInfo.setRef(addedSource.getURI());
-                updatedSourceInfo.setVersion(addedSource.getVersion());
-
-                NewOrExistingSourceInfo updatedInfo = new NewOrExistingSourceInfo();
-                updatedInfo.setSource(updatedSourceInfo);
-                sourcesUpdated.add(updatedInfo);
-
-                bodyXML = bodyXML.replaceAll(noeSourceInfo.getNewSource().getId(), addedSource.getURI());
-
-            }
-        }
-
-        List<NewOrExistingSourceInfo> targets = annotation.getTargetSources().getTarget();
-        if (clear) {
-            targets.clear();
-        }
-        
-        targets.addAll(sourcesUpdated);
-        
-        /// time to update body
-        Number annotationInternalId = getInternalID(annotationIdentifier);
-        String sqlUpdate = "UPDATE " + annotationTableName + " SET " + body_xml + "= ? WHERE " + annotation_id + "= " + annotationInternalId;
-        int affectedRowsBodyUpd = getSimpleJdbcTemplate().update(sqlUpdate, bodyXML);
-
-        List<Object> body = annotation.getBody().getAny();
-        body.clear();
-        body.add(bodyXML);
-        //bodu=y is updated
-        
-        return annotation;
     }
 
     //////////////////////////////////////////////////
@@ -319,6 +269,18 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
 
     //////////// helpers /////////////////////// 
     /////////////////////////////////////////////////
+    
+    private String updateTargetRefsInBody(String body, Map<NewOrExistingSourceInfo, NewOrExistingSourceInfo> sourcePairs){
+        String result = body;
+        for (NewOrExistingSourceInfo tempSource : sourcePairs.keySet()) {
+                NewSourceInfo newSource = tempSource.getNewSource();
+                if (newSource != null) {
+                    result=result.replaceAll(newSource.getId(),sourcePairs.get(tempSource).getSource().getRef() );
+                }
+            }
+        return result;
+    }
+    
     private XMLGregorianCalendar retrieveTimeStamp(Number internalID) {
         String sqlTime = "SELECT " + time_stamp + " FROM " + annotationTableName + " WHERE " + annotation_id + "= ?";
         List<XMLGregorianCalendar> timeStamp = getSimpleJdbcTemplate().query(sqlTime, timeStampRowMapper, internalID);
@@ -365,15 +327,20 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
 
         return result;
     }
-
-    ///////////////////
-    private Source constructNewSource(NewSourceInfo newSourceInfo) {
-        Source result = new Source();
-        result.setLink(newSourceInfo.getLink());
-        result.setVersion(newSourceInfo.getVersion());
-        // source's internalID will be generated by the DB
-        // source's time stamp will be generated by the DB
-        // source's externalID will be generated by the add-source-dao
-        return result;
-    }
 }
+//List<NewOrExistingSourceInfo> targets = annotation.getTargetSources().getTarget();
+//        if (clear) {
+//            targets.clear();
+//        }
+//        
+//        targets.addAll(sourcesUpdated);
+//        
+//        /// time to update body
+//        Number annotationInternalId = getInternalID(annotationIdentifier);
+//        String sqlUpdate = "UPDATE " + annotationTableName + " SET " + body_xml + "= ? WHERE " + annotation_id + "= " + annotationInternalId;
+//        int affectedRowsBodyUpd = getSimpleJdbcTemplate().update(sqlUpdate, bodyXML);
+//
+//        List<Object> body = annotation.getBody().getAny();
+//        body.clear();
+//        body.add(bodyXML);
+        //body is updated

@@ -63,14 +63,6 @@ public interface AnnotationDao extends ResourceDao{
     
     public int deleteAnnotation(Number annotationId) throws SQLException;
     
-    /**
-     * 
-     * @param annotationIdentifier
-     * @param sourceInfo
-     * Only the table "annotations_target_sources" is affected
-     * @return the amount of affected rows in the table "annotations_target_sources". Must be 1 if everything went well.
-     */
-    public int addAnnotationSourcePair(AnnotationIdentifier annotationIdentifier, SourceIdentifier sourceIdentifier);
     
    
     /**
@@ -81,20 +73,7 @@ public interface AnnotationDao extends ResourceDao{
     public Annotation addAnnotation(Annotation annotation, Number ownerID) throws SQLException;
  
    
-    /**
-     * 
-     * @param annotation
-     * @param sources
-     * @param clear
-     * @return annotation which target sources replaced (if clear == true) or extended (if clear -- false) by "sources" 
-     * side-effects: updates the annotation_target_source table in the DB
-     * adds a source if it is not in the DB
-     * in the body (both, annotation-class, and in the table "annotation" replaced temporary sourceIDs of new sources
-     * with persistent once once they are added to the DB
-     */
-    public Annotation updateSourceInfo(Annotation annotation, List<NewOrExistingSourceInfo> sources, boolean clear);
-            
-    
+   
     
     public List<AnnotationInfo> getAnnotationInfos(List<Number> annotationIDs);    
      
