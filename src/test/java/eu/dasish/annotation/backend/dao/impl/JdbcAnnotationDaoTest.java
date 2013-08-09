@@ -250,6 +250,7 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest{
      * Test of addAnnotation method, of class JdbcAnnotationDao.
      */
     @Test
+    @Ignore
     public void testAddAnnotationExistingSource() throws SQLException{
         System.out.println("test_addAnnotation with an existing source");
         

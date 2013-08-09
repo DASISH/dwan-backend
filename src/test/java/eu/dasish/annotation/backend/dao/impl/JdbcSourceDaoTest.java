@@ -21,11 +21,13 @@ import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.dao.VersionDao;
 import eu.dasish.annotation.backend.identifiers.SourceIdentifier;
 import eu.dasish.annotation.backend.identifiers.VersionIdentifier;
+import eu.dasish.annotation.schema.NewOrExistingSourceInfo;
 import eu.dasish.annotation.schema.NewOrExistingSourceInfos;
 import eu.dasish.annotation.schema.Source;
 import eu.dasish.annotation.schema.SourceInfo;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.junit.Test;
@@ -232,6 +234,17 @@ public class JdbcSourceDaoTest extends JdbcResourceDaoTest {
         assertEquals(2, result.getTarget().size());
         assertEquals(sourceInfoOne, result.getTarget().get(0).getSource());
         assertEquals(sourceInfoTwo, result.getTarget().get(1).getSource());
+        
+    }
+    
+    
+    /**
+     * Test of addTargetSources method, of class JdbcSourceDao.
+     * public Map<NewOrExistingSourceInfo, NewOrExistingSourceInfo> addTargetSources(Number annotationID, List<NewOrExistingSourceInfo> sources)
+     */
+    @Test
+    public void testAddTargetSources()
+    {
         
     }
 }
