@@ -67,7 +67,7 @@ public interface SourceDao extends ResourceDao{
      * adds freshSource to the DB and assigns the fresh external Identifier to it
      * @return the copy of freshSource with the assigned external identifier 
      */
-    public Source addSource(Source freshSource);
+    public Source addSource(Source freshSource) throws SQLException;
    
     //////////////////////////////////////////////
     

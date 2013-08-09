@@ -17,11 +17,14 @@
  */
 package eu.dasish.annotation.backend.dao.impl;
 
+import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.dao.ResourceDao;
 import eu.dasish.annotation.backend.identifiers.DasishIdentifier;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.XMLGregorianCalendar;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcDaoSupport;
 
@@ -154,6 +157,29 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     };
     
     
+    
+    
+    /////////////////////////////////////////////////////
+   protected XMLGregorianCalendar retrieveTimeStamp(Number internalID) {
+        String sqlTime = "SELECT " + time_stamp + " FROM " + resourceTableName + " WHERE " + internalIdName + "= ?";
+        List<XMLGregorianCalendar> timeStamp = getSimpleJdbcTemplate().query(sqlTime, timeStampRowMapper, internalID);
+        if (timeStamp.isEmpty()) {
+            return null;
+        }
+        return timeStamp.get(0);
+    }
+    protected final RowMapper<XMLGregorianCalendar> timeStampRowMapper = new RowMapper<XMLGregorianCalendar>() {
+        @Override
+        public XMLGregorianCalendar mapRow(ResultSet rs, int rowNumber) throws SQLException {
+            try {
+                XMLGregorianCalendar result = Helpers.setXMLGregorianCalendar(rs.getDate(time_stamp));
+                return result;
+            } catch (DatatypeConfigurationException e) {
+                System.out.println(e);
+                return null;
+            }
+        }
+    };
     
     //////////////////////////////////////////
     /**
