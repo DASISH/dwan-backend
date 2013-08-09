@@ -284,26 +284,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         return result;
     }
 
-    private XMLGregorianCalendar retrieveTimeStamp(Number internalID) {
-        String sqlTime = "SELECT " + time_stamp + " FROM " + annotationTableName + " WHERE " + annotation_id + "= ?";
-        List<XMLGregorianCalendar> timeStamp = getSimpleJdbcTemplate().query(sqlTime, timeStampRowMapper, internalID);
-        if (timeStamp.isEmpty()) {
-            return null;
-        }
-        return timeStamp.get(0);
-    }
-    private final RowMapper<XMLGregorianCalendar> timeStampRowMapper = new RowMapper<XMLGregorianCalendar>() {
-        @Override
-        public XMLGregorianCalendar mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            try {
-                XMLGregorianCalendar result = Helpers.setXMLGregorianCalendar(rs.getDate(time_stamp));
-                return result;
-            } catch (DatatypeConfigurationException e) {
-                System.out.println(e);
-                return null;
-            }
-        }
-    };
+    
 
     ///////////////////////////////////////////////////////////
     private ResourceREF getResourceREF(String resourceID) {

@@ -146,7 +146,7 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
 
     ///////////////////////////////////////////////////////////////////
     @Override
-    public Source addSource(Source freshSource) {
+    public Source addSource(Source freshSource) throws SQLException{
 
         SourceIdentifier externalIdentifier = new SourceIdentifier();
 
@@ -166,9 +166,14 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
         if (affectedRows == 1 && affectedRowsJoint == 1) {
             Source result = makeFreshCopy(freshSource);
             result.setURI(externalIdentifier.toString());
+            
+            //retrieve taime stamp for the just added annotation
+            XMLGregorianCalendar timeStamp =this.retrieveTimeStamp(getInternalID(new SourceIdentifier(externalIdentifier.toString()))); 
+            result.setTimeSatmp(timeStamp);
+            
             return result;
         } else {
-            return null;
+            throw new SQLException("Cannot add the source");
         }
          
     }
@@ -312,6 +317,7 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
         return source;
     }
 
+    // TODO: make deep copy for source, otherwise testing will be unfair!!
     private Source makeFreshCopy(Source source) {
         Source result = new Source();
         result.setLink(source.getLink());
