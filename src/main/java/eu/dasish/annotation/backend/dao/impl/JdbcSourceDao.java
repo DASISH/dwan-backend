@@ -92,7 +92,7 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
         @Override
         public Source mapRow(ResultSet rs, int rowNumber) throws SQLException {
             try {
-                XMLGregorianCalendar xmlDate = Helpers.setXMLGregorianCalendar(rs.getDate(time_stamp));
+                XMLGregorianCalendar xmlDate = Helpers.setXMLGregorianCalendar(rs.getTimestamp(time_stamp));
                 Source result = constructSource(new SourceIdentifier(rs.getString(external_id)), rs.getString(link_uri),
                         versionDao.getExternalID(rs.getInt(version_id)), xmlDate);
                 return result;
