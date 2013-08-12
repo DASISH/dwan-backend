@@ -193,17 +193,21 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
     @Override
     public int deleteAnnotation(Number annotationId) throws SQLException {
 
-        //TODO: why  does it not work via calling notebook and permissions "remove" methods??
-
         String sqlNotebooks = "DELETE FROM " + notebooksAnnotationsTableName + " where " + annotation_id + " = ?";
         int affectedNotebooks = getSimpleJdbcTemplate().update(sqlNotebooks, annotationId);
 
-        String sqlPermissions = "DELETE FROM " + permissionsTableName + " where " + annotation_id + " = ?";
+         String sqlPermissions = "DELETE FROM " + permissionsTableName + " where " + annotation_id + " = ?";
         int affectedPermissions = getSimpleJdbcTemplate().update(sqlPermissions, annotationId);
-
-        // TODO make a separate methods in sources DAO so that it handles removal of sources which are not referered by annotations
+        
+        // safe removing sources
+        List<Number> sourceIDs = jdbcSourceDao.retrieveSourceIDs(annotationId);
         String sqlTargetSources = "DELETE FROM " + annotationsSourcesTableName + " where " + annotation_id + " = ?";
-        int affectedSources = getSimpleJdbcTemplate().update(sqlTargetSources, annotationId);
+        int affectedAnnotationsSources = getSimpleJdbcTemplate().update(sqlTargetSources, annotationId);
+        int affectedSources;
+        for (Number sourceID : sourceIDs) {            
+         // call  the method in sources DAO that handles removal of a source which is not refered by other annotations
+            affectedSources = jdbcSourceDao.deleteSource(sourceID);
+        }
 
         String sqlAnnotation = "DELETE FROM " + annotationTableName + " where " + annotation_id + " = ?";
         int affectedAnnotations = getSimpleJdbcTemplate().update(sqlAnnotation, annotationId);

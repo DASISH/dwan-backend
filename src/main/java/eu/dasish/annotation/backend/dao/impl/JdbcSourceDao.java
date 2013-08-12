@@ -63,14 +63,7 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
     @Override
     public List<Number> retrieveSourceIDs(Number annotationID) {
         String sql = "SELECT " + source_id + " FROM " + annotationsSourcesTableName + " WHERE " + annotation_id + "= ?";
-        List<Number> result = getSimpleJdbcTemplate().query(sql, annotationSourceRowMapper, annotationID);
-
-        if (result == null) {
-            return null;
-        }
-        if (result.isEmpty()) {
-            return null;
-        }
+        List<Number> result = getSimpleJdbcTemplate().query(sql, annotationSourceRowMapper, annotationID);       
         return result;
     }
     private final RowMapper<Number> annotationSourceRowMapper = new RowMapper<Number>() {
