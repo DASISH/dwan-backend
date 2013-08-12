@@ -17,7 +17,6 @@
  */
 package eu.dasish.annotation.backend.dao.impl;
 
-import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.TestInstances;
 import eu.dasish.annotation.backend.dao.NotebookDao;
@@ -37,10 +36,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.xml.datatype.DatatypeConfigurationException;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import static org.junit.Assert.*;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -228,14 +227,20 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
     @Test
     public void testDeleteAnnotation() throws SQLException {
         System.out.println("deleteAnnotation");
+        final List<Number> sourceIDs = new ArrayList<Number>();
+        sourceIDs.add(3);
+        sourceIDs.add(4);
 
         mockery.checking(new Expectations() {
             {
-                oneOf(permissionsDao).removeAnnotation(5);
+                oneOf(sourceDao).retrieveSourceIDs(5);
+                will(returnValue(sourceIDs));
+                
+                oneOf(sourceDao).deleteSource(sourceIDs.get(0));
+                will(returnValue(0));
+                
+                oneOf(sourceDao).deleteSource(sourceIDs.get(1));
                 will(returnValue(1));
-
-                oneOf(notebookDao).removeAnnotation(5);
-                will(returnValue(3));
             }
         });
 
@@ -243,6 +248,13 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         assertEquals(1, result);
         // now, try to delete the same annotation one more time
         // if it has been already deleted then the method under testing should return 0
+        
+        mockery.checking(new Expectations() {
+            {
+                oneOf(sourceDao).retrieveSourceIDs(5);
+                will(returnValue(new ArrayList<Number>()));                
+            }
+        });
         result = jdbcAnnotationDao.deleteAnnotation(5);
         assertEquals(0, result);
     }
@@ -351,6 +363,7 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
     }
 
     @Test
+    @Ignore
     public void testGetExternalID() {
         System.out.println("getAnnotationID");
 
