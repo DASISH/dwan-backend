@@ -24,6 +24,7 @@ import eu.dasish.annotation.backend.dao.PermissionsDao;
 import eu.dasish.annotation.backend.dao.SourceDao;
 import eu.dasish.annotation.backend.dao.UserDao;
 import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
+import eu.dasish.annotation.backend.identifiers.UserIdentifier;
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationBody;
 import eu.dasish.annotation.schema.AnnotationInfo;
@@ -34,6 +35,7 @@ import eu.dasish.annotation.schema.ResourceREF;
 import eu.dasish.annotation.schema.SourceInfo;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -66,14 +68,69 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         resourceTableName = annotationTableName;
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    /**
-     *
-     * @param annotationIDs is a list of internal annotation identifiers
-     * @return the list of the corresponding annotation-infos for the annotation
-     * identifiers from the list; if the input list is null return null if the
-     * input list is empty (zero elements) returns an empty list
-     */
+    @Override
+    public List<Number> getFilteredAnnotationIDs(String link, String text, String access, String namespace, UserIdentifier owner, Timestamp after, Timestamp before) {
+
+        String sql = "SELECT " + annotation_id + " FROM " + annotationTableName;
+        boolean firstClauseIsBuild = false;
+        //TODO: optimize List<Object> params = new ArrayList<Object>();
+        //TODO: optimizie String builder
+
+
+
+        if (owner != null) {
+            sql = sql + " WHERE " + principal_id + "=:owner" + jdbcUserDao.getInternalID(owner);
+            firstClauseIsBuild = true;
+        }
+
+
+
+        if (after != null) {
+            if (firstClauseIsBuild) {
+                sql = sql + " AND " + time_stamp + "  > " + after.toString();
+            } else {
+                sql = sql + " WHERE " + time_stamp + "  > " + after.toString();
+                firstClauseIsBuild = true;
+            }
+        }
+
+        if (before != null) {
+            if (firstClauseIsBuild) {
+                sql = sql + " AND " + time_stamp + "  < " + before.toString();
+            } else {
+                sql = sql + " WHERE " + time_stamp + "  < " + before.toString();
+                firstClauseIsBuild = true;
+            }
+        }
+
+        if (text != null) {
+            if (firstClauseIsBuild) {
+                sql = sql + " AND " + body_xml + "  LIKE '%" + text + "%'";
+            } else {
+                sql = sql + " WHERE " + body_xml + "  LIKE '%" + text + "%'";
+                firstClauseIsBuild = true;
+            }
+        }
+
+        if (link != null) {
+            List<Number> sourceIDs = jdbcSourceDao.getSourcesForLink(link);
+            if (!sourceIDs.isEmpty()) {
+                String values = makeListOfValues(sourceIDs);
+                if (firstClauseIsBuild) {
+                    sql = sql + " AND " + source_id + " IN " + values;
+                }
+                 else {
+                    sql = sql + " WHERE " + source_id + " IN " + values;
+                    firstClauseIsBuild = true;
+                }
+            }
+        }
+
+
+        List<Number> result = getSimpleJdbcTemplate().query(sql, internalIDRowMapper);
+        return result;
+    }
+
     @Override
     public List<AnnotationInfo> getAnnotationInfos(List<Number> annotationIDs) {
 
@@ -196,16 +253,16 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         String sqlNotebooks = "DELETE FROM " + notebooksAnnotationsTableName + " where " + annotation_id + " = ?";
         int affectedNotebooks = getSimpleJdbcTemplate().update(sqlNotebooks, annotationId);
 
-         String sqlPermissions = "DELETE FROM " + permissionsTableName + " where " + annotation_id + " = ?";
+        String sqlPermissions = "DELETE FROM " + permissionsTableName + " where " + annotation_id + " = ?";
         int affectedPermissions = getSimpleJdbcTemplate().update(sqlPermissions, annotationId);
-        
+
         // safe removing sources
         List<Number> sourceIDs = jdbcSourceDao.retrieveSourceIDs(annotationId);
         String sqlTargetSources = "DELETE FROM " + annotationsSourcesTableName + " where " + annotation_id + " = ?";
         int affectedAnnotationsSources = getSimpleJdbcTemplate().update(sqlTargetSources, annotationId);
         int affectedSources;
-        for (Number sourceID : sourceIDs) {            
-         // call  the method in sources DAO that handles removal of a source which is not refered by other annotations
+        for (Number sourceID : sourceIDs) {
+            // call  the method in sources DAO that handles removal of a source which is not refered by other annotations
             affectedSources = jdbcSourceDao.deleteSource(sourceID);
         }
 

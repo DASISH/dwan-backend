@@ -107,5 +107,10 @@ public interface SourceDao extends ResourceDao{
      */
     public Map<NewOrExistingSourceInfo, NewOrExistingSourceInfo> addTargetSources(Number annotationID, List<NewOrExistingSourceInfo> sources) throws SQLException;        
     
-        
+    /**
+     * 
+     * @param link
+     * @return the list source ID's which link-fields contain "link" as a substring
+     */ 
+    public List<Number> getSourcesForLink(String link);
 }

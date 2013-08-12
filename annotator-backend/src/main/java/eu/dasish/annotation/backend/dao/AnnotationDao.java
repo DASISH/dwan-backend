@@ -18,12 +18,12 @@
 package eu.dasish.annotation.backend.dao;
 
 import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
-import eu.dasish.annotation.backend.identifiers.SourceIdentifier;
+import eu.dasish.annotation.backend.identifiers.UserIdentifier;
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationInfo;
-import eu.dasish.annotation.schema.NewOrExistingSourceInfo;
 import eu.dasish.annotation.schema.ResourceREF;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.List;
 
 /**
@@ -72,13 +72,39 @@ public interface AnnotationDao extends ResourceDao{
      */
     public Annotation addAnnotation(Annotation annotation, Number ownerID) throws SQLException;
  
-   
-   
+     
+    /**
+     * 
+     * @param link optional
+     * @param text optional
+     * @param access optional
+     * @param namespace optional TODO: do not know what to do with it 
+     * @param owner optional 
+     * @param after optional
+     * @param before optional 
+     * @return the list of internal annotation identifiers for annotations 
+     * -- referring to the "link", 
+     * -- bodies of which contain the "text", 
+     * -- to which inlogged user has "access", 
+     * -- owned by "owner", 
+     * -- added to the database between "before" and "after" time-dates.
+     */
+    public List<Number> getFilteredAnnotationIDs(String link, String text, String access, String namespace, UserIdentifier owner, Timestamp after, Timestamp before);
     
+   
+    /**
+     * 
+     * @param annotationIDs
+     * @return the list of annotationInfos (owner, headline, target sources, external_id) for the internal Ids from the  input list
+     * used on the second step for for GET api/annotations?<filters>
+     */
     public List<AnnotationInfo> getAnnotationInfos(List<Number> annotationIDs);    
      
    
     
-    public List<ResourceREF> getAnnotationREFs(List<Number> annotationIDs);    
+    public List<ResourceREF> getAnnotationREFs(List<Number> annotationIDs); 
+    
+    
+   
     
 }
