@@ -17,8 +17,12 @@
  */
 package eu.dasish.annotation.backend;
 
+import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Locale;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -29,10 +33,9 @@ import javax.xml.datatype.XMLGregorianCalendar;
  */
 public class Helpers {
 
-    public static XMLGregorianCalendar setXMLGregorianCalendar(Date timeStamp) throws DatatypeConfigurationException {
-        GregorianCalendar c = new GregorianCalendar();
-        c.setTime(timeStamp);
-        return DatatypeFactory.newInstance().newXMLGregorianCalendar(c);
-
+    public static XMLGregorianCalendar setXMLGregorianCalendar(Timestamp timeStamp) throws DatatypeConfigurationException {
+            GregorianCalendar gc = new GregorianCalendar();
+            gc.setTime(timeStamp);
+            return DatatypeFactory.newInstance().newXMLGregorianCalendar(gc);
     }
 }

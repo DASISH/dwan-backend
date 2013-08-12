@@ -40,7 +40,6 @@ import java.util.List;
 import java.util.Map;
 import javax.sql.DataSource;
 import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.XMLGregorianCalendar;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.RowMapper;
@@ -153,22 +152,33 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         @Override
         public Annotation mapRow(ResultSet rs, int rowNumber) throws SQLException {
             Annotation result = new Annotation();
-            result.setHeadline(rs.getString(headline));
 
             ResourceREF ownerREF = new ResourceREF();
             ownerREF.setRef(String.valueOf(rs.getInt(owner_id)));
             result.setOwner(ownerREF);
 
+            result.setHeadline(rs.getString(headline));
+
+            result.setBody(convertToAnnotationBody(rs.getString(body_xml)));
+
             List<SourceInfo> sourceInfoList = jdbcSourceDao.getSourceInfos(rs.getInt(annotation_id));
             NewOrExistingSourceInfos noeSourceInfos = jdbcSourceDao.contructNewOrExistingSourceInfo(sourceInfoList);
             result.setTargetSources(noeSourceInfos);
 
-            result.setBody(convertToAnnotationBody(rs.getString(body_xml)));
-            return result;
+            // TODO: fix: rpelace URI in the schema with external id, or make here the conversion:
+            // from external ID in the DB to the URI for the class
+            result.setURI(rs.getString(external_id));
+
+            try {
+                result.setTimeStamp(Helpers.setXMLGregorianCalendar(rs.getTimestamp(time_stamp)));
+                return result;
+            } catch (DatatypeConfigurationException e) {
+                System.out.println(e);
+                return result; // no date-time is set 
+            }
         }
     };
 
-    // TODO: fill in the stub, when the annotation body is elaborated
     private AnnotationBody convertToAnnotationBody(String input) {
         if (input == null) {
             return null;
@@ -230,7 +240,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
 
             String sql = "INSERT INTO " + annotationTableName + "(" + external_id + "," + owner_id + "," + headline + "," + body_xml + " ) VALUES (:externalId, :ownerId, :headline, :bodyXml)";
             final int affectedRows = getSimpleJdbcTemplate().update(sql, params);
-            
+
             if (affectedRows != 1) {
                 throw (new SQLException("Cannot add the annotation properly"));
             }
@@ -257,7 +267,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
             int affectedRowsBodyUpd = getSimpleJdbcTemplate().update(sqlUpdate, newBody);
             if (affectedRows != 1) {
                 throw (new SQLException("Cannot update the body with persistent reference ID"));
-            } 
+            }
 
             return result;
         } catch (DataAccessException exception) {
@@ -284,8 +294,6 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         return result;
     }
 
-    
-
     ///////////////////////////////////////////////////////////
     private ResourceREF getResourceREF(String resourceID) {
         ResourceREF result = new ResourceREF();
@@ -301,29 +309,28 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         }
 
         Annotation result = new Annotation();
-        
-       
+
         AnnotationBody body = new AnnotationBody();
         String bodyString = annotation.getBody().getAny().get(0).toString();
         body.getAny().add(bodyString);
         result.setBody(body);
-        
+
         result.setHeadline(annotation.getHeadline());
-        
+
         ResourceREF owner = new ResourceREF();
         owner.setRef(annotation.getOwner().getRef());
         result.setOwner(owner);
-        
+
 //        ResourceREF permissions = new ResourceREF();
 //        permissions.setRef(annotation.getPermissions().getRef());
 //        result.setPermissions(permissions);
-        
+
         result.setPermissions(null); //we do not have permissions there
-        
+
         NewOrExistingSourceInfos noesi = new NewOrExistingSourceInfos();
-        noesi.getTarget().addAll(annotation.getTargetSources().getTarget());        
+        noesi.getTarget().addAll(annotation.getTargetSources().getTarget());
         result.setTargetSources(noesi);
-        
+
         result.setTimeStamp(annotation.getTimeStamp());
         result.setURI(annotation.getURI());
 

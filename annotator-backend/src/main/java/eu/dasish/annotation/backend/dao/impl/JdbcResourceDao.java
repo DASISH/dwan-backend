@@ -172,7 +172,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
         @Override
         public XMLGregorianCalendar mapRow(ResultSet rs, int rowNumber) throws SQLException {
             try {
-                XMLGregorianCalendar result = Helpers.setXMLGregorianCalendar(rs.getDate(time_stamp));
+                XMLGregorianCalendar result = Helpers.setXMLGregorianCalendar(rs.getTimestamp(time_stamp));
                 return result;
             } catch (DatatypeConfigurationException e) {
                 System.out.println(e);
