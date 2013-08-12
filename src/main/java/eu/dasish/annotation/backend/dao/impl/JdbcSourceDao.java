@@ -222,7 +222,7 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
     }
     
     
-
+    
     
     
      ////////////////////////////////////////////////////////////////////////
@@ -257,8 +257,12 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
         return result;
     }
 
-    
-    
+    @Override
+    public List<Number> getSourcesForLink(String link){
+      String sql = "SELECT "+source_id+" FROM "+sourceTableName+ "WHERE "+link_uri+" LIKE '%"+link+"%'";
+      List<Number> result = getSimpleJdbcTemplate().query(sql, internalIDRowMapper);
+      return result;
+    }
 
     //////// HELPERS //////////////////////
     ////////////////////////////////////////////////////////
