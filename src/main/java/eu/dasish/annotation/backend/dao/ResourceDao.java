@@ -39,8 +39,5 @@ public interface ResourceDao {
      * @return true if the notebook with notebookID in the DB
      */
     
-    // TODO: remoev this after notebooks are corrected so they do not use it!!
-    public boolean isNotebookInTheDataBase(Number notebookID);
-    
    
 }
