@@ -181,37 +181,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
         }
     };
     
-    //////////////////////////////////////////
-    /**
-     * 
-     * @param notebookID
-     * @return false if notebookID == null or the notebook with notebookID is not in the DB;
-     * @return true if the notebook with notebookID in the DB
-     */
-    @Override
-    public boolean isNotebookInTheDataBase(Number notebookID){
-        
-        if (notebookID == null) {
-           return false;
-       } 
-       String sql = "SELECT "+notebookNotebook_id+"  FROM notebook where "+notebook_id+" = ? LIMIT 1";
-       List<Number> result=getSimpleJdbcTemplate().query(sql, isNotebookInTheDataBaseRowMapper, notebookID.toString());
-       if (result == null) {
-           return false;
-       }
-       if (result.isEmpty()) {
-           return false;
-       }
-       return true; 
-    }
     
-    private final RowMapper<Number> isNotebookInTheDataBaseRowMapper = new RowMapper<Number>() {        
-        @Override
-        public Integer mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            Integer notebookId = rs.getInt(notebook_id);
-            return notebookId;
-        } 
-    };
     
     
     protected <T> String makeListOfValues(List<T> vals) {
