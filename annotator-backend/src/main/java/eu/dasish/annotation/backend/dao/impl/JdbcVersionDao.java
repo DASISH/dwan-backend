@@ -176,11 +176,43 @@ public class JdbcVersionDao extends JdbcResourceDao implements VersionDao {
         } else {
             return null;
         }
-        
+
         // adding the corresponding cached representation is initiated from the separate service POST api/sources/<sid>/cached
         // so it is not implemented here
     }
 
+    @Override
+    public int[] deleteCachedRepresentationForSource(Number sourceID, Number cachedRepresentationID) {
+        List<Number> versions = retrieveVersionList(sourceID);
+        int[] result = new int[2];
+
+        if (versions == null) {
+            result[0] = 0;
+            result[1] = 0;
+            return result;
+        }
+        if (versions.isEmpty()) {
+            result[0] = 0;
+            result[1] = 0;
+            return result;
+        }
+
+        String values = makeListOfValues(versions);
+        StringBuilder sql = new StringBuilder("DELETE FROM ");
+        sql.append(versionsCachedRepresentationsTableName).append(" WHERE ").append(version_id).append(" IN ").append(values);
+        sql.append(" AND ").append(cached_representation_id).append(" = ?");
+        result[0] = getSimpleJdbcTemplate().update(sql.toString(), cachedRepresentationID);
+
+        // safe remove from the DB
+        if (result[0] > 0) {
+            result[1] = jdbcCachedRepresentationDao.deleteCachedRepresentationInfo(cachedRepresentationID);
+        } else {
+            result[1] = 0;
+        }
+        return result;
+    }
+
+    ////////////////////// HELPERS ///////////////////////////////
     private Version makeFreshCopy(Version version) {
         Version result = new Version();
         // TOD: add external ID when the schema is corrected

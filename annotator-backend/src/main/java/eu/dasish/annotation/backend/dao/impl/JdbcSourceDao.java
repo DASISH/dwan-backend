@@ -264,7 +264,8 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
       List<Number> result = getSimpleJdbcTemplate().query(sql.toString(), internalIDRowMapper);
       return result;
     }
-
+    
+  
     //////// HELPERS //////////////////////
     ////////////////////////////////////////////////////////
     

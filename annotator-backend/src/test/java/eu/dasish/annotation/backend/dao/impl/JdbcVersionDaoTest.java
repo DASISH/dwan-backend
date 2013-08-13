@@ -176,6 +176,40 @@ public class JdbcVersionDaoTest extends JdbcResourceDaoTest{
     }
 
   
- 
+    /**
+     * test 
+     * public int deleteCachedRepresentationForSource(Number sourceID, Number cachedRepresentationID)
+     * 
+     **/
   
+   
+    @Test
+    public void tesDeleteCachedRepresentationForSource() {
+         System.out.println("test delete CachedRepresentationForSource");
+         
+         /// TEST 1 /////
+          mockery.checking(new Expectations() {
+            { 
+                oneOf(cachedRepresentationDao).deleteCachedRepresentationInfo(5);
+                will(returnValue(0));
+                
+            }
+         });         
+         int[] result = jdbcVersionDao.deleteCachedRepresentationForSource(1, 5); // source 1 has versions {1,2}, versions 1 and 2 have cached representations {1, 5} and {3} respectively
+         assertEquals(1, result[0]); 
+         assertEquals(0, result[1]); //cahced representation 5 is also connected version 6, therefore cannot be removed
+         
+         
+         // TEST 2 ////////
+          mockery.checking(new Expectations() {
+            { 
+                oneOf(cachedRepresentationDao).deleteCachedRepresentationInfo(4);
+                will(returnValue(1));
+                
+            }
+         });      
+         int[] result_2 = jdbcVersionDao.deleteCachedRepresentationForSource(3, 4); //source 1 --> version 4 --> cached 4
+         assertEquals(1, result_2[0]); 
+         assertEquals(1, result_2[1]); 
+    }
 }

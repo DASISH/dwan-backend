@@ -122,7 +122,7 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
         List<Number> result = getSimpleJdbcTemplate().query(sqlCheck, cachedRepresentationCheckerRowMapper, internalID);
 
         if (result.isEmpty()) {
-            // rou can remove the cached representation
+            // you can remove the cached representation
             String sql = "DELETE FROM " + cachedRepresentationTableName + " where " + cached_representation_id + " = ?";
             return getSimpleJdbcTemplate().update(sql, internalID);
         } else {

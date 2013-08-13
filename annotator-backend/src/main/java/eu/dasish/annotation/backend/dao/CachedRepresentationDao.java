@@ -65,6 +65,6 @@ public interface CachedRepresentationDao {
     public CachedRepresentationInfo addCachedRepresentationInfo(CachedRepresentationInfo cached);
     
    
-  
+    
   
 }
