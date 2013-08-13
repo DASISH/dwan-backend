@@ -105,7 +105,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
        if (externalId == null) {
             return null;
         }
-       String sql = "SELECT "+internalIdName+" FROM "+resourceTableName+" WHERE "+external_id  +"= ?";
+       String sql = "SELECT "+internalIdName+" FROM "+resourceTableName+" WHERE "+external_id  +"= ? LIMIT 1";
        List<Number> sqlResult= getSimpleJdbcTemplate().query(sql, internalIDRowMapper, externalId.toString()); 
        
        if (sqlResult == null) {
@@ -136,7 +136,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
       if (internalId == null) {
             return null;
         }
-        String sql = "SELECT " + external_id + " FROM " + resourceTableName + " WHERE " + internalIdName + "= ?";
+        String sql = "SELECT " + external_id + " FROM " + resourceTableName + " WHERE " + internalIdName + "= ? LIMIT 1";
         List<String> sqlResult = getSimpleJdbcTemplate().query(sql, externalIDRowMapper, internalId);
 
         if (sqlResult == null) {
@@ -161,7 +161,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     
     /////////////////////////////////////////////////////
    protected XMLGregorianCalendar retrieveTimeStamp(Number internalID) {
-        String sqlTime = "SELECT " + time_stamp + " FROM " + resourceTableName + " WHERE " + internalIdName + "= ?";
+        String sqlTime = "SELECT " + time_stamp + " FROM " + resourceTableName + " WHERE " + internalIdName + "= ? LIMIT 1";
         List<XMLGregorianCalendar> timeStamp = getSimpleJdbcTemplate().query(sqlTime, timeStampRowMapper, internalID);
         if (timeStamp.isEmpty()) {
             return null;
@@ -194,7 +194,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
         if (notebookID == null) {
            return false;
        } 
-       String sql = "SELECT "+notebookNotebook_id+"  FROM notebook where "+notebook_id+" = ?";
+       String sql = "SELECT "+notebookNotebook_id+"  FROM notebook where "+notebook_id+" = ? LIMIT 1";
        List<Number> result=getSimpleJdbcTemplate().query(sql, isNotebookInTheDataBaseRowMapper, notebookID.toString());
        if (result == null) {
            return false;

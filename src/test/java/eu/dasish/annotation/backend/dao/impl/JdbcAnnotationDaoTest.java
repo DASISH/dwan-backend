@@ -22,8 +22,10 @@ import eu.dasish.annotation.backend.TestInstances;
 import eu.dasish.annotation.backend.dao.NotebookDao;
 import eu.dasish.annotation.backend.dao.PermissionsDao;
 import eu.dasish.annotation.backend.dao.SourceDao;
+import eu.dasish.annotation.backend.dao.UserDao;
 import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
 import eu.dasish.annotation.backend.identifiers.SourceIdentifier;
+import eu.dasish.annotation.backend.identifiers.UserIdentifier;
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationInfo;
 import eu.dasish.annotation.schema.NewOrExistingSourceInfo;
@@ -32,6 +34,7 @@ import eu.dasish.annotation.schema.NewSourceInfo;
 import eu.dasish.annotation.schema.ResourceREF;
 import eu.dasish.annotation.schema.SourceInfo;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -39,7 +42,6 @@ import java.util.Map;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import static org.junit.Assert.*;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,6 +65,8 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
     private NotebookDao notebookDao;
     @Autowired
     private SourceDao sourceDao;
+    @Autowired
+    private UserDao userDao;    
     @Autowired
     private Mockery mockery;
     TestInstances testInstances = new TestInstances();
@@ -375,13 +379,13 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         sources.add(2);
         List<Number> result = jdbcAnnotationDao.getAnnotationIDsForSources(sources);
         assertEquals (2, result.size());
-        //assertEquals(2, result.get(0));
-        //assertEquals(3, result.get(1));
+        assertEquals(2, result.get(0));
+        assertEquals(3, result.get(1));
     }
     
     @Test    
     public void testGetExternalID() {
-        System.out.println("getAnnotationID");
+        System.out.println("getExternalID");
 
         final AnnotationIdentifier externalId = jdbcAnnotationDao.getExternalID(2);
         assertEquals(new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_2_EXT), externalId);
@@ -391,5 +395,104 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         assertEquals(null, externalIdThree.getUUID());
 
     }
+    
+    
+    /** test
+     * public List<Number> getFilteredAnnotationIDs(String link, String text, String access, String namespace, UserIdentifier owner, Timestamp after, Timestamp before) {
+  **/
+    
+    @Test    
+    public void testGetFilteredAnnotationIDs(){
+        System.out.println(" test getFilteredAnnotationIDs");
+        
+        
+        //////////////////////////////////////////
+        // TEST 1 
+        final String link = "nl.wikipedia.org";
+        final List<Number> sourceIDs = new ArrayList<Number>();
+        sourceIDs.add(1);
+        sourceIDs.add(2);
+        
+        
+        mockery.checking(new Expectations() {
+            {
+                oneOf(sourceDao).getSourcesForLink(link);
+                will(returnValue(sourceIDs));
+            }
+        });
+        List<Number> result_1 = jdbcAnnotationDao.getFilteredAnnotationIDs(link, null, null, null, null, null, null);        
+        assertEquals(2, result_1.size());
+        assertEquals(2, result_1.get(0));
+        assertEquals(3, result_1.get(1));
+        
+        ///////////////////////////////////////////////
+        // TEST 2        
+        mockery.checking(new Expectations() {
+            {
+                oneOf(sourceDao).getSourcesForLink(link);
+                will(returnValue(sourceIDs));
+            }
+        });
+        List<Number> result_2 = jdbcAnnotationDao.getFilteredAnnotationIDs(link, "some html", null, null, null, null, null);        
+        assertEquals(2, result_2.size());
+        assertEquals(2, result_2.get(0));
+        assertEquals(3, result_2.get(1));
+        
+        ///////////////////////////////////////////////
+        // TEST 3
+        final UserIdentifier owner = new UserIdentifier("00000000-0000-0000-0000-000000000111");
+        
+        
+         mockery.checking(new Expectations() {
+            {
+                oneOf(sourceDao).getSourcesForLink(link);
+                will(returnValue(sourceIDs));
+                
+                oneOf(userDao).getInternalID(owner);
+                will(returnValue(3));
+            }
+        });
+       
+        List<Number> result_3 = jdbcAnnotationDao.getFilteredAnnotationIDs(link, "some html", null, null, owner, null, null);        
+        assertEquals(1, result_3.size());
+        assertEquals(2, result_3.get(0));
+        
+         ///////////////////////////////////////////////
+        // TEST 4
+       
+         mockery.checking(new Expectations() {
+            {
+                oneOf(sourceDao).getSourcesForLink(link);
+                will(returnValue(sourceIDs));
+                
+                oneOf(userDao).getInternalID(owner);
+                will(returnValue(3));
+            }
+        });
+        Timestamp after = new Timestamp(0); 
+        Timestamp before = new Timestamp(System.currentTimeMillis());  
+        List<Number> result_4 = jdbcAnnotationDao.getFilteredAnnotationIDs(link, "some html", null, null, owner, after, before);        
+        assertEquals(1, result_4.size());
+        assertEquals(2, result_4.get(0));
+        
+          ///////////////////////////////////////////////
+        // TEST 5
+       
+         mockery.checking(new Expectations() {
+            {
+                oneOf(sourceDao).getSourcesForLink(link);
+                will(returnValue(sourceIDs));
+                
+                oneOf(userDao).getInternalID(owner);
+                will(returnValue(3));
+            }
+        });
+        Timestamp after_1 = new Timestamp(System.currentTimeMillis());        
+        List<Number> result_5 = jdbcAnnotationDao.getFilteredAnnotationIDs(link, "some html", null, null, owner, after_1, null);        
+        assertEquals(0, result_5.size());
+        
+        
+    }
+    
     //////////// helpers //////////////////////
 }
