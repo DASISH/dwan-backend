@@ -74,4 +74,20 @@ public interface VersionDao {
      */
     public int deleteVersionCachedRepresentationRow(Number versionID);
     
+    
+    /**
+     * 
+     * @param sourceID
+     * @param cachedRepresentationID
+     * @return 
+     * 1) the amount of rows affected by deleting cached representation "cachedRepresentationID"
+     * from the table "versions_cached_representations", if the corresponding version is a sibling-version of the source surceID
+     * 2) the amount of rows affected by SAFE removing cachedRepresentationID from cached_representation table, 
+     * if the first number>0
+     * 
+     * used to fulfill DELETE api/sources/<sid>/cached/<cid>
+     */
+    public  int[] deleteCachedRepresentationForSource(Number sourceID, Number cachedRepresentationID);
 }
+    
+
