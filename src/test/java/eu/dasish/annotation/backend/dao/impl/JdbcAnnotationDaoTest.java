@@ -361,9 +361,25 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         String expBody = annotationToAdd.getBody().getAny().get(0).toString().replaceAll(TestBackendConstants._TEST_TEMP_SOURCE_ID, si.getRef());
         assertEquals(expBody, result.getBody().getAny().get(0).toString());
     }
-
-    @Test
-    @Ignore
+    
+    
+    /**
+     * testing public List<Number> getAnnotationIDsForSources(List<Number> sourceIDs);
+    
+    **/
+    @Test    
+    public void testGetAnnotationIDsForSources() {
+        System.out.println("test getAnnotationIDs for sources");
+        List<Number> sources = new ArrayList<Number>();
+        sources.add(1);
+        sources.add(2);
+        List<Number> result = jdbcAnnotationDao.getAnnotationIDsForSources(sources);
+        assertEquals (2, result.size());
+        //assertEquals(2, result.get(0));
+        //assertEquals(3, result.get(1));
+    }
+    
+    @Test    
     public void testGetExternalID() {
         System.out.println("getAnnotationID");
 
