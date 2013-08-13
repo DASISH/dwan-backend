@@ -127,7 +127,7 @@ public class JdbcSourceDaoTest extends JdbcResourceDaoTest {
         int result = jdbcSourceDao.deleteSourceVersionRows(internalID);
         assertEquals(1, result);
 
-        Number internalIDNoExist = 5;
+        Number internalIDNoExist = 6;
         int resultTwo = jdbcSourceDao.deleteSourceVersionRows(internalIDNoExist);
         assertEquals(0, resultTwo);
     }
@@ -138,16 +138,18 @@ public class JdbcSourceDaoTest extends JdbcResourceDaoTest {
     @Test
     public void testDeleteSource() {
         System.out.println("deleteSource");
+        
+        // test 1
         Number internalID = 1;
         int result = jdbcSourceDao.deleteSource(internalID);
         assertEquals(0, result); // the source is in use, should not be deleted
 
-        final Number internalIDToBeDeleted = 4;
+        // test 2
         final List<Number> versions = new ArrayList<Number>();
         versions.add(5);
         mockery.checking(new Expectations() {
             {
-                oneOf(versionDao).retrieveVersionList(internalIDToBeDeleted);
+                oneOf(versionDao).retrieveVersionList(5);
                 will(returnValue(versions));
 
                 oneOf(versionDao).deleteVersion(5);
@@ -155,7 +157,7 @@ public class JdbcSourceDaoTest extends JdbcResourceDaoTest {
             }
         });
 
-        int resultTwo = jdbcSourceDao.deleteSource(internalIDToBeDeleted);
+        int resultTwo = jdbcSourceDao.deleteSource(5);
         assertEquals(1, resultTwo); // the source will be deleted because it is not referred by any annotation
     }
 
@@ -179,7 +181,7 @@ public class JdbcSourceDaoTest extends JdbcResourceDaoTest {
             Source result = jdbcSourceDao.addSource(freshSource);
             assertEquals(link, result.getLink());
             assertEquals(version, result.getVersion());
-            assertEquals(5, jdbcSourceDao.getInternalID(new SourceIdentifier(result.getURI())));
+            assertEquals(6, jdbcSourceDao.getInternalID(new SourceIdentifier(result.getURI())));
 
             assertFalse(null==result.getTimeSatmp());
             
@@ -308,4 +310,20 @@ public class JdbcSourceDaoTest extends JdbcResourceDaoTest {
         }
 
     }
+    
+    /** 
+     * test public List<Number> getSourcesForLink(String link)
+     * 
+     **/
+    @Test
+    public void tesGetSourcesForLink(){
+        System.out.println(" test getSourcesForLink");
+        
+        String substring = "http://nl.wikipedia.org";
+        List<Number> result  = jdbcSourceDao.getSourcesForLink(substring);
+        assertEquals(2, result.size());
+        assertEquals(1, result.get(0));
+        assertEquals(2, result.get(1));                
+    }
+    
 }

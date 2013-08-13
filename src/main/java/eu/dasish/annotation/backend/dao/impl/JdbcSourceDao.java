@@ -259,8 +259,9 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
 
     @Override
     public List<Number> getSourcesForLink(String link){
-      String sql = "SELECT "+source_id+" FROM "+sourceTableName+ "WHERE "+link_uri+" LIKE '%"+link+"%'";
-      List<Number> result = getSimpleJdbcTemplate().query(sql, internalIDRowMapper);
+      StringBuilder sql = new StringBuilder("SELECT ");
+      sql.append(source_id).append(" FROM ").append(sourceTableName).append(" WHERE ").append(link_uri).append(" LIKE '%").append(link).append("%'");
+      List<Number> result = getSimpleJdbcTemplate().query(sql.toString(), internalIDRowMapper);
       return result;
     }
 

@@ -71,65 +71,75 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
     @Override
     public List<Number> getFilteredAnnotationIDs(String link, String text, String access, String namespace, UserIdentifier owner, Timestamp after, Timestamp before) {
 
-        String sql = "SELECT " + annotation_id + " FROM " + annotationTableName;
-        boolean firstClauseIsBuild = false;
-        //TODO: optimize List<Object> params = new ArrayList<Object>();
+        
+        String table;
+        
+         if (link != null) {
+            List<Number> sourceIDs = jdbcSourceDao.getSourcesForLink(link);
+            List<Number> annotationIDs = getAnnotationIDsForSources(sourceIDs);
+            if (!annotationIDs.isEmpty()) {
+                String values = makeListOfValues(annotationIDs);
+                table = "( SELECT "+annotationStar + "WHERE "+ annotation_id +"IN " + values + ") ";
+            }
+            else{
+                return new ArrayList<Number>();
+            }
+        }
+         else{
+             table = annotationTableName;
+         }
+         
+       
+        StringBuilder sql = new StringBuilder("SELECT ");
+        sql.append(annotation_id).append(" FROM ").append(table).append(" WHERE TRUE ");
+        
+        Map<String, Object> params = new HashMap<String, Object>();
         //TODO: optimizie String builder
 
 
-
         if (owner != null) {
-            sql = sql + " WHERE " + principal_id + "=:owner" + jdbcUserDao.getInternalID(owner);
-            firstClauseIsBuild = true;
+            sql.append(" AND ").append(principal_id).append(" = :owner ");
+            params.put("owner", owner.toString());
         }
 
-
-
         if (after != null) {
-            if (firstClauseIsBuild) {
-                sql = sql + " AND " + time_stamp + "  > " + after.toString();
-            } else {
-                sql = sql + " WHERE " + time_stamp + "  > " + after.toString();
-                firstClauseIsBuild = true;
-            }
+            sql.append(" AND ").append(time_stamp).append("  > :after");
+            params.put("after", after);
         }
 
         if (before != null) {
-            if (firstClauseIsBuild) {
-                sql = sql + " AND " + time_stamp + "  < " + before.toString();
-            } else {
-                sql = sql + " WHERE " + time_stamp + "  < " + before.toString();
-                firstClauseIsBuild = true;
-            }
+            sql.append(" AND ").append(time_stamp).append("  < :before");            
+            params.put("before", before);
         }
 
         if (text != null) {
-            if (firstClauseIsBuild) {
-                sql = sql + " AND " + body_xml + "  LIKE '%" + text + "%'";
-            } else {
-                sql = sql + " WHERE " + body_xml + "  LIKE '%" + text + "%'";
-                firstClauseIsBuild = true;
-            }
+            sql .append(" AND ").append(body_xml).append("  LIKE '% :text %'");
+            params.put("text", text);
         }
-
-        if (link != null) {
-            List<Number> sourceIDs = jdbcSourceDao.getSourcesForLink(link);
-            if (!sourceIDs.isEmpty()) {
-                String values = makeListOfValues(sourceIDs);
-                if (firstClauseIsBuild) {
-                    sql = sql + " AND " + source_id + " IN " + values;
-                }
-                 else {
-                    sql = sql + " WHERE " + source_id + " IN " + values;
-                    firstClauseIsBuild = true;
-                }
-            }
-        }
-
-
-        List<Number> result = getSimpleJdbcTemplate().query(sql, internalIDRowMapper);
+       
+        List<Number> result = getSimpleJdbcTemplate().query(sql.toString(), internalIDRowMapper, params);
         return result;
     }
+    
+    //////////////////////////////
+    
+    @Override
+    public List<Number> getAnnotationIDsForSources(List<Number> sourceIDs){        
+        if (sourceIDs == null) {
+            return null;
+        }        
+        if (sourceIDs.isEmpty()) {
+           return new ArrayList<Number>(); 
+        }        
+        String values = makeListOfValues(sourceIDs);
+        StringBuilder query = new StringBuilder("SELECT ");
+        query.append(annotation_id).append(" FROM ").append(annotationsSourcesTableName).append(" WHERE ").append(source_id).append(" IN ");
+        query.append(values);
+        List<Number> result = getSimpleJdbcTemplate().query(query.toString(), internalIDRowMapper);
+        return result;
+    }
+            
+    
 
     @Override
     public List<AnnotationInfo> getAnnotationInfos(List<Number> annotationIDs) {

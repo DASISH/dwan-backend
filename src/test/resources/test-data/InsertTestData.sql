@@ -68,6 +68,7 @@ INSERT INTO version (external_id, version) VALUES ('00000000-0000-0000-0000-0000
 INSERT INTO version (external_id, version) VALUES ('00000000-0000-0000-0000-000000000044', 'Art Nuveau wiki -version 2013'); --4 
 INSERT INTO version (external_id, version) VALUES ('00000000-0000-0000-0000-000000000045', 'Art Nuveau wiki -version 2012'); --5 
 INSERT INTO version (external_id, version) VALUES ('00000000-0000-0000-0000-000000000046', 'Art Nuveau wiki -version 2011'); --6  not used
+INSERT INTO version (external_id, version) VALUES ('00000000-0000-0000-0000-000000000047', 'Art Nuveau wiki -version 2010'); --7
 
 -- CREATE TABLE target_source (
 --     source_id SERIAL UNIQUE NOT NULL,
@@ -84,6 +85,7 @@ INSERT INTO target_source (external_id, link_uri, version_id) VALUES ('00000000-
 INSERT INTO target_source (external_id, link_uri, version_id) VALUES ('00000000-0000-0000-0000-000000000032', 'http://nl.wikipedia.org/wiki/Antoni_Gaud%C3%AD', 3); --2
 INSERT INTO target_source (external_id, link_uri, version_id) VALUES ('00000000-0000-0000-0000-000000000033', 'http://en.wikipedia.org/wiki/Art_Nouveau', 4); --3
 INSERT INTO target_source (external_id, link_uri, version_id) VALUES ('00000000-0000-0000-0000-000000000034', '???', 5); --4
+INSERT INTO target_source (external_id, link_uri, version_id) VALUES ('00000000-0000-0000-0000-000000000035', '???', 5); --5
 
 -- CREATE TABLE annotations_target_sources (
 --    annotation_id integer REFERENCES annotation(annotation_id), -- defining a foreign key: there must be a uniquely defined row in "annotation", that is defined by "annotation_id"
@@ -95,6 +97,8 @@ INSERT INTO annotations_target_sources (annotation_id, source_id) VALUES (2, 1);
 INSERT INTO annotations_target_sources (annotation_id, source_id) VALUES (2, 2); 
 INSERT INTO annotations_target_sources (annotation_id, source_id) VALUES (3, 2); 
 INSERT INTO annotations_target_sources (annotation_id, source_id) VALUES (4, 3); 
+INSERT INTO annotations_target_sources (annotation_id, source_id) VALUES (5, 3); -- source 3 should not be deleted when annot 5 is deleted
+INSERT INTO annotations_target_sources (annotation_id, source_id) VALUES (5, 4); -- source 4 to be deleted when annot 5 is deleted
 
 ----------------------------------------------------------------
 
@@ -109,6 +113,7 @@ INSERT INTO sources_versions (source_id, version_id) VALUES (1, 2);
 INSERT INTO sources_versions (source_id, version_id) VALUES (2, 3);
 INSERT INTO sources_versions (source_id, version_id) VALUES (3, 4);
 INSERT INTO sources_versions (source_id, version_id) VALUES (4, 5);
+INSERT INTO sources_versions (source_id, version_id) VALUES (5, 7);
 
 --------------------------------------------------------------
 
