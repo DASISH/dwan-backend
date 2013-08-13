@@ -70,36 +70,28 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
 
     @Override
     public List<Number> getFilteredAnnotationIDs(String link, String text, String access, String namespace, UserIdentifier owner, Timestamp after, Timestamp before) {
-
         
-        String table;
-        
+        StringBuilder sql = new StringBuilder("SELECT DISTINCT ");
+        sql.append(annotation_id).append(" FROM ").append(annotationTableName).append(" WHERE TRUE ");        
+        Map<String, Object> params = new HashMap<String, Object>();
+       
          if (link != null) {
             List<Number> sourceIDs = jdbcSourceDao.getSourcesForLink(link);
             List<Number> annotationIDs = getAnnotationIDsForSources(sourceIDs);
             if (!annotationIDs.isEmpty()) {
                 String values = makeListOfValues(annotationIDs);
-                table = "( SELECT DISTINCT "+annotationStar + "WHERE "+ annotation_id +"IN " + values + ") ";
+                sql.append(" AND ").append(annotation_id).append(" IN ").append(values);
             }
             else{
                 return new ArrayList<Number>();
             }
         }
-         else{
-             table = annotationTableName;
-         }
          
-       
-        StringBuilder sql = new StringBuilder("SELECT ");
-        sql.append(annotation_id).append(" FROM ").append(table).append(" WHERE TRUE ");
-        
-        Map<String, Object> params = new HashMap<String, Object>();
-        //TODO: optimizie String builder
-
 
         if (owner != null) {
-            sql.append(" AND ").append(principal_id).append(" = :owner ");
-            params.put("owner", owner.toString());
+            Number ownerID = jdbcUserDao.getInternalID(owner);
+            sql.append(" AND ").append(owner_id).append(" = :owner ");
+            params.put("owner", ownerID);
         }
 
         if (after != null) {
@@ -113,9 +105,9 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         }
 
         if (text != null) {
-            sql .append(" AND ").append(body_xml).append("  LIKE '% :text %'");
-            params.put("text", text);
+            sql.append(" AND ").append(body_xml).append("  LIKE '%").append(text).append("%'");
         }
+       
        
         List<Number> result = getSimpleJdbcTemplate().query(sql.toString(), internalIDRowMapper, params);
         return result;
@@ -173,7 +165,9 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
      * @return list of annotation references corresponding to the annotation-ids
      * from the input list if the input list is null or empty (zero elements)
      * returns an empty list
+     * there may be annotationIDs which are not in the DB (so that's why we need this method).
      */
+    
     @Override
     public List<ResourceREF> getAnnotationREFs(List<Number> annotationIDs) {
 
