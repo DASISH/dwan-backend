@@ -79,7 +79,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
             List<Number> annotationIDs = getAnnotationIDsForSources(sourceIDs);
             if (!annotationIDs.isEmpty()) {
                 String values = makeListOfValues(annotationIDs);
-                table = "( SELECT "+annotationStar + "WHERE "+ annotation_id +"IN " + values + ") ";
+                table = "( SELECT DISTINCT "+annotationStar + "WHERE "+ annotation_id +"IN " + values + ") ";
             }
             else{
                 return new ArrayList<Number>();
@@ -132,7 +132,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
            return new ArrayList<Number>(); 
         }        
         String values = makeListOfValues(sourceIDs);
-        StringBuilder query = new StringBuilder("SELECT ");
+        StringBuilder query = new StringBuilder("SELECT DISTINCT ");
         query.append(annotation_id).append(" FROM ").append(annotationsSourcesTableName).append(" WHERE ").append(source_id).append(" IN ");
         query.append(values);
         List<Number> result = getSimpleJdbcTemplate().query(query.toString(), internalIDRowMapper);

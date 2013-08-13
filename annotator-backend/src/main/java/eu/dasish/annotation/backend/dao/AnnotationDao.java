@@ -104,7 +104,11 @@ public interface AnnotationDao extends ResourceDao{
     
     public List<ResourceREF> getAnnotationREFs(List<Number> annotationIDs); 
     
-    
+    /**
+     * 
+     * @param sourceIDs
+     * @return the list of annotationdIDs of the annotations that are having target sources from "sourceIDs" list
+     */
     public List<Number> getAnnotationIDsForSources(List<Number> sourceIDs);
    
     
