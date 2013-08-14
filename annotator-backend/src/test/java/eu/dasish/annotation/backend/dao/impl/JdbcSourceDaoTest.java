@@ -80,18 +80,7 @@ public class JdbcSourceDaoTest extends JdbcResourceDaoTest {
         assertEquals(expResult, result);
     }
 
-    /**
-     * Test of retrieveSourceIDs method, of class JdbcSourceDao.
-     */
-    @Test
-    public void testRetrieveSourceIDs() {
-        System.out.println("retrieveSourceIDs");
-        Number annotationID = 2;
-        List<Number> result = jdbcSourceDao.retrieveSourceIDs(annotationID);
-        assertEquals(2, result.size());
-        assertEquals(1, result.get(0));
-        assertEquals(2, result.get(1));
-    }
+  
 
     /**
      * Test of getSource method, of class JdbcSourceDao.
@@ -168,26 +157,49 @@ public class JdbcSourceDaoTest extends JdbcResourceDaoTest {
     public void testAddSource() {
         System.out.println("addSource");
 
-        String link = "http://www.sagradafamilia.cat/";
-        String version = null;
-        String timeStamp = null;
-
+        String link = "http://www.sagradafamilia.cat/";     
+  
+        // existing version
         Source freshSource = new Source();
         freshSource.setLink(link);
-        freshSource.setVersion(version);
-        freshSource.setVersion(timeStamp);
-
+        freshSource.setVersion(TestBackendConstants._TEST_VERSION_1_EXT_ID);
+        freshSource.setURI(null);
+        freshSource.setTimeSatmp(null);
+        
+        mockery.checking(new Expectations() {
+            {
+                oneOf(versionDao).getInternalID(new VersionIdentifier(TestBackendConstants._TEST_VERSION_1_EXT_ID));
+                will(returnValue(1));
+            }
+        });
+ 
         try {
-            Source result = jdbcSourceDao.addSource(freshSource);
-            assertEquals(link, result.getLink());
-            assertEquals(version, result.getVersion());
-            assertEquals(6, jdbcSourceDao.getInternalID(new SourceIdentifier(result.getURI())));
-
-            assertFalse(null==result.getTimeSatmp());
-            
+            Number result = jdbcSourceDao.addSource(freshSource);            
+            assertEquals(6, result);
+            Map<String, Object> addedSource = jdbcSourceDao.getRawSource(result);
+            assertEquals(link, addedSource.get("link_uri"));
+            assertEquals(1, addedSource.get("version_id"));
+            assertFalse(null==addedSource.get("external_id"));
         } catch (SQLException e) {
             System.out.println(e);
         }
+        
+        ////////// test 2 non-existing source
+        freshSource.setVersion(TestBackendConstants._TEST_VERSION_NONEXIST_EXT_ID);
+         mockery.checking(new Expectations() {
+            {
+                oneOf(versionDao).getInternalID(new VersionIdentifier(TestBackendConstants._TEST_VERSION_NONEXIST_EXT_ID));
+                will(returnValue(null));
+            }
+        });
+ 
+        try {
+            Number result = jdbcSourceDao.addSource(freshSource);            
+            assertEquals(-1, result);
+        } catch (SQLException e) {
+            System.out.println(e);
+        }
+        
     }
 
     /**
@@ -196,7 +208,9 @@ public class JdbcSourceDaoTest extends JdbcResourceDaoTest {
     @Test
     public void testGetSourceInfos() {
         System.out.println("getSourceInfos");
-        Number annotationID = 2;
+        List<Number> test = new ArrayList<Number>();
+        test.add(1);
+        test.add(2);
 
         mockery.checking(new Expectations() {
             {
@@ -208,7 +222,7 @@ public class JdbcSourceDaoTest extends JdbcResourceDaoTest {
             }
         });
 
-        List<SourceInfo> result = jdbcSourceDao.getSourceInfos(annotationID);
+        List<SourceInfo> result = jdbcSourceDao.getSourceInfos(test);
         assertEquals(2, result.size());
         assertEquals(TestBackendConstants._TEST_SOURCE_1_EXT_ID, result.get(0).getRef());
         assertEquals(TestBackendConstants._TEST_SOURCE_2_EXT_ID, result.get(1).getRef());
@@ -269,9 +283,8 @@ public class JdbcSourceDaoTest extends JdbcResourceDaoTest {
         listnoesi.add(noesi);
 
         try {
-            Map<NewOrExistingSourceInfo, NewOrExistingSourceInfo> result = jdbcSourceDao.addTargetSources(5, listnoesi);
-            assertEquals(1, result.size());
-            assertEquals(result.get(noesi), noesi);
+            Map<String, String> result = jdbcSourceDao.addTargetSources(5, listnoesi);
+            assertEquals(0, result.size()); // no new peristsent source IDs are produced
         } catch (SQLException e) {
             System.out.println(e);
         }
@@ -291,19 +304,23 @@ public class JdbcSourceDaoTest extends JdbcResourceDaoTest {
         NewSourceInfo nsi = new NewSourceInfo();
         nsi.setLink(TestBackendConstants._TEST_NEW_SOURCE_LINK);
         nsi.setId(TestBackendConstants._TEST_TEMP_SOURCE_ID);
-        nsi.setVersion(null);
+        nsi.setVersion(TestBackendConstants._TEST_VERSION_1_EXT_ID);
         noesi.setNewSource(nsi);
 
         List<NewOrExistingSourceInfo> listnoesiTwo = new ArrayList<NewOrExistingSourceInfo>();
         listnoesiTwo.add(noesi);
+        
+        mockery.checking(new Expectations() {
+            {
+                oneOf(versionDao).getInternalID(new VersionIdentifier(TestBackendConstants._TEST_VERSION_1_EXT_ID));
+                will(returnValue(1));
+            }
+        });
 
         try {
-            Map<NewOrExistingSourceInfo, NewOrExistingSourceInfo> result = jdbcSourceDao.addTargetSources(5, listnoesiTwo);
-            assertEquals(1, result.size());
-            assertEquals(noesi.getNewSource().getLink(), result.get(noesi).getSource().getLink());
-            assertEquals(noesi.getNewSource().getVersion(), result.get(noesi).getSource().getVersion());
-
-            SourceIdentifier sourceIdentifier = new SourceIdentifier(result.get(noesi).getSource().getRef());
+            Map<String, String> result = jdbcSourceDao.addTargetSources(5, listnoesiTwo);
+            assertEquals(1, result.size());// a new identifier must be produced
+            SourceIdentifier sourceIdentifier = new SourceIdentifier(result.get(TestBackendConstants._TEST_TEMP_SOURCE_ID));
             assertFalse(null == sourceIdentifier.getUUID()); // check if a proper uuid has been assigned 
         } catch (SQLException e) {
             System.out.print(e);

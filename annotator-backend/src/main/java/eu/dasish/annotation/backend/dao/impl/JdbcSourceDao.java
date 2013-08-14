@@ -60,28 +60,14 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
         return new SourceIdentifier(super.getExternalIdentifier(internalID));
     }
 
-    @Override
-    public List<Number> retrieveSourceIDs(Number annotationID) {
-        String sql = "SELECT " + source_id + " FROM " + annotationsSourcesTableName + " WHERE " + annotation_id + "= ?";
-        List<Number> result = getSimpleJdbcTemplate().query(sql, annotationSourceRowMapper, annotationID);       
-        return result;
-    }
-    private final RowMapper<Number> annotationSourceRowMapper = new RowMapper<Number>() {
-        @Override
-        public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            Number result = rs.getInt(source_id);
-            return result;
-        }
-    };
-
-    ///////////////////////////////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////////
     @Override
     public Source getSource(Number internalID) {
         String sql = "SELECT " + sourceStar + "FROM " + sourceTableName + " WHERE " + source_id + " = ?";
-        List<Source> result = getSimpleJdbcTemplate().query(sql, SourceRowMapper, internalID);
+        List<Source> result = getSimpleJdbcTemplate().query(sql, sourceRowMapper, internalID);
         return result.get(0);
     }
-    private final RowMapper<Source> SourceRowMapper = new RowMapper<Source>() {
+    private final RowMapper<Source> sourceRowMapper = new RowMapper<Source>() {
         @Override
         public Source mapRow(ResultSet rs, int rowNumber) throws SQLException {
             try {
@@ -94,6 +80,24 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
                 System.out.println("Cannot construct time stam: probably worng date/time format");
                 return null;
             }
+        }
+    };
+    
+        ///////////////////////////////////////////////////////////////////////////////
+    @Override
+    public Map<String, Object> getRawSource(Number internalID) {
+        String sql = "SELECT " + sourceStar + "FROM " + sourceTableName + " WHERE " + source_id + " = ?";
+        List<Map<String, Object>> result = getSimpleJdbcTemplate().query(sql, rawSourceRowMapper, internalID);
+        return result.get(0);
+    }
+    private final RowMapper<Map<String, Object>> rawSourceRowMapper = new RowMapper<Map<String, Object>>() {
+        @Override
+        public Map<String, Object> mapRow(ResultSet rs, int rowNumber) throws SQLException {
+           Map<String, Object> result = new HashMap<String, Object>();
+           result.put(external_id, rs.getString(external_id));
+           result.put(link_uri, rs.getString(link_uri));
+           result.put(version_id, rs.getInt(version_id));
+           return result;
         }
     };
 
@@ -139,43 +143,38 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
 
     ///////////////////////////////////////////////////////////////////
     @Override
-    public Source addSource(Source freshSource) throws SQLException{
-
+    public Number addSource(Source freshSource) throws SQLException{
+     
         SourceIdentifier externalIdentifier = new SourceIdentifier();
+        Number versionID = versionDao.getInternalID(new VersionIdentifier(freshSource.getVersion()));
+        
+        if (versionID == null) {
+            System.out.println("Cannot add source because there is no version for it, and no cached representation. Create them and try again.");
+            return -1;
+        }
 
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("externalId", externalIdentifier.toString());
         params.put("linkUri", freshSource.getLink());
-        params.put("versionId", freshSource.getVersion());
+        params.put("versionId", versionID);
         String sql = "INSERT INTO " + sourceTableName + "(" + external_id + "," + link_uri + "," + version_id + " ) VALUES (:externalId, :linkUri,  :versionId)";
         final int affectedRows = getSimpleJdbcTemplate().update(sql, params);
-
+        
+        
         Map<String, Object> paramsJoint = new HashMap<String, Object>();
         paramsJoint.put("sourceId", getInternalID(externalIdentifier));
-        paramsJoint.put("versionId", freshSource.getVersion());
-        String sqlSourceVersion = "INSERT INTO " + sourcesVersionsTableName + "(" + source_id + "," + version_id + " ) VALUES (:sourceId, :versionId)";
-        int affectedRowsJoint = getSimpleJdbcTemplate().update(sqlSourceVersion, paramsJoint);
+        paramsJoint.put("versionId", versionID);
+        String sqlJoint = "INSERT INTO " + sourcesVersionsTableName + "(" + source_id +"," + version_id + " ) VALUES (:sourceId, :versionId)";
+        final int affectedJointRows = getSimpleJdbcTemplate().update(sqlJoint, paramsJoint);
+       
         
-        if (affectedRows == 1 && affectedRowsJoint == 1) {
-            Source result = makeFreshCopy(freshSource);
-            result.setURI(externalIdentifier.toString());
-            
-            //retrieve taime stamp for the just added annotation
-            XMLGregorianCalendar timeStamp =this.retrieveTimeStamp(getInternalID(new SourceIdentifier(externalIdentifier.toString()))); 
-            result.setTimeSatmp(timeStamp);
-            
-            return result;
-        } else {
-            throw new SQLException("Cannot add the source");
-        }
-         
+        return(getInternalID(externalIdentifier));
     }
 
     ////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////
     @Override
-    public List<SourceInfo> getSourceInfos(Number annotationID) {
-        List<Number> sources = retrieveSourceIDs(annotationID);
+    public List<SourceInfo> getSourceInfos(List<Number> sources) {
         if (sources == null) {
             return null;
         }
@@ -227,30 +226,20 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
     
      ////////////////////////////////////////////////////////////////////////
     @Override
-    public Map<NewOrExistingSourceInfo, NewOrExistingSourceInfo> addTargetSources(Number annotationID, List<NewOrExistingSourceInfo> sources) throws SQLException {
+    public Map<String, String> addTargetSources(Number annotationID, List<NewOrExistingSourceInfo> sources) throws SQLException {
 
-        Map<NewOrExistingSourceInfo, NewOrExistingSourceInfo> result = new HashMap<NewOrExistingSourceInfo, NewOrExistingSourceInfo>();
+        Map<String, String> result = new HashMap<String, String>();
         
         for (NewOrExistingSourceInfo noeSourceInfo : sources) {
             SourceInfo sourceInfo = noeSourceInfo.getSource();
             if (sourceInfo != null) {
-                // this is an old source, already exists in the DB
-                result.put(noeSourceInfo, noeSourceInfo);                
+                // this is an old source, already exists in the DB             
                 addAnnotationSourcePair(annotationID, getInternalID(new SourceIdentifier(sourceInfo.getRef())));
             } else {
                 Source newSource = constructNewSource(noeSourceInfo.getNewSource());
-                Source addedSource = addSource(newSource);
-                int affectedRows = addAnnotationSourcePair(annotationID, getInternalID(new SourceIdentifier(addedSource.getURI())));
-                
-                //  create updated source info
-                SourceInfo updatedSourceInfo = new SourceInfo();
-                updatedSourceInfo.setLink(addedSource.getLink());
-                updatedSourceInfo.setRef(addedSource.getURI());
-                updatedSourceInfo.setVersion(addedSource.getVersion());
-
-                NewOrExistingSourceInfo updatedInfo = new NewOrExistingSourceInfo();
-                updatedInfo.setSource(updatedSourceInfo);
-                result.put(noeSourceInfo, updatedInfo);
+                Number addedSourceID = addSource(newSource);// adding new source
+                int affectedRows = addAnnotationSourcePair(annotationID, addedSourceID);              
+                result.put(noeSourceInfo.getNewSource().getId(), getExternalID(addedSourceID).toString());
             }
             
         }

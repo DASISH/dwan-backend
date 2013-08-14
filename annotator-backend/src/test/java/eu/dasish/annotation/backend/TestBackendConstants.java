@@ -22,8 +22,6 @@
 
 package eu.dasish.annotation.backend;
 
-import java.util.UUID;
-
 public class TestBackendConstants {
     
     public static final String _TEST_UID_1_ = "00000000-0000-0000-0000-000000000003";
@@ -92,7 +90,7 @@ public class TestBackendConstants {
     public static final String _TEST_VERSION_1_EXT_ID = "00000000-0000-0000-0000-000000000041";
     public static final String _TEST_VERSION_2_EXT_ID = "00000000-0000-0000-0000-000000000042";
     public static final String _TEST_VERSION_3_EXT_ID = "00000000-0000-0000-0000-000000000043";
-    
+    public static final String _TEST_VERSION_NONEXIST_EXT_ID = "00000000-0000-0000-0000-000000000049";
     
     public static final String _TEST_TEMP_SOURCE_ID = "Barcelona-1";
     public static final String _TEST_ANNOT_TO_ADD_NEW_SOURCE_BODY = "refers to "+_TEST_TEMP_SOURCE_ID;

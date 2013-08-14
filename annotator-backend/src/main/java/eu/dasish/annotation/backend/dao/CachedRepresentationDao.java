@@ -60,11 +60,10 @@ public interface CachedRepresentationDao {
     /**
      * 
      * @param cached
-     * @return copy of "cached" after "cached" is added to the DB; the internal id is set in the return copy
+     * @return the internal Id of the just added "cached"
      */
-    public CachedRepresentationInfo addCachedRepresentationInfo(CachedRepresentationInfo cached);
+    public Number addCachedRepresentationInfo(CachedRepresentationInfo cached);
     
    
-    
   
 }

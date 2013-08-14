@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -37,7 +36,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration({"/spring-test-config/dataSource.xml", "/spring-test-config/mockery.xml", "/spring-test-config/mockAnnotationDao.xml",
-    "/spring-test-config/mockUserDao.xml", "/spring-test-config/mockPermissionsDao.xml", "/spring-test-config/mockNotebookDao.xml", "/spring-config/cachedRepresentationDao.xml"})
+    "/spring-test-config/mockUserDao.xml", "/spring-test-config/mockPermissionsDao.xml", "/spring-test-config/mockNotebookDao.xml",
+    "/spring-test-config/mockSourceDao.xml", "/spring-config/cachedRepresentationDao.xml"})
 public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest{
     
     @Autowired
@@ -149,12 +149,14 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest{
         cached.setMimeType("text/plain");
         cached.setTool("vi");
         cached.setType("text");
+        cached.setRef(null);
         
-        CachedRepresentationInfo result = jdbcCachedRepresentationDao.addCachedRepresentationInfo(cached);
-        assertEquals("text/plain", result.getMimeType());
-        assertEquals("vi", result.getTool());
-        assertEquals("text", result.getType());
-        assertFalse(result.getRef() == null); // new non-null external identifier should be assigned
+        Number result = jdbcCachedRepresentationDao.addCachedRepresentationInfo(cached);
+        CachedRepresentationInfo addedCached = jdbcCachedRepresentationDao.getCachedRepresentationInfo(result);
+        assertEquals("text/plain", addedCached.getMimeType());
+        assertEquals("vi", addedCached.getTool());
+        assertEquals("text", addedCached.getType());
+        assertFalse(addedCached.getRef() == null); // new non-null external identifier should be assigned
     }
     
   
