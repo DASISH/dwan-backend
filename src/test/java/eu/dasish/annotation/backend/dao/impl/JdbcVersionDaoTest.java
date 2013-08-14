@@ -39,7 +39,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration({"/spring-test-config/dataSource.xml", "/spring-test-config/mockery.xml", "/spring-test-config/mockAnnotationDao.xml",
     "/spring-test-config/mockUserDao.xml", "/spring-test-config/mockPermissionsDao.xml", "/spring-test-config/mockNotebookDao.xml",
-    "/spring-test-config/mockCachedRepresentationDao.xml", "/spring-config/versionDao.xml"})
+    "/spring-test-config/mockSourceDao.xml", "/spring-test-config/mockCachedRepresentationDao.xml", "/spring-config/versionDao.xml"})
 
 public class JdbcVersionDaoTest extends JdbcResourceDaoTest{
     
@@ -168,11 +168,11 @@ public class JdbcVersionDaoTest extends JdbcResourceDaoTest{
         
         Version freshVersion = new Version();   
         
-        Version result = jdbcVersionDao.addVersion(freshVersion);
-        assertFalse(null==result.getVersion());
+        Number result = jdbcVersionDao.addVersion(freshVersion);
+        assertEquals(8, result);
+        Version addedVersion = jdbcVersionDao.getVersion(result);
+        assertFalse(null==addedVersion.getVersion());
         
-        // check if it is a good UUID. the program breaks if the string is anot a good UUID
-        assertEquals(result.getVersion(), (new VersionIdentifier(result.getVersion())).toString());
     }
 
   

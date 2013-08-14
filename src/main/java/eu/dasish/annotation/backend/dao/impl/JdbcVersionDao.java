@@ -50,6 +50,13 @@ public class JdbcVersionDao extends JdbcResourceDao implements VersionDao {
     public VersionIdentifier getExternalID(Number internalID) {
         return new VersionIdentifier(super.getExternalIdentifier(internalID));
     }
+    
+      //////////////////////////////////////////////////////////////////////////////////////////////////////    
+    @Override
+    public Number getInternalID(VersionIdentifier externalID) {
+        return (super.getInternalID(externalID));
+    }
+    
     ///////////////////////////////////////////////////////////////
 
     @Override
@@ -157,7 +164,7 @@ public class JdbcVersionDao extends JdbcResourceDao implements VersionDao {
 
     /////////////////////////////////////////////////
     @Override
-    public Version addVersion(Version freshVersion) {
+    public Number addVersion(Version freshVersion) {
         VersionIdentifier externalIdentifier = new VersionIdentifier();
         String newExternalIdentifier = externalIdentifier.toString();
 
@@ -167,18 +174,7 @@ public class JdbcVersionDao extends JdbcResourceDao implements VersionDao {
         params.put("version", newExternalIdentifier);
         String sql = "INSERT INTO " + versionTableName + "(" + external_id + "," + version + " ) VALUES (:externalId, :version)";
         final int affectedRows = getSimpleJdbcTemplate().update(sql, params);
-
-        if (affectedRows == 1) {
-            Version versionAdded = makeFreshCopy(freshVersion);
-            // TODO change for external identifier when the schema is fixed
-            versionAdded.setVersion(newExternalIdentifier);
-            return versionAdded;
-        } else {
-            return null;
-        }
-
-        // adding the corresponding cached representation is initiated from the separate service POST api/sources/<sid>/cached
-        // so it is not implemented here
+        return getInternalID(externalIdentifier);
     }
 
     @Override
@@ -212,11 +208,5 @@ public class JdbcVersionDao extends JdbcResourceDao implements VersionDao {
         return result;
     }
 
-    ////////////////////// HELPERS ///////////////////////////////
-    private Version makeFreshCopy(Version version) {
-        Version result = new Version();
-        // TOD: add external ID when the schema is corrected
-        result.setVersion(version.getVersion());
-        return result;
-    }
+   
 }

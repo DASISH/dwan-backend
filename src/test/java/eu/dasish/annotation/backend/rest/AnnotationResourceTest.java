@@ -23,12 +23,15 @@ import eu.dasish.annotation.backend.TestInstances;
 import eu.dasish.annotation.backend.dao.AnnotationDao;
 import eu.dasish.annotation.backend.dao.NotebookDao;
 import eu.dasish.annotation.backend.dao.PermissionsDao;
+import eu.dasish.annotation.backend.dao.SourceDao;
 import eu.dasish.annotation.backend.dao.UserDao;
 import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
 import eu.dasish.annotation.backend.identifiers.UserIdentifier;
 import eu.dasish.annotation.schema.Annotation;
+import eu.dasish.annotation.schema.NewOrExistingSourceInfo;
 import eu.dasish.annotation.schema.Permission;
 import eu.dasish.annotation.schema.ResourceREF;
+import eu.dasish.annotation.schema.SourceInfo;
 import java.sql.SQLException;
 import javax.xml.bind.JAXBElement;
 import org.jmock.Expectations;
@@ -40,6 +43,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.lang.InstantiationException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import javax.servlet.ServletException;
 import org.springframework.mock.web.MockHttpServletRequest;
 /**
@@ -48,7 +54,9 @@ import org.springframework.mock.web.MockHttpServletRequest;
  */
 
 @RunWith(value = SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = {"/spring-test-config/dataSource.xml", "/spring-test-config/mockAnnotationDao.xml", "/spring-test-config/mockUserDao.xml", "/spring-test-config/mockPermissionsDao.xml", "/spring-test-config/mockNotebookDao.xml", "/spring-test-config/mockery.xml"})
+@ContextConfiguration(locations = {"/spring-test-config/dataSource.xml", "/spring-test-config/mockAnnotationDao.xml", 
+    "/spring-test-config/mockSourceDao.xml",
+    "/spring-test-config/mockUserDao.xml", "/spring-test-config/mockPermissionsDao.xml", "/spring-test-config/mockNotebookDao.xml", "/spring-test-config/mockery.xml"})
 public class AnnotationResourceTest {
     
     @Autowired
@@ -60,7 +68,9 @@ public class AnnotationResourceTest {
     @Autowired
     private PermissionsDao permissionsDao;
     @Autowired
-    private NotebookDao notebookDao;
+    private NotebookDao notebookDao;  
+    @Autowired
+    private SourceDao sourceDao;
     
     @Autowired
     private AnnotationResource annotationResource;
@@ -100,8 +110,9 @@ public class AnnotationResourceTest {
     public void testDeleteAnnotation() throws SQLException {
         System.out.println("deleteAnnotation");
         
+       
         mockery.checking(new Expectations() {
-            {
+            {  
                 oneOf(annotationDao).getInternalID(new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_5_EXT));                
                 will(returnValue(5));     
                 

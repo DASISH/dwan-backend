@@ -39,12 +39,7 @@ public interface SourceDao extends ResourceDao{
      */
     public SourceIdentifier getExternalID(Number internalID);
     
-    /**
-     * 
-     * @param annotationID
-     * @return the list of the source's internal IDs of all the target sources of annotationID
-     */
-    public List<Number> retrieveSourceIDs(Number annotationID);
+   
     
     /**
      * 
@@ -52,6 +47,13 @@ public interface SourceDao extends ResourceDao{
      * @return the object containing the source with the intrenal Id "internalId"
      */
     public Source getSource(Number internalID);
+    
+    /**
+     * 
+     * @param internalID
+     * @return the  map "colum name" --> vale for the source form the DB
+     */
+    public Map<String, Object> getRawSource(Number internalID);
     
     /**
      * 
@@ -65,9 +67,10 @@ public interface SourceDao extends ResourceDao{
      * 
      * @param freshSource
      * adds freshSource to the DB and assigns the fresh external Identifier to it
-     * @return the copy of freshSource with the assigned external identifier 
+     * @return the internal ID of the just added source
+     * return -1 id the source cannot be added because its version is not in the DB
      */
-    public Source addSource(Source freshSource) throws SQLException;
+    public Number addSource(Source freshSource) throws SQLException;
    
     //////////////////////////////////////////////
     
@@ -76,7 +79,7 @@ public interface SourceDao extends ResourceDao{
      * @param annotationID
      * @return the Information about the target sources to which annotationId refers
      */
-    public List<SourceInfo> getSourceInfos(Number annotationID);
+    public List<SourceInfo> getSourceInfos(List<Number> sources);
     
    /**
     * 
@@ -100,12 +103,11 @@ public interface SourceDao extends ResourceDao{
      * 
      * @param annotationID
      * @param sources
-     * @return the mapping of a (possible new, freshly added) source onto the corresponding same source in the DB.
-     * The difference between the argument/key source and the value source is just their internal and external identifiers.
-     * The already existing source is mapped onto itself.
+     * @return the mapping of a (temporary source ID  onto the corresponding same source persisten ID  in the DB.
      * The side-effect: the joint table "annotations_target_sources" is extended by the pairs (annotationID, addedSoiurceID).
+     * Also: calls "addSource" if the source is not yet in the DB.
      */
-    public Map<NewOrExistingSourceInfo, NewOrExistingSourceInfo> addTargetSources(Number annotationID, List<NewOrExistingSourceInfo> sources) throws SQLException;        
+    public Map<String, String> addTargetSources(Number annotationID, List<NewOrExistingSourceInfo> sources) throws SQLException;        
     
     /**
      * 

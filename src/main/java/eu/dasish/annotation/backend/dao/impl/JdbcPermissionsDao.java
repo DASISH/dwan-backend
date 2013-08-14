@@ -88,21 +88,4 @@ public class JdbcPermissionsDao extends JdbcResourceDao implements PermissionsDa
         int affectedPermissions = getSimpleJdbcTemplate().update(sqlPermissions, annotationID);
         return affectedPermissions;
     }
-   ///////////////////////////////////////////////////////////////////////////////// 
-    //TODO replace name "user" in the scheme beacuse it is misleading. E.g. replace it with 
-    // getUser actual gives you the list of PAIRS (user, permission) that are refferred from an annotation
-//   @Override 
-//   public PermissionList makeFreshPermissionList(UserIdentifier owner) {
-//       PermissionList result = new PermissionList();
-//       
-//       result.setURI((new PermissionListIdentifier()).toString());
-//       
-//       UserWithPermission idOwner = new UserWithPermission();
-//       idOwner.setPermission(Permission.fromValue("owner"));
-//       idOwner.setRef(owner.toString());
-//       
-//       result.getUser().add(idOwner);
-//       return result;
-//   }
-    
 }

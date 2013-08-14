@@ -62,10 +62,10 @@ public interface VersionDao {
     /**
      * 
      * @param version
-     * @return the copy of "version" with the new external Id set in "version" text field  (for now)
+     * @return the internal Id of the just added version
      * 
      */
-    public Version addVersion(Version version);
+    public Number addVersion(Version version);
    
     /**
      * 
@@ -88,6 +88,8 @@ public interface VersionDao {
      * used to fulfill DELETE api/sources/<sid>/cached/<cid>
      */
     public  int[] deleteCachedRepresentationForSource(Number sourceID, Number cachedRepresentationID);
+    
+    public Number getInternalID(VersionIdentifier externalID);
 }
     
 

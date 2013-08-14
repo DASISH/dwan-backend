@@ -22,6 +22,7 @@ import eu.dasish.annotation.backend.dao.ResourceDao;
 import eu.dasish.annotation.backend.identifiers.DasishIdentifier;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -32,23 +33,21 @@ import org.springframework.jdbc.core.simple.SimpleJdbcDaoSupport;
  *
  * @author olhsha
  */
-public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao{
-    
+public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao {
+
     // base string constants: resource table Names
     final static protected String notebookTableName = "notebook";
     final static protected String annotationTableName = "annotation";
-    final static protected String sourceTableName = "target_source"; 
+    final static protected String sourceTableName = "target_source";
     final static protected String cachedRepresentationTableName = "cached_representation_info";
     final static protected String versionTableName = "version";
     final static protected String principalTableName = "principal";
     // joint tablenames
-    
     final static protected String notebooksAnnotationsTableName = "notebooks_annotations";
     final static protected String permissionsTableName = "annotations_principals_permissions";
     final static protected String annotationsSourcesTableName = "annotations_target_sources";
     final static protected String versionsCachedRepresentationsTableName = "versions_cached_representations";
     final static protected String sourcesVersionsTableName = "sources_versions";
-    
     // base string constants: field Names
     final static protected String annotation_id = "annotation_id";
     final static protected String notebook_id = "notebook_id";
@@ -57,7 +56,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     final static protected String owner_id = "owner_id";
     final static protected String headline = "headline";
     final static protected String body_xml = "body_xml";
-    final static protected String title="title";
+    final static protected String title = "title";
     final static protected String principal_id = "principal_id";
     final static protected String time_stamp = "time_stamp";
     final static protected String permission = "permission_";
@@ -69,71 +68,57 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     final static protected String tool = "tool";
     final static protected String type_ = "type_";
     final static protected String where_is_the_file = "where_is_the_file";
-    
     // derived string constants: table+field names 
-    
-    final static protected String annotationStar = annotationTableName+".*";
-    final static protected String annotationAnnotation_id = annotationTableName+"."+annotation_id;
-    final static protected String annotationExternal_id = annotationTableName+"."+external_id;
-    
-    final static protected String notebookStar = notebookTableName+".*";
-    final static protected String notebookNotebook_id = notebookTableName+"."+notebook_id;
-    final static protected String notebookTitle=notebookTableName+"."+title;
-    final static protected String notebookExternal_id = notebookTableName+"."+external_id;
-    final static protected String notebookOwner_id = notebookTableName+"."+owner_id;
-    
-    
-    final static protected String notebooksAnnotationsTableNameAnnotation_id = notebooksAnnotationsTableName+"."+annotation_id;
-    
-    
-    final static protected String principalPrincipal_id = principalTableName+"."+principal_id;
-    final static protected String principalExternal_id = principalTableName+"."+external_id;
-    
-    
-    final static protected String cachedRepresentationStar = cachedRepresentationTableName+".*";    
-    final static protected String versionStar = versionTableName+".*";
-    final static protected String sourceStar = sourceTableName+".*";
-    
+    final static protected String annotationStar = annotationTableName + ".*";
+    final static protected String annotationAnnotation_id = annotationTableName + "." + annotation_id;
+    final static protected String annotationExternal_id = annotationTableName + "." + external_id;
+    final static protected String notebookStar = notebookTableName + ".*";
+    final static protected String notebookNotebook_id = notebookTableName + "." + notebook_id;
+    final static protected String notebookTitle = notebookTableName + "." + title;
+    final static protected String notebookExternal_id = notebookTableName + "." + external_id;
+    final static protected String notebookOwner_id = notebookTableName + "." + owner_id;
+    final static protected String notebooksAnnotationsTableNameAnnotation_id = notebooksAnnotationsTableName + "." + annotation_id;
+    final static protected String principalPrincipal_id = principalTableName + "." + principal_id;
+    final static protected String principalExternal_id = principalTableName + "." + external_id;
+    final static protected String cachedRepresentationStar = cachedRepresentationTableName + ".*";
+    final static protected String versionStar = versionTableName + ".*";
+    final static protected String sourceStar = sourceTableName + ".*";
     ///////////////////////////////////////////////////
-    
-    protected String internalIdName=null;
-    protected String resourceTableName=null;
-    
+    protected String internalIdName = null;
+    protected String resourceTableName = null;
+
     //////////////////////////////////////////////////////////////////////////////////
     @Override
-    public <T extends DasishIdentifier> Number getInternalID(T externalId){
-       if (externalId == null) {
+    public <T extends DasishIdentifier> Number getInternalID(T externalId) {
+        if (externalId == null) {
             return null;
         }
-       String sql = "SELECT "+internalIdName+" FROM "+resourceTableName+" WHERE "+external_id  +"= ? LIMIT 1";
-       List<Number> sqlResult= getSimpleJdbcTemplate().query(sql, internalIDRowMapper, externalId.toString()); 
-       
-       if (sqlResult == null) {
-           return null;
-       }
-       if (sqlResult.isEmpty()) {
-           return null;
-       } 
-        
-        Number result  = sqlResult.get(0);
+        String sql = "SELECT " + internalIdName + " FROM " + resourceTableName + " WHERE " + external_id + "= ? LIMIT 1";
+        List<Number> sqlResult = getSimpleJdbcTemplate().query(sql, internalIDRowMapper, externalId.toString());
+
+        if (sqlResult == null) {
+            return null;
+        }
+        if (sqlResult.isEmpty()) {
+            return null;
+        }
+
+        Number result = sqlResult.get(0);
         return result;
-    }  
-     
-     protected final RowMapper<Number> internalIDRowMapper = new RowMapper<Number>() {        
+    }
+    protected final RowMapper<Number> internalIDRowMapper = new RowMapper<Number>() {
         @Override
         public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            int result = rs.getInt(internalIdName); 
-            Number resultNumber =  result;
+            int result = rs.getInt(internalIdName);
+            Number resultNumber = result;
             return resultNumber;
         }
-     }; 
-     
-     
-     /////////////////////////////////////////////
-     
-   
-    protected String getExternalIdentifier(Number internalId){
-      if (internalId == null) {
+    };
+
+    
+    /////////////////////////////////////////////
+    protected String getExternalIdentifier(Number internalId) {
+        if (internalId == null) {
             return null;
         }
         String sql = "SELECT " + external_id + " FROM " + resourceTableName + " WHERE " + internalIdName + "= ? LIMIT 1";
@@ -148,19 +133,15 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
 
         return (sqlResult.get(0));
     }
-    
     protected final RowMapper<String> externalIDRowMapper = new RowMapper<String>() {
         @Override
         public String mapRow(ResultSet rs, int rowNumber) throws SQLException {
             return (rs.getString(external_id));
         }
     };
-    
-    
-    
-    
+
     /////////////////////////////////////////////////////
-   protected XMLGregorianCalendar retrieveTimeStamp(Number internalID) {
+    protected XMLGregorianCalendar retrieveTimeStamp(Number internalID) {
         String sqlTime = "SELECT " + time_stamp + " FROM " + resourceTableName + " WHERE " + internalIdName + "= ? LIMIT 1";
         List<XMLGregorianCalendar> timeStamp = getSimpleJdbcTemplate().query(sqlTime, timeStampRowMapper, internalID);
         if (timeStamp.isEmpty()) {
@@ -180,27 +161,23 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
             }
         }
     };
-    
-    
-    
-    
+
     protected <T> String makeListOfValues(List<T> vals) {
-        
+
         if (vals == null) {
             return null;
         }
-        
-        if (vals.isEmpty()) {            
+
+        if (vals.isEmpty()) {
             return null;
         }
-        
+
         String result = "(";
         int length = vals.size();
-        for (int i=0; i<length-1; i++){
-            result = result + vals.get(i).toString() +", ";
+        for (int i = 0; i < length - 1; i++) {
+            result = result + vals.get(i).toString() + ", ";
         }
-        result = result +vals.get(length-1).toString()+")";
+        result = result + vals.get(length - 1).toString() + ")";
         return result;
     }
-    
 }

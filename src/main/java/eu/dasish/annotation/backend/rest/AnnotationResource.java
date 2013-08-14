@@ -21,13 +21,17 @@ import eu.dasish.annotation.backend.BackendConstants;
 import eu.dasish.annotation.backend.dao.AnnotationDao;
 import eu.dasish.annotation.backend.dao.NotebookDao;
 import eu.dasish.annotation.backend.dao.PermissionsDao;
+import eu.dasish.annotation.backend.dao.SourceDao;
 import eu.dasish.annotation.backend.dao.UserDao;
 import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
 import eu.dasish.annotation.backend.identifiers.UserIdentifier;
 import eu.dasish.annotation.schema.Annotation;
+import eu.dasish.annotation.schema.NewOrExistingSourceInfo;
 import eu.dasish.annotation.schema.ObjectFactory;
 import eu.dasish.annotation.schema.Permission;
 import java.sql.SQLException;
+import java.util.List;
+import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -52,6 +56,8 @@ public class AnnotationResource {
 
     @Autowired
     private AnnotationDao annotationDao;
+    @Autowired
+    private SourceDao sourceDao;
     @Autowired
     private UserDao userDao;
     @Autowired
@@ -86,8 +92,9 @@ public class AnnotationResource {
      Delete _aid_. The related sources that are not related to other annotations must be deleted as well (TODO)
      */
     public String deleteAnnotation(@PathParam("annotationid") String annotationIdentifier) throws SQLException {
-        Number annotationID = annotationDao.getInternalID(new AnnotationIdentifier(annotationIdentifier));        
-        String result = Integer.toString(annotationDao.deleteAnnotation(annotationID));
+        Number annotationID = annotationDao.getInternalID(new AnnotationIdentifier(annotationIdentifier));
+        int[] resultDelete = annotationDao.deleteAnnotation(annotationID);
+        String result = Integer.toString(resultDelete[4]);
         return result;
     }
 
@@ -97,10 +104,8 @@ public class AnnotationResource {
     @Produces(MediaType.APPLICATION_XML)
     @Path("")
     public JAXBElement<Annotation> createAnnotation(Annotation annotation) throws SQLException {
-
         String remoteUser = httpServletRequest.getRemoteUser();
         Number userID;
-
         if (remoteUser == null) {
             // happens in client testing
             // TODO sould be adjusted when the user handling mechanism is settled
@@ -109,12 +114,26 @@ public class AnnotationResource {
             userID = userDao.getInternalID(new UserIdentifier(remoteUser));
         }
 
-        Annotation newAnnotation = annotationDao.addAnnotation(annotation, userID);
-        if (newAnnotation == null) {
+        Number annotationID = annotationDao.addAnnotation(annotation, userID);
+
+        // adding sources to the DB if necessary and updating the joint table annotations_target_sources
+        // also, since the source id-s can bementioned in the body, update the body as well
+        // Note that client provided serialization "NewOrExistingSourceInfo" (of type choice) allows to switch between
+        // new and existing sources
+        List<NewOrExistingSourceInfo> sources = annotation.getTargetSources().getTarget();
+        Map<String, String> sourcePairs = sourceDao.addTargetSources(annotationID, sources);
+        String body = annotationDao.serializeBody(annotation.getBody());
+        String newBody = annotationDao.updateTargetRefsInBody(body, sourcePairs);
+        if (!body.equals(newBody)) {
+            annotationDao.updateBody(annotationID, newBody);
+        };
+
+        int affectedPermissions = permissionsDao.addAnnotationPrincipalPermission(annotationDao.getExternalID(annotationID), new UserIdentifier(remoteUser), Permission.OWNER);
+        if (affectedPermissions != 1) {
+            System.out.println("Cannot update permission table");
             return null;
-        } else {
-            int affectedPermissions = permissionsDao.addAnnotationPrincipalPermission(new AnnotationIdentifier(newAnnotation.getURI()), new UserIdentifier(remoteUser), Permission.OWNER);
-            return (new ObjectFactory().createAnnotation(newAnnotation));
         }
+        Annotation newAnnotation = annotationDao.getAnnotation(annotationID);
+        return (new ObjectFactory().createAnnotation(newAnnotation));
     }
 }

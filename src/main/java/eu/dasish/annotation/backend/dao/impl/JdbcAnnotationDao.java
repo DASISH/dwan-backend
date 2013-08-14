@@ -69,24 +69,37 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
     }
 
     @Override
+    public List<Number> retrieveSourceIDs(Number annotationID) {
+        String sql = "SELECT " + source_id + " FROM " + annotationsSourcesTableName + " WHERE " + annotation_id + "= ?";
+        List<Number> result = getSimpleJdbcTemplate().query(sql, annotationSourceRowMapper, annotationID);
+        return result;
+    }
+    private final RowMapper<Number> annotationSourceRowMapper = new RowMapper<Number>() {
+        @Override
+        public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
+            Number result = rs.getInt(source_id);
+            return result;
+        }
+    };
+
+    @Override
     public List<Number> getFilteredAnnotationIDs(String link, String text, String access, String namespace, UserIdentifier owner, Timestamp after, Timestamp before) {
-        
+
         StringBuilder sql = new StringBuilder("SELECT DISTINCT ");
-        sql.append(annotation_id).append(" FROM ").append(annotationTableName).append(" WHERE TRUE ");        
+        sql.append(annotation_id).append(" FROM ").append(annotationTableName).append(" WHERE TRUE ");
         Map<String, Object> params = new HashMap<String, Object>();
-       
-         if (link != null) {
+
+        if (link != null) {
             List<Number> sourceIDs = jdbcSourceDao.getSourcesForLink(link);
             List<Number> annotationIDs = getAnnotationIDsForSources(sourceIDs);
             if (!annotationIDs.isEmpty()) {
                 String values = makeListOfValues(annotationIDs);
                 sql.append(" AND ").append(annotation_id).append(" IN ").append(values);
-            }
-            else{
+            } else {
                 return new ArrayList<Number>();
             }
         }
-         
+
 
         if (owner != null) {
             Number ownerID = jdbcUserDao.getInternalID(owner);
@@ -100,29 +113,28 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         }
 
         if (before != null) {
-            sql.append(" AND ").append(time_stamp).append("  < :before");            
+            sql.append(" AND ").append(time_stamp).append("  < :before");
             params.put("before", before);
         }
 
         if (text != null) {
             sql.append(" AND ").append(body_xml).append("  LIKE '%").append(text).append("%'");
         }
-       
-       
+
+
         List<Number> result = getSimpleJdbcTemplate().query(sql.toString(), internalIDRowMapper, params);
         return result;
     }
-    
+
     //////////////////////////////
-    
     @Override
-    public List<Number> getAnnotationIDsForSources(List<Number> sourceIDs){        
+    public List<Number> getAnnotationIDsForSources(List<Number> sourceIDs) {
         if (sourceIDs == null) {
             return null;
-        }        
+        }
         if (sourceIDs.isEmpty()) {
-           return new ArrayList<Number>(); 
-        }        
+            return new ArrayList<Number>();
+        }
         String values = makeListOfValues(sourceIDs);
         StringBuilder query = new StringBuilder("SELECT DISTINCT ");
         query.append(annotation_id).append(" FROM ").append(annotationsSourcesTableName).append(" WHERE ").append(source_id).append(" IN ");
@@ -130,8 +142,6 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         List<Number> result = getSimpleJdbcTemplate().query(query.toString(), internalIDRowMapper);
         return result;
     }
-            
-    
 
     @Override
     public List<AnnotationInfo> getAnnotationInfos(List<Number> annotationIDs) {
@@ -145,7 +155,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         }
 
         String values = makeListOfValues(annotationIDs);
-        String sql = "SELECT " + annotationStar + " FROM " + annotationTableName + " WHERE " + annotationAnnotation_id + "  IN " + values;
+        String sql = "SELECT DISTINCT " + annotationStar + " FROM " + annotationTableName + " WHERE " + annotationAnnotation_id + "  IN " + values;
         return getSimpleJdbcTemplate().query(sql, annotationInfoRowMapper);
     }
     private final RowMapper<AnnotationInfo> annotationInfoRowMapper = new RowMapper<AnnotationInfo>() {
@@ -164,10 +174,9 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
      * @param annotationIDs
      * @return list of annotation references corresponding to the annotation-ids
      * from the input list if the input list is null or empty (zero elements)
-     * returns an empty list
-     * there may be annotationIDs which are not in the DB (so that's why we need this method).
+     * returns an empty list there may be annotationIDs which are not in the DB
+     * (so that's why we need this method).
      */
-    
     @Override
     public List<ResourceREF> getAnnotationREFs(List<Number> annotationIDs) {
 
@@ -180,7 +189,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         }
 
         String values = makeListOfValues(annotationIDs);
-        String sql = "SELECT " + annotationAnnotation_id + " FROM " + annotationTableName + " WHERE " + annotationAnnotation_id + "  IN " + values;
+        String sql = "SELECT DISTINCT " + annotationAnnotation_id + " FROM " + annotationTableName + " WHERE " + annotationAnnotation_id + "  IN " + values;
         return getSimpleJdbcTemplate().query(sql, annotationREFRowMapper);
     }
     private final RowMapper<ResourceREF> annotationREFRowMapper = new RowMapper<ResourceREF>() {
@@ -198,7 +207,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         if (annotationID == null) {
             return null;
         }
-        String sql = "SELECT " + annotationStar + " FROM " + annotationTableName + " WHERE " + annotationAnnotation_id + "= ?";
+        String sql = "SELECT " + annotationStar + " FROM " + annotationTableName + " WHERE " + annotationAnnotation_id + "= ? LIMIT  1";
         List<Annotation> result = getSimpleJdbcTemplate().query(sql, annotationRowMapper, annotationID);
 
         if (result == null) {
@@ -220,9 +229,9 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
 
             result.setHeadline(rs.getString(headline));
 
-            result.setBody(convertToAnnotationBody(rs.getString(body_xml)));
+            result.setBody(deserializeBody(rs.getString(body_xml)));
 
-            List<SourceInfo> sourceInfoList = jdbcSourceDao.getSourceInfos(rs.getInt(annotation_id));
+            List<SourceInfo> sourceInfoList = jdbcSourceDao.getSourceInfos(retrieveSourceIDs(rs.getInt(annotation_id)));
             NewOrExistingSourceInfos noeSourceInfos = jdbcSourceDao.contructNewOrExistingSourceInfo(sourceInfoList);
             result.setTargetSources(noeSourceInfos);
 
@@ -240,104 +249,55 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         }
     };
 
-    private AnnotationBody convertToAnnotationBody(String input) {
-        if (input == null) {
-            return null;
-        }
-
-        AnnotationBody result = new AnnotationBody();
-        List<Object> element = result.getAny();
-        element.add(input);
-        return result;
-    }
-
     @Override
-    public int deleteAnnotation(Number annotationId) throws SQLException {
+    public int[] deleteAnnotation(Number annotationId) throws SQLException {
+
+        int[] result = new int[5];
 
         String sqlNotebooks = "DELETE FROM " + notebooksAnnotationsTableName + " where " + annotation_id + " = ?";
-        int affectedNotebooks = getSimpleJdbcTemplate().update(sqlNotebooks, annotationId);
+        result[0] = getSimpleJdbcTemplate().update(sqlNotebooks, annotationId);// removed "notebooks_annotations" rows 
 
         String sqlPermissions = "DELETE FROM " + permissionsTableName + " where " + annotation_id + " = ?";
-        int affectedPermissions = getSimpleJdbcTemplate().update(sqlPermissions, annotationId);
+        result[1] = getSimpleJdbcTemplate().update(sqlPermissions, annotationId); // removed "permission" rows 
 
         // safe removing sources
-        List<Number> sourceIDs = jdbcSourceDao.retrieveSourceIDs(annotationId);
+        List<Number> sourceIDs = retrieveSourceIDs(annotationId);
         String sqlTargetSources = "DELETE FROM " + annotationsSourcesTableName + " where " + annotation_id + " = ?";
-        int affectedAnnotationsSources = getSimpleJdbcTemplate().update(sqlTargetSources, annotationId);
-        int affectedSources;
+        result[2] = getSimpleJdbcTemplate().update(sqlTargetSources, annotationId); // removed "annotations_target_sources" rows
+        result[3] = 0; //removed "target_source" rows 
         for (Number sourceID : sourceIDs) {
-            // call  the method in sources DAO that handles removal of a source which is not refered by other annotations
-            affectedSources = jdbcSourceDao.deleteSource(sourceID);
+            result[3] = result[3] + jdbcSourceDao.deleteSource(sourceID);
         }
 
         String sqlAnnotation = "DELETE FROM " + annotationTableName + " where " + annotation_id + " = ?";
-        int affectedAnnotations = getSimpleJdbcTemplate().update(sqlAnnotation, annotationId);
-        if (affectedAnnotations > 1) {
-            throw new SQLException("There was more than one annotation (" + affectedAnnotations + ") with the same ID " + annotationId);
-        }
-        return affectedAnnotations;
-        //TODO implement deleting sources (see the specification document and the interfaces' javadoc
+        result[4] = getSimpleJdbcTemplate().update(sqlAnnotation, annotationId); // removed annotations rows
+
+        return result;
     }
 
     // TODO: so far URI in the xml is the same as the external_id in the DB!!
     // Change it when the decision is taken!!!
     @Override
-    public Annotation addAnnotation(Annotation annotation, Number ownerID) throws SQLException {
-
-        Annotation result = makeDeepCopy(annotation);
-
-        ResourceREF ownerRef = new ResourceREF();
-        ownerRef.setRef(String.valueOf(ownerID));
-        result.setOwner(ownerRef);
+    public Number addAnnotation(Annotation annotation, Number ownerID) throws SQLException {
 
         // generate a new annotation ID 
         AnnotationIdentifier annotationIdentifier = new AnnotationIdentifier();
-        result.setURI(annotationIdentifier.toString());
-
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("externalId", annotationIdentifier.toString());
-        //params.put("timeStamp", annotation.getTimeStamp()); is generated while adding the annotation in the DB as "now"
         params.put("ownerId", ownerID);
         params.put("headline", annotation.getHeadline());
         params.put("bodyXml", annotation.getBody().getAny().get(0).toString());
 
-        try {
-
-            String sql = "INSERT INTO " + annotationTableName + "(" + external_id + "," + owner_id + "," + headline + "," + body_xml + " ) VALUES (:externalId, :ownerId, :headline, :bodyXml)";
-            final int affectedRows = getSimpleJdbcTemplate().update(sql, params);
-
-            if (affectedRows != 1) {
-                throw (new SQLException("Cannot add the annotation properly"));
-            }
-
-            Number internalID = getInternalID(annotationIdentifier);
-
-            //retrieve taime stamp for the just added annotation
-            result.setTimeStamp(retrieveTimeStamp(internalID));
-
-            // place new target sources in the DB, when necessary, update the corresponding target source info for the result
-            // the joint annotations_target_sources" tabel is updated.
-            List<NewOrExistingSourceInfo> sources = result.getTargetSources().getTarget();
-            Map<NewOrExistingSourceInfo, NewOrExistingSourceInfo> sourcePairs = jdbcSourceDao.addTargetSources(internalID, sources);
-            sources.clear();
-            sources.addAll(sourcePairs.values());
-
-            //replace the temporary sourceId-references in the body with the persistent externalId
-            String body = annotation.getBody().getAny().get(0).toString();
-            String newBody = updateTargetRefsInBody(body, sourcePairs);
-            List<Object> bodyXML = result.getBody().getAny();
-            bodyXML.clear();
-            bodyXML.add(newBody);
-            String sqlUpdate = "UPDATE " + annotationTableName + " SET " + body_xml + "= ? WHERE " + annotation_id + "= " + internalID;
-            int affectedRowsBodyUpd = getSimpleJdbcTemplate().update(sqlUpdate, newBody);
-            if (affectedRows != 1) {
-                throw (new SQLException("Cannot update the body with persistent reference ID"));
-            }
-
-            return result;
-        } catch (DataAccessException exception) {
-            throw exception;
+        StringBuilder sql = new StringBuilder("INSERT INTO ");
+        sql.append(annotationTableName).append("(").append(external_id).append(",").append(owner_id);
+        sql.append(",").append(headline).append(",").append(body_xml).append(" ) VALUES (:externalId, :ownerId, :headline, :bodyXml)");
+        int affectedRows = getSimpleJdbcTemplate().update(sql.toString(), params);
+        if (affectedRows == 1) {
+            return getInternalID(annotationIdentifier);
+        } else {
+            return null;
         }
+
     }
 
     //////////////////////////////////////////////////
@@ -346,15 +306,36 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         return new AnnotationIdentifier(super.getExternalIdentifier(internalID));
     }
 
+    ///////////////////////////////////////////////////////////////////////
+    @Override
+    public int updateBody(Number annotationID, String serializedNewBody) {
+        StringBuilder sql = new StringBuilder("UPDATE ");
+        sql.append(annotationTableName).append(" SET ").append(body_xml).append("= ").append(serializedNewBody).append(" WHERE ").append(annotation_id).append("= ?");
+        return getSimpleJdbcTemplate().update(sql.toString(), annotationID);
+    }
+
     //////////// helpers /////////////////////// 
     /////////////////////////////////////////////////
-    private String updateTargetRefsInBody(String body, Map<NewOrExistingSourceInfo, NewOrExistingSourceInfo> sourcePairs) {
-        String result = body;
-        for (NewOrExistingSourceInfo tempSource : sourcePairs.keySet()) {
-            NewSourceInfo newSource = tempSource.getNewSource();
-            if (newSource != null) {
-                result = result.replaceAll(newSource.getId(), sourcePairs.get(tempSource).getSource().getRef());
-            }
+    // TODO: change when serialization mechanism for bodies is fixed
+    @Override
+    public String serializeBody(AnnotationBody body) {
+        return body.getAny().get(0).toString();
+    }
+
+    // TODO: change when serialization mechanism for bodies is fixed
+    @Override
+    public AnnotationBody deserializeBody(String bodyXml) {
+        AnnotationBody result = new AnnotationBody();
+        result.getAny().add(bodyXml);
+        return result;
+    }
+
+    ///////////////////////////////////////
+    @Override
+    public String updateTargetRefsInBody(String serializedBody, Map<String, String> sourceIDPairs) {
+        String result = (new StringBuilder(serializedBody)).toString();
+        for (String tempSource : sourceIDPairs.keySet()) {
+            result = result.replaceAll(tempSource, sourceIDPairs.get(tempSource));
         }
         return result;
     }
@@ -366,39 +347,41 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         return result;
     }
 
-    //////////////////////////////////////////  
-    private Annotation makeDeepCopy(Annotation annotation) {
+    /**
+     *
+     * @param annotationID
+     * @return mapping of the column names of the DB to the corresponding values
+     * used for testing
+     */
+    //NOT TESTED
+    public Map<String, Object> getRawAnnotation(Number annotationID) throws SQLException {
 
-        if (annotation == null) {
+
+        if (annotationID == null) {
+            return null;
+        }
+        String sql = "SELECT " + annotationStar + " FROM " + annotationTableName + " WHERE " + annotationAnnotation_id + "= ? LIMIT  1";
+        List<Map<String, Object>> result = getSimpleJdbcTemplate().query(sql, rawAnnotationRowMapper, annotationID);
+
+        if (result == null) {
+            return null;
+        }
+        if (result.isEmpty()) {
             return null;
         }
 
-        Annotation result = new Annotation();
-
-        AnnotationBody body = new AnnotationBody();
-        String bodyString = annotation.getBody().getAny().get(0).toString();
-        body.getAny().add(bodyString);
-        result.setBody(body);
-
-        result.setHeadline(annotation.getHeadline());
-
-        ResourceREF owner = new ResourceREF();
-        owner.setRef(annotation.getOwner().getRef());
-        result.setOwner(owner);
-
-//        ResourceREF permissions = new ResourceREF();
-//        permissions.setRef(annotation.getPermissions().getRef());
-//        result.setPermissions(permissions);
-
-        result.setPermissions(null); //we do not have permissions there
-
-        NewOrExistingSourceInfos noesi = new NewOrExistingSourceInfos();
-        noesi.getTarget().addAll(annotation.getTargetSources().getTarget());
-        result.setTargetSources(noesi);
-
-        result.setTimeStamp(annotation.getTimeStamp());
-        result.setURI(annotation.getURI());
-
-        return result;
+        return result.get(0);
     }
+    private final RowMapper<Map<String, Object>> rawAnnotationRowMapper = new RowMapper<Map<String, Object>>() {
+        @Override
+        public Map<String, Object> mapRow(ResultSet rs, int rowNumber) throws SQLException {
+            Map<String, Object> result = new HashMap<String, Object>();
+            result.put(owner_id, rs.getInt(owner_id));
+            result.put(headline, rs.getString(headline));
+            result.put(body_xml, rs.getString(body_xml));
+            result.put(external_id, rs.getString(external_id));
+            result.put(time_stamp, rs.getTimestamp(time_stamp));
+            return result;
+        }
+    };
 }

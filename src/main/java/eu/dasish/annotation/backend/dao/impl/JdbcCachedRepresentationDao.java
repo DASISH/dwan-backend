@@ -69,7 +69,7 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
             result.setRef(rs.getString(external_id));
             result.setTool(rs.getString(tool));
             result.setType(rs.getString(type_));
-            // TODO add where is the file when the schem is updated!!!!s
+            // TODO add "where is the file when the schema" is updated!!!!s
             return result;
         }
     };
@@ -92,8 +92,8 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
     ;
      
       ////////////////////////////////////////////////////////////////////////////
-      @Override
-    public CachedRepresentationInfo addCachedRepresentationInfo(CachedRepresentationInfo cached) {
+    @Override
+    public Number addCachedRepresentationInfo(CachedRepresentationInfo cached) {
 
         CachedRepresentationIdentifier externalIdentifier = new CachedRepresentationIdentifier();
 
@@ -104,14 +104,7 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
         params.put("type", cached.getType());
         String sql = "INSERT INTO " + cachedRepresentationTableName + "(" + external_id + "," + mime_type + "," + tool + "," + type_ + " ) VALUES (:externalId, :mime_type,  :tool, :type)";
         final int affectedRows = getSimpleJdbcTemplate().update(sql, params);
-
-        if (affectedRows == 1) {
-            CachedRepresentationInfo cachedNew = makeFreshCopy(cached);
-            cachedNew.setRef(externalIdentifier.toString());
-            return cachedNew;
-        } else {
-            return null;
-        }
+        return getInternalID(externalIdentifier);
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////
@@ -138,14 +131,4 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
         }
     };
 
-    ////////// Helpers ///////////////////
-    private CachedRepresentationInfo makeFreshCopy(CachedRepresentationInfo cached) {
-        CachedRepresentationInfo result = new CachedRepresentationInfo();
-        result.setMimeType(cached.getMimeType());
-        result.setRef(cached.getRef());
-        result.setTool(cached.getTool());
-        result.setType(cached.getType());
-        return result;
-    }
-    
 }
