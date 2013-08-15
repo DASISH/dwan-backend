@@ -214,8 +214,6 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
                 oneOf(sourceDao).getSourceInfos(with(aNonNull(List.class))); // retrieveSourceIDs is tested, so we can put "any" instead of its result
                 will(returnValue(sourceInfoList));
 
-                oneOf(sourceDao).contructNewOrExistingSourceInfo(sourceInfoList);
-                will(returnValue(noeSourceInfos));
             }
         });
 
@@ -348,7 +346,7 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         List<Number> sources = new ArrayList<Number>();
         sources.add(1);
         sources.add(2);
-        List<Number> result = jdbcAnnotationDao.getAnnotationIDsForSources(sources);
+        List<Number> result = jdbcAnnotationDao.retrieveAnnotationList(sources);
         assertEquals (2, result.size());
         assertEquals(2, result.get(0));
         assertEquals(3, result.get(1));
@@ -465,5 +463,99 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         
     }
     
-    //////////// helpers //////////////////////
+     /**
+     * Test of contructNewOrExistingSourceInfo method, of class JdbcSourceDao.
+     */
+    @Test
+    public void testContructNewOrExistingSourceInfo() {
+        System.out.println("contructNewOrExistingSourceInfo");
+
+        List<SourceInfo> sourceInfoList = new ArrayList<SourceInfo>();
+
+        SourceInfo sourceInfoOne = new SourceInfo();
+        sourceInfoOne.setLink(TestBackendConstants._TEST_SOURCE_1_LINK);
+        sourceInfoOne.setRef(TestBackendConstants._TEST_SOURCE_1_EXT_ID);
+        sourceInfoOne.setRef(TestBackendConstants._TEST_VERSION_1_EXT_ID);
+
+        SourceInfo sourceInfoTwo = new SourceInfo();
+        sourceInfoTwo.setLink(TestBackendConstants._TEST_SOURCE_2_LINK);
+        sourceInfoTwo.setRef(TestBackendConstants._TEST_SOURCE_2_EXT_ID);
+        sourceInfoTwo.setRef(TestBackendConstants._TEST_VERSION_3_EXT_ID);
+
+        sourceInfoList.add(sourceInfoOne);
+        sourceInfoList.add(sourceInfoTwo);
+
+//        NewOrExistingSourceInfos result = jdbcSourceDao.contructNewOrExistingSourceInfo(sourceInfoList);
+//        assertEquals(2, result.getTarget().size());
+//        assertEquals(sourceInfoOne, result.getTarget().get(0).getSource());
+//        assertEquals(sourceInfoTwo, result.getTarget().get(1).getSource());
+
+    }
+
+//    /**
+//     * Test of addTargetSources method, of class JdbcSourceDao. public
+//     * Map<NewOrExistingSourceInfo, NewOrExistingSourceInfo>
+//     * addTargetSources(Number annotationID, List<NewOrExistingSourceInfo>
+//     * sources)
+//     */
+//    @Test
+//    public void testAddTargetSourcesOnExistingSource() {
+//        System.out.println("addTargetSources : adding the old source");
+//
+//        NewOrExistingSourceInfo noesi = new NewOrExistingSourceInfo();
+//        SourceInfo si = new SourceInfo();
+//        si.setLink(TestBackendConstants._TEST_SOURCE_1_LINK);
+//        si.setRef(TestBackendConstants._TEST_SOURCE_1_EXT_ID);
+//        si.setVersion(TestBackendConstants._TEST_VERSION_1_EXT_ID);
+//        noesi.setSource(si);
+//
+//        List<NewOrExistingSourceInfo> listnoesi = new ArrayList<NewOrExistingSourceInfo>();
+//        listnoesi.add(noesi);
+//
+//        try {
+//            Map<String, String> result = jdbcSourceDao.addTargetSources(5, listnoesi);
+//            assertEquals(0, result.size()); // no new peristsent source IDs are produced
+//        } catch (SQLException e) {
+//            System.out.println(e);
+//        }
+//    }
+//
+//    /**
+//     * Test of addTargetSources method, of class JdbcSourceDao. public
+//     * Map<NewOrExistingSourceInfo, NewOrExistingSourceInfo>
+//     * addTargetSources(Number annotationID, List<NewOrExistingSourceInfo>
+//     * sources)
+//     */
+//    @Test
+//    public void testAddTargetSourcesOnNewSource() {
+//        System.out.println("addTargetSources : adding the new source");
+//
+//        NewOrExistingSourceInfo noesi = new NewOrExistingSourceInfo();
+//        NewSourceInfo nsi = new NewSourceInfo();
+//        nsi.setLink(TestBackendConstants._TEST_NEW_SOURCE_LINK);
+//        nsi.setId(TestBackendConstants._TEST_TEMP_SOURCE_ID);
+//        nsi.setVersion(TestBackendConstants._TEST_VERSION_1_EXT_ID);
+//        noesi.setNewSource(nsi);
+//
+//        List<NewOrExistingSourceInfo> listnoesiTwo = new ArrayList<NewOrExistingSourceInfo>();
+//        listnoesiTwo.add(noesi);
+//        
+//        mockery.checking(new Expectations() {
+//            {
+//                oneOf(versionDao).getInternalID(new VersionIdentifier(TestBackendConstants._TEST_VERSION_1_EXT_ID));
+//                will(returnValue(1));
+//            }
+//        });
+//
+//        try {
+//            Map<String, String> result = jdbcSourceDao.addTargetSources(5, listnoesiTwo);
+//            assertEquals(1, result.size());// a new identifier must be produced
+//            SourceIdentifier sourceIdentifier = new SourceIdentifier(result.get(TestBackendConstants._TEST_TEMP_SOURCE_ID));
+//            assertFalse(null == sourceIdentifier.getUUID()); // check if a proper uuid has been assigned 
+//        } catch (SQLException e) {
+//            System.out.print(e);
+//        }
+//
+//    }
+//    
 }

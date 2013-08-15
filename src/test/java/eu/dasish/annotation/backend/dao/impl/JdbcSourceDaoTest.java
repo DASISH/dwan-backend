@@ -21,19 +21,16 @@ import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.dao.VersionDao;
 import eu.dasish.annotation.backend.identifiers.SourceIdentifier;
 import eu.dasish.annotation.backend.identifiers.VersionIdentifier;
-import eu.dasish.annotation.schema.NewOrExistingSourceInfo;
-import eu.dasish.annotation.schema.NewOrExistingSourceInfos;
-import eu.dasish.annotation.schema.NewSourceInfo;
 import eu.dasish.annotation.schema.Source;
 import eu.dasish.annotation.schema.SourceInfo;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -80,8 +77,6 @@ public class JdbcSourceDaoTest extends JdbcResourceDaoTest {
         assertEquals(expResult, result);
     }
 
-  
-
     /**
      * Test of getSource method, of class JdbcSourceDao.
      */
@@ -103,22 +98,7 @@ public class JdbcSourceDaoTest extends JdbcResourceDaoTest {
         assertEquals(TestBackendConstants._TEST_SOURCE_1_EXT_ID, result.getURI());
         assertEquals(TestBackendConstants._TEST_SOURCE_1_LINK, result.getLink());
         assertEquals(TestBackendConstants._TEST_VERSION_1_EXT_ID, result.getVersion());
-        //TODO: time stamp is not check: do not know with what to compare :\
-    }
-
-    /**
-     * Test of deleteSourceVersionRows method, of class JdbcSourceDao.
-     */
-    @Test
-    public void testDeleteSourceVersionRows() {
-        System.out.println("DeleteSourceVersionRows");
-        Number internalID = 4;
-        int result = jdbcSourceDao.deleteSourceVersionRows(internalID);
-        assertEquals(1, result);
-
-        Number internalIDNoExist = 6;
-        int resultTwo = jdbcSourceDao.deleteSourceVersionRows(internalIDNoExist);
-        assertEquals(0, resultTwo);
+        //TODO: time stamp is not checked: do not know with what to compare 
     }
 
     /**
@@ -127,79 +107,81 @@ public class JdbcSourceDaoTest extends JdbcResourceDaoTest {
     @Test
     public void testDeleteSource() {
         System.out.println("deleteSource");
-        
+
         // test 1
-        Number internalID = 1;
-        int result = jdbcSourceDao.deleteSource(internalID);
-        assertEquals(0, result); // the source is in use, should not be deleted
+        int[] result = jdbcSourceDao.deleteSource(1); //the source is in use, should not be deleted
+        assertEquals(0, result[0]); // 
+        assertEquals(0, result[1]);
 
         // test 2
-        final List<Number> versions = new ArrayList<Number>();
-        versions.add(5);
+        final int[] versionDeleted = new int[3];
+        versionDeleted[0] = 0; // versions_cahced_representations
+        versionDeleted[1] = 1; // version deleted
+        versionDeleted[2] = 0; // deleted cached representations; version 7 does not have them
         mockery.checking(new Expectations() {
             {
-                oneOf(versionDao).retrieveVersionList(5);
-                will(returnValue(versions));
-
-                oneOf(versionDao).deleteVersion(5);
-                will(returnValue(1)); // no other sources refer to this version # 5
+                oneOf(versionDao).deleteVersion(7);
+                will(returnValue(versionDeleted)); // no other sources refer to this version # 5
             }
         });
 
-        int resultTwo = jdbcSourceDao.deleteSource(5);
-        assertEquals(1, resultTwo); // the source will be deleted because it is not referred by any annotation
+        int[] resultTwo = jdbcSourceDao.deleteSource(5);// the source will be deleted because it is not referred by any annotation
+        assertEquals(1, resultTwo[0]); // row (5,7) in "sorces_versions" is deleted
+        assertEquals(1, resultTwo[1]); //source 5 is deleted from "source" table
     }
 
     /**
      * Test of addSource method, of class JdbcSourceDao.
      */
     @Test
-    public void testAddSource() {
+    public void testAddSource() throws SQLException {
         System.out.println("addSource");
 
-        String link = "http://www.sagradafamilia.cat/";     
-  
-        // existing version
+        String link = "http://www.sagradafamilia.cat/";
+
+        // test 1: existing version
         Source freshSource = new Source();
         freshSource.setLink(link);
         freshSource.setVersion(TestBackendConstants._TEST_VERSION_1_EXT_ID);
         freshSource.setURI(null);
         freshSource.setTimeSatmp(null);
-        
+
         mockery.checking(new Expectations() {
             {
                 oneOf(versionDao).getInternalID(new VersionIdentifier(TestBackendConstants._TEST_VERSION_1_EXT_ID));
                 will(returnValue(1));
             }
         });
- 
-        try {
-            Number result = jdbcSourceDao.addSource(freshSource);            
-            assertEquals(6, result);
-            Map<String, Object> addedSource = jdbcSourceDao.getRawSource(result);
-            assertEquals(link, addedSource.get("link_uri"));
-            assertEquals(1, addedSource.get("version_id"));
-            assertFalse(null==addedSource.get("external_id"));
-        } catch (SQLException e) {
-            System.out.println(e);
-        }
+
+        Number result = jdbcSourceDao.addSource(freshSource);
+        assertEquals(6, result);
         
-        ////////// test 2 non-existing source
+        mockery.checking(new Expectations() {
+            {
+                oneOf(versionDao).getExternalID(1); // used in getSource
+                will(returnValue(new VersionIdentifier(TestBackendConstants._TEST_VERSION_1_EXT_ID)));
+                
+                
+            }
+        });
+        Source addedSource = jdbcSourceDao.getSource(result);
+        assertEquals(link, addedSource.getLink());
+        assertEquals(TestBackendConstants._TEST_VERSION_1_EXT_ID, addedSource.getVersion());
+        assertFalse(null == addedSource.getURI());
+
+        ////////// test 2 non-existing version
         freshSource.setVersion(TestBackendConstants._TEST_VERSION_NONEXIST_EXT_ID);
-         mockery.checking(new Expectations() {
+        mockery.checking(new Expectations() {
             {
                 oneOf(versionDao).getInternalID(new VersionIdentifier(TestBackendConstants._TEST_VERSION_NONEXIST_EXT_ID));
                 will(returnValue(null));
             }
         });
- 
-        try {
-            Number result = jdbcSourceDao.addSource(freshSource);            
-            assertEquals(-1, result);
-        } catch (SQLException e) {
-            System.out.println(e);
-        }
-        
+
+
+        Number resultTwo = jdbcSourceDao.addSource(freshSource);
+        assertEquals(-1, resultTwo); // addversion (preferably with cached representation
+
     }
 
     /**
@@ -234,113 +216,29 @@ public class JdbcSourceDaoTest extends JdbcResourceDaoTest {
     }
 
     /**
-     * Test of contructNewOrExistingSourceInfo method, of class JdbcSourceDao.
-     */
-    @Test
-    public void testContructNewOrExistingSourceInfo() {
-        System.out.println("contructNewOrExistingSourceInfo");
-
-        List<SourceInfo> sourceInfoList = new ArrayList<SourceInfo>();
-
-        SourceInfo sourceInfoOne = new SourceInfo();
-        sourceInfoOne.setLink(TestBackendConstants._TEST_SOURCE_1_LINK);
-        sourceInfoOne.setRef(TestBackendConstants._TEST_SOURCE_1_EXT_ID);
-        sourceInfoOne.setRef(TestBackendConstants._TEST_VERSION_1_EXT_ID);
-
-        SourceInfo sourceInfoTwo = new SourceInfo();
-        sourceInfoTwo.setLink(TestBackendConstants._TEST_SOURCE_2_LINK);
-        sourceInfoTwo.setRef(TestBackendConstants._TEST_SOURCE_2_EXT_ID);
-        sourceInfoTwo.setRef(TestBackendConstants._TEST_VERSION_3_EXT_ID);
-
-        sourceInfoList.add(sourceInfoOne);
-        sourceInfoList.add(sourceInfoTwo);
-
-        NewOrExistingSourceInfos result = jdbcSourceDao.contructNewOrExistingSourceInfo(sourceInfoList);
-        assertEquals(2, result.getTarget().size());
-        assertEquals(sourceInfoOne, result.getTarget().get(0).getSource());
-        assertEquals(sourceInfoTwo, result.getTarget().get(1).getSource());
-
-    }
-
-    /**
-     * Test of addTargetSources method, of class JdbcSourceDao. public
-     * Map<NewOrExistingSourceInfo, NewOrExistingSourceInfo>
-     * addTargetSources(Number annotationID, List<NewOrExistingSourceInfo>
-     * sources)
-     */
-    @Test
-    public void testAddTargetSourcesOnExistingSource() {
-        System.out.println("addTargetSources : adding the old source");
-
-        NewOrExistingSourceInfo noesi = new NewOrExistingSourceInfo();
-        SourceInfo si = new SourceInfo();
-        si.setLink(TestBackendConstants._TEST_SOURCE_1_LINK);
-        si.setRef(TestBackendConstants._TEST_SOURCE_1_EXT_ID);
-        si.setVersion(TestBackendConstants._TEST_VERSION_1_EXT_ID);
-        noesi.setSource(si);
-
-        List<NewOrExistingSourceInfo> listnoesi = new ArrayList<NewOrExistingSourceInfo>();
-        listnoesi.add(noesi);
-
-        try {
-            Map<String, String> result = jdbcSourceDao.addTargetSources(5, listnoesi);
-            assertEquals(0, result.size()); // no new peristsent source IDs are produced
-        } catch (SQLException e) {
-            System.out.println(e);
-        }
-    }
-
-    /**
-     * Test of addTargetSources method, of class JdbcSourceDao. public
-     * Map<NewOrExistingSourceInfo, NewOrExistingSourceInfo>
-     * addTargetSources(Number annotationID, List<NewOrExistingSourceInfo>
-     * sources)
-     */
-    @Test
-    public void testAddTargetSourcesOnNewSource() {
-        System.out.println("addTargetSources : adding the new source");
-
-        NewOrExistingSourceInfo noesi = new NewOrExistingSourceInfo();
-        NewSourceInfo nsi = new NewSourceInfo();
-        nsi.setLink(TestBackendConstants._TEST_NEW_SOURCE_LINK);
-        nsi.setId(TestBackendConstants._TEST_TEMP_SOURCE_ID);
-        nsi.setVersion(TestBackendConstants._TEST_VERSION_1_EXT_ID);
-        noesi.setNewSource(nsi);
-
-        List<NewOrExistingSourceInfo> listnoesiTwo = new ArrayList<NewOrExistingSourceInfo>();
-        listnoesiTwo.add(noesi);
-        
-        mockery.checking(new Expectations() {
-            {
-                oneOf(versionDao).getInternalID(new VersionIdentifier(TestBackendConstants._TEST_VERSION_1_EXT_ID));
-                will(returnValue(1));
-            }
-        });
-
-        try {
-            Map<String, String> result = jdbcSourceDao.addTargetSources(5, listnoesiTwo);
-            assertEquals(1, result.size());// a new identifier must be produced
-            SourceIdentifier sourceIdentifier = new SourceIdentifier(result.get(TestBackendConstants._TEST_TEMP_SOURCE_ID));
-            assertFalse(null == sourceIdentifier.getUUID()); // check if a proper uuid has been assigned 
-        } catch (SQLException e) {
-            System.out.print(e);
-        }
-
-    }
-    
-    /** 
      * test public List<Number> getSourcesForLink(String link)
-     * 
-     **/
+     *
+     *
+     */
     @Test
-    public void tesGetSourcesForLink(){
+    public void tesGetSourcesForLink() {
         System.out.println(" test getSourcesForLink");
-        
+
         String substring = "http://nl.wikipedia.org";
-        List<Number> result  = jdbcSourceDao.getSourcesForLink(substring);
+        List<Number> result = jdbcSourceDao.getSourcesForLink(substring);
         assertEquals(2, result.size());
         assertEquals(1, result.get(0));
-        assertEquals(2, result.get(1));                
+        assertEquals(2, result.get(1));
     }
-    
+
+    /* Test of retrieveVersionList method, of class JdbcSourceDao.
+     */
+    @Test
+    public void testRetrieveVersionList() {
+        System.out.println("retrieveVersionList");
+        Number sourceID = 1;
+        List<Number> result = jdbcSourceDao.retrieveVersionList(sourceID);
+        assertEquals(1, result.get(0));
+        assertEquals(2, result.get(1));
+    }
 }
