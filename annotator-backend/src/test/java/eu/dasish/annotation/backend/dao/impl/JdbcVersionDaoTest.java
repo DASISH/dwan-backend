@@ -19,7 +19,9 @@ package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.dao.CachedRepresentationDao;
+import eu.dasish.annotation.backend.identifiers.CachedRepresentationIdentifier;
 import eu.dasish.annotation.backend.identifiers.VersionIdentifier;
+import eu.dasish.annotation.schema.CachedRepresentationInfo;
 import eu.dasish.annotation.schema.Version;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +29,7 @@ import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -40,19 +43,15 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @ContextConfiguration({"/spring-test-config/dataSource.xml", "/spring-test-config/mockery.xml", "/spring-test-config/mockAnnotationDao.xml",
     "/spring-test-config/mockUserDao.xml", "/spring-test-config/mockPermissionsDao.xml", "/spring-test-config/mockNotebookDao.xml",
     "/spring-test-config/mockSourceDao.xml", "/spring-test-config/mockCachedRepresentationDao.xml", "/spring-config/versionDao.xml"})
+public class JdbcVersionDaoTest extends JdbcResourceDaoTest {
 
-public class JdbcVersionDaoTest extends JdbcResourceDaoTest{
-    
     @Autowired
     JdbcVersionDao jdbcVersionDao;
-    
     @Autowired
-    private CachedRepresentationDao cachedRepresentationDao;    
-    
+    private CachedRepresentationDao cachedRepresentationDao;
     @Autowired
     private Mockery mockery;
-    
-    
+
     /**
      * Test of getExternalId method, of class JdbcVersionDao.
      */
@@ -90,73 +89,32 @@ public class JdbcVersionDaoTest extends JdbcResourceDaoTest{
     }
 
     /**
-     * Test of retrieveVersionList method, of class JdbcVersionDao.
-     */
-    @Test
-    public void testRetrieveVersionList() {
-        System.out.println("retrieveVersionList");
-        Number sourceID = 1;
-        // INSERT INTO sources_versions (source_id, version_id) VALUES (1, 1);
-        // INSERT INTO sources_versions (source_id, version_id) VALUES (1, 2);
-        List<Number> result = jdbcVersionDao.retrieveVersionList(sourceID);
-        assertEquals(1, result.get(0));
-        assertEquals(2, result.get(1));
-    }
-
-     /**
-     * Test of deleteVersionCachedRepresentationRows method, of class JdbcVersionDao.
-     */
-    @Test
-    public void testDeleteVersionCachedRepresentationRows() {
-        System.out.println("deleteVersion");
-        Number internalID = 6; // there is no sources (in target_source and sources_versions - sibling table) connected to this version in the test table
-        int result = jdbcVersionDao.deleteVersionCachedRepresentationRow(internalID);
-        assertEquals(1, result);
-    }
-    
-    /**
+     *
+     *
+     * /**
      * Test of deleteVersion method, of class JdbcVersionDao.
      */
     @Test
     public void testDeleteVersion() {
         System.out.println("deleteVersion");
-        final Number internalID = 6; // there is no sources (in target_source and sources_versions - sibling table) connected to this version in the test table
-        final Number cachedID =5;
-        final List<Number> versions = new ArrayList<Number>();
-        versions.add(cachedID);
-        
-        //jdbcCachedRepresentationDao.retrieveCachedRepresentationList(internalID);
-        //jdbcCachedRepresentationDao.deleteCachedRepresentationInfo(cachedID);
-        
         mockery.checking(new Expectations() {
-            { 
-                oneOf(cachedRepresentationDao).retrieveCachedRepresentationList(internalID);
-                will(returnValue(versions));
-                
-                oneOf(cachedRepresentationDao).deleteCachedRepresentationInfo(cachedID);
+            {
+                oneOf(cachedRepresentationDao).deleteCachedRepresentationInfo(5);
                 will(returnValue(0));
-                
+
             }
         });
-        
-        int result = jdbcVersionDao.deleteVersion(internalID); 
-        assertEquals(1, result);
-        
-        // try to delete one more time
-         mockery.checking(new Expectations() {
-            { 
-                oneOf(cachedRepresentationDao).retrieveCachedRepresentationList(internalID);
-                will(returnValue(new ArrayList<Number>()));
-                
-            }
-        });
-        int resultTwo = jdbcVersionDao.deleteVersion(internalID);
-        assertEquals(0, resultTwo);
-        
-        // the version in use, shoul not be deleted
-        final Number internalIDNotToDelete = 4;          
-        int resultThree = jdbcVersionDao.deleteVersion(internalIDNotToDelete);
-        assertEquals(0, resultThree);
+        int[] result = jdbcVersionDao.deleteVersion(6);
+        assertEquals(1, result[0]); //versions-cached
+        assertEquals(1, result[1]); // version
+        assertEquals(0, result[2]);//cached 5 is in use
+
+
+        int[] resultTwo = jdbcVersionDao.deleteVersion(5); // version is in use by the source 4
+        assertEquals(0, resultTwo[0]);
+        assertEquals(0, resultTwo[1]);
+        assertEquals(0, resultTwo[2]);
+
     }
 
     /**
@@ -165,51 +123,34 @@ public class JdbcVersionDaoTest extends JdbcResourceDaoTest{
     @Test
     public void testAddVersion() {
         System.out.println("addVersion");
-        
-        Version freshVersion = new Version();   
-        
+
+        Version freshVersion = new Version();
+
         Number result = jdbcVersionDao.addVersion(freshVersion);
         assertEquals(8, result);
         Version addedVersion = jdbcVersionDao.getVersion(result);
-        assertFalse(null==addedVersion.getVersion());
-        
+        assertFalse(null == addedVersion.getVersion());
     }
-
-  
-    /**
-     * test 
-     * public int deleteCachedRepresentationForSource(Number sourceID, Number cachedRepresentationID)
-     * 
-     **/
-  
+    
+    
    
+   
+
+    /**
+     * Test of retrieveCachedRepresentationList method, of class JdbcVersionDao.
+     * public List<Number> retrieveCachedRepresentationList(Number versionID);
+     */
     @Test
-    public void tesDeleteCachedRepresentationForSource() {
-         System.out.println("test delete CachedRepresentationForSource");
-         
-         /// TEST 1 /////
-          mockery.checking(new Expectations() {
-            { 
-                oneOf(cachedRepresentationDao).deleteCachedRepresentationInfo(5);
-                will(returnValue(0));
-                
-            }
-         });         
-         int[] result = jdbcVersionDao.deleteCachedRepresentationForSource(1, 5); // source 1 has versions {1,2}, versions 1 and 2 have cached representations {1, 5} and {3} respectively
-         assertEquals(1, result[0]); 
-         assertEquals(0, result[1]); //cahced representation 5 is also connected version 6, therefore cannot be removed
-         
-         
-         // TEST 2 ////////
-          mockery.checking(new Expectations() {
-            { 
-                oneOf(cachedRepresentationDao).deleteCachedRepresentationInfo(4);
-                will(returnValue(1));
-                
-            }
-         });      
-         int[] result_2 = jdbcVersionDao.deleteCachedRepresentationForSource(3, 4); //source 1 --> version 4 --> cached 4
-         assertEquals(1, result_2[0]); 
-         assertEquals(1, result_2[1]); 
+    public void testRetrieveCachedRepresentationList() {
+
+        System.out.println("retrieveCachedRepresentationList");
+        Number versionID = 1;
+
+        List expResult = new ArrayList<Number>();
+        expResult.add(1);
+        expResult.add(5);
+
+        List result = jdbcVersionDao.retrieveCachedRepresentationList(versionID);
+        assertEquals(expResult, result);
     }
 }

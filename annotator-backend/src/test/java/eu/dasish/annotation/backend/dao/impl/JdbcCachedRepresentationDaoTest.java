@@ -20,8 +20,6 @@ package eu.dasish.annotation.backend.dao.impl;
 import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.identifiers.CachedRepresentationIdentifier;
 import eu.dasish.annotation.schema.CachedRepresentationInfo;
-import java.util.ArrayList;
-import java.util.List;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.runner.RunWith;
@@ -37,7 +35,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration({"/spring-test-config/dataSource.xml", "/spring-test-config/mockery.xml", "/spring-test-config/mockAnnotationDao.xml",
     "/spring-test-config/mockUserDao.xml", "/spring-test-config/mockPermissionsDao.xml", "/spring-test-config/mockNotebookDao.xml",
-    "/spring-test-config/mockSourceDao.xml", "/spring-config/cachedRepresentationDao.xml"})
+    "/spring-test-config/mockSourceDao.xml", "/spring-test-config/mockVersionDao.xml", "/spring-config/cachedRepresentationDao.xml"})
 public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest{
     
     @Autowired
@@ -56,13 +54,13 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest{
      */
     @Test  
     public void testGetExternalId() {
-        // INSERT INTO cached_representation_info (external_id, mime_type, tool, type_, where_is_the_file) VALUES ('00000000-0000-0000-0000-000000000051', 'text/html', 'latex', 'text', 'corpus1'); --1
         System.out.println("getExternalId");
         Number internalID = 1;
         CachedRepresentationIdentifier expResult = new CachedRepresentationIdentifier(TestBackendConstants._TEST_CACHED_REPRESENTATION_1_EXT_ID_);
         CachedRepresentationIdentifier result = jdbcCachedRepresentationDao.getExternalID(internalID);
         assertEquals(expResult, result);
     }
+    
 
     /**
      * Test of getInternalId method, of class JdbcCachedRepresentationDao.
@@ -72,9 +70,8 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest{
     public void testGetInternalId() {
         System.out.println("getInternalId");
         CachedRepresentationIdentifier externalID = new CachedRepresentationIdentifier(TestBackendConstants._TEST_CACHED_REPRESENTATION_1_EXT_ID_);
-        Number expResult = 1;
         Number result = jdbcCachedRepresentationDao.getInternalID(externalID);
-        assertEquals(expResult, result);
+        assertEquals(1, result.intValue());
     }
 
     /**
@@ -83,7 +80,6 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest{
      */
     @Test  
     public void testGetCachedRepresentationInfo() {
-        // INSERT INTO cached_representation_info (external_id, mime_type, tool, type_, where_is_the_file) VALUES ('00000000-0000-0000-0000-000000000051', 'text/html', 'latex', 'text', 'corpus1'); --1
         System.out.println("getCachedRepresentationInfo");
         Number internalID = 1;
         
@@ -100,24 +96,7 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest{
         assertEquals(expResult.getRef(), result.getRef());
     }
 
-    /**
-     * Test of retrieveCachedRepresentationList method, of class JdbcCachedRepresentationDao.
-     *  public List<Number> retrieveCachedRepresentationList(Number versionID);
-     */
-    @Test 
-    public void testRetrieveCachedRepresentationList() {
-        
-        System.out.println("retrieveCachedRepresentationList");
-        Number versionID = 1;
-        
-        List expResult = new ArrayList<Number>();
-        expResult.add(1);
-        expResult.add(5);
-        
-        List result = jdbcCachedRepresentationDao.retrieveCachedRepresentationList(versionID);
-        assertEquals(expResult, result);
-    }
-
+    
     /**
      * Test of deleteCachedRepresentationInfo method, of class JdbcCachedRepresentationDao.
      *  public int deleteCachedRepresentationInfo(Number internalID);
@@ -160,7 +139,40 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest{
     }
     
   
-    
-  
-    
+     /**
+     * Test of addVersion method, of class JdbcVersionDao.
+     */
+    @Test
+    public void testAddCachedForVersion() {
+        System.out.println("test addCachedForVersion");
+
+        final CachedRepresentationInfo cached = new CachedRepresentationInfo();
+        cached.setMimeType("text/plain");
+        cached.setTool("vi");
+        cached.setType("text");
+        cached.setRef(null);
+       
+        Number[] result = jdbcCachedRepresentationDao.addCachedForVersion(6, cached);
+        assertEquals(8, result[0].intValue());
+        assertEquals(1, result[1].intValue());
+    }
+
+     /**
+     *
+     */
+    @Test
+    public void tesDeleteCachedForVersion() {
+        System.out.println("test delete CachedRepresentationForVersion");
+        System.out.println("deleteVersion");
+        
+        int[] result = jdbcCachedRepresentationDao.deleteCachedForVersion(6, 5);
+        assertEquals(1, result[0]); //versions-cached
+        assertEquals(0, result[1]);//cached 5 is in use
+        
+        int[] resultTwo = jdbcCachedRepresentationDao.deleteCachedForVersion(6, 4); // no such pair
+        assertEquals(0, resultTwo[0]); 
+        assertEquals(0, resultTwo[1]); 
+
+
+    }
 }
