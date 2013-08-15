@@ -18,6 +18,7 @@
 package eu.dasish.annotation.backend.rest;
 
 import eu.dasish.annotation.backend.BackendConstants;
+import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.dao.AnnotationDao;
 import eu.dasish.annotation.backend.dao.NotebookDao;
 import eu.dasish.annotation.backend.dao.PermissionsDao;
@@ -26,6 +27,7 @@ import eu.dasish.annotation.backend.dao.UserDao;
 import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
 import eu.dasish.annotation.backend.identifiers.UserIdentifier;
 import eu.dasish.annotation.schema.Annotation;
+import eu.dasish.annotation.schema.AnnotationBody;
 import eu.dasish.annotation.schema.NewOrExistingSourceInfo;
 import eu.dasish.annotation.schema.ObjectFactory;
 import eu.dasish.annotation.schema.Permission;
@@ -114,26 +116,29 @@ public class AnnotationResource {
             userID = userDao.getInternalID(new UserIdentifier(remoteUser));
         }
 
+        
+        //Add annotation
         Number annotationID = annotationDao.addAnnotation(annotation, userID);
 
-        // adding sources to the DB if necessary and updating the joint table annotations_target_sources
-        // also, since the source id-s can bementioned in the body, update the body as well
-        // Note that client provided serialization "NewOrExistingSourceInfo" (of type choice) allows to switch between
-        // new and existing sources
+        //Add the sources to the DB 
         List<NewOrExistingSourceInfo> sources = annotation.getTargetSources().getTarget();
-        Map<String, String> sourcePairs = sourceDao.addTargetSources(annotationID, sources);
-        String body = annotationDao.serializeBody(annotation.getBody());
-        String newBody = annotationDao.updateTargetRefsInBody(body, sourcePairs);
-        if (!body.equals(newBody)) {
-            annotationDao.updateBody(annotationID, newBody);
-        };
-
-        int affectedPermissions = permissionsDao.addAnnotationPrincipalPermission(annotationDao.getExternalID(annotationID), new UserIdentifier(remoteUser), Permission.OWNER);
-        if (affectedPermissions != 1) {
-            System.out.println("Cannot update permission table");
-            return null;
+        Map<String, String> sourceIdPairs= sourceDao.addTargetSourcesToAnnotation(annotationID, sources);
+        
+        if (sourceIdPairs.containsValue(null)){
+           // for one of the soirces there was no version and cached representation
+            // envelope
+           return (new ObjectFactory().createAnnotation(null));
         }
+        String body = Helpers.serializeBody(annotation.getBody());
+        String newBody = Helpers.replace(body, sourceIdPairs);
+        int affectedAnnotRows = annotationDao.updateBody(annotationID, newBody);
+       
+        // Add the permission (annotation_id, owner);
+        int affectedPermissions = permissionsDao.addAnnotationPrincipalPermission(annotationDao.getExternalID(annotationID), new UserIdentifier(remoteUser), Permission.OWNER);
+       
         Annotation newAnnotation = annotationDao.getAnnotation(annotationID);
         return (new ObjectFactory().createAnnotation(newAnnotation));
     }
+    
+    
 }

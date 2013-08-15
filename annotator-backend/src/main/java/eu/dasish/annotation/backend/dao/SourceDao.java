@@ -20,6 +20,7 @@ package eu.dasish.annotation.backend.dao;
 import eu.dasish.annotation.backend.identifiers.SourceIdentifier;
 import eu.dasish.annotation.schema.NewOrExistingSourceInfo;
 import eu.dasish.annotation.schema.NewOrExistingSourceInfos;
+import eu.dasish.annotation.schema.NewSourceInfo;
 import eu.dasish.annotation.schema.Source;
 import eu.dasish.annotation.schema.SourceInfo;
 import java.sql.SQLException;
@@ -48,12 +49,7 @@ public interface SourceDao extends ResourceDao{
      */
     public Source getSource(Number internalID);
     
-    /**
-     * 
-     * @param internalID
-     * @return the  map "colum name" --> vale for the source form the DB
-     */
-    public Map<String, Object> getRawSource(Number internalID);
+   
     
     /**
      * 
@@ -61,7 +57,7 @@ public interface SourceDao extends ResourceDao{
      * removes the source with the ID "internalId" from the DB, if it is not a target source of some annotation
      * @return the amount of affected rows in the "source" table
      */
-    public int deleteSource(Number internalID);
+    public int[] deleteSource(Number internalID);
     
     /**
      * 
@@ -70,49 +66,30 @@ public interface SourceDao extends ResourceDao{
      * @return the internal ID of the just added source
      * return -1 id the source cannot be added because its version is not in the DB
      */
-    public Number addSource(Source freshSource) throws SQLException;
-   
-    //////////////////////////////////////////////
-    
-    /**
-     * 
-     * @param annotationID
-     * @return the Information about the target sources to which annotationId refers
-     */
-    public List<SourceInfo> getSourceInfos(List<Number> sources);
-    
-   /**
-    * 
-    * @param sourceInfoList
-    * @return the list of NewOrExistingSourceo objects in such a way  that an element of the sourceInfoList is injected into an element of the return list
-    */
-   //TODO: add non-existing sources!! now is implemented only for existing sources
-    public NewOrExistingSourceInfos contructNewOrExistingSourceInfo(List<SourceInfo> sourceInfoList);
+    public Number addSource(Source freshSource) throws SQLException;   
     
     
-    
-    /**
+     /**
      * 
      * @param sourceID
-     * @return delete all the rows in "sources_versions" table with sourceID
+     * @return the list of the internal version id-s for the  target source with the internal Id "sourceID" 
      */
-    public int deleteSourceVersionRows(Number sourceID);
+    public List<Number> retrieveVersionList(Number sourceID);
     
+  
+    public List<SourceInfo> getSourceInfos(List<Number> sources);
     
-    /**
-     * 
-     * @param annotationID
-     * @param sources
-     * @return the mapping of a (temporary source ID  onto the corresponding same source persisten ID  in the DB.
-     * The side-effect: the joint table "annotations_target_sources" is extended by the pairs (annotationID, addedSoiurceID).
-     * Also: calls "addSource" if the source is not yet in the DB.
-     */
-    public Map<String, String> addTargetSources(Number annotationID, List<NewOrExistingSourceInfo> sources) throws SQLException;        
-    
+  
     /**
      * 
      * @param link
      * @return the list source ID's which link-fields contain "link" as a substring
      */ 
     public List<Number> getSourcesForLink(String link);
+  
+    
+    
+   public Map<String, String> addTargetSourcesToAnnotation(Number annotationID, List<NewOrExistingSourceInfo> sources) throws SQLException;        
+    
+     
 }

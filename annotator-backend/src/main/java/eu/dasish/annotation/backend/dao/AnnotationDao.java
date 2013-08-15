@@ -23,6 +23,7 @@ import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationBody;
 import eu.dasish.annotation.schema.AnnotationInfo;
 import eu.dasish.annotation.schema.NewOrExistingSourceInfo;
+import eu.dasish.annotation.schema.NewSourceInfo;
 import eu.dasish.annotation.schema.ResourceREF;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -120,7 +121,7 @@ public interface AnnotationDao extends ResourceDao{
      * @param sourceIDs
      * @return the list of annotationdIDs of the annotations that are having target sources from "sourceIDs" list
      */
-    public List<Number> getAnnotationIDsForSources(List<Number> sourceIDs);
+    public List<Number> retrieveAnnotationList(List<Number> sourceIDs);
    
     
     // NOT TESTED
@@ -133,29 +134,6 @@ public interface AnnotationDao extends ResourceDao{
      */
     public List<Number> retrieveSourceIDs(Number annotationID);
     
-    /**
-     * 
-     * @param body
-     * @return serialized body
-     */
-    //NOT TESTED, will be changed after serialization is fixed
-    public String serializeBody(AnnotationBody body); 
+  
     
-    /**
-     * 
-     * @param bodyXml
-     * @return deserialized body
-     */
-    // NOT TESTED will be chnaged after serializaion is fixed 
-    public AnnotationBody deserializeBody(String bodyXml);
-    
-    /**
-     * 
-     * @param serializedBody
-     * @param sourcePairs
-     * @return replaces temporary source IDs with persistent ones (after they are added)
-     */    
-    
-    //NOT TESTED
-    public String updateTargetRefsInBody(String serializedBody, Map<String, String> sourceIDPairs);
 }

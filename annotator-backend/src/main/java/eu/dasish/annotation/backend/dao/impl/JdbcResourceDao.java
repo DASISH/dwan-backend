@@ -133,6 +133,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
 
         return (sqlResult.get(0));
     }
+    
     protected final RowMapper<String> externalIDRowMapper = new RowMapper<String>() {
         @Override
         public String mapRow(ResultSet rs, int rowNumber) throws SQLException {

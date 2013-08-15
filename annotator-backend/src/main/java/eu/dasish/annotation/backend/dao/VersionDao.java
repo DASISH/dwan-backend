@@ -18,6 +18,7 @@
 package eu.dasish.annotation.backend.dao;
 
 import eu.dasish.annotation.backend.identifiers.VersionIdentifier;
+import eu.dasish.annotation.schema.CachedRepresentationInfo;
 import eu.dasish.annotation.schema.Version;
 import java.util.List;
 
@@ -35,29 +36,32 @@ public interface VersionDao {
     
     public VersionIdentifier getExternalID(Number internalID);    
    
+   /**
+    * 
+    * @param externalID
+    * @return the internal Id of the Version with the external ID "externalID"
+    */
+    public Number getInternalID(VersionIdentifier externalID);
+    
    
     /**
      * 
      * @param internalID
-     * @return the instance of Version.class  where the version internal Id is "internalID"
+     * @return the instance of Version.class  with the internal Id equal to "internalID"
      * 
      */
     public Version getVersion(Number internalID);
     
-    /**
-     * 
-     * @param sourceID
-     * @return the list of the internal version id-s for the  target source with the internal Id "sourceID" 
-     */
-    public List<Number> retrieveVersionList(Number sourceID);
-    
+   
      
     /** @param versionID
-     * removes the row of "version" with the internal ID "internalID" if no references to this version from the tables "sources_versions" and "source"
-     * @return the amount of removed rows
+     * @return result[0] # deleted rows in the joint table "sources_versions"
+     * result[1] # deleted rows in the joit table "versions_cached_representations"
+     * result[2] # deleted rows in "version" table
+     * result[3] # deleted cached representations (which are not referred by other versions)
      */
     
-    public int deleteVersion(Number versionID);
+    public int[] deleteVersion(Number versionID);
     
     /**
      * 
@@ -67,29 +71,16 @@ public interface VersionDao {
      */
     public Number addVersion(Version version);
    
-    /**
+  
+  
+    
+     /**
      * 
      * @param versionID
-     * @return removes the rows (versionID, some cached representation id) from the joint table "versions_cached_representations"
+     * @return The list of the cached representation internal id-s of all the cached representations of the version with "versionID"
      */
-    public int deleteVersionCachedRepresentationRow(Number versionID);
+    public List<Number> retrieveCachedRepresentationList(Number versionID);
     
-    
-    /**
-     * 
-     * @param sourceID
-     * @param cachedRepresentationID
-     * @return 
-     * 1) the amount of rows affected by deleting cached representation "cachedRepresentationID"
-     * from the table "versions_cached_representations", if the corresponding version is a sibling-version of the source surceID
-     * 2) the amount of rows affected by SAFE removing cachedRepresentationID from cached_representation table, 
-     * if the first number>0
-     * 
-     * used to fulfill DELETE api/sources/<sid>/cached/<cid>
-     */
-    public  int[] deleteCachedRepresentationForSource(Number sourceID, Number cachedRepresentationID);
-    
-    public Number getInternalID(VersionIdentifier externalID);
 }
     
 

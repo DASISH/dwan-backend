@@ -24,6 +24,7 @@ import eu.dasish.annotation.backend.dao.PermissionsDao;
 import eu.dasish.annotation.backend.dao.SourceDao;
 import eu.dasish.annotation.backend.dao.UserDao;
 import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
+import eu.dasish.annotation.backend.identifiers.SourceIdentifier;
 import eu.dasish.annotation.backend.identifiers.UserIdentifier;
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationBody;
@@ -32,7 +33,9 @@ import eu.dasish.annotation.schema.NewOrExistingSourceInfo;
 import eu.dasish.annotation.schema.NewOrExistingSourceInfos;
 import eu.dasish.annotation.schema.NewSourceInfo;
 import eu.dasish.annotation.schema.ResourceREF;
+import eu.dasish.annotation.schema.Source;
 import eu.dasish.annotation.schema.SourceInfo;
+import java.lang.String;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -43,7 +46,6 @@ import java.util.Map;
 import javax.sql.DataSource;
 import javax.xml.datatype.DatatypeConfigurationException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 
 /**
@@ -71,10 +73,10 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
     @Override
     public List<Number> retrieveSourceIDs(Number annotationID) {
         String sql = "SELECT " + source_id + " FROM " + annotationsSourcesTableName + " WHERE " + annotation_id + "= ?";
-        List<Number> result = getSimpleJdbcTemplate().query(sql, annotationSourceRowMapper, annotationID);
+        List<Number> result = getSimpleJdbcTemplate().query(sql, sourceIDRowMapper, annotationID);
         return result;
     }
-    private final RowMapper<Number> annotationSourceRowMapper = new RowMapper<Number>() {
+    private final RowMapper<Number> sourceIDRowMapper = new RowMapper<Number>() {
         @Override
         public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
             Number result = rs.getInt(source_id);
@@ -82,6 +84,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         }
     };
 
+    ////////////////////////////////////////////////////////////////////////
     @Override
     public List<Number> getFilteredAnnotationIDs(String link, String text, String access, String namespace, UserIdentifier owner, Timestamp after, Timestamp before) {
 
@@ -91,7 +94,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
 
         if (link != null) {
             List<Number> sourceIDs = jdbcSourceDao.getSourcesForLink(link);
-            List<Number> annotationIDs = getAnnotationIDsForSources(sourceIDs);
+            List<Number> annotationIDs = retrieveAnnotationList(sourceIDs);
             if (!annotationIDs.isEmpty()) {
                 String values = makeListOfValues(annotationIDs);
                 sql.append(" AND ").append(annotation_id).append(" IN ").append(values);
@@ -128,7 +131,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
 
     //////////////////////////////
     @Override
-    public List<Number> getAnnotationIDsForSources(List<Number> sourceIDs) {
+    public List<Number> retrieveAnnotationList(List<Number> sourceIDs) {
         if (sourceIDs == null) {
             return null;
         }
@@ -229,10 +232,10 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
 
             result.setHeadline(rs.getString(headline));
 
-            result.setBody(deserializeBody(rs.getString(body_xml)));
+            result.setBody(Helpers.deserializeBody(rs.getString(body_xml)));
 
             List<SourceInfo> sourceInfoList = jdbcSourceDao.getSourceInfos(retrieveSourceIDs(rs.getInt(annotation_id)));
-            NewOrExistingSourceInfos noeSourceInfos = jdbcSourceDao.contructNewOrExistingSourceInfo(sourceInfoList);
+            NewOrExistingSourceInfos noeSourceInfos = contructNewOrExistingSourceInfo(sourceInfoList);
             result.setTargetSources(noeSourceInfos);
 
             // TODO: fix: rpelace URI in the schema with external id, or make here the conversion:
@@ -266,7 +269,8 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         result[2] = getSimpleJdbcTemplate().update(sqlTargetSources, annotationId); // removed "annotations_target_sources" rows
         result[3] = 0; //removed "target_source" rows 
         for (Number sourceID : sourceIDs) {
-            result[3] = result[3] + jdbcSourceDao.deleteSource(sourceID);
+            int[] deleteSource = jdbcSourceDao.deleteSource(sourceID);
+            result[3] = result[3] + deleteSource[1];
         }
 
         String sqlAnnotation = "DELETE FROM " + annotationTableName + " where " + annotation_id + " = ?";
@@ -314,32 +318,6 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         return getSimpleJdbcTemplate().update(sql.toString(), annotationID);
     }
 
-    //////////// helpers /////////////////////// 
-    /////////////////////////////////////////////////
-    // TODO: change when serialization mechanism for bodies is fixed
-    @Override
-    public String serializeBody(AnnotationBody body) {
-        return body.getAny().get(0).toString();
-    }
-
-    // TODO: change when serialization mechanism for bodies is fixed
-    @Override
-    public AnnotationBody deserializeBody(String bodyXml) {
-        AnnotationBody result = new AnnotationBody();
-        result.getAny().add(bodyXml);
-        return result;
-    }
-
-    ///////////////////////////////////////
-    @Override
-    public String updateTargetRefsInBody(String serializedBody, Map<String, String> sourceIDPairs) {
-        String result = (new StringBuilder(serializedBody)).toString();
-        for (String tempSource : sourceIDPairs.keySet()) {
-            result = result.replaceAll(tempSource, sourceIDPairs.get(tempSource));
-        }
-        return result;
-    }
-
     ///////////////////////////////////////////////////////////
     private ResourceREF getResourceREF(String resourceID) {
         ResourceREF result = new ResourceREF();
@@ -355,7 +333,6 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
      */
     //NOT TESTED
     public Map<String, Object> getRawAnnotation(Number annotationID) throws SQLException {
-
 
         if (annotationID == null) {
             return null;
@@ -384,4 +361,20 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
             return result;
         }
     };
+    
+    
+    /////////////// helpers //////////////////
+    
+    public NewOrExistingSourceInfos contructNewOrExistingSourceInfo(List<SourceInfo> sourceInfoList) {
+        List<NewOrExistingSourceInfo> noeSourceInfoList = new ArrayList<NewOrExistingSourceInfo>();
+        for (SourceInfo sourceInfo : sourceInfoList) {
+            NewOrExistingSourceInfo noeSourceInfo = new NewOrExistingSourceInfo();
+            noeSourceInfo.setSource(sourceInfo);
+            noeSourceInfoList.add(noeSourceInfo);
+        }
+        NewOrExistingSourceInfos result = new NewOrExistingSourceInfos();
+        result.getTarget().addAll(noeSourceInfoList);
+        return result;
+    }
+
 }

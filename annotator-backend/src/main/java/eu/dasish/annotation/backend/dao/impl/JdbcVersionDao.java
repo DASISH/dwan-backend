@@ -19,7 +19,9 @@ package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.dao.CachedRepresentationDao;
 import eu.dasish.annotation.backend.dao.VersionDao;
+import eu.dasish.annotation.backend.identifiers.CachedRepresentationIdentifier;
 import eu.dasish.annotation.backend.identifiers.VersionIdentifier;
+import eu.dasish.annotation.schema.CachedRepresentationInfo;
 import eu.dasish.annotation.schema.Version;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -50,19 +52,18 @@ public class JdbcVersionDao extends JdbcResourceDao implements VersionDao {
     public VersionIdentifier getExternalID(Number internalID) {
         return new VersionIdentifier(super.getExternalIdentifier(internalID));
     }
-    
-      //////////////////////////////////////////////////////////////////////////////////////////////////////    
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////    
     @Override
     public Number getInternalID(VersionIdentifier externalID) {
         return (super.getInternalID(externalID));
     }
-    
-    ///////////////////////////////////////////////////////////////
 
+    ///////////////////////////////////////////////////////////////
     @Override
     public Version getVersion(Number internalID) {
 
-        String sql = "SELECT " + versionStar + " FROM " + versionTableName + " WHERE " + version_id + "= ?";
+        String sql = "SELECT " + versionStar + " FROM " + versionTableName + " WHERE " + version_id + "= ? LIMIT 1";
         List<Version> result = getSimpleJdbcTemplate().query(sql, versionRowMapper, internalID);
 
         if (result == null) {
@@ -85,82 +86,62 @@ public class JdbcVersionDao extends JdbcResourceDao implements VersionDao {
         }
     };
 
-    /////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
     @Override
-    public List<Number> retrieveVersionList(Number sourceID) {
-        String sql = "SELECT " + version_id + " FROM " + sourcesVersionsTableName + " WHERE " + source_id + " = ?";
-        List<Number> result = getSimpleJdbcTemplate().query(sql, versionsSourcesRunnerRowMapper, sourceID);
+    public List<Number> retrieveCachedRepresentationList(Number versionID) {
+        String sql = "SELECT " + cached_representation_id + " FROM " + versionsCachedRepresentationsTableName + " WHERE " + version_id + "= ?";
+        List<Number> result = getSimpleJdbcTemplate().query(sql, cachedIDRowMapper, versionID);
+
+        if (result == null) {
+            return null;
+        }
+
         return result;
     }
-    private final RowMapper<Number> versionsSourcesRunnerRowMapper = new RowMapper<Number>() {
+
+    private final RowMapper<Number> cachedIDRowMapper = new RowMapper<Number>() {
         @Override
         public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            Number result = rs.getInt(version_id);
-            return result;
+            return rs.getInt(cached_representation_id);
         }
     };
-
-    /////////////////////////////////////////
-    @Override
-    public int deleteVersionCachedRepresentationRow(Number versionID) {
-        // remove all the pairs (internalID, cached_representation) from the joint table        
-        String sqlVersionsCachedRepresentations = "DELETE FROM " + versionsCachedRepresentationsTableName + " where " + version_id + " = ?";
-        return (getSimpleJdbcTemplate().update(sqlVersionsCachedRepresentations, versionID));
-    }
-
+    
     ///////////////////////////////////////// 
-    //TODO: refactor ???
     @Override
-    public int deleteVersion(Number internalID) {
-
-        // check if there are sources referring to the version with "internalID", in the table "sources"versions"
-        String sqlSourcesVersions = "SELECT " + source_id + " FROM " + sourcesVersionsTableName + " WHERE " + version_id + "= ?";
-        List<Number> resultSourcesVersions = getSimpleJdbcTemplate().query(sqlSourcesVersions, sourcesVersionsRowMapper, internalID);
-
-        // check if there is a source referring to the version "intrenalID", in the table "source"
-        String sqlSource = "SELECT " + source_id + " FROM " + sourceTableName + " WHERE " + version_id + "= ?";
-        List<Number> resultSource = getSimpleJdbcTemplate().query(sqlSource, sourceRowMapper, internalID);
-
-
-        if (resultSourcesVersions.isEmpty() && resultSource.isEmpty()) {
-
-            // You can remove the version safely!!!
-
-            // retrieve the list of cached representations of the version to be deleted
-            List<Number> cachedRepresentations = jdbcCachedRepresentationDao.retrieveCachedRepresentationList(internalID);
-
-            // remove all the pairs (internalID, cached_representation) from the joint table        
-            deleteVersionCachedRepresentationRow(internalID);
-
-            // the main action: remove the version with internalID from "version" table
-            String sql = "DELETE FROM " + versionTableName + " where " + version_id + " = ?";
-            int affected_version_rows = getSimpleJdbcTemplate().update(sql, internalID);
-
-            // remove the cached representations of "cachedRepresentations" from the DB unless they are still mentioned in "versions_cached_representations"
-            for (Number cachedID : cachedRepresentations) {
-                jdbcCachedRepresentationDao.deleteCachedRepresentationInfo(cachedID);
-            }
-
-            return (affected_version_rows);
-        } else {
-            // do not remove 
-            return 0;
+    public int[] deleteVersion(Number internalID) {
+        
+        int[] result = new int[3];
+        
+        if (versionIsInUse(internalID)) {
+            // firs delete sources that refer to it!
+            result[0]=0;
+            result[1]=0;
+            result[2]=0;
+            return result;
         }
+        
+        // retrieve the list of cached representations of the version to be deleted;
+        // they should be deleted if they are not used
+        // you will use it over the next 2 steps
+        List<Number> cachedRepresentations = retrieveCachedRepresentationList(internalID);
+
+        // remove all the pairs (internalID, cached_representation) from the joint table "versions_cahched_representations"   
+        String sqlVersionsCachedRepresentations = "DELETE FROM " + versionsCachedRepresentationsTableName + " where " + version_id + " = ?";
+        result[0] = getSimpleJdbcTemplate().update(sqlVersionsCachedRepresentations, internalID);
+        
+        // the main action: remove the version with internalID from "version" table
+        String sql = "DELETE FROM " + versionTableName + " where " + version_id + " = ?";
+        result[1] = getSimpleJdbcTemplate().update(sql, internalID);
+
+        // remove the cached representations of "cachedRepresentations" from the DB unless they are still mentioned in "versions_cached_representations"
+        result[2]=0;
+        for (Number cachedID : cachedRepresentations) {
+             result[2]=result[2]+jdbcCachedRepresentationDao.deleteCachedRepresentationInfo(cachedID);
+            
+        }
+        return result;
+
     }
-    private final RowMapper<Number> sourcesVersionsRowMapper = new RowMapper<Number>() {
-        @Override
-        public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            Number result = rs.getInt(source_id);
-            return result;
-        }
-    };
-    private final RowMapper<Number> sourceRowMapper = new RowMapper<Number>() {
-        @Override
-        public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            Number result = rs.getInt(source_id);
-            return result;
-        }
-    };
 
     /////////////////////////////////////////////////
     @Override
@@ -176,37 +157,24 @@ public class JdbcVersionDao extends JdbcResourceDao implements VersionDao {
         final int affectedRows = getSimpleJdbcTemplate().update(sql, params);
         return getInternalID(externalIdentifier);
     }
-
-    @Override
-    public int[] deleteCachedRepresentationForSource(Number sourceID, Number cachedRepresentationID) {
-        List<Number> versions = retrieveVersionList(sourceID);
-        int[] result = new int[2];
-
-        if (versions == null) {
-            result[0] = 0;
-            result[1] = 0;
-            return result;
+    
+  
+  
+    
+    //////////////////////////////
+    private boolean versionIsInUse(Number versionsID) {
+        String sql = "SELECT " + source_id + " FROM " + sourcesVersionsTableName + " WHERE " + version_id + "= ? LIMIT 1";
+        List<Number> result = getSimpleJdbcTemplate().query(sql, sourceIDRowMapper, versionsID);
+        if (result.size() > 0) {
+            return true;
         }
-        if (versions.isEmpty()) {
-            result[0] = 0;
-            result[1] = 0;
-            return result;
-        }
-
-        String values = makeListOfValues(versions);
-        StringBuilder sql = new StringBuilder("DELETE FROM ");
-        sql.append(versionsCachedRepresentationsTableName).append(" WHERE ").append(version_id).append(" IN ").append(values);
-        sql.append(" AND ").append(cached_representation_id).append(" = ?");
-        result[0] = getSimpleJdbcTemplate().update(sql.toString(), cachedRepresentationID);
-
-        // safe remove from the DB
-        if (result[0] > 0) {
-            result[1] = jdbcCachedRepresentationDao.deleteCachedRepresentationInfo(cachedRepresentationID);
-        } else {
-            result[1] = 0;
-        }
-        return result;
+        return false;
     }
-
-   
+    
+     private final RowMapper<Number> sourceIDRowMapper = new RowMapper<Number>() {
+        @Override
+        public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
+            return rs.getInt(source_id);
+        }
+    };
 }
