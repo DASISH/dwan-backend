@@ -19,7 +19,6 @@ package eu.dasish.annotation.backend.dao;
 
 import eu.dasish.annotation.backend.identifiers.CachedRepresentationIdentifier;
 import eu.dasish.annotation.schema.CachedRepresentationInfo;
-import java.util.List;
 
 /**
  *
@@ -33,29 +32,30 @@ public interface CachedRepresentationDao {
      * @return extrnalID identifier of the resource with internalID
      */
     public CachedRepresentationIdentifier getExternalID(Number internalID);
-  
-    /**
-     * 
-     * @param internalID
-     * @return the object "cached representation info"  with the internal id "internalID"
-     */
-    public CachedRepresentationInfo getCachedRepresentationInfo(Number internalID);
-    
-    /**
-     * 
-     * @param versionID
-     * @return The list list of cached representation internal id-s of all the cached representations of the version with versionID
-     */
-    public List<Number> retrieveCachedRepresentationList(Number versionID);
     
      
     /**
      * 
+     * @param externalID
+     * @return the internal identifier of the resource with the "externalID"
+     */   
+    public Number getInternalID(CachedRepresentationIdentifier externalID);
+    
+  
+    /**
+     * 
      * @param internalID
-     * removes the cached representation with internalId from the DB if there is no reference to it in the table "versions_cached_representations"
-     * @return the amount of removed rows in the table "cached_representation"
+     * @return the object "cCachedRepresentationInfo"  with the internal id "internalID"
      */
-    public int deleteCachedRepresentationInfo(Number internalID);
+    public CachedRepresentationInfo getCachedRepresentationInfo(Number internalID);
+    
+  
+    /**
+     * 
+     * @param internalID
+     * @return  # deleted rows on the table "cached_representation"
+     */
+    public  int deleteCachedRepresentationInfo(Number internalID);
     
     /**
      * 
@@ -65,5 +65,23 @@ public interface CachedRepresentationDao {
     public Number addCachedRepresentationInfo(CachedRepresentationInfo cached);
     
    
+      /**
+     * 
+     * @param versionID
+     * @param cached
+     * @return result[0] = the internalId of the added (if it is not yet in th DB) cached representation
+     * result[1] # added rows to "versions_cached_representations"
+     */
+    public Number[] addCachedForVersion(Number versionID, CachedRepresentationInfo cached);
   
+  
+      /**
+     * 
+     * @param versionID
+     * @param cachedID
+     * @return result[0] # deleted rows (versionID, cachedID) in the table "versions_cached_representations"
+     * result[1] # deleted rows in the table "cached_representation"
+     */
+    public int[] deleteCachedForVersion(Number versionID,  Number cachedID);
+    
 }
