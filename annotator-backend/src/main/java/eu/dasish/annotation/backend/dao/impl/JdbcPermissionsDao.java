@@ -72,10 +72,10 @@ public class JdbcPermissionsDao extends JdbcResourceDao implements PermissionsDa
     
     /////////////////////////////////////////////////////////////////////////////////////////
     @Override
-    public int addAnnotationPrincipalPermission(AnnotationIdentifier annotationIdenitifier, UserIdentifier userIdentifier, Permission permission) throws SQLException {
+    public int addAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission) throws SQLException {
         Map<String, Object> paramsPermissions = new HashMap<String, Object>();
-        paramsPermissions.put("annotationId", jdbcAnnotationDao.getInternalID(annotationIdenitifier));
-        paramsPermissions.put("principalId", jdbcUserDao.getInternalID(userIdentifier));
+        paramsPermissions.put("annotationId", annotationID);
+        paramsPermissions.put("principalId", userID);
         paramsPermissions.put("status", permission.value());
         String sqlUpdatePermissionTable = "INSERT INTO " + permissionsTableName + " (" + annotation_id + "," + principal_id + "," + permission + ") VALUES (:annotationId, :principalId, :status)";
         final int affectedPermissions = getSimpleJdbcTemplate().update(sqlUpdatePermissionTable, paramsPermissions);

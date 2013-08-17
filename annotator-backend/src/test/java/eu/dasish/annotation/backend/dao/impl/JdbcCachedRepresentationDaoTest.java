@@ -33,9 +33,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  */
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration({"/spring-test-config/dataSource.xml", "/spring-test-config/mockery.xml", "/spring-test-config/mockAnnotationDao.xml",
-    "/spring-test-config/mockUserDao.xml", "/spring-test-config/mockPermissionsDao.xml", "/spring-test-config/mockNotebookDao.xml",
-    "/spring-test-config/mockSourceDao.xml", "/spring-test-config/mockVersionDao.xml", "/spring-config/cachedRepresentationDao.xml"})
+@ContextConfiguration({"/spring-test-config/dataSource.xml", "/spring-config/cachedRepresentationDao.xml"})
 public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest{
     
     @Autowired
@@ -139,40 +137,4 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest{
     }
     
   
-     /**
-     * Test of addVersion method, of class JdbcVersionDao.
-     */
-    @Test
-    public void testAddCachedForVersion() {
-        System.out.println("test addCachedForVersion");
-
-        final CachedRepresentationInfo cached = new CachedRepresentationInfo();
-        cached.setMimeType("text/plain");
-        cached.setTool("vi");
-        cached.setType("text");
-        cached.setRef(null);
-       
-        Number[] result = jdbcCachedRepresentationDao.addCachedForVersion(6, cached);
-        assertEquals(8, result[0].intValue());
-        assertEquals(1, result[1].intValue());
-    }
-
-     /**
-     *
-     */
-    @Test
-    public void tesDeleteCachedForVersion() {
-        System.out.println("test delete CachedRepresentationForVersion");
-        System.out.println("deleteVersion");
-        
-        int[] result = jdbcCachedRepresentationDao.deleteCachedForVersion(6, 5);
-        assertEquals(1, result[0]); //versions-cached
-        assertEquals(0, result[1]);//cached 5 is in use
-        
-        int[] resultTwo = jdbcCachedRepresentationDao.deleteCachedForVersion(6, 4); // no such pair
-        assertEquals(0, resultTwo[0]); 
-        assertEquals(0, resultTwo[1]); 
-
-
-    }
 }

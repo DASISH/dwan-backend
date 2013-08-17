@@ -18,7 +18,6 @@
 package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.dao.CachedRepresentationDao;
-import eu.dasish.annotation.backend.dao.VersionDao;
 import eu.dasish.annotation.backend.identifiers.CachedRepresentationIdentifier;
 import eu.dasish.annotation.schema.CachedRepresentationInfo;
 import java.sql.ResultSet;
@@ -27,7 +26,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.sql.DataSource;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.RowMapper;
 
 /**
@@ -36,9 +34,7 @@ import org.springframework.jdbc.core.RowMapper;
  */
 public class JdbcCachedRepresentationDao extends JdbcResourceDao implements CachedRepresentationDao {
    
-    @Autowired
-    VersionDao jdbcVersionDao;
-    
+   
     public JdbcCachedRepresentationDao(DataSource dataSource) {
         setDataSource(dataSource);
         internalIdName = cached_representation_id;
@@ -105,7 +101,6 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
     //////////////////////////////////////////////////////////////////////////////////////////////
     @Override
     public int deleteCachedRepresentationInfo(Number internalID) {
-       
         // ask the higher level if it can be deleted
         if (cachedIsInUse(internalID)){
            return 0;
@@ -115,44 +110,10 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
         return  getSimpleJdbcTemplate().update(sql, internalID);
     }
     
-    ////////////////////////////////////////////////
-    @Override
-    public Number[] addCachedForVersion(Number versionID, CachedRepresentationInfo cached){
-        Number[] result = new Number[2];
-        result[0] =  getInternalID(new CachedRepresentationIdentifier(cached.getRef()));       
-        if (result[0] == null) {
-            result[0] = addCachedRepresentationInfo(cached);
-        }
-        Map<String, Object> params = new HashMap<String, Object>();
-        params.put("versionId", versionID);
-        params.put("cachedId", result[0]);
-        String sql = "INSERT INTO " + versionsCachedRepresentationsTableName + "(" + version_id + "," + cached_representation_id + " ) VALUES (:versionId, :cachedId)";
-        result[1] = getSimpleJdbcTemplate().update(sql, params);
-        return result;    
-    }
+   
     
-     //////////////////////////////
-    
-    @Override
-    public int[] deleteCachedForVersion(Number versionID,  Number cachedID){
-         int[] result = new int[2];
-         Map<String, Object> params = new HashMap<String, Object>();
-         params.put("versionId", versionID);
-         params.put("cachedId", cachedID);
-         String sqlVersionsCachedRepresentations = "DELETE FROM " + versionsCachedRepresentationsTableName + " WHERE " + version_id + " = :versionId AND " + cached_representation_id + "= :cachedId";
-         result[0] = getSimpleJdbcTemplate().update(sqlVersionsCachedRepresentations, params);
-         
-         if (result[0] > 0) {
-               result[1] = deleteCachedRepresentationInfo(cachedID); 
-         }
-            else {
-                result[1]=0;
-            
-        }
-        return result;
-    }
-    
-       //////////////////////////////
+   
+    //////////////// PRIVATE ////////////////////////
 
     private boolean cachedIsInUse(Number cachedID) {      
         String sql = "SELECT " + version_id + " FROM " + versionsCachedRepresentationsTableName + " WHERE " + cached_representation_id + "= ? LIMIT 1";

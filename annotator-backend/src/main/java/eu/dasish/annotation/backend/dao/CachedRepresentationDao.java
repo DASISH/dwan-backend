@@ -65,23 +65,5 @@ public interface CachedRepresentationDao {
     public Number addCachedRepresentationInfo(CachedRepresentationInfo cached);
     
    
-      /**
-     * 
-     * @param versionID
-     * @param cached
-     * @return result[0] = the internalId of the added (if it is not yet in th DB) cached representation
-     * result[1] # added rows to "versions_cached_representations"
-     */
-    public Number[] addCachedForVersion(Number versionID, CachedRepresentationInfo cached);
-  
-  
-      /**
-     * 
-     * @param versionID
-     * @param cachedID
-     * @return result[0] # deleted rows (versionID, cachedID) in the table "versions_cached_representations"
-     * result[1] # deleted rows in the table "cached_representation"
-     */
-    public int[] deleteCachedForVersion(Number versionID,  Number cachedID);
     
 }

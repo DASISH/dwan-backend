@@ -18,12 +18,8 @@
 package eu.dasish.annotation.backend.dao;
 
 import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
-import eu.dasish.annotation.backend.identifiers.UserIdentifier;
 import eu.dasish.annotation.schema.Annotation;
-import eu.dasish.annotation.schema.AnnotationBody;
 import eu.dasish.annotation.schema.AnnotationInfo;
-import eu.dasish.annotation.schema.NewOrExistingSourceInfo;
-import eu.dasish.annotation.schema.NewSourceInfo;
 import eu.dasish.annotation.schema.ResourceREF;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -52,21 +48,20 @@ public interface AnnotationDao extends ResourceDao{
     /**
      * 
      * @param annotationID
-     * @return annotation which has an annotation ID "annotationID"
-     * if externalID is null or such annotation does not exist in the DB returns null;
+     * @return the Annotation object with empty list of sources 
+     * constructing a complete Annotation object from theresult and "retrieveSourceIDs" is done in "CompoundRequests"
+     * 
      */
-    Annotation getAnnotation(Number annotationID) throws SQLException;
+    public Annotation getAnnotationWithoutSources(Number annotationID) throws SQLException;
     
     
     /**
      * 
      * @param annotationId
      * @return 
-     * result[0] = # removed notebooks_annotations rows
-     * result[1] = # removed "annotations_principals_perissions" rows
-     * result[2] = # removed "annotatiobs_target_sources" rows
-     * result[3] = # SAFELY removed "target_sources" rows (only unused)
-     * result[4] = # removed annotation rows (should be 1)
+     * result[0] = # removed "annotations_principals_perissions" rows
+     * result[1] = # removed "annotatiobs_target_sources" rows
+     * result[2] = # removed annotation rows (should be 1)
      */
     
     public int[] deleteAnnotation(Number annotationId) throws SQLException;
@@ -101,9 +96,8 @@ public interface AnnotationDao extends ResourceDao{
      * 
      * The first step for GET api/annotations?<filters>
      */
-    public List<Number> getFilteredAnnotationIDs(String link, String text, String access, String namespace, UserIdentifier owner, Timestamp after, Timestamp before);
-    
-   
+    public List<Number> getFilteredAnnotationIDs(List<Number> annotationIDs, String text, String access, String namespace, Number ownerID, Timestamp after, Timestamp before);
+       
     /**
      * 
      * @param annotationIDs
@@ -134,6 +128,6 @@ public interface AnnotationDao extends ResourceDao{
      */
     public List<Number> retrieveSourceIDs(Number annotationID);
     
-  
+    public int addAnnotationSourcePair(Number annotationID, Number sourceID) throws SQLException;
     
 }

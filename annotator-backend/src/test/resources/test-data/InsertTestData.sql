@@ -81,11 +81,11 @@ INSERT INTO version (external_id, version) VALUES ('00000000-0000-0000-0000-0000
 -- );
 
 
-INSERT INTO target_source (external_id, link_uri, version_id) VALUES ('00000000-0000-0000-0000-000000000031', 'http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia', 1); -- 1
-INSERT INTO target_source (external_id, link_uri, version_id) VALUES ('00000000-0000-0000-0000-000000000032', 'http://nl.wikipedia.org/wiki/Antoni_Gaud%C3%AD', 3); --2
-INSERT INTO target_source (external_id, link_uri, version_id) VALUES ('00000000-0000-0000-0000-000000000033', 'http://en.wikipedia.org/wiki/Art_Nouveau', 4); --3
-INSERT INTO target_source (external_id, link_uri, version_id) VALUES ('00000000-0000-0000-0000-000000000034', '???', 5); --4
-INSERT INTO target_source (external_id, link_uri, version_id) VALUES ('00000000-0000-0000-0000-000000000035', '???', 5); --5
+INSERT INTO target_source (external_id, link_uri, version) VALUES ('00000000-0000-0000-0000-000000000031', 'http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia', '00000000-0000-0000-0000-000000000041'); -- 1
+INSERT INTO target_source (external_id, link_uri, version) VALUES ('00000000-0000-0000-0000-000000000032', 'http://nl.wikipedia.org/wiki/Antoni_Gaud%C3%AD', '00000000-0000-0000-0000-000000000043'); --2
+INSERT INTO target_source (external_id, link_uri, version) VALUES ('00000000-0000-0000-0000-000000000033', 'http://en.wikipedia.org/wiki/Art_Nouveau', '00000000-0000-0000-0000-000000000044'); --3
+INSERT INTO target_source (external_id, link_uri, version) VALUES ('00000000-0000-0000-0000-000000000034', '???', '00000000-0000-0000-0000-000000000045'); --4
+INSERT INTO target_source (external_id, link_uri, version) VALUES ('00000000-0000-0000-0000-000000000035', '???', '00000000-0000-0000-0000-000000000045'); --5
 
 -- CREATE TABLE annotations_target_sources (
 --    annotation_id integer REFERENCES annotation(annotation_id), -- defining a foreign key: there must be a uniquely defined row in "annotation", that is defined by "annotation_id"
