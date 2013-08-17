@@ -55,10 +55,9 @@ public interface VersionDao {
    
      
     /** @param versionID
-     * @return result[0] # deleted rows in the joint table "sources_versions"
-     * result[1] # deleted rows in the joit table "versions_cached_representations"
-     * result[2] # deleted rows in "version" table
-     * result[3] # deleted cached representations (which are not referred by other versions)
+     * @return 
+     * result[0] # deleted rows in the joit table "versions_cached_representations"
+     * result[1] # deleted rows in "version" table
      */
     
     public int[] deleteVersion(Number versionID);
@@ -72,14 +71,18 @@ public interface VersionDao {
     public Number addVersion(Version version);
    
   
-  
-    
      /**
      * 
      * @param versionID
      * @return The list of the cached representation internal id-s of all the cached representations of the version with "versionID"
      */
     public List<Number> retrieveCachedRepresentationList(Number versionID);
+    
+    
+    public int deleteVersionCachedRepresentation(Number versionID, Number cachedID);
+    
+    
+    public int addVersionCachedRepresentation(Number versionID, Number cachedID);
     
 }
     

@@ -52,19 +52,22 @@ public interface SourceDao extends ResourceDao{
     /**
      * 
      * @param internalId
-     * removes the source with the ID "internalId" from the DB, if it is not a target source of some annotation
-     * @return the amount of affected rows in the "source" table
+     * @return result[0] # deleted rows in "sources_versions" table name
+     * result[1] # deleted rows in "source" table
      */
     public int[] deleteSource(Number internalID);
     
     /**
      * 
-     * @param freshSource
+     * @param source
+     * @param versionID
      * adds freshSource to the DB and assigns the fresh external Identifier to it
      * @return the internal ID of the just added source
      * return -1 id the source cannot be added because its version is not in the DB
      */
-    public Number addSource(Source freshSource) throws SQLException;   
+    public Number addSource(Source source) throws SQLException;   
+    
+    public int addSourceVersion(Number sourceID, Number versionID) throws SQLException;  
     
     
      /**
@@ -86,8 +89,4 @@ public interface SourceDao extends ResourceDao{
     public List<Number> getSourcesForLink(String link);
   
     
-    
-   public Map<String, String> addTargetSourcesToAnnotation(Number annotationID, List<NewOrExistingSourceInfo> sources) throws SQLException;        
-    
-     
 }

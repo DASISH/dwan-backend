@@ -19,12 +19,7 @@ package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.dao.SourceDao;
-import eu.dasish.annotation.backend.dao.VersionDao;
 import eu.dasish.annotation.backend.identifiers.SourceIdentifier;
-import eu.dasish.annotation.backend.identifiers.VersionIdentifier;
-import eu.dasish.annotation.schema.NewOrExistingSourceInfo;
-import eu.dasish.annotation.schema.NewOrExistingSourceInfos;
-import eu.dasish.annotation.schema.NewSourceInfo;
 import eu.dasish.annotation.schema.Source;
 import eu.dasish.annotation.schema.SourceInfo;
 import java.sql.ResultSet;
@@ -36,7 +31,6 @@ import java.util.Map;
 import javax.sql.DataSource;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.XMLGregorianCalendar;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.RowMapper;
 
 /**
@@ -45,9 +39,7 @@ import org.springframework.jdbc.core.RowMapper;
  */
 public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
 
-    @Autowired
-    VersionDao versionDao;
-
+   
     public JdbcSourceDao(DataSource dataSource) {
         setDataSource(dataSource);
         internalIdName = source_id;
@@ -72,8 +64,8 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
         public Source mapRow(ResultSet rs, int rowNumber) throws SQLException {
             try {
                 XMLGregorianCalendar xmlDate = Helpers.setXMLGregorianCalendar(rs.getTimestamp(time_stamp));
-                Source result = constructSource(new SourceIdentifier(rs.getString(external_id)), rs.getString(link_uri),
-                        versionDao.getExternalID(rs.getInt(version_id)), xmlDate);
+                Source result = 
+                        constructSource(new SourceIdentifier(rs.getString(external_id)), rs.getString(link_uri), rs.getString(version), xmlDate);
                 return result;
             } catch (DatatypeConfigurationException e) {
                 // TODO: which logger are we going to use?
@@ -87,25 +79,18 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
     ///////////////////////////////////////////////////////////////////
     @Override
     public int[] deleteSource(Number internalID) {
-
-        int[] result = new int[2];
-        
+        int[] result = new int[2];        
         if (sourceIsInUse(internalID)){
             result[0] =0;
             result[1] =0;
             return result;
         }
 
-        List<Number> versions = retrieveVersionList(internalID);
         String sqlSourcesVersions = "DELETE FROM " + sourcesVersionsTableName + " WHERE " + source_id + " = ?";
         result[0] = getSimpleJdbcTemplate().update(sqlSourcesVersions, internalID);
 
         String sql = "DELETE FROM " + sourceTableName + " WHERE " + source_id + " = ?";
         result[1] = getSimpleJdbcTemplate().update(sql, internalID);
-
-        for (Number versionID : versions) {
-            versionDao.deleteVersion(versionID);
-        }
 
         return result;
 
@@ -113,33 +98,31 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
 
     ///////////////////////////////////////////////////////////////////
     @Override
-    public Number addSource(Source freshSource) throws SQLException {
-
-        SourceIdentifier externalIdentifier = new SourceIdentifier();
-        Number versionID = versionDao.getInternalID(new VersionIdentifier(freshSource.getVersion()));
-
-        if (versionID == null) {
-            System.out.println("Cannot add source because there is no version for it, and no cached representation. Create them and try again.");
-            return -1;
-        }
-
+    public Number addSource(Source source) throws SQLException {        
+        String externalID = source.getURI();        
         Map<String, Object> params = new HashMap<String, Object>();
-        params.put("externalId", externalIdentifier.toString());
-        params.put("linkUri", freshSource.getLink());
-        params.put("versionId", versionID);
-        String sql = "INSERT INTO " + sourceTableName + "(" + external_id + "," + link_uri + "," + version_id + " ) VALUES (:externalId, :linkUri,  :versionId)";
-        final int affectedRows = getSimpleJdbcTemplate().update(sql, params);
-
-
+        params.put("externalId", externalID);
+        params.put("linkUri", source.getLink());
+        params.put("version", source.getVersion());
+        String sql = "INSERT INTO " + sourceTableName + "(" + external_id + "," + link_uri + "," + version + " ) VALUES (:externalId, :linkUri,  :version)";
+        final int affectedRows = getSimpleJdbcTemplate().update(sql, params);        
+        Number internalID = getInternalID(new SourceIdentifier(externalID));
+        return internalID;
+    }
+    
+    ///////////////////////////////
+    
+    
+    ///////////////////////////////////////////////////////////////////
+    @Override
+    public int addSourceVersion(Number sourceID, Number versionID) throws SQLException {
         Map<String, Object> paramsJoint = new HashMap<String, Object>();
-        paramsJoint.put("sourceId", getInternalID(externalIdentifier));
+        paramsJoint.put("sourceId", sourceID);
         paramsJoint.put("versionId", versionID);
         String sqlJoint = "INSERT INTO " + sourcesVersionsTableName + "(" + source_id + "," + version_id + " ) VALUES (:sourceId, :versionId)";
-        final int affectedJointRows = getSimpleJdbcTemplate().update(sqlJoint, paramsJoint);
-
-
-        return (getInternalID(externalIdentifier));
+        return getSimpleJdbcTemplate().update(sqlJoint, paramsJoint);
     }
+   
 
     /////////////////////////////////////////
     @Override
@@ -167,14 +150,14 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
         }
 
         String sourceIDs = makeListOfValues(sources);
-        String sql = "SELECT " + external_id + "," + link_uri + "," + version_id + " FROM " + sourceTableName + " WHERE " + source_id + " IN " + sourceIDs;
+        String sql = "SELECT " + external_id + "," + link_uri + "," + version + " FROM " + sourceTableName + " WHERE " + source_id + " IN " + sourceIDs;
         List<SourceInfo> result = getSimpleJdbcTemplate().query(sql, SourceInfoRowMapper);
         return result;
     }
     private final RowMapper<SourceInfo> SourceInfoRowMapper = new RowMapper<SourceInfo>() {
         @Override
         public SourceInfo mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            return constructSourceInfo(new SourceIdentifier(rs.getString(external_id)), rs.getString(link_uri), versionDao.getExternalID(rs.getInt(version_id)));
+            return constructSourceInfo(new SourceIdentifier(rs.getString(external_id)), rs.getString(link_uri), rs.getString(version));
         }
     };
 
@@ -188,26 +171,7 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
         return result;
     }
 
-    ///////////////////////////////////////////////
-    @Override
-    public Map<String, String> addTargetSourcesToAnnotation(Number annotationID, List<NewOrExistingSourceInfo> sources) throws SQLException {
-        Map<String, String> result = new HashMap<String, String>();
-        for (NewOrExistingSourceInfo noesi : sources) {
-            SourceInfo source = noesi.getSource();
-            if (source != null) {
-                int affectedRows = addAnnotationSourcePair(annotationID, getInternalID(new SourceIdentifier(source.getRef())));
-            } else {
-                Number newSourceID = addNewSourceToAnnotation(annotationID, noesi.getNewSource());
-                if (newSourceID.intValue() == -1) {
-                    result.put(noesi.getNewSource().getId(), null);
-                } else {
-                    result.put(noesi.getNewSource().getId(), getExternalID(newSourceID).toString());
-                    int affectedRows = addAnnotationSourcePair(annotationID, newSourceID);
-                }
-            }
-        }
-        return result;
-    }
+    
 
     //////////// helpers /////////////////////// 
     /////////////////////////////////////////////////
@@ -229,42 +193,23 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
         }
     };
     
-    private int addAnnotationSourcePair(Number annotationID, Number sourceID) throws SQLException {
-        Map<String, Object> paramsAnnotationsSources = new HashMap<String, Object>();
-        paramsAnnotationsSources.put("annotationId", annotationID);
-        paramsAnnotationsSources.put("sourceId", sourceID);
-        String sqlAnnotationsSources = "INSERT INTO " + annotationsSourcesTableName + "(" + annotation_id + "," + source_id + " ) VALUES (:annotationId, :sourceId)";
-        int affectedRows = getSimpleJdbcTemplate().update(sqlAnnotationsSources, paramsAnnotationsSources);
-        return (affectedRows);
-    }
-    //////////////////////////////////////////////////////////////////////////////////
+  
+   
 
-    private Number addNewSourceToAnnotation(Number annotationID, NewSourceInfo source) throws SQLException {
-        Source newSource = new Source();
-        newSource.setLink(source.getLink());
-        newSource.setVersion(source.getVersion());
-        Number addedSourceID = addSource(newSource);// adding new source
-        if (addedSourceID.intValue() == -1) {
-            return -1;
-        }
-        int affectedRows = addAnnotationSourcePair(annotationID, addedSourceID);
-        return addedSourceID;
-    }
-
-    private SourceInfo constructSourceInfo(SourceIdentifier sourceIdentifier, String link, VersionIdentifier versionIdentifier) {
+    private SourceInfo constructSourceInfo(SourceIdentifier sourceIdentifier, String link, String version) {
         SourceInfo sourceInfo = new SourceInfo();
         sourceInfo.setRef(sourceIdentifier.toString());
         sourceInfo.setLink(link);
-        sourceInfo.setVersion(versionIdentifier.toString());
+        sourceInfo.setVersion(version);
         return sourceInfo;
     }
 
-    private Source constructSource(SourceIdentifier sourceIdentifier, String link, VersionIdentifier version, XMLGregorianCalendar xmlTimeStamp) {
+    private Source constructSource(SourceIdentifier sourceIdentifier, String link, String version, XMLGregorianCalendar xmlTimeStamp) {
         Source source = new Source();
         source.setURI(sourceIdentifier.toString());
         source.setTimeSatmp(xmlTimeStamp);
         source.setLink(link);
-        source.setVersion(version.toString());
+        source.setVersion(version);
 
         return source;
     }

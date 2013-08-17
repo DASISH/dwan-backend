@@ -143,7 +143,7 @@ CREATE TABLE target_source (
     external_id UUID UNIQUE NOT NULL,
     time_stamp timestamp with time zone default now(),
     link_uri text,
-    version_id integer REFERENCES version(version_id), ---- DIFFERS from the xml structure, 
+    version UUID REFERENCES version(external_id), 
     -- SOUNDNESS: there must be exactly version at the version table  ++   
     -- soundness: there must be at least one annotation referring to this source
 );

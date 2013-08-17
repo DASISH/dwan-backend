@@ -39,12 +39,12 @@ public interface PermissionsDao {
     
     /**
      * 
-     * @param annotationIdenitifier
-     * @param userIdentifier
+     * @param annotationID
+     * @param userID
      * @param permission
      * @return the amount of rows added to the table annotations_principals_permissions
      */
-    public int addAnnotationPrincipalPermission(AnnotationIdentifier annotationIdenitifier, UserIdentifier userIdentifier, Permission permission) throws SQLException;
+    public int addAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission) throws SQLException;
     
     /**
      * 
