@@ -15,7 +15,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package eu.dasish.annotation.backend.dao.integration;
+package eu.dasish.annotation.backend.rest;
 
 import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.dao.AnnotationDao;
@@ -42,11 +42,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  *
  * @author olhsha
  */
+@Component
 public class DaoDispatcher {
 
     @Autowired
@@ -61,6 +63,8 @@ public class DaoDispatcher {
     AnnotationDao annotationDao;
     @Autowired
     NotebookDao notebookDao;
+    
+    
 
     public Number getAnnotationInternalIdentifier(AnnotationIdentifier annotationIdentifier) {
         return annotationDao.getInternalID(annotationIdentifier);
