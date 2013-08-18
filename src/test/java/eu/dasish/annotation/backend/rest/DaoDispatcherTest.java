@@ -17,7 +17,6 @@
  */
 package eu.dasish.annotation.backend.rest;
 
-import eu.dasish.annotation.backend.rest.DaoDispatcher;
 import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.dao.AnnotationDao;
 import eu.dasish.annotation.backend.dao.CachedRepresentationDao;
@@ -27,15 +26,19 @@ import eu.dasish.annotation.backend.dao.UserDao;
 import eu.dasish.annotation.backend.dao.VersionDao;
 import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
 import eu.dasish.annotation.backend.identifiers.CachedRepresentationIdentifier;
+import eu.dasish.annotation.backend.identifiers.SourceIdentifier;
 import eu.dasish.annotation.backend.identifiers.UserIdentifier;
+import eu.dasish.annotation.backend.identifiers.VersionIdentifier;
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.CachedRepresentationInfo;
 import eu.dasish.annotation.schema.NewOrExistingSourceInfo;
 import eu.dasish.annotation.schema.NewSourceInfo;
+import eu.dasish.annotation.schema.Source;
 import eu.dasish.annotation.schema.SourceInfo;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.jmock.Expectations;
@@ -244,6 +247,7 @@ public class DaoDispatcherTest {
         
         //Another test
         
+        
         mockery.checking(new Expectations() {
             {
                 oneOf(versionDao).versionIsInUse(5);
@@ -260,94 +264,52 @@ public class DaoDispatcherTest {
     }
 
     @Test
-    public void testDeleteSource() throws SQLException {
-
+    public void testDeleteSourceSourceWithVersions() throws SQLException {
         // test 1
+         mockery.checking(new Expectations() {
+            {
+                oneOf(sourceDao).sourceIsInUse(5);
+                will(returnValue(true));
+            }
+        });
+
         int[] result = daoDispatcher.deleteSourceWithVersions(1); //the source is in use, should not be deleted
         assertEquals(0, result[0]); // 
         assertEquals(0, result[1]);
 
         // test 2
-        final int[] versionDeleted = new int[3];
-        versionDeleted[0] = 0; // versions_cahced_representations
-        versionDeleted[1] = 1; // version deleted
-        versionDeleted[2] = 0; // deleted cached representations; version 7 does not have them
-//        mockery.checking(new Expectations() {
-//            {
-//                oneOf(versionDao).deleteVersion(7);
-//                will(returnValue(versionDeleted)); // no other sources refer to this version # 5
-//            }
-//        });
+        
+        final List<Number> versionList = new ArrayList<Number>();
+        versionList.add(7);
+        mockery.checking(new Expectations() {
+            {
+                oneOf(sourceDao).sourceIsInUse(5);
+                will(returnValue(false));
+                
+                oneOf(sourceDao).retrieveVersionList(5);
+                will(returnValue(versionList));
 
+                oneOf(sourceDao).deleteAllSourceVersion(5);
+                will(returnValue(1));
+                
+                oneOf(sourceDao).deleteSource(5);
+                will(returnValue(1));
+                
+                oneOf(versionDao).versionIsInUse(7);
+                will(returnValue(false));
+            }
+        });
+        
+        
         int[] resultTwo = daoDispatcher.deleteSourceWithVersions(5);// the source will be deleted because it is not referred by any annotation
-        assertEquals(1, resultTwo[0]); // row (5,7) in "sorces_versions" is deleted
-        assertEquals(1, resultTwo[1]);
+        assertEquals(3, resultTwo.length);
+        assertEquals(1, resultTwo[0]); // source 7 is deleted
+        assertEquals(1, resultTwo[1]); // row (5,7) in "sorces_versions" is deleted
+        assertEquals(0, resultTwo[2]); // version 7 is not foub=nd, not in use
     }
 
-    /**
-     * Test of addVersion method, of class JdbcVersionDao.
-     */
-//    @Test
-//    public void testAddCachedForVersion() {
-//        System.out.println("test addCachedForVersion");
-//
-//        final CachedRepresentationInfo cached = new CachedRepresentationInfo();
-//        cached.setMimeType("text/plain");
-//        cached.setTool("vi");
-//        cached.setType("text");
-//        cached.setRef(null);
-//       
-//        Number[] result = jdbcCachedRepresentationDao.addCachedForVersion(6, cached);
-//        assertEquals(8, result[0].intValue());
-//        assertEquals(1, result[1].intValue());
-//    }
-    /**
-     *
-     */
-//    @Test
-//    public void tesDeleteCachedForVersion() {
-//        System.out.println("test delete CachedRepresentationForVersion");
-//        System.out.println("deleteVersion");
-//        
-//        int[] result = jdbcCachedRepresentationDao.deleteCachedForVersion(6, 5);
-//        assertEquals(1, result[0]); //versions-cached
-//        assertEquals(0, result[1]);//cached 5 is in use
-//        
-//        int[] resultTwo = jdbcCachedRepresentationDao.deleteCachedForVersion(6, 4); // no such pair
-//        assertEquals(0, resultTwo[0]); 
-//        assertEquals(0, resultTwo[1]); 
-//
-//
-//    }
-//
-//    /**
-//     * Test of deleteVersionWithCachedRepresentations method, of class DaoDispatcher.
-//     */
-//    @Test
-//    public void testDeleteVersionWithCachedRepresentations() {
-//        System.out.println("deleteVersionWithCachedRepresentations");
-//        Number versionID = null;
-//        DaoDispatcher instance = new DaoDispatcher();
-//        int[] expResult = null;
-//        int[] result = instance.deleteVersionWithCachedRepresentations(versionID);
-//        assertArrayEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-    /**
-     * Test of deleteSourceWithVersions method, of class DaoDispatcher.
-     */
-    @Test
-    public void testDeleteSourceWithVersions() throws SQLException {
-        System.out.println("deleteSourceWithVersions");
-        Number sourceID = null;
-        DaoDispatcher instance = new DaoDispatcher();
-        int[] expResult = null;
-        int[] result = instance.deleteSourceWithVersions(sourceID);
-        assertArrayEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
+  
+   
 
     /**
      * Test of addSourceAndPairSourceVersion method, of class DaoDispatcher.
@@ -355,13 +317,43 @@ public class DaoDispatcherTest {
     @Test
     public void testAddSourceAndPairSourceVersion() throws Exception {
         System.out.println("addSourceAndPairSourceVersion");
-        NewSourceInfo newSource = null;
-        DaoDispatcher instance = new DaoDispatcher();
-        Number expResult = null;
-        Number result = instance.addSourceAndPairSourceVersion(newSource);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+       final  NewSourceInfo newSource = new NewSourceInfo();
+       newSource.setLink(TestBackendConstants._TEST_NEW_SOURCE_LINK);
+       newSource.setVersion(TestBackendConstants._TEST_VERSION_3_EXT_ID);// already added version, existing
+        
+        mockery.checking(new Expectations() {
+            {
+                oneOf(versionDao).getInternalID(new VersionIdentifier(TestBackendConstants._TEST_VERSION_3_EXT_ID));
+                will(returnValue(3));
+
+                oneOf(sourceDao).addSource(with(aNonNull(Source.class)));
+                will(returnValue(6));
+                
+                oneOf(sourceDao).addSourceVersion(6, 3);
+                will(returnValue(1));
+
+            }
+        });
+        
+        Number result = daoDispatcher.addSourceAndPairSourceVersion(newSource);
+        assertEquals(6, result.intValue());
+        
+        // Another test
+        
+        final  NewSourceInfo newSourceTwo = new NewSourceInfo();
+        newSourceTwo.setLink(TestBackendConstants._TEST_NEW_SOURCE_LINK);
+        newSourceTwo.setVersion(TestBackendConstants._TEST_VERSION_NONEXIST_EXT_ID);
+        mockery.checking(new Expectations() {
+            {
+                oneOf(versionDao).getInternalID(new VersionIdentifier(TestBackendConstants._TEST_VERSION_NONEXIST_EXT_ID));
+                will(returnValue(null));
+
+            }
+        });
+        Number resultTwo = daoDispatcher.addSourceAndPairSourceVersion(newSourceTwo);
+        assertEquals(-1, resultTwo.intValue());
+        
+        
     }
 
     /**
@@ -370,43 +362,43 @@ public class DaoDispatcherTest {
     @Test
     public void testAddTargetSourcesToAnnotation() throws Exception {
         System.out.println("addTargetSourcesToAnnotation");
+        
+        NewOrExistingSourceInfo noesi = new NewOrExistingSourceInfo();
+        NewSourceInfo nsi = new NewSourceInfo();
+        nsi.setLink(TestBackendConstants._TEST_NEW_SOURCE_LINK);
+        nsi.setId(TestBackendConstants._TEST_TEMP_SOURCE_ID);
+        nsi.setVersion(null);
+        noesi.setNewSource(nsi);
 
 
-//        NewOrExistingSourceInfo noesi = new NewOrExistingSourceInfo();
-//        NewSourceInfo nsi = new NewSourceInfo();
-//        nsi.setLink(TestBackendConstants._TEST_NEW_SOURCE_LINK);
-//        nsi.setId(TestBackendConstants._TEST_TEMP_SOURCE_ID);
-//        nsi.setVersion(null);
-//        noesi.setNewSource(nsi);
-//
-//
-//        NewOrExistingSourceInfo noesiTwo = new NewOrExistingSourceInfo();
-//        SourceInfo si = new SourceInfo();
-//        si.setLink(TestBackendConstants._TEST_NEW_SOURCE_LINK);
-//        si.setRef((new SourceIdentifier()).toString());
-//        si.setVersion(null);
-//        noesiTwo.setSource(si);
-//
-//        final Map<NewOrExistingSourceInfo, NewOrExistingSourceInfo> map = new HashMap<NewOrExistingSourceInfo, NewOrExistingSourceInfo>();
-//        map.put(noesi, noesiTwo);
-//
-//
+        NewOrExistingSourceInfo noesiTwo = new NewOrExistingSourceInfo();
+        SourceInfo si = new SourceInfo();
+        si.setLink(TestBackendConstants._TEST_NEW_SOURCE_LINK);
+        final SourceIdentifier sourceIdentifier = new SourceIdentifier();
+        si.setRef(sourceIdentifier.toString());
+        si.setVersion(null);
+        noesiTwo.setSource(si);
+
+        final Map<NewOrExistingSourceInfo, NewOrExistingSourceInfo> map = new HashMap<NewOrExistingSourceInfo, NewOrExistingSourceInfo>();
+        map.put(noesi, noesiTwo);
+
+
+//        
 //        mockery.checking(new Expectations() {
 //            {
+//                oneOf(sourceDao.getInternalID(sourceIdentifier));
+//                will(returnValue());
+//                
+//                oneOf(annotationDao).addAnnotationSourcePair(with(aNonNull(Number.class)), with(aNonNull(Number.class)));
+//                will(returnValue(1));
+//                
 //                oneOf(sourceDao).addTargetSources(with(aNonNull(Number.class)), with(aNonNull(List.class)));
 //                will(returnValue(map));
 //            }
 //        });
 
 
-        Number annotationID = null;
-        List<NewOrExistingSourceInfo> sources = null;
-        DaoDispatcher instance = new DaoDispatcher();
-        Map expResult = null;
-        Map result = instance.addTargetSourcesToAnnotation(annotationID, sources);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        
     }
 
     /**

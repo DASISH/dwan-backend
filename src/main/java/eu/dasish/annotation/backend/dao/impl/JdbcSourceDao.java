@@ -174,11 +174,8 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
 
     
 
-    //////////// helpers /////////////////////// 
-    /////////////////////////////////////////////////
-    
-      //////////////////////////////
-    private boolean sourceIsInUse(Number sourceID) {
+    @Override
+    public boolean sourceIsInUse(Number sourceID) {
         String sql = "SELECT " + annotation_id + " FROM " + annotationsSourcesTableName + " WHERE " + source_id + "= ? LIMIT 1";
         List<Number> result = getSimpleJdbcTemplate().query(sql, annotationIDRowMapper, sourceID);
         if (result.size() > 0) {
@@ -194,7 +191,7 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
         }
     };
     
-  
+  /////////// HELPERS  ////////////////
    
 
     private SourceInfo constructSourceInfo(SourceIdentifier sourceIdentifier, String link, String version) {

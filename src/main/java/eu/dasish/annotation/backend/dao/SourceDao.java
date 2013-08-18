@@ -89,4 +89,5 @@ public interface SourceDao extends ResourceDao{
     public List<Number> getSourcesForLink(String link);
   
     
+    public boolean sourceIsInUse(Number sourceID);
 }
