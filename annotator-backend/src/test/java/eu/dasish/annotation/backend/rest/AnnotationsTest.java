@@ -22,7 +22,6 @@ import com.sun.jersey.api.client.GenericType;
 import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.dao.AnnotationDao;
 import eu.dasish.annotation.backend.dao.NotebookDao;
-import eu.dasish.annotation.backend.dao.PermissionsDao;
 import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
 import eu.dasish.annotation.backend.identifiers.UserIdentifier;
 import eu.dasish.annotation.schema.Annotation;
@@ -42,13 +41,11 @@ import org.junit.Ignore;
 public class AnnotationsTest extends ResourcesTest{
     
     private AnnotationDao annotationDao;
-    private PermissionsDao permissionsDao;
     private NotebookDao notebookDao;
     
     public AnnotationsTest() {
         super(AnnotationResource.class.getPackage().getName());        
         annotationDao = webAppContext.getBean(AnnotationDao.class);
-        permissionsDao = webAppContext.getBean(PermissionsDao.class);
         notebookDao = webAppContext.getBean(NotebookDao.class);
     }
     

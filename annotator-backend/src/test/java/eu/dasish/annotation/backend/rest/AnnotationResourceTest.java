@@ -22,7 +22,6 @@ import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.TestInstances;
 import eu.dasish.annotation.backend.dao.AnnotationDao;
 import eu.dasish.annotation.backend.dao.NotebookDao;
-import eu.dasish.annotation.backend.dao.PermissionsDao;
 import eu.dasish.annotation.backend.dao.SourceDao;
 import eu.dasish.annotation.backend.dao.UserDao;
 import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
@@ -51,7 +50,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 @RunWith(value = SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = {"/spring-test-config/dataSource.xml", "/spring-test-config/mockAnnotationDao.xml", 
     "/spring-test-config/mockSourceDao.xml",
-    "/spring-test-config/mockUserDao.xml", "/spring-test-config/mockPermissionsDao.xml", "/spring-test-config/mockNotebookDao.xml", "/spring-test-config/mockery.xml"})
+    "/spring-test-config/mockUserDao.xml", "/spring-test-config/mockNotebookDao.xml", "/spring-test-config/mockery.xml"})
 public class AnnotationResourceTest {
     
     @Autowired
@@ -60,8 +59,6 @@ public class AnnotationResourceTest {
     private AnnotationDao annotationDao;
     @Autowired
     private UserDao userDao;
-    @Autowired
-    private PermissionsDao permissionsDao;
     @Autowired
     private NotebookDao notebookDao;  
     @Autowired

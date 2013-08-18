@@ -18,7 +18,6 @@
 package eu.dasish.annotation.backend.rest;
 
 import eu.dasish.annotation.backend.TestBackendConstants;
-import eu.dasish.annotation.backend.dao.AnnotationDao;
 import eu.dasish.annotation.backend.dao.NotebookDao;
 import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
 import eu.dasish.annotation.backend.identifiers.NotebookIdentifier;
@@ -47,7 +46,7 @@ import static org.junit.Assert.*;
  */
 @RunWith(value = SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = {"/spring-test-config/dataSource.xml", "/spring-test-config/mockAnnotationDao.xml", "/spring-test-config/mockUserDao.xml", 
-    "/spring-test-config/mockSourceDao.xml", "/spring-test-config/mockNotebookDao.xml", "/spring-test-config/mockPermissionsDao.xml", "/spring-test-config/mockery.xml"})
+    "/spring-test-config/mockSourceDao.xml", "/spring-test-config/mockNotebookDao.xml", "/spring-test-config/mockery.xml"})
 public class NotebookResourceTest {
 
     @Autowired

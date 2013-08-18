@@ -22,10 +22,9 @@ import eu.dasish.annotation.backend.dao.AnnotationDao;
 import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationInfo;
-import eu.dasish.annotation.schema.NewOrExistingSourceInfo;
-import eu.dasish.annotation.schema.NewOrExistingSourceInfos;
+import eu.dasish.annotation.schema.Permission;
 import eu.dasish.annotation.schema.ResourceREF;
-import eu.dasish.annotation.schema.SourceInfo;
+import eu.dasish.annotation.schema.UserWithPermission;
 import java.lang.String;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -201,9 +200,6 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
     private final RowMapper<Annotation> annotationRowMapper = new RowMapper<Annotation>() {
         @Override
         public Annotation mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            
-            Map<String, Object> result = new HashMap<String, Object>();
-            
             Annotation annotation = new Annotation();
 
             ResourceREF ownerREF = new ResourceREF();
@@ -233,28 +229,23 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
    
     //////////////////////////////////////////////////////
     @Override
-    public int[] deleteAnnotation(Number annotationID) throws SQLException {
-
-        int[] result = new int[3];
-        
+    public int deleteAnnotation(Number annotationID) throws SQLException {
         if (annotationIsInUse(annotationID)) {
-            result[0] =0;
-            result[1] =0;
-            result[2] =0;
-            return result;
+            return 0;
         }
         
-        String sqlPermissions = "DELETE FROM " + permissionsTableName + " where " + annotation_id + " = ?";
-        result[0] = getSimpleJdbcTemplate().update(sqlPermissions, annotationID); // removed "permission" rows 
-        
-        String sqlTargetSources = "DELETE FROM " + annotationsSourcesTableName + " where " + annotation_id + " = ?";
-        result[1] = getSimpleJdbcTemplate().update(sqlTargetSources, annotationID); // removed "annotations_target_sources" rows
-       
         String sqlAnnotation = "DELETE FROM " + annotationTableName + " where " + annotation_id + " = ?";
-        result[2] = getSimpleJdbcTemplate().update(sqlAnnotation, annotationID); // removed annotations rows
-
-        return result;
+        return (getSimpleJdbcTemplate().update(sqlAnnotation, annotationID)); 
     }
+    
+    //////////////////////////////////////////////////////
+    @Override
+    public int deleteAllAnnotationSource(Number annotationID) throws SQLException {
+        String sqlTargetSources = "DELETE FROM " + annotationsSourcesTableName + " where " + annotation_id + " = ?";
+        return getSimpleJdbcTemplate().update(sqlTargetSources, annotationID); // removed "annotations_target_sources" rows
+       
+    }
+    
 
     // TODO: so far URI in the xml is the same as the external_id in the DB!!
     // Change it when the decision is taken!!!
@@ -294,12 +285,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         return getSimpleJdbcTemplate().update(sql.toString(), annotationID);
     }
 
-    ///////////////////////////////////////////////////////////
-    private ResourceREF getResourceREF(String resourceID) {
-        ResourceREF result = new ResourceREF();
-        result.setRef(resourceID);
-        return result;
-    }
+    
 
   
     //////////////////////////////////////////////////////////////////////////////////
@@ -316,6 +302,13 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
 
     /////////////// helpers //////////////////
     
+    ///////////////////////////////////////////////////////////
+    private ResourceREF getResourceREF(String resourceID) {
+        ResourceREF result = new ResourceREF();
+        result.setRef(resourceID);
+        return result;
+    }
+    
         //////////////////////////////
     private boolean annotationIsInUse(Number sourceID) {
         String sql = "SELECT " + notebook_id + " FROM " + notebooksAnnotationsTableName + " WHERE " + annotation_id + "= ? LIMIT 1";
@@ -330,6 +323,46 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         @Override
         public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
             return rs.getInt(notebook_id);
+        }
+    };
+    
+    //////////////////////////////////////////////////////
+    @Override
+    public int deleteAnnotationPrincipalPermissions(Number annotationID) throws SQLException {
+        String sqlPermissions = "DELETE FROM " + permissionsTableName + " where " + annotation_id + " = ?";
+        return getSimpleJdbcTemplate().update(sqlPermissions, annotationID); // removed "permission" rows 
+        
+    }
+    
+     /////////////////////////////////////////////////////////////////////////////////////////
+    @Override
+    public int addAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission) throws SQLException {
+        Map<String, Object> paramsPermissions = new HashMap<String, Object>();
+        paramsPermissions.put("annotationId", annotationID);
+        paramsPermissions.put("principalId", userID);
+        paramsPermissions.put("status", permission.value());
+        String sqlUpdatePermissionTable = "INSERT INTO " + permissionsTableName + " (" + annotation_id + "," + principal_id + "," + permission + ") VALUES (:annotationId, :principalId, :status)";
+        final int affectedPermissions = getSimpleJdbcTemplate().update(sqlUpdatePermissionTable, paramsPermissions);
+        return affectedPermissions;
+    }
+    
+    
+      ///////////////////////////////////////////////////////////////////
+    @Override
+    public List<Map<Number, String>> retrievePermissions(Number annotationId) {
+        if (annotationId == null) {
+            return null;
+        }
+        String sql = "SELECT " + principal_id + "," + permission + " FROM " + permissionsTableName + " WHERE " + annotation_id + "  = ?";
+        List<Map<Number, String>> result = getSimpleJdbcTemplate().query(sql, principalsPermissionsRowMapper, annotationId.toString());
+        return result;
+    }
+    private final RowMapper<Map<Number, String>> principalsPermissionsRowMapper = new RowMapper<Map<Number, String>>() {
+        @Override
+        public Map<Number, String> mapRow(ResultSet rs, int rowNumber) throws SQLException {
+            Map<Number,String> result = new HashMap<Number, String>();
+            result.put(rs.getInt(principal_id),rs.getString(permission));
+            return result;
         }
     };
     

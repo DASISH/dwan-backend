@@ -20,7 +20,9 @@ package eu.dasish.annotation.backend.dao;
 import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationInfo;
+import eu.dasish.annotation.schema.Permission;
 import eu.dasish.annotation.schema.ResourceREF;
+import eu.dasish.annotation.schema.UserWithPermission;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.List;
@@ -49,7 +51,7 @@ public interface AnnotationDao extends ResourceDao{
      * 
      * @param annotationID
      * @return the Annotation object with empty list of sources 
-     * constructing a complete Annotation object from theresult and "retrieveSourceIDs" is done in "CompoundRequests"
+     * constructing a complete Annotation object from there sult and "retrieveSourceIDs" is done in "DaoDispatchter"
      * 
      */
     public Annotation getAnnotationWithoutSources(Number annotationID) throws SQLException;
@@ -58,14 +60,18 @@ public interface AnnotationDao extends ResourceDao{
     /**
      * 
      * @param annotationId
-     * @return 
-     * result[0] = # removed "annotations_principals_perissions" rows
-     * result[1] = # removed "annotatiobs_target_sources" rows
-     * result[2] = # removed annotation rows (should be 1)
+     * @return removed annotation rows (should be 1)
      */
     
-    public int[] deleteAnnotation(Number annotationId) throws SQLException;
+    public int deleteAnnotation(Number annotationId) throws SQLException;
     
+    /**
+     * 
+     * @param annotationId
+     * @return # removed annotation_source rows for given annotationID 
+     */
+    
+    public int deleteAllAnnotationSource(Number annotationId) throws SQLException;
     
    
     /**
@@ -129,5 +135,23 @@ public interface AnnotationDao extends ResourceDao{
     public List<Number> retrieveSourceIDs(Number annotationID);
     
     public int addAnnotationSourcePair(Number annotationID, Number sourceID) throws SQLException;
+    
+    public int deleteAnnotationPrincipalPermissions(Number annotationID) throws SQLException ;
+
+    /**
+     * 
+     * @param annotationID
+     * @param userID
+     * @param permission
+     * @return the amount of rows added to the table annotations_principals_permissions
+     */
+    public int addAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission) throws SQLException;
+    
+       /**
+     * 
+     * @param annotationId
+     * @return retrieves all the pairs (user-permission) for "annotationId" from the table annotations_principals permissions
+     */
+    public List<Map<Number, String>>  retrievePermissions(Number annotationId);
     
 }

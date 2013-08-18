@@ -18,12 +18,10 @@
 package eu.dasish.annotation.backend.dao;
 
 import eu.dasish.annotation.backend.identifiers.SourceIdentifier;
-import eu.dasish.annotation.schema.NewOrExistingSourceInfo;
 import eu.dasish.annotation.schema.Source;
 import eu.dasish.annotation.schema.SourceInfo;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Map;
 
 /**
  *
@@ -52,10 +50,9 @@ public interface SourceDao extends ResourceDao{
     /**
      * 
      * @param internalId
-     * @return result[0] # deleted rows in "sources_versions" table name
-     * result[1] # deleted rows in "source" table
+     * @return # deleted rows in "source" table
      */
-    public int[] deleteSource(Number internalID);
+    public int deleteSource(Number internalID);
     
     /**
      * 
@@ -68,6 +65,9 @@ public interface SourceDao extends ResourceDao{
     public Number addSource(Source source) throws SQLException;   
     
     public int addSourceVersion(Number sourceID, Number versionID) throws SQLException;  
+    
+    public int deleteAllSourceVersion(Number sourceID) throws SQLException;  
+    
     
     
      /**

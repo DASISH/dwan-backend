@@ -22,7 +22,6 @@ import eu.dasish.annotation.backend.dao.ResourceDao;
 import eu.dasish.annotation.backend.identifiers.DasishIdentifier;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.XMLGregorianCalendar;

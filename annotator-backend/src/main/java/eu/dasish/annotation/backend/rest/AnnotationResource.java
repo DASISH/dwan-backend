@@ -18,7 +18,7 @@
 package eu.dasish.annotation.backend.rest;
 
 import eu.dasish.annotation.backend.BackendConstants;
-import eu.dasish.annotation.backend.dao.integration.DaoRequestor;
+import eu.dasish.annotation.backend.dao.integration.DaoDispatcher;
 import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
 import eu.dasish.annotation.backend.identifiers.UserIdentifier;
 import eu.dasish.annotation.schema.Annotation;
@@ -45,7 +45,7 @@ import org.springframework.stereotype.Component;
 @Path("/annotations")
 public class AnnotationResource {
 
-    private DaoRequestor requestor;
+    private DaoDispatcher requestor;
     @Context
     private HttpServletRequest httpServletRequest;
 
@@ -71,8 +71,8 @@ public class AnnotationResource {
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}")
     public String deleteAnnotation(@PathParam("annotationid") String annotationIdentifier) throws SQLException {
         final Number annotationID = requestor.getAnnotationInternalIdentifier(new AnnotationIdentifier(annotationIdentifier));
-        int[] resultDelete = requestor.deleteAnnotationWithSources(annotationID);
-        String result = Integer.toString(resultDelete[4]);
+        int[] resultDelete = requestor.deleteAnnotationWithSourcesAndPermissions(annotationID);
+        String result = Integer.toString(resultDelete[0]);
         return result;
     }
 
