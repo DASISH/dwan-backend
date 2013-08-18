@@ -75,23 +75,24 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
         }
     };
 
-   
     ///////////////////////////////////////////////////////////////////
     @Override
-    public int[] deleteSource(Number internalID) {
-        int[] result = new int[2];        
+    public int deleteSource(Number internalID) {
         if (sourceIsInUse(internalID)){
-            result[0] =0;
-            result[1] =0;
-            return result;
+            return 0;
         }
+        String sqlSourcesVersions = "DELETE FROM " + sourceTableName + " WHERE " + source_id + " = ? LIMIT 1";
+        int result = getSimpleJdbcTemplate().update(sqlSourcesVersions, internalID);
+        return result;
 
+    }
+
+    
+    ///////////////////////////////////////////////////////////////////
+    @Override
+    public int deleteAllSourceVersion(Number internalID) {
         String sqlSourcesVersions = "DELETE FROM " + sourcesVersionsTableName + " WHERE " + source_id + " = ?";
-        result[0] = getSimpleJdbcTemplate().update(sqlSourcesVersions, internalID);
-
-        String sql = "DELETE FROM " + sourceTableName + " WHERE " + source_id + " = ?";
-        result[1] = getSimpleJdbcTemplate().update(sql, internalID);
-
+        int result = getSimpleJdbcTemplate().update(sqlSourcesVersions, internalID);
         return result;
 
     }

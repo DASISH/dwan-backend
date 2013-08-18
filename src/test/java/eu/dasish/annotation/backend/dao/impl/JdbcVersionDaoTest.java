@@ -85,26 +85,17 @@ public class JdbcVersionDaoTest extends JdbcResourceDaoTest {
      * Test of deleteVersion method, of class JdbcVersionDao.
      */
     @Test
-    @Ignore
     public void testDeleteVersion() {
         System.out.println("deleteVersion");
-//        mockery.checking(new Expectations() {
-//            {
-//                oneOf(cachedRepresentationDao).deleteCachedRepresentationInfo(5);
-//                will(returnValue(0));
-//
-//            }
-//        });
-        int[] result = jdbcVersionDao.deleteVersion(6);
-        assertEquals(1, result[0]); //versions-cached
-        assertEquals(1, result[1]); // version
-        assertEquals(0, result[2]);//cached 5 is in use
-
-
-        int[] resultTwo = jdbcVersionDao.deleteVersion(5); // version is in use by the source 4
-        assertEquals(0, resultTwo[0]);
-        assertEquals(0, resultTwo[1]);
-        assertEquals(0, resultTwo[2]);
+        
+        // remove the rows from the joint table to keep integrity
+        jdbcVersionDao.deleteAllVersionCachedRepresentation(6);
+        int result = jdbcVersionDao.deleteVersion(6);
+        assertEquals(1, result); 
+        assertEquals(0, jdbcVersionDao.deleteVersion(6)); // delete the same version: nothing happen
+        
+        int resultTwo = jdbcVersionDao.deleteVersion(5); // version is in use by the source 4
+        assertEquals(0, resultTwo);
 
     }
 
@@ -116,11 +107,10 @@ public class JdbcVersionDaoTest extends JdbcResourceDaoTest {
         System.out.println("addVersion");
 
         Version freshVersion = new Version();
-
         Number result = jdbcVersionDao.addVersion(freshVersion);
         assertEquals(8, result);
         Version addedVersion = jdbcVersionDao.getVersion(result);
-        assertFalse(null == addedVersion.getVersion());
+        assertFalse(null == addedVersion.getVersion()); // extend once "version" information is fixed, and becomes different from externalID
     }
     
     
@@ -143,5 +133,27 @@ public class JdbcVersionDaoTest extends JdbcResourceDaoTest {
 
         List result = jdbcVersionDao.retrieveCachedRepresentationList(versionID);
         assertEquals(expResult, result);
+    }
+    ////////////////////////////////////////////////////////
+    @Test
+    public void deleteVersionCachedRepresentation(){
+        System.out.println("test deleteVersionCachedRepresentation");
+        assertEquals(1, jdbcVersionDao.deleteVersionCachedRepresentation(1, 1));
+        assertEquals(0, jdbcVersionDao.deleteVersionCachedRepresentation(1, 2));
+        
+    }
+    
+    ////////////////////////////////////////////////////////
+    @Test
+    public void deleteAllVersionCachedRepresentation(){
+        System.out.println("test deleteAllVersionCachedRepresentation");
+        assertEquals(2, jdbcVersionDao.deleteAllVersionCachedRepresentation(1));
+    }
+    
+    ////////////////////////////////////////////////////////
+    @Test
+    public void addVersionCachedRepresentation(){
+        System.out.println("test addVersionCachedRepresentation");
+        assertEquals(1, jdbcVersionDao.addVersionCachedRepresentation(1, 7));
     }
 }

@@ -101,7 +101,6 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
     //////////////////////////////////////////////////////////////////////////////////////////////
     @Override
     public int deleteCachedRepresentationInfo(Number internalID) {
-        // ask the higher level if it can be deleted
         if (cachedIsInUse(internalID)){
            return 0;
         }

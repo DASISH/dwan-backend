@@ -17,22 +17,19 @@
  */
 package eu.dasish.annotation.backend.dao.impl;
 
+import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.TestInstances;
 import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
-import eu.dasish.annotation.backend.identifiers.UserIdentifier;
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationInfo;
-import eu.dasish.annotation.schema.NewOrExistingSourceInfo;
-import eu.dasish.annotation.schema.NewOrExistingSourceInfos;
+import eu.dasish.annotation.schema.Permission;
 import eu.dasish.annotation.schema.ResourceREF;
-import eu.dasish.annotation.schema.SourceInfo;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import org.jmock.Expectations;
 import static org.junit.Assert.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -52,13 +49,9 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
     JdbcAnnotationDao jdbcAnnotationDao;    
     TestInstances testInstances = new TestInstances();
 
-    /**
-     * Test of getAnnotationInfos method, of class JdbcAnnotationDao.
-     * List<AnnotationInfo> getAnnotationInfos(List<Number> annotationIDs)
-     */
     
       /**
-     * Test of retrieveSourceIDs method, of class JdbcSourceDao.
+     * Test of retrieveSourceIDs method, of class JdbcAnnotationDao.
      */
     @Test
     public void testRetrieveSourceIDs() {
@@ -69,6 +62,40 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         assertEquals(1, result.get(0));
         assertEquals(2, result.get(1));
     }
+    
+    ///////////////////////////////////////////
+    @Test
+    public void testDeleteAllAnnotationSource() throws SQLException{
+        System.out.println("test deleteAllAnnotationSources");
+        assertEquals(2, jdbcAnnotationDao.deleteAllAnnotationSource(2));
+        assertEquals(0, jdbcAnnotationDao.deleteAllAnnotationSource(2));
+    }
+    
+    ///////////////////////////////////////////
+    @Test
+    public void testDeleteAnnotationPrinciplePermissions() throws SQLException{
+        System.out.println("test deleteAllAnnotationSources");
+        int result = jdbcAnnotationDao.deleteAnnotationPrincipalPermissions(2);
+        assertEquals(3, result);
+        assertEquals(0, jdbcAnnotationDao.deleteAnnotationPrincipalPermissions(2));
+    }
+    
+    ///////////////////////////////////////////
+    @Test
+    public void testAddAnnotationPrinciplePermission() throws SQLException{
+        System.out.println("test addAnnotationSources");
+        int result = jdbcAnnotationDao.addAnnotationPrincipalPermission(2, 1, Permission.READER);
+        assertEquals(1, result);
+    }
+    
+    ///////////////////////////////////////////
+    @Test
+    public void testAddAnnotationSourcePair() throws SQLException{
+        System.out.println("test addAnnotationSourcePair");
+        assertEquals(1, jdbcAnnotationDao.addAnnotationSourcePair(1,2));
+    }
+    
+    ////////////////////////////////
     
     @Test
     public void testGetAnnotationInfos() {
@@ -149,12 +176,12 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
 
     /**
      *
-     * Test of getAnnotation method, of class JdbcAnnotationDao. Annotation
+     * Test of getAnnotationWithoutSources method, of class JdbcAnnotationDao. Annotation
      * getAnnotation(Number annotationlID)
      */
     @Test
-    public void getAnnotation() throws SQLException {
-        System.out.println("test getAnnotation");
+    public void getAnnotationWithoutSources() throws SQLException {
+        System.out.println("test getAnnotationWithoutSources");
 
         /// dummy test
         final Annotation annotaionNull = jdbcAnnotationDao.getAnnotationWithoutSources(null);
@@ -173,25 +200,21 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
     /**
      * Test of deletAnnotation method, of class JdbcAnnotationDao.
      */
+     /**
+     * 
+     * @param annotationId
+     * @return removed annotation rows (should be 1)
+     */
     @Test
     public void testDeleteAnnotation() throws SQLException {
         System.out.println("deleteAnnotation"); 
-        // result[0] = # removed "annotations_principals_perissions" rows
-        // result[1] = # removed "annotatiobs_target_sources" rows
-        // result[2] = # removed annotation rows (should be 1)
         
-        int[] result = jdbcAnnotationDao.deleteAnnotation(5);
-        assertEquals(3, result[0]);
-        assertEquals(2, result[1]);
-        assertEquals(1, result[2]);
+        // to provide integrity, first delete rows in the joint tables
+        jdbcAnnotationDao.deleteAllAnnotationSource(5);
+        jdbcAnnotationDao.deleteAnnotationPrincipalPermissions(5);
         
-        // now, try to delete the same annotation one more time
-        // if it has been already deleted then the method under testing should return 0
-    
-        result = jdbcAnnotationDao.deleteAnnotation(5);
-        assertEquals(0, result[0]);
-        assertEquals(0, result[1]);
-        assertEquals(0, result[2]);
+        assertEquals(1, jdbcAnnotationDao.deleteAnnotation(5));
+        assertEquals(0, jdbcAnnotationDao.deleteAnnotation(5));
     }
 
     /**
@@ -218,41 +241,13 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
 
   
 
-
-//        NewOrExistingSourceInfo noesi = new NewOrExistingSourceInfo();
-//        NewSourceInfo nsi = new NewSourceInfo();
-//        nsi.setLink(TestBackendConstants._TEST_NEW_SOURCE_LINK);
-//        nsi.setId(TestBackendConstants._TEST_TEMP_SOURCE_ID);
-//        nsi.setVersion(null);
-//        noesi.setNewSource(nsi);
-//
-//
-//        NewOrExistingSourceInfo noesiTwo = new NewOrExistingSourceInfo();
-//        SourceInfo si = new SourceInfo();
-//        si.setLink(TestBackendConstants._TEST_NEW_SOURCE_LINK);
-//        si.setRef((new SourceIdentifier()).toString());
-//        si.setVersion(null);
-//        noesiTwo.setSource(si);
-//
-//        final Map<NewOrExistingSourceInfo, NewOrExistingSourceInfo> map = new HashMap<NewOrExistingSourceInfo, NewOrExistingSourceInfo>();
-//        map.put(noesi, noesiTwo);
-//
-//
-//        mockery.checking(new Expectations() {
-//            {
-//                oneOf(sourceDao).addTargetSources(with(aNonNull(Number.class)), with(aNonNull(List.class)));
-//                will(returnValue(map));
-//            }
-//        });
-
-  
     /**
-     * testing public List<Number> getAnnotationIDsForSources(List<Number> sourceIDs);
+     * testing public List<Number> retrieveAnnotationList(List<Number> sourceIDs);
     
     **/
     @Test    
-    public void testGetAnnotationIDsForSources() {
-        System.out.println("test getAnnotationIDs for sources");
+    public void testRetrieveAnnotationList() {
+        System.out.println("test retrieveAnnotationlist");
         List<Number> sources = new ArrayList<Number>();
         sources.add(1);
         sources.add(2);
@@ -261,6 +256,9 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         assertEquals(2, result.get(0));
         assertEquals(3, result.get(1));
     }
+    
+    //////////////////////////////////
+    
     
     @Test    
     public void testGetExternalID() {
@@ -319,104 +317,37 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         
         Timestamp after_1 = new Timestamp(System.currentTimeMillis());        
         List<Number> result_5 = jdbcAnnotationDao.getFilteredAnnotationIDs(annotationIDs, "some html", null, null, 1, after_1, null);        
-        assertEquals(0, result_5.size());
+        assertEquals(1, result_5.size());
         
         
     }
     
-     /**
-     * Test of contructNewOrExistingSourceInfo method, of class JdbcSourceDao.
-     */
+    //////////////////////////////////
     @Test
-    public void testContructNewOrExistingSourceInfo() {
-        System.out.println("contructNewOrExistingSourceInfo");
-
-        List<SourceInfo> sourceInfoList = new ArrayList<SourceInfo>();
-
-        SourceInfo sourceInfoOne = new SourceInfo();
-        sourceInfoOne.setLink(TestBackendConstants._TEST_SOURCE_1_LINK);
-        sourceInfoOne.setRef(TestBackendConstants._TEST_SOURCE_1_EXT_ID);
-        sourceInfoOne.setRef(TestBackendConstants._TEST_VERSION_1_EXT_ID);
-
-        SourceInfo sourceInfoTwo = new SourceInfo();
-        sourceInfoTwo.setLink(TestBackendConstants._TEST_SOURCE_2_LINK);
-        sourceInfoTwo.setRef(TestBackendConstants._TEST_SOURCE_2_EXT_ID);
-        sourceInfoTwo.setRef(TestBackendConstants._TEST_VERSION_3_EXT_ID);
-
-        sourceInfoList.add(sourceInfoOne);
-        sourceInfoList.add(sourceInfoTwo);
-
-//        NewOrExistingSourceInfos result = jdbcSourceDao.contructNewOrExistingSourceInfo(sourceInfoList);
-//        assertEquals(2, result.getTarget().size());
-//        assertEquals(sourceInfoOne, result.getTarget().get(0).getSource());
-//        assertEquals(sourceInfoTwo, result.getTarget().get(1).getSource());
-
+    public void testUpdateBody() throws SQLException{
+        System.out.println("test UpdateAnnotationBody");
+        String serializedNewBody = "new body";
+        int result = jdbcAnnotationDao.updateBody(2, serializedNewBody);
+        assertEquals(1, result);
+        Annotation updatedAnnotation= jdbcAnnotationDao.getAnnotationWithoutSources(2);
+        assertEquals(serializedNewBody, Helpers.serializeBody(updatedAnnotation.getBody()));
     }
 
-//    /**
-//     * Test of addTargetSources method, of class JdbcSourceDao. public
-//     * Map<NewOrExistingSourceInfo, NewOrExistingSourceInfo>
-//     * addTargetSources(Number annotationID, List<NewOrExistingSourceInfo>
-//     * sources)
-//     */
-//    @Test
-//    public void testAddTargetSourcesOnExistingSource() {
-//        System.out.println("addTargetSources : adding the old source");
-//
-//        NewOrExistingSourceInfo noesi = new NewOrExistingSourceInfo();
-//        SourceInfo si = new SourceInfo();
-//        si.setLink(TestBackendConstants._TEST_SOURCE_1_LINK);
-//        si.setRef(TestBackendConstants._TEST_SOURCE_1_EXT_ID);
-//        si.setVersion(TestBackendConstants._TEST_VERSION_1_EXT_ID);
-//        noesi.setSource(si);
-//
-//        List<NewOrExistingSourceInfo> listnoesi = new ArrayList<NewOrExistingSourceInfo>();
-//        listnoesi.add(noesi);
-//
-//        try {
-//            Map<String, String> result = jdbcSourceDao.addTargetSources(5, listnoesi);
-//            assertEquals(0, result.size()); // no new peristsent source IDs are produced
-//        } catch (SQLException e) {
-//            System.out.println(e);
-//        }
-//    }
-//
-//    /**
-//     * Test of addTargetSources method, of class JdbcSourceDao. public
-//     * Map<NewOrExistingSourceInfo, NewOrExistingSourceInfo>
-//     * addTargetSources(Number annotationID, List<NewOrExistingSourceInfo>
-//     * sources)
-//     */
-//    @Test
-//    public void testAddTargetSourcesOnNewSource() {
-//        System.out.println("addTargetSources : adding the new source");
-//
-//        NewOrExistingSourceInfo noesi = new NewOrExistingSourceInfo();
-//        NewSourceInfo nsi = new NewSourceInfo();
-//        nsi.setLink(TestBackendConstants._TEST_NEW_SOURCE_LINK);
-//        nsi.setId(TestBackendConstants._TEST_TEMP_SOURCE_ID);
-//        nsi.setVersion(TestBackendConstants._TEST_VERSION_1_EXT_ID);
-//        noesi.setNewSource(nsi);
-//
-//        List<NewOrExistingSourceInfo> listnoesiTwo = new ArrayList<NewOrExistingSourceInfo>();
-//        listnoesiTwo.add(noesi);
-//        
-//        mockery.checking(new Expectations() {
-//            {
-//                oneOf(versionDao).getInternalID(new VersionIdentifier(TestBackendConstants._TEST_VERSION_1_EXT_ID));
-//                will(returnValue(1));
-//            }
-//        });
-//
-//        try {
-//            Map<String, String> result = jdbcSourceDao.addTargetSources(5, listnoesiTwo);
-//            assertEquals(1, result.size());// a new identifier must be produced
-//            SourceIdentifier sourceIdentifier = new SourceIdentifier(result.get(TestBackendConstants._TEST_TEMP_SOURCE_ID));
-//            assertFalse(null == sourceIdentifier.getUUID()); // check if a proper uuid has been assigned 
-//        } catch (SQLException e) {
-//            System.out.print(e);
-//        }
-//
-//    }
-//    
+    
+    // public List<Map<Number, String>> retrievePermissions(Number annotationId)
+    
+    @Test
+    public void testRetrievePermissions (){
+        // VALUES (2, 3, 'owner'); 
+        //VALUES (2, 4, 'writer');
+        //VALUES (2, 5, 'reader');
+        System.out.println("test Permissions");
+        List<Map<Number, String>> result = jdbcAnnotationDao.retrievePermissions(2);
+        assertEquals(2, result.size());
+        assertEquals("owner", result.get(0).get(3));
+        assertEquals("writer", result.get(0).get(4));
+        assertEquals("reader", result.get(0).get(5));
+        
+        
+    }
 }

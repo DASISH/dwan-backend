@@ -18,7 +18,6 @@
 package eu.dasish.annotation.backend.dao;
 
 import eu.dasish.annotation.backend.identifiers.VersionIdentifier;
-import eu.dasish.annotation.schema.CachedRepresentationInfo;
 import eu.dasish.annotation.schema.Version;
 import java.util.List;
 
@@ -55,12 +54,10 @@ public interface VersionDao {
    
      
     /** @param versionID
-     * @return 
-     * result[0] # deleted rows in the joit table "versions_cached_representations"
-     * result[1] # deleted rows in "version" table
+     * @return deleted rows in "version" table
      */
     
-    public int[] deleteVersion(Number versionID);
+    public int deleteVersion(Number versionID);
     
     /**
      * 
@@ -84,6 +81,10 @@ public interface VersionDao {
     
     public int addVersionCachedRepresentation(Number versionID, Number cachedID);
     
+    public int deleteAllVersionCachedRepresentation(Number versionID);
+    
+    // Not tested
+    public boolean versionIsInUse(Number versionsID);
 }
     
 

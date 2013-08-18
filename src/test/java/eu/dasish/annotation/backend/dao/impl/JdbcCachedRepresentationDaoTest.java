@@ -79,19 +79,12 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest{
     @Test  
     public void testGetCachedRepresentationInfo() {
         System.out.println("getCachedRepresentationInfo");
-        Number internalID = 1;
         
-        CachedRepresentationInfo expResult = new CachedRepresentationInfo();
-        expResult.setMimeType(TestBackendConstants._TEST_CACHED_REPRESENTATION_1_MIME_TYPE_);
-        expResult.setRef(TestBackendConstants._TEST_CACHED_REPRESENTATION_1_EXT_ID_);
-        expResult.setTool(TestBackendConstants._TEST_CACHED_REPRESENTATION_1_TOOL_);
-        expResult.setType(TestBackendConstants._TEST_CACHED_REPRESENTATION_1_TYPE_);
-        
-        CachedRepresentationInfo result = jdbcCachedRepresentationDao.getCachedRepresentationInfo(internalID);
-        assertEquals(expResult.getMimeType(), result.getMimeType());
-        assertEquals(expResult.getType(), result.getType());
-        assertEquals(expResult.getTool(), result.getTool());
-        assertEquals(expResult.getRef(), result.getRef());
+        CachedRepresentationInfo result = jdbcCachedRepresentationDao.getCachedRepresentationInfo(1);
+        assertEquals(TestBackendConstants._TEST_CACHED_REPRESENTATION_1_MIME_TYPE_, result.getMimeType());
+        assertEquals(TestBackendConstants._TEST_CACHED_REPRESENTATION_1_EXT_ID_, result.getType());
+        assertEquals(TestBackendConstants._TEST_CACHED_REPRESENTATION_1_TOOL_, result.getTool());
+        assertEquals(TestBackendConstants._TEST_CACHED_REPRESENTATION_1_TYPE_, result.getRef());
     }
 
     
@@ -130,6 +123,7 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest{
         
         Number result = jdbcCachedRepresentationDao.addCachedRepresentationInfo(cached);
         CachedRepresentationInfo addedCached = jdbcCachedRepresentationDao.getCachedRepresentationInfo(result);
+        assertEquals(8, result.intValue());
         assertEquals("text/plain", addedCached.getMimeType());
         assertEquals("vi", addedCached.getTool());
         assertEquals("text", addedCached.getType());

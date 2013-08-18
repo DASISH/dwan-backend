@@ -102,23 +102,15 @@ public class JdbcVersionDao extends JdbcResourceDao implements VersionDao {
     
     ///////////////////////////////////////// 
     @Override
-    public int[] deleteVersion(Number internalID) {
+    public int deleteVersion(Number internalID) {
         
-        int[] result = new int[2];        
+        int result = 0;        
         if (versionIsInUse(internalID)) {
-            // firs delete sources that refer to it!
-            result[0]=0;
-            result[1]=0;
             return result;
         }
         
-        // remove all the pairs (internalID, cached_representation) from the joint table "versions_cahched_representations"   
-        String sqlVersionsCachedRepresentations = "DELETE FROM " + versionsCachedRepresentationsTableName + " where " + version_id + " = ?";
-        result[0] = getSimpleJdbcTemplate().update(sqlVersionsCachedRepresentations, internalID);
-        
-        // the main action: remove the version with internalID from "version" table
         String sql = "DELETE FROM " + versionTableName + " where " + version_id + " = ?";
-        result[1] = getSimpleJdbcTemplate().update(sql, internalID);      
+        result = getSimpleJdbcTemplate().update(sql, internalID);      
         return result;
 
     }
@@ -149,6 +141,14 @@ public class JdbcVersionDao extends JdbcResourceDao implements VersionDao {
     sql.append(cached_representation_id).append("= :cachedId");
     return (getSimpleJdbcTemplate().update(sql.toString(), params));
     }
+    
+    ////////////////////////////////////////////
+    @Override
+    public int deleteAllVersionCachedRepresentation(Number versionID){
+    StringBuilder sql = new StringBuilder("DELETE FROM ");
+    sql.append(versionsCachedRepresentationsTableName).append(" WHERE ").append(version_id).append(" = ?");
+    return (getSimpleJdbcTemplate().update(sql.toString(), versionID));
+    }
         
     ////////////////////////////////////////////
     @Override
@@ -165,9 +165,8 @@ public class JdbcVersionDao extends JdbcResourceDao implements VersionDao {
     
     
     
-    ///////////////////// PRIVATE //////////////////////////////
-    
-    private boolean versionIsInUse(Number versionsID) {
+    @Override
+    public boolean versionIsInUse(Number versionsID) {
         String sql = "SELECT " + source_id + " FROM " + sourcesVersionsTableName + " WHERE " + version_id + "= ? LIMIT 1";
         List<Number> result = getSimpleJdbcTemplate().query(sql, sourceIDRowMapper, versionsID);
         if (result.size() > 0) {
