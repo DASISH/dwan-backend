@@ -63,8 +63,6 @@ public class DaoDispatcher {
     AnnotationDao annotationDao;
     @Autowired
     NotebookDao notebookDao;
-    
-    
 
     public Number getAnnotationInternalIdentifier(AnnotationIdentifier annotationIdentifier) {
         return annotationDao.getInternalID(annotationIdentifier);
@@ -156,13 +154,19 @@ public class DaoDispatcher {
      */
     public int[] deleteSourceWithVersions(Number sourceID) throws SQLException {
         int[] result = new int[3];
-        List<Number> versions = sourceDao.retrieveVersionList(sourceID);
-        result[1] = sourceDao.deleteAllSourceVersion(sourceID);
-        result[0] = sourceDao.deleteSource(sourceID);
-        result[3] = 0;
-        for (Number versionID : versions) {
-            int[] deleteVersion = deleteVersionWithCachedRepresentations(versionID);
-            result[3] = result[3] + deleteVersion[1];
+        if (!sourceDao.sourceIsInUse(sourceID)) {
+            List<Number> versions = sourceDao.retrieveVersionList(sourceID);
+            result[1] = sourceDao.deleteAllSourceVersion(sourceID);
+            result[0] = sourceDao.deleteSource(sourceID);
+            result[3] = 0;
+            for (Number versionID : versions) {
+                int[] deleteVersion = deleteVersionWithCachedRepresentations(versionID);
+                result[3] = result[3] + deleteVersion[1];
+            }
+        } else {
+            result[0] = 0;
+            result[1] = 0;
+            result[2] = 0;
         }
         return result;
 
@@ -201,8 +205,7 @@ public class DaoDispatcher {
      * @param sources
      * @return the mapping temporarySourceID -> peristenExternalSOurceId adds a
      * source from "sources" to the DB if it is not there, to the table
-     * "target_source" adds the wro (annotationID, sourceID) to the joint table
-     * "annotations_sources"
+     * "target_source" adds  (annotationID, sourceID) to the joint table "annotations_sources"
      * @throws SQLException
      */
     public Map<String, String> addTargetSourcesToAnnotation(Number annotationID, List<NewOrExistingSourceInfo> sources) throws SQLException {
