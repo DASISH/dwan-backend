@@ -78,8 +78,8 @@ public class TestBackendConstants {
     public static final String _TEST_SOURCE_1_LINK = "http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia";
     public static final String _TEST_SOURCE_2_LINK = "http://nl.wikipedia.org/wiki/Antoni_Gaud%C3%AD";
     
-    public static final int _TEST_SOURCE_1_VERSION_ID = 1;
-    public static final int _TEST_SOURCE_2_VERSION_ID = 3;
+    //public static final int _TEST_SOURCE_1_VERSION_ID = 1;
+    //public static final int _TEST_SOURCE_2_VERSION_ID = 3;
     
     public static final String _TEST_CACHED_REPRESENTATION_1_EXT_ID_ = "00000000-0000-0000-0000-000000000051";
     // INSERT INTO cached_representation_info (external_id, mime_type, tool, type_, where_is_the_file) VALUES ('00000000-0000-0000-0000-000000000051', 'text/html', 'latex', 'text', 'corpus1'); --1

@@ -44,7 +44,7 @@ import org.springframework.stereotype.Component;
 @Path("/annotations")
 public class AnnotationResource {
 
-    private DaoDispatcher requestor;
+    private DaoDispatcher daoDispatcher;
     @Context
     private HttpServletRequest httpServletRequest;
 
@@ -59,8 +59,8 @@ public class AnnotationResource {
     @Produces(MediaType.TEXT_XML)
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}")
     public JAXBElement<Annotation> getAnnotation(@PathParam("annotationid") String annotationIdentifier) throws SQLException {
-        final Number annotationID = requestor.getAnnotationInternalIdentifier(new AnnotationIdentifier(annotationIdentifier));
-        final Annotation annotation = requestor.getAnnotation(annotationID);
+        final Number annotationID = daoDispatcher.getAnnotationInternalIdentifier(new AnnotationIdentifier(annotationIdentifier));
+        final Annotation annotation = daoDispatcher.getAnnotation(annotationID);
         return new ObjectFactory().createAnnotation(annotation);
     }
 
@@ -69,8 +69,8 @@ public class AnnotationResource {
     @DELETE
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}")
     public String deleteAnnotation(@PathParam("annotationid") String annotationIdentifier) throws SQLException {
-        final Number annotationID = requestor.getAnnotationInternalIdentifier(new AnnotationIdentifier(annotationIdentifier));
-        int[] resultDelete = requestor.deleteAnnotationWithSourcesAndPermissions(annotationID);
+        final Number annotationID = daoDispatcher.getAnnotationInternalIdentifier(new AnnotationIdentifier(annotationIdentifier));
+        int[] resultDelete = daoDispatcher.deleteAnnotation(annotationID);
         String result = Integer.toString(resultDelete[0]);
         return result;
     }
@@ -85,9 +85,9 @@ public class AnnotationResource {
         String remoteUser = httpServletRequest.getRemoteUser();
         Number userID = null;
         if (remoteUser != null) {
-            userID = requestor.getUserInternalIdentifier(new UserIdentifier(remoteUser));
+            userID = daoDispatcher.getUserInternalIdentifier(new UserIdentifier(remoteUser));
         }
-        Annotation newAnnotation =  requestor.addAnnotationWithTargetSources(annotation, userID);
+        Annotation newAnnotation =  daoDispatcher.addUsersAnnotation(annotation, userID);
         return (new ObjectFactory().createAnnotation(newAnnotation));
     }
 }
