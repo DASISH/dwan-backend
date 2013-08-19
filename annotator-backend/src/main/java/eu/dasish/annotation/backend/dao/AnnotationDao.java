@@ -22,7 +22,6 @@ import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationInfo;
 import eu.dasish.annotation.schema.Permission;
 import eu.dasish.annotation.schema.ResourceREF;
-import eu.dasish.annotation.schema.UserWithPermission;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.List;

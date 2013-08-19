@@ -19,7 +19,6 @@ package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.identifiers.SourceIdentifier;
-import eu.dasish.annotation.backend.identifiers.VersionIdentifier;
 import eu.dasish.annotation.schema.Source;
 import eu.dasish.annotation.schema.SourceInfo;
 import java.sql.SQLException;
@@ -27,7 +26,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -87,15 +85,13 @@ public class JdbcSourceDaoTest extends JdbcResourceDaoTest {
     @Test
     public void testDeleteSource() {
         System.out.println("deleteSource");
-        
-        // remove the rows from the joint table to keep integrity
-        jdbcSourceDao.deleteAllSourceVersion(1);
-
         // test 1
+        // remove the rows from the joint table to keep integrity
         int result = jdbcSourceDao.deleteSource(1); //the source is in use, should not be deleted
         assertEquals(0, result); 
 
         // test 2
+        jdbcSourceDao.deleteAllSourceVersion(5);
         int resultTwo = jdbcSourceDao.deleteSource(5);// the source will be deleted because it is not referred by any annotation
         assertEquals(1, resultTwo); 
     }
@@ -128,11 +124,10 @@ public class JdbcSourceDaoTest extends JdbcResourceDaoTest {
         System.out.println("addSource");
 
         String link = "http://www.sagradafamilia.cat/";
-        // test 1: existing version
         Source freshSource = new Source();
         freshSource.setLink(link);
         freshSource.setVersion(TestBackendConstants._TEST_VERSION_1_EXT_ID);
-        freshSource.setURI(null);
+        freshSource.setURI((new SourceIdentifier()).toString());
         freshSource.setTimeSatmp(null);
         
         Number result = jdbcSourceDao.addSource(freshSource);
@@ -140,13 +135,7 @@ public class JdbcSourceDaoTest extends JdbcResourceDaoTest {
         Source addedSource = jdbcSourceDao.getSource(result);
         assertEquals(link, addedSource.getLink());
         assertEquals(TestBackendConstants._TEST_VERSION_1_EXT_ID, addedSource.getVersion());
-        assertFalse(null == addedSource.getURI());
-
-        ////////// test 2 non-existing version
-        freshSource.setVersion(TestBackendConstants._TEST_VERSION_NONEXIST_EXT_ID);
-        Number resultTwo = jdbcSourceDao.addSource(freshSource);
-        assertEquals(-1, resultTwo); // addversion (preferably with cached representation
-
+        assertEquals(freshSource.getURI(), addedSource.getURI());
     }
 
     /**

@@ -234,7 +234,7 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         Annotation addedAnnotation= jdbcAnnotationDao.getAnnotationWithoutSources(6);
         assertFalse(null == addedAnnotation.getURI());
         assertFalse(null == addedAnnotation.getTimeStamp());
-        assertEquals(5, addedAnnotation.getOwner().getRef());
+        assertEquals(Integer.toString(5), addedAnnotation.getOwner().getRef());
         assertEquals(annotationToAdd.getBody().getAny().get(0), addedAnnotation.getBody().getAny().get(0)); // TODO: to be changed after serialization is fixed
         assertEquals(annotationToAdd.getHeadline(), addedAnnotation.getHeadline());
     }
@@ -303,21 +303,21 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         
         
        
-        List<Number> result_3 = jdbcAnnotationDao.getFilteredAnnotationIDs(annotationIDs, "some html", null, null, 1, null, null);        
+        List<Number> result_3 = jdbcAnnotationDao.getFilteredAnnotationIDs(annotationIDs, "some html", null, null, 3, null, null);        
         assertEquals(1, result_3.size());
         assertEquals(2, result_3.get(0));
         
        
         Timestamp after = new Timestamp(0); 
         Timestamp before = new Timestamp(System.currentTimeMillis());  
-        List<Number> result_4 = jdbcAnnotationDao.getFilteredAnnotationIDs(annotationIDs, "some html", null, null, 1, after, before);        
+        List<Number> result_4 = jdbcAnnotationDao.getFilteredAnnotationIDs(annotationIDs, "some html", null, null, 3, after, before);        
         assertEquals(1, result_4.size());
         assertEquals(2, result_4.get(0));
         
         
-        Timestamp after_1 = new Timestamp(System.currentTimeMillis());        
-        List<Number> result_5 = jdbcAnnotationDao.getFilteredAnnotationIDs(annotationIDs, "some html", null, null, 1, after_1, null);        
-        assertEquals(1, result_5.size());
+        Timestamp after_1 = new Timestamp(System.currentTimeMillis()); // no annotations added after "now"       
+        List<Number> result_5 = jdbcAnnotationDao.getFilteredAnnotationIDs(annotationIDs, "some html", null, null, 3, after_1, null);        
+        assertEquals(0, result_5.size());
         
         
     }
@@ -343,10 +343,10 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         //VALUES (2, 5, 'reader');
         System.out.println("test Permissions");
         List<Map<Number, String>> result = jdbcAnnotationDao.retrievePermissions(2);
-        assertEquals(2, result.size());
+        assertEquals(3, result.size());
         assertEquals("owner", result.get(0).get(3));
-        assertEquals("writer", result.get(0).get(4));
-        assertEquals("reader", result.get(0).get(5));
+        assertEquals("writer", result.get(1).get(4));
+        assertEquals("reader", result.get(2).get(5));
         
         
     }

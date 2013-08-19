@@ -24,7 +24,6 @@ import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationInfo;
 import eu.dasish.annotation.schema.Permission;
 import eu.dasish.annotation.schema.ResourceREF;
-import eu.dasish.annotation.schema.UserWithPermission;
 import java.lang.String;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -281,7 +280,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
     @Override
     public int updateBody(Number annotationID, String serializedNewBody) {
         StringBuilder sql = new StringBuilder("UPDATE ");
-        sql.append(annotationTableName).append(" SET ").append(body_xml).append("= ").append(serializedNewBody).append(" WHERE ").append(annotation_id).append("= ?");
+        sql.append(annotationTableName).append(" SET ").append(body_xml).append("= '").append(serializedNewBody).append("' WHERE ").append(annotation_id).append("= ?");
         return getSimpleJdbcTemplate().update(sql.toString(), annotationID);
     }
 
@@ -341,7 +340,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         paramsPermissions.put("annotationId", annotationID);
         paramsPermissions.put("principalId", userID);
         paramsPermissions.put("status", permission.value());
-        String sqlUpdatePermissionTable = "INSERT INTO " + permissionsTableName + " (" + annotation_id + "," + principal_id + "," + permission + ") VALUES (:annotationId, :principalId, :status)";
+        String sqlUpdatePermissionTable = "INSERT INTO " + permissionsTableName + " (" + annotation_id + "," + principal_id + "," + this.permission + ") VALUES (:annotationId, :principalId, :status)";
         final int affectedPermissions = getSimpleJdbcTemplate().update(sqlUpdatePermissionTable, paramsPermissions);
         return affectedPermissions;
     }
