@@ -129,7 +129,7 @@ public class DaoDispatcherTest {
 
         mockery.checking(new Expectations() {
             {
-                oneOf(annotationDao).getInternalID(userIdentifier);
+                oneOf(userDao).getInternalID(userIdentifier);
                 will(returnValue(5));
             }
         });
@@ -146,11 +146,11 @@ public class DaoDispatcherTest {
 
         mockery.checking(new Expectations() {
             {
-                oneOf(annotationDao).getExternalID(5);
+                oneOf(userDao).getExternalID(5);
                 will(returnValue(userIdentifier));
             }
         });
-        assertEquals(TestBackendConstants._TEST_USER_5_EXT_ID, daoDispatcher.getUserExternalIdentifier(5));
+        assertEquals(TestBackendConstants._TEST_USER_5_EXT_ID, daoDispatcher.getUserExternalIdentifier(5).toString());
     }
 
     /**
@@ -206,7 +206,7 @@ public class DaoDispatcherTest {
         });
 
 
-        Number[] result = daoDispatcher.addCachedForVersion(6, newCached);
+        Number[] result = daoDispatcher.addCachedForVersion(versionID, newCached);
         assertEquals(2, result.length);
         assertEquals(newID, result[0]);
         assertEquals(1, result[1]);
@@ -265,10 +265,10 @@ public class DaoDispatcherTest {
 
     @Test
     public void testDeleteSourceSourceWithVersions() throws SQLException {
-        // test 1
+        // test 1: source in use by some annotation
          mockery.checking(new Expectations() {
             {
-                oneOf(sourceDao).sourceIsInUse(5);
+                oneOf(sourceDao).sourceIsInUse(1);
                 will(returnValue(true));
             }
         });
@@ -277,8 +277,7 @@ public class DaoDispatcherTest {
         assertEquals(0, result[0]); // 
         assertEquals(0, result[1]);
 
-        // test 2
-        
+        // test 2 : source is not used by annotations     
         final List<Number> versionList = new ArrayList<Number>();
         versionList.add(7);
         mockery.checking(new Expectations() {
@@ -296,7 +295,15 @@ public class DaoDispatcherTest {
                 will(returnValue(1));
                 
                 oneOf(versionDao).versionIsInUse(7);
-                will(returnValue(false));
+                will(returnValue(false)); //not mentioned in the table "sources_versions" after deleteing(5,7)
+                
+                oneOf(versionDao).retrieveCachedRepresentationList(7);
+                will(returnValue(new ArrayList<Number>())); // no cached representations for version 7, the list is just empty
+                
+                oneOf(versionDao).deleteAllVersionCachedRepresentation(7);
+                
+                oneOf(versionDao).deleteVersion(7);
+                will(returnValue(1));
             }
         });
         
@@ -305,7 +312,7 @@ public class DaoDispatcherTest {
         assertEquals(3, resultTwo.length);
         assertEquals(1, resultTwo[0]); // source 7 is deleted
         assertEquals(1, resultTwo[1]); // row (5,7) in "sorces_versions" is deleted
-        assertEquals(0, resultTwo[2]); // version 7 is not foub=nd, not in use
+        assertEquals(1, resultTwo[2]); // version 7 is deleted
     }
 
   

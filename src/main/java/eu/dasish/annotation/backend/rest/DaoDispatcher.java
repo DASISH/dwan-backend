@@ -158,10 +158,10 @@ public class DaoDispatcher {
             List<Number> versions = sourceDao.retrieveVersionList(sourceID);
             result[1] = sourceDao.deleteAllSourceVersion(sourceID);
             result[0] = sourceDao.deleteSource(sourceID);
-            result[3] = 0;
+            result[2] = 0;
             for (Number versionID : versions) {
                 int[] deleteVersion = deleteVersionWithCachedRepresentations(versionID);
-                result[3] = result[3] + deleteVersion[1];
+                result[2] = result[2] + deleteVersion[0];
             }
         } else {
             result[0] = 0;
