@@ -36,6 +36,7 @@ import eu.dasish.annotation.schema.NewSourceInfo;
 import eu.dasish.annotation.schema.Permission;
 import eu.dasish.annotation.schema.Source;
 import eu.dasish.annotation.schema.SourceInfo;
+import eu.dasish.annotation.schema.Version;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.HashMap;
@@ -63,6 +64,8 @@ public class DaoDispatcher {
     AnnotationDao annotationDao;
     @Autowired
     NotebookDao notebookDao;
+    
+    ///////////// GETTERS //////////////////////////
 
     public Number getAnnotationInternalIdentifier(AnnotationIdentifier annotationIdentifier) {
         return annotationDao.getInternalID(annotationIdentifier);
@@ -80,149 +83,18 @@ public class DaoDispatcher {
         return userDao.getExternalID(userID);
     }
 
-    /**
-     *
-     * @param versionID
-     * @param cachedID
-     * @return result[0] # deleted rows (versionID, cachedID) in the table
-     * "versions_cached_representations" result[1] # deleted rows in the table
-     * "cached_representation"
-     */
-    public int[] deleteCachedForVersion(Number versionID, Number cachedID) {
-        int[] result = new int[2];
-        result[0] = versionDao.deleteVersionCachedRepresentation(versionID, cachedID);
-        if (result[0] > 0) {
-            result[1] = cachedRepresentationDao.deleteCachedRepresentationInfo(cachedID);
-        } else {
-            result[1] = 0;
-
-        }
-        return result;
-    }
-
-    /**
-     *
-     * @param versionID
-     * @param cached
-     * @return result[0] = the internalId of the added (if it is not yet in th
-     * DB) cached representation result[1] # added rows to
-     * "versions_cached_representations"
-     */
-    public Number[] addCachedForVersion(Number versionID, CachedRepresentationInfo cached) {
-        Number[] result = new Number[2];
-        result[0] = cachedRepresentationDao.getInternalID(new CachedRepresentationIdentifier(cached.getRef()));
-        if (result[0] == null) {
-            result[0] = cachedRepresentationDao.addCachedRepresentationInfo(cached);
-        }
-        result[1] = versionDao.addVersionCachedRepresentation(versionID, result[0]);
-        return result;
-    }
-
-    /**
-     *
-     * @param versionID
-     * @return result[0] # deleted rows in "version" table result[1] # deleted
-     * rows in the joint table "versions_cached_representations" result[2] #
-     * deleted cached representations (which are not referred by other versions)
-     *
-     */
-    public int[] deleteVersionWithCachedRepresentations(Number versionID) {
-        int[] result = new int[3];
-        if (!versionDao.versionIsInUse(versionID)) {
-            List<Number> cachedRepresentations = versionDao.retrieveCachedRepresentationList(versionID);
-            result[1] = versionDao.deleteAllVersionCachedRepresentation(versionID);
-            result[0] = versionDao.deleteVersion(versionID);
-            result[2] = 0;
-            for (Number cachedID : cachedRepresentations) {
-                result[2] = result[2] + cachedRepresentationDao.deleteCachedRepresentationInfo(cachedID);
-
-            }
-        } else {
-            result[0] = 0;
-            result[1] = 0;
-            result[2] = 0;
-        }
-        return result;
-    }
-
-    /**
-     *
-     * @param sourceID
-     * @return result[0] # deleted rows in "source" table result[1] # deleted
-     * rows in "sources_versions" table name result[2] # deleted rows in
-     * "version" table
-     */
-    public int[] deleteSourceWithVersions(Number sourceID) throws SQLException {
-        int[] result = new int[3];
-        if (!sourceDao.sourceIsInUse(sourceID)) {
-            List<Number> versions = sourceDao.retrieveVersionList(sourceID);
-            result[1] = sourceDao.deleteAllSourceVersion(sourceID);
-            result[0] = sourceDao.deleteSource(sourceID);
-            result[2] = 0;
-            for (Number versionID : versions) {
-                int[] deleteVersion = deleteVersionWithCachedRepresentations(versionID);
-                result[2] = result[2] + deleteVersion[0];
-            }
-        } else {
-            result[0] = 0;
-            result[1] = 0;
-            result[2] = 0;
-        }
-        return result;
-
-    }
-
-    /**
-     * @param source
-     * @return internal Id of the newly added source or -1 if the source is not
-     * added because no version for it; in the last case the rest-interface will
-     * return envelope asking to add a version (with the cached representation);
-     * after the clinet adds the version (s)he gets the version external ID
-     * which is to be set in source; the the client asks to add the source
-     * again.
-     * @throws SQLException
-     */
-    public Number addSourceAndPairSourceVersion(NewSourceInfo newSource) throws SQLException {
-        Number versionID = versionDao.getInternalID(new VersionIdentifier(newSource.getVersion()));
-        if (versionID == null) {
-            System.out.println("Cannot add source because there is no version for it, and no cached representation. Create them first and try again.");
-            return -1;
-        }
-        Source source = new Source();
-        SourceIdentifier externalIdentifier = new SourceIdentifier();
-        source.setURI(externalIdentifier.toString());
-        source.setLink(newSource.getLink());
-        source.setVersion(newSource.getVersion());
-        Number result = sourceDao.addSource(source);
-        final int sourceVersions = sourceDao.addSourceVersion(result, versionID);
-        return result;
-    }
-
-    ///////////////////////////////////////////////
-    /**
-     *
-     * @param annotationID
-     * @param sources
-     * @return the mapping temporarySourceID -> peristenExternalSOurceId adds a
-     * source from "sources" to the DB if it is not there, to the table
-     * "target_source" adds  (annotationID, sourceID) to the joint table "annotations_sources"
-     * @throws SQLException
-     */
-    public Map<String, String> addTargetSourcesToAnnotation(Number annotationID, List<NewOrExistingSourceInfo> sources) throws SQLException {
-        Map<String, String> result = new HashMap<String, String>();
-        for (NewOrExistingSourceInfo noesi : sources) {
-            SourceInfo source = noesi.getSource();
-            if (source != null) {
-                int affectedRows = annotationDao.addAnnotationSourcePair(annotationID, sourceDao.getInternalID(new SourceIdentifier(source.getRef())));
-            } else {
-                Number newSourceID = addSourceAndPairSourceVersion(noesi.getNewSource());
-                if (newSourceID.intValue() == -1) {
-                    result.put(noesi.getNewSource().getId(), null);
-                } else {
-                    result.put(noesi.getNewSource().getId(), sourceDao.getExternalID(newSourceID).toString());
-                    int affectedRows = annotationDao.addAnnotationSourcePair(annotationID, newSourceID);
-                }
-            }
+      public Annotation getAnnotation(Number annotationID) throws SQLException {
+        Annotation result = annotationDao.getAnnotationWithoutSources(annotationID);
+        List<Number> sourceIDs = annotationDao.retrieveSourceIDs(annotationID);
+        for (Number sourceID : sourceIDs) {
+            NewOrExistingSourceInfo noesi = new NewOrExistingSourceInfo();
+            Source source = sourceDao.getSource(sourceID);
+            SourceInfo sourceInfo = new SourceInfo();
+            sourceInfo.setLink(source.getLink());
+            sourceInfo.setRef(source.getURI());
+            sourceInfo.setVersion(source.getVersion());
+            noesi.setSource(sourceInfo);
+            result.getTargetSources().getTarget().add(noesi);
         }
         return result;
     }
@@ -245,56 +117,62 @@ public class DaoDispatcher {
         return annotationDao.getFilteredAnnotationIDs(annotationIDs, text, access, namespace, ownerID, after, before);
     }
 
-    /**
-     *
-     * @param annotationId
-     * @return result[0] = # removed annotation rows (should be 1) result[1] = #
-     * removed "annotations_principals_permissions" rows result[2] = # removed
-     * "annotations_target_sources" rows result[3] = # deleted sources
-     */
-    public int[] deleteAnnotationWithSourcesAndPermissions(Number annotationID) throws SQLException {
-        int[] result = new int[4];
-        result[1] = annotationDao.deleteAnnotationPrincipalPermissions(annotationID);
-        List<Number> sourceIDs = annotationDao.retrieveSourceIDs(annotationID);
-        result[2] = annotationDao.deleteAllAnnotationSource(annotationID);
-        result[0] = annotationDao.deleteAnnotation(annotationID);
-        result[3] = 0;
-        for (Number sourceID : sourceIDs) {
-            int[] deleteSource = deleteSourceWithVersions(sourceID);
-            result[3] = result[3] + deleteSource[1];
+    
+    
+    /////////////// ADDERS  /////////////////////////////////
+    
+    
+    
+    public Number[] addCachedForVersion(Number versionID, CachedRepresentationInfo cached) {
+        Number[] result = new Number[2];
+        result[1] = cachedRepresentationDao.getInternalID(new CachedRepresentationIdentifier(cached.getRef()));
+        if (result[1] == null) {
+            result[1] = cachedRepresentationDao.addCachedRepresentationInfo(cached);
+        }
+        result[0] = versionDao.addVersionCachedRepresentation(versionID, result[1]);
+        return result;
+        
+    }
+    
+    
+      public Number[] addSiblingVersionForSource(Number sourceID, Version version) throws SQLException {
+        Number[] result = new Number[2];
+        result[0] = versionDao.getInternalID(new VersionIdentifier(version.getVersion())); // TOT: change to getURI after the schem is fixed
+        if (result[0] == null) {
+            result[0] = versionDao.addVersion(version);
+        }
+        result[1] = sourceDao.addSourceVersion(sourceID, result[0]);
+        return result;
+    }
+
+      
+       public Map<String, String> addSourcesForAnnotation(Number annotationID, List<NewOrExistingSourceInfo> sources) throws SQLException {
+        Map<String, String> result = new HashMap<String, String>();
+        for (NewOrExistingSourceInfo noesi : sources) {
+            SourceInfo source = noesi.getSource();
+            if (source != null) {
+                int affectedRows = annotationDao.addAnnotationSourcePair(annotationID, sourceDao.getInternalID(new SourceIdentifier(source.getRef())));
+            } else {
+                Source newSource = createSource(noesi.getNewSource());
+                Version newVersion = createVersion(noesi.getNewSource());
+                newSource.setVersion(newVersion.getVersion()); // TOTO: change to getURI after the schema is fixed
+                Number sourceID = sourceDao.addSource(newSource);
+                Number[] intermediateResult = addSiblingVersionForSource(sourceID, newVersion);
+                result.put(noesi.getNewSource().getId(), newSource.getURI().toString());
+                int affectedRows = annotationDao.addAnnotationSourcePair(annotationID, sourceID);
+            }
         }
         return result;
     }
 
-    public Annotation getAnnotation(Number annotationID) throws SQLException {
-        Annotation result = annotationDao.getAnnotationWithoutSources(annotationID);
-        List<Number> sourceIDs = annotationDao.retrieveSourceIDs(annotationID);
-        for (Number sourceID : sourceIDs) {
-            NewOrExistingSourceInfo noesi = new NewOrExistingSourceInfo();
-            Source source = sourceDao.getSource(sourceID);
-            SourceInfo sourceInfo = new SourceInfo();
-            sourceInfo.setLink(source.getLink());
-            sourceInfo.setRef(source.getURI());
-            sourceInfo.setVersion(source.getVersion());
-            noesi.setSource(sourceInfo);
-            result.getTargetSources().getTarget().add(noesi);
-        }
-        return result;
-    }
-
-    //need to return an envelope!
-    public Annotation addAnnotationWithTargetSources(Annotation annotation, Number userID) throws SQLException {
+    
+    public Annotation addUsersAnnotation(Annotation annotation, Number userID) throws SQLException {
 
         Number annotationID = annotationDao.addAnnotation(annotation, userID);
 
         List<NewOrExistingSourceInfo> sources = annotation.getTargetSources().getTarget();
-        Map<String, String> sourceIdPairs = addTargetSourcesToAnnotation(annotationID, sources);
+        Map<String, String> sourceIdPairs = addSourcesForAnnotation(annotationID, sources);
 
-        if (sourceIdPairs.containsValue(null)) {
-            // for one of the soirces there was no version and cached representation
-            // envelope
-            return annotation;
-        }
         String body = Helpers.serializeBody(annotation.getBody());
         String newBody = Helpers.replace(body, sourceIdPairs);
         int affectedAnnotRows = annotationDao.updateBody(annotationID, newBody);
@@ -304,5 +182,95 @@ public class DaoDispatcher {
 
         Annotation newAnnotation = getAnnotation(annotationID);
         return newAnnotation;
+    }
+
+      
+      ////////////// DELETERS //////////////////
+      
+    public int[] deleteCachedOfVersion(Number versionID, Number cachedID) {
+        int[] result = new int[2];
+        result[0] = versionDao.deleteVersionCachedRepresentation(versionID, cachedID);
+        if (result[0] > 0) {
+            result[1] = cachedRepresentationDao.deleteCachedRepresentationInfo(cachedID);
+        } else {
+            result[1] = 0;
+
+        }
+        return result;
+    }
+
+    public int[] deleteAllCachedOfVersion(Number versionID) {
+        int[] result = new int[3];
+        if (!versionDao.versionIsInUse(versionID)) {
+            List<Number> cachedRepresentations = versionDao.retrieveCachedRepresentationList(versionID);
+            result[1] = versionDao.deleteAllVersionCachedRepresentation(versionID);
+            result[0] = versionDao.deleteVersion(versionID);
+            result[2] = 0;
+            for (Number cachedID : cachedRepresentations) {
+                result[2] = result[2] + cachedRepresentationDao.deleteCachedRepresentationInfo(cachedID);
+
+            }
+        } else {
+            result[0] = 0;
+            result[1] = 0;
+            result[2] = 0;
+        }
+        return result;
+    }
+
+  
+
+    public int[] deleteAllVersionsOfSource(Number sourceID) throws SQLException {
+        int[] result = new int[3];
+        if (!sourceDao.sourceIsInUse(sourceID)) {
+            List<Number> versions = sourceDao.retrieveVersionList(sourceID);
+            result[1] = sourceDao.deleteAllSourceVersion(sourceID);
+            result[0] = sourceDao.deleteSource(sourceID);
+            result[2] = 0;
+            for (Number versionID : versions) {
+                int[] deleteVersion = deleteAllCachedOfVersion(versionID);
+                result[2] = result[2] + deleteVersion[0];
+            }
+        } else {
+            result[0] = 0;
+            result[1] = 0;
+            result[2] = 0;
+        }
+        return result;
+
+    }
+
+ 
+    public int[] deleteAnnotation(Number annotationID) throws SQLException {
+        int[] result = new int[4];
+        result[1] = annotationDao.deleteAnnotationPrincipalPermissions(annotationID);
+        List<Number> sourceIDs = annotationDao.retrieveSourceIDs(annotationID);
+        result[2] = annotationDao.deleteAllAnnotationSource(annotationID);
+        result[0] = annotationDao.deleteAnnotation(annotationID);
+        result[3] = 0;
+        for (Number sourceID : sourceIDs) {
+            int[] deleteSource = deleteAllVersionsOfSource(sourceID);
+            result[3] = result[3] + deleteSource[1];
+        }
+        return result;
+    }
+    
+    
+
+  ////////////// HELPERS ////////////////////
+    private Source createSource(NewSourceInfo newSource) {
+        Source source = new Source();
+        SourceIdentifier externalIdentifier = new SourceIdentifier();
+        source.setURI(externalIdentifier.toString());
+        source.setLink(newSource.getLink());
+        return source;
+    }
+
+    /////////////////////////////////////////
+    private Version createVersion(NewSourceInfo newSource) {
+        Version version = new Version();
+        VersionIdentifier versionIdentifier = new VersionIdentifier();
+        version.setVersion(versionIdentifier.toString()); // TODO change after the schem is fixed, shoul be setURI, 
+        return version;
     }
 }
