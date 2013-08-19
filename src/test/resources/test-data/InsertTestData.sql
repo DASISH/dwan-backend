@@ -50,7 +50,7 @@ INSERT INTO annotation (owner_id,headline,body_xml, external_id) VALUES (3, 'Ann
 INSERT INTO notebooks_annotations (notebook_id,annotation_id) VALUES (3,2);
 INSERT INTO notebooks_annotations (notebook_id,annotation_id) VALUES (3,3);
 INSERT INTO notebooks_annotations (notebook_id,annotation_id) VALUES (4,4);
-INSERT INTO notebooks_annotations (notebook_id,annotation_id) VALUES (5,5);
+INSERT INTO notebooks_annotations (notebook_id,annotation_id) VALUES (5,4);
 
 
 
