@@ -17,7 +17,9 @@
  */
 package eu.dasish.annotation.backend.rest;
 
+import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.TestBackendConstants;
+import eu.dasish.annotation.backend.TestInstances;
 import eu.dasish.annotation.backend.dao.AnnotationDao;
 import eu.dasish.annotation.backend.dao.CachedRepresentationDao;
 import eu.dasish.annotation.backend.dao.NotebookDao;
@@ -30,16 +32,22 @@ import eu.dasish.annotation.backend.identifiers.SourceIdentifier;
 import eu.dasish.annotation.backend.identifiers.UserIdentifier;
 import eu.dasish.annotation.backend.identifiers.VersionIdentifier;
 import eu.dasish.annotation.schema.Annotation;
+import eu.dasish.annotation.schema.AnnotationBody;
 import eu.dasish.annotation.schema.CachedRepresentationInfo;
 import eu.dasish.annotation.schema.NewOrExistingSourceInfo;
 import eu.dasish.annotation.schema.NewSourceInfo;
+import eu.dasish.annotation.schema.Permission;
+import eu.dasish.annotation.schema.ResourceREF;
 import eu.dasish.annotation.schema.Source;
 import eu.dasish.annotation.schema.SourceInfo;
+import eu.dasish.annotation.schema.Version;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.xml.datatype.XMLGregorianCalendar;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.junit.Test;
@@ -75,10 +83,12 @@ public class DaoDispatcherTest {
     private AnnotationDao annotationDao;
     @Autowired
     private NotebookDao notebookDao;
+    TestInstances testInstances = new TestInstances();
 
     public DaoDispatcherTest() {
     }
 
+    ///////// GETTERS /////////////
     /**
      * Test of getAnnotationInternalIdentifier method, of class DaoDispatcher.
      */
@@ -149,6 +159,326 @@ public class DaoDispatcherTest {
     }
 
     /**
+     * Test of getAnnotation method, of class DaoDispatcher.
+     */
+    @Test
+    public void testGetAnnotation() throws Exception {
+        System.out.println("test getAnnotation");
+
+        final Annotation mockAnnotation = new Annotation();// corresponds to the annotation # 2
+        mockAnnotation.setURI(TestBackendConstants._TEST_ANNOT_2_EXT);
+        mockAnnotation.setHeadline(TestBackendConstants._TEST_ANNOT_2_HEADLINE);
+        XMLGregorianCalendar mockTimeStamp = Helpers.setXMLGregorianCalendar(Timestamp.valueOf("2013-08-12 11:25:00.383000"));
+        mockAnnotation.setTimeStamp(mockTimeStamp);
+        ResourceREF mockOwner = new ResourceREF();
+        mockOwner.setRef(Integer.toString(TestBackendConstants._TEST_ANNOT_2_OWNER));
+        mockAnnotation.setOwner(mockOwner);
+        AnnotationBody mockBody = new AnnotationBody();
+        mockBody.getAny().add(TestBackendConstants._TEST_ANNOT_2_BODY); // TODO: will be changed after body serialization is fixed 
+        mockAnnotation.setBody(mockBody);
+        mockAnnotation.setTargetSources(null);
+
+
+        final List<Number> mockSourceIDs = new ArrayList<Number>();
+        mockSourceIDs.add(1);
+        mockSourceIDs.add(2);
+
+        final Source mockSourceOne = new Source();
+        mockSourceOne.setLink(TestBackendConstants._TEST_SOURCE_1_LINK);
+        mockSourceOne.setURI(TestBackendConstants._TEST_SOURCE_1_EXT_ID);
+        mockSourceOne.setVersion(TestBackendConstants._TEST_SOURCE_1_EXT_ID);
+
+        final Source mockSourceTwo = new Source();
+        mockSourceTwo.setLink(TestBackendConstants._TEST_SOURCE_2_LINK);
+        mockSourceTwo.setURI(TestBackendConstants._TEST_SOURCE_2_EXT_ID);
+        mockSourceTwo.setVersion(TestBackendConstants._TEST_SOURCE_2_EXT_ID);
+
+
+        // NOT CHECKED: time stamp for sources
+
+        mockery.checking(new Expectations() {
+            {
+                oneOf(annotationDao).getAnnotationWithoutSources(1);
+                will(returnValue(mockAnnotation));
+
+                oneOf(annotationDao).retrieveSourceIDs(1);
+                will(returnValue(mockSourceIDs));
+
+                oneOf(sourceDao).getSource(1);
+                will(returnValue(mockSourceOne));
+
+                oneOf(sourceDao).getSource(2);
+                will(returnValue(mockSourceTwo));
+
+            }
+        });
+
+        Annotation result = daoDispatcher.getAnnotation(1);
+        assertEquals(TestBackendConstants._TEST_ANNOT_2_EXT, result.getURI());
+        assertEquals(TestBackendConstants._TEST_ANNOT_2_BODY, result.getBody().getAny().get(0));
+        assertEquals(TestBackendConstants._TEST_ANNOT_2_HEADLINE, result.getHeadline());
+        assertEquals(TestBackendConstants._TEST_ANNOT_2_TIME_STAMP, result.getTimeStamp().toString());
+        assertEquals(TestBackendConstants._TEST_ANNOT_2_OWNER, Integer.parseInt(result.getOwner().getRef()));
+        assertEquals(mockSourceOne.getLink(), result.getTargetSources().getTarget().get(0).getSource().getLink());
+        assertEquals(mockSourceOne.getURI(), result.getTargetSources().getTarget().get(0).getSource().getRef());
+        assertEquals(mockSourceOne.getVersion(), result.getTargetSources().getTarget().get(0).getSource().getVersion());
+        assertEquals(mockSourceTwo.getLink(), result.getTargetSources().getTarget().get(1).getSource().getLink());
+        assertEquals(mockSourceTwo.getURI(), result.getTargetSources().getTarget().get(1).getSource().getRef());
+        assertEquals(mockSourceTwo.getVersion(), result.getTargetSources().getTarget().get(1).getSource().getVersion());
+    }
+
+    /**
+     * Test of getFilteredAnnotationIDs method, of class DaoDispatcher.
+     */
+    @Test
+    public void testGetFilteredAnnotationIDs() {
+        System.out.println("test getFilteredAnnotationIDs");
+
+        final String link = "nl.wikipedia.org";
+
+        final List<Number> mockSourceIDs = new ArrayList<Number>();
+        mockSourceIDs.add(1);
+        mockSourceIDs.add(2);
+
+        final List<Number> mockAnnotationIDs = new ArrayList<Number>();
+        mockAnnotationIDs.add(2);
+        mockAnnotationIDs.add(3);
+
+        final String text = "some html";
+        final String access = null;
+        final String namespace = null;
+        final UserIdentifier owner = new UserIdentifier(TestBackendConstants._TEST_USER_3_EXT_ID);
+        final Timestamp after = new Timestamp(0);
+        final Timestamp before = new Timestamp(System.currentTimeMillis());
+
+        final List<Number> mockRetval = new ArrayList<Number>();
+        mockRetval.add(2);
+
+        mockery.checking(new Expectations() {
+            {
+                oneOf(sourceDao).getSourcesForLink(link);
+                will(returnValue(mockSourceIDs));
+
+                oneOf(annotationDao).retrieveAnnotationList(mockSourceIDs);
+                will(returnValue(mockAnnotationIDs));
+
+                oneOf(userDao).getInternalID(owner);
+                will(returnValue(3));
+
+                oneOf(annotationDao).getFilteredAnnotationIDs(mockAnnotationIDs, text, access, namespace, 3, after, before);
+                will(returnValue(mockRetval));
+
+            }
+        });
+
+
+        List result = daoDispatcher.getFilteredAnnotationIDs(link, text, access, namespace, owner, after, before);
+        assertEquals(1, result.size());
+        assertEquals(2, result.get(0));
+    }
+
+    ////////////// ADDERS /////////////////////////
+    /**
+     * Test of addCachedForVersion method, of class DaoDispatcher.
+     */
+    @Test
+    public void testAddCachedForVersion() {
+        System.out.println("addCachedForVersion");
+        String mime = "text/html";
+        String type = "text";
+        String tool = "latex";
+        final CachedRepresentationInfo newCached = new CachedRepresentationInfo();
+        newCached.setMimeType(mime);
+        newCached.setType(type);
+        newCached.setTool(tool);
+        final Number newCachedID = 8;
+        final Number versionID = 1;
+        mockery.checking(new Expectations() {
+            {
+                oneOf(cachedRepresentationDao).getInternalID(new CachedRepresentationIdentifier(newCached.getRef()));
+                will(returnValue(null));
+
+                oneOf(cachedRepresentationDao).addCachedRepresentationInfo(newCached);
+                will(returnValue(newCachedID));
+
+                one(versionDao).addVersionCachedRepresentation(versionID, newCachedID);
+                will(returnValue(1));
+
+            }
+        });
+
+
+        Number[] result = daoDispatcher.addCachedForVersion(versionID, newCached);
+        assertEquals(2, result.length);
+        assertEquals(1, result[0]);
+        assertEquals(newCachedID, result[1]);
+    }
+
+    /**
+     * Test of addSiblingVersionForSource method, of class DaoDispatcher.
+     */
+    @Test
+    public void testAddSiblingVersionForSource() throws Exception {
+        System.out.println("test addSiblingVersionForSource ");
+
+        // test adding completely new version 
+        final Version mockVersion = new Version(); // should be # 8
+        final VersionIdentifier mockVersionIdentifier = new VersionIdentifier();
+        mockVersion.setVersion(mockVersionIdentifier.toString());
+
+        mockery.checking(new Expectations() {
+            {
+                oneOf(versionDao).getInternalID(mockVersionIdentifier);
+                will(returnValue(null));
+
+                oneOf(versionDao).addVersion(mockVersion);
+                will(returnValue(8));
+
+                oneOf(sourceDao).addSourceVersion(1, 8);
+                will(returnValue(1));
+
+            }
+        });
+
+        Number[] result = daoDispatcher.addSiblingVersionForSource(1, mockVersion);
+        assertEquals(2, result.length);
+        assertEquals(1, result[0]);
+        assertEquals(8, result[1]);
+
+
+        // Another test: connecting the existing version to the source
+
+        final Version mockVersionTwo = new Version(); // should be # 3
+        final VersionIdentifier mockVersionIdentifierTwo = new VersionIdentifier(TestBackendConstants._TEST_VERSION_3_EXT_ID);
+        mockVersionTwo.setVersion(mockVersionIdentifierTwo.toString());
+
+        mockery.checking(new Expectations() {
+            {
+                oneOf(versionDao).getInternalID(mockVersionIdentifierTwo);
+                will(returnValue(3));
+
+                oneOf(sourceDao).addSourceVersion(1, 3);
+                will(returnValue(1));
+            }
+        });
+        Number[] resultTwo = daoDispatcher.addSiblingVersionForSource(1, mockVersionTwo);
+        assertEquals(2, resultTwo.length);
+        assertEquals(1, resultTwo[0]);
+        assertEquals(3, resultTwo[1]);
+    }
+
+    /**
+     * Test of addSourcesForAnnotation method, of class DaoDispatcher.
+     */
+    @Test
+    public void testAddSourcesForAnnotation() throws Exception {
+        System.out.println("test addSourcesForAnnotation");
+
+        // test 1: adding an existing source
+        NewOrExistingSourceInfo testSourceOne = new NewOrExistingSourceInfo();
+        final SourceIdentifier mockSourceIdentifierOne = new SourceIdentifier(TestBackendConstants._TEST_SOURCE_1_EXT_ID);
+        SourceInfo testOldSource = new SourceInfo();
+        testOldSource.setLink(TestBackendConstants._TEST_SOURCE_1_LINK);
+        testOldSource.setRef(TestBackendConstants._TEST_SOURCE_1_EXT_ID);
+        testOldSource.setVersion(TestBackendConstants._TEST_VERSION_1_EXT_ID);
+        testSourceOne.setSource(testOldSource);
+        List<NewOrExistingSourceInfo> mockSourceSOne = new ArrayList<NewOrExistingSourceInfo>();
+        mockSourceSOne.add(testSourceOne);
+
+        mockery.checking(new Expectations() {
+            {
+                oneOf(sourceDao).getInternalID(with(aNonNull(SourceIdentifier.class)));
+                will(returnValue(1));
+
+                oneOf(annotationDao).addAnnotationSourcePair(1, 1);
+                will(returnValue(1));
+            }
+        });
+
+        Map<String, String> result = daoDispatcher.addSourcesForAnnotation(1, mockSourceSOne);
+        assertEquals(0, result.size());
+
+        // test 2: adding a new source
+
+        NewOrExistingSourceInfo testSourceTwo = new NewOrExistingSourceInfo();
+        NewSourceInfo testNewSource = new NewSourceInfo();
+        testNewSource.setLink(TestBackendConstants._TEST_NEW_SOURCE_LINK);
+        testNewSource.setVersion(null);
+        testSourceTwo.setNewSource(testNewSource);
+        List<NewOrExistingSourceInfo> mockSourceSTwo = new ArrayList<NewOrExistingSourceInfo>();
+        mockSourceSTwo.add(testSourceTwo);
+
+//        final Source mockNewSource = daoDispatcher.createSource(testNewSource);
+//        final Version mockNewVersion = daoDispatcher.createVersion(testNewSource);
+
+        mockery.checking(new Expectations() {
+            {
+                oneOf(sourceDao).addSource(with(aNonNull(Source.class)));
+                will(returnValue(6)); //# the next new number is 6, we have already 5 sources
+
+                ////////////  mockery in the call addSiblingVersionForSource //////////////
+
+                oneOf(versionDao).getInternalID(with(aNonNull(VersionIdentifier.class)));
+                will(returnValue(null));
+
+                oneOf(versionDao).addVersion(with(aNonNull(Version.class)));
+                will(returnValue(8)); // next free nummber
+
+                oneOf(sourceDao).addSourceVersion(6, 8);
+                will(returnValue(1));
+
+                //////////////////////////////////////
+
+                oneOf(annotationDao).addAnnotationSourcePair(1, 6);
+                will(returnValue(1));
+
+            }
+        });
+
+        Map<String, String> resultTwo = daoDispatcher.addSourcesForAnnotation(1, mockSourceSTwo);
+        assertEquals(1, resultTwo.size());
+        assertFalse(null == resultTwo.get(testNewSource.getId()));
+
+    }
+
+    /**
+     * Test of addUsersAnnotation method, of class DaoDispatcher.
+     */
+    @Test
+    public void testAddUsersAnnotation() throws Exception {
+        System.out.println("test addUsersAnnotation");
+
+        // expectations for addUsersannotation itself
+        final Annotation testAnnotation = testInstances.getAnnotationToAdd();
+
+        mockery.checking(new Expectations() {
+            {
+                oneOf(annotationDao).addAnnotation(testAnnotation, 5);
+                will(returnValue(6)); // the next free number is 6
+
+                //  expectations for addSourcesForannotation
+                oneOf(sourceDao).getInternalID(with(aNonNull(SourceIdentifier.class)));
+                will(returnValue(1));
+
+                oneOf(annotationDao).addAnnotationSourcePair(6, 1);
+                will(returnValue(1)); // the source is old, no new persistent identifier were produced
+
+                ///////////
+
+                oneOf(annotationDao).updateBody(6, testAnnotation.getBody().getAny().get(0).toString());// will be changed after serialization is fixed
+                will(returnValue(1)); // the DB update will be called at perform anyway, even if the body is not changed (can be optimized)
+
+                oneOf(annotationDao).addAnnotationPrincipalPermission(6, 5, Permission.OWNER);
+                will(returnValue(1));
+            }
+        });
+
+        Number result = daoDispatcher.addUsersAnnotation(testAnnotation, 5);
+        assertEquals(6, result);
+    }
+
+    //////////////////// DELETERS ////////////////
+    /**
      * Test of deleteCachedForVersion method, of class DaoDispatcher.
      */
     @Test
@@ -171,44 +501,9 @@ public class DaoDispatcherTest {
         assertEquals(0, result[1]);
     }
 
-    /**
-     * Test of addCachedForVersion method, of class DaoDispatcher.
-     */
-    @Test
-    public void testAddCachedForVersion() {
-        System.out.println("addCachedForVersion");
-        String mime = "text/html";
-        String type = "text";
-        String tool = "latex";
-        final CachedRepresentationInfo newCached = new CachedRepresentationInfo();
-        newCached.setMimeType(mime);
-        newCached.setType(type);
-        newCached.setTool(tool);
-        final Number newID = 8;
-        final Number versionID = 1;
-        mockery.checking(new Expectations() {
-            {
-                oneOf(cachedRepresentationDao).getInternalID(new CachedRepresentationIdentifier(newCached.getRef()));
-                will(returnValue(null));
-
-                oneOf(cachedRepresentationDao).addCachedRepresentationInfo(newCached);
-                will(returnValue(newID));
-
-                one(versionDao).addVersionCachedRepresentation(versionID, newID);
-                will(returnValue(1));
-
-            }
-        });
-
-
-        Number[] result = daoDispatcher.addCachedForVersion(versionID, newCached);
-        assertEquals(2, result.length);
-        assertEquals(newID, result[0]);
-        assertEquals(1, result[1]);
-    }
-
     /////////////////////////////////////////////
-    public void testDeleteVersionWithCachedRepresentations() {
+    @Test
+    public void testDeleteAalCachedOfVersion() {
         System.out.println("deleteVersion");
         final List<Number> cachedList = new ArrayList<Number>();
         cachedList.add(5);
@@ -229,9 +524,6 @@ public class DaoDispatcherTest {
 
                 oneOf(cachedRepresentationDao).deleteCachedRepresentationInfo(5);
                 will(returnValue(0)); // cached is used by another version
-
-
-
             }
         });
 
@@ -259,7 +551,7 @@ public class DaoDispatcherTest {
     }
 
     @Test
-    public void testDeleteSourceSourceWithVersions() throws SQLException {
+    public void testDeleteAllVersionsOfSource() throws SQLException {
         // test 1: source in use by some annotation
         mockery.checking(new Expectations() {
             {
@@ -311,293 +603,65 @@ public class DaoDispatcherTest {
     }
 
     /**
-     * Test of addSourceAndPairSourceVersion method, of class DaoDispatcher.
-     */
-    @Test
-    public void testAddSourceAndPairSourceVersion() throws Exception {
-        System.out.println("addSourceAndPairSourceVersion");
-        final NewSourceInfo newSource = new NewSourceInfo();
-        newSource.setLink(TestBackendConstants._TEST_NEW_SOURCE_LINK);
-        newSource.setVersion(TestBackendConstants._TEST_VERSION_3_EXT_ID);// already added version, existing
-
-//        mockery.checking(new Expectations() {
-//            {
-//                oneOf(versionDao).getInternalID(new VersionIdentifier(TestBackendConstants._TEST_VERSION_3_EXT_ID));
-//                will(returnValue(3));
-//
-//                oneOf(sourceDao).addSource(with(aNonNull(Source.class)));
-//                will(returnValue(6));
-//
-//                oneOf(sourceDao).addSourceVersion(6, 3);
-//                will(returnValue(1));
-//
-//            }
-//        });
-//
-//        Number result = daoDispatcher.addSiblingVersionForSource(newSource);
-//        assertEquals(6, result.intValue());
-//
-//        // Another test
-//
-//        final NewSourceInfo newSourceTwo = new NewSourceInfo();
-//        newSourceTwo.setLink(TestBackendConstants._TEST_NEW_SOURCE_LINK);
-//        newSourceTwo.setVersion(TestBackendConstants._TEST_VERSION_NONEXIST_EXT_ID);
-//        mockery.checking(new Expectations() {
-//            {
-//                oneOf(versionDao).getInternalID(new VersionIdentifier(TestBackendConstants._TEST_VERSION_NONEXIST_EXT_ID));
-//                will(returnValue(null));
-//
-//            }
-//        });
-//        Number resultTwo = daoDispatcher.addSourceAndPairSourceVersion(newSourceTwo);
-//        assertEquals(-1, resultTwo.intValue());
-
-
-    }
-
-    /**
-     * Test of addTargetSourcesToAnnotation method, of class DaoDispatcher.
-     */
-    @Test
-    public void testAddTargetSourcesToAnnotation() throws Exception {
-        System.out.println("addTargetSourcesToAnnotation");
-
-        // test 1: adding an existing source
-        NewOrExistingSourceInfo noesiOne = new NewOrExistingSourceInfo();
-        // this corresponds to the Source # 1 in teh test database
-        final SourceIdentifier sourceIdentifier = new SourceIdentifier(TestBackendConstants._TEST_SOURCE_1_EXT_ID);
-        SourceInfo si = new SourceInfo();
-        si.setLink(TestBackendConstants._TEST_SOURCE_1_LINK);
-        si.setRef(TestBackendConstants._TEST_SOURCE_1_EXT_ID);
-        si.setVersion(TestBackendConstants._TEST_VERSION_1_EXT_ID);
-        noesiOne.setSource(si);
-        List<NewOrExistingSourceInfo> sources = new ArrayList<NewOrExistingSourceInfo>();
-        sources.add(noesiOne);
-
-//        mockery.checking(new Expectations() {
-//            {
-//                oneOf(sourceDao).getInternalID(sourceIdentifier);
-//                will(returnValue(1));
-//
-//                oneOf(annotationDao).addAnnotationSourcePair(1, 1);
-//                will(returnValue(1));
-//            }
-//        });
-//
-//        Map<String, String> result = daoDispatcher.addTargetSourcesToAnnotation(1, sources);
-//        assertEquals(0, result.size());
-//        
-//        // test 2: adding a new source
-//
-//        NewOrExistingSourceInfo noesiTwo = new NewOrExistingSourceInfo();
-//        NewSourceInfo nsi = new NewSourceInfo();
-//        nsi.setLink(TestBackendConstants._TEST_NEW_SOURCE_LINK);
-//        nsi.setId(TestBackendConstants._TEST_TEMP_SOURCE_ID);
-//        nsi.setVersion(null);
-//        noesiTwo.setNewSource(nsi);
-//
-//
-//        NewOrExistingSourceInfo noesiTwoImage = new NewOrExistingSourceInfo();
-//        SourceInfo siTwo = new SourceInfo();
-//        siTwo.setLink(TestBackendConstants._TEST_NEW_SOURCE_LINK);
-//        final SourceIdentifier sourceIdentifierTwo = new SourceIdentifier();
-//        si.setRef(sourceIdentifier.toString());
-//        si.setVersion(null);
-//        noesiTwo.setSource(si);
-//
-//        final Map<NewOrExistingSourceInfo, NewOrExistingSourceInfo> map = new HashMap<NewOrExistingSourceInfo, NewOrExistingSourceInfo>();
-//        map.put(noesi, noesiTwo);
-
-
-//        
-//        mockery.checking(new Expectations() {
-//            {
-//                oneOf(sourceDao.getInternalID(sourceIdentifier));
-//                will(returnValue());
-//                
-//                oneOf(annotationDao).addAnnotationSourcePair(with(aNonNull(Number.class)), with(aNonNull(Number.class)));
-//                will(returnValue(1));
-//                
-//                oneOf(sourceDao).addTargetSources(with(aNonNull(Number.class)), with(aNonNull(List.class)));
-//                will(returnValue(map));
-//            }
-//        });
-
-
-
-    }
-
-    /**
-     * Test of getFilteredAnnotationIDs method, of class DaoDispatcher.
-     */
-    @Test
-    public void testGetFilteredAnnotationIDs() {
-        System.out.println("getFilteredAnnotationIDs");
-        String link = "";
-        String text = "";
-        String access = "";
-        String namespace = "";
-        UserIdentifier owner = null;
-        Timestamp after = null;
-        Timestamp before = null;
-        DaoDispatcher instance = new DaoDispatcher();
-        List expResult = null;
-        List result = instance.getFilteredAnnotationIDs(link, text, access, namespace, owner, after, before);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
      * Test of deleteAnnotationWithSources method, of class DaoDispatcher.
      */
     @Test
-    public void testDeleteAnnotationWithSources() throws Exception {
-//        System.out.println("deleteAnnotationWithSources");
-//        Number annotationID = null;
-//        DaoDispatcher instance = new DaoDispatcher();
-//        int[] expResult = null;
-//        int[] result = instance.deleteAnnotationAllSourcesAndPermissions(annotationID);
-//        assertArrayEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
+    public void testDeleteAnnotation() throws Exception {
+        System.out.println("deleteAnnotation ");
+
+        // deleting annotation 3, which has its target source 2  (used by annotation # 1)
+        final List<Number> mockSourceIDs = new ArrayList<Number>();
+        mockSourceIDs.add(2);
+
+        mockery.checking(new Expectations() {
+            {
+                oneOf(annotationDao).deleteAnnotationPrincipalPermissions(3);
+                will(returnValue(3));
+
+                oneOf(annotationDao).retrieveSourceIDs(3);
+                will(returnValue(mockSourceIDs));
+
+                oneOf(annotationDao).deleteAllAnnotationSource(3);
+                will(returnValue(1));
+
+                oneOf(annotationDao).deleteAnnotation(3);
+                will(returnValue(1));
+
+                oneOf(sourceDao).sourceIsInUse(2); // expectation for deleteAllVersionsOfSource
+                will(returnValue(true));
+            }
+        });
+        int[] result = daoDispatcher.deleteAnnotation(3);// the source will be deleted because it is not referred by any annotation
+        assertEquals(4, result.length);
+        assertEquals(1, result[0]); // annotation 3 is deleted
+        assertEquals(3, result[1]); // 3 rows in "annotation proncipal permissions are deleted"
+        assertEquals(1, result[2]);  // row (3,2) in "annotations_sources" is deleted
+        assertEquals(0, result[3]); //the source 2 is not deleted because it is still in use by anntation 2
     }
-
-    /**
-     * Test of getAnnotation method, of class DaoDispatcher.
-     */
-    @Test
-    public void testGetAnnotation() throws Exception {
-//        System.out.println("getAnnotation");
-//        Number annotationID = null;
-//        DaoDispatcher instance = new DaoDispatcher();
-//        Annotation expResult = null;
-//        Annotation result = instance.getAnnotation(annotationID);
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-    }
-
-    /**
-     *
-     * @param annotationId
-     * @return result[0] = # removed "annotations_principals_permissions" rows
-     * result[1] = # removed "annotations_target_sources" rows result[2] = #
-     * removed annotation rows (should be 1)
-     */
-    @Test
-    public void testDeleteAnnotationWithSourcesAndPermissions() throws SQLException {
-        System.out.println("test deleteAnnotationWithSourcesAndPermissions");
-        // result[0] = # removed "annotations_principals_perissions" rows
-        // result[1] = # removed "annotatiobs_target_sources" rows
-        // result[2] = # removed annotation rows (should be 1)
-
-//        int[] result = daoDispatcher.deleteAnnotationWithSourcesAndPermissions(5);
-//        assertEquals(3, result[0]);
-//        assertEquals(2, result[1]);
-//        assertEquals(1, result[2]);
-//
-//        // now, try to delete the same annotation one more time
-//        // if it has been already deleted then the method under testing should return 0
-//
-//        result = daoDispatcher.deleteAnnotationWithSourcesAndPermissions(5);
-//        assertEquals(0, result[0]);
-//        assertEquals(0, result[1]);
-//        assertEquals(0, result[2]);
-    }
-
-    /**
-     * Test of contructNewOrExistingSourceInfo method, of class JdbcSourceDao.
-     */
-    @Test
-    public void testContructNewOrExistingSourceInfo() {
-        System.out.println("contructNewOrExistingSourceInfo");
-
-        List<SourceInfo> sourceInfoList = new ArrayList<SourceInfo>();
-
-        SourceInfo sourceInfoOne = new SourceInfo();
-        sourceInfoOne.setLink(TestBackendConstants._TEST_SOURCE_1_LINK);
-        sourceInfoOne.setRef(TestBackendConstants._TEST_SOURCE_1_EXT_ID);
-        sourceInfoOne.setRef(TestBackendConstants._TEST_VERSION_1_EXT_ID);
-
-        SourceInfo sourceInfoTwo = new SourceInfo();
-        sourceInfoTwo.setLink(TestBackendConstants._TEST_SOURCE_2_LINK);
-        sourceInfoTwo.setRef(TestBackendConstants._TEST_SOURCE_2_EXT_ID);
-        sourceInfoTwo.setRef(TestBackendConstants._TEST_VERSION_3_EXT_ID);
-
-        sourceInfoList.add(sourceInfoOne);
-        sourceInfoList.add(sourceInfoTwo);
-
-//        NewOrExistingSourceInfos result = jdbcSourceDao.contructNewOrExistingSourceInfo(sourceInfoList);
-//        assertEquals(2, result.getTarget().size());
-//        assertEquals(sourceInfoOne, result.getTarget().get(0).getSource());
-//        assertEquals(sourceInfoTwo, result.getTarget().get(1).getSource());
-
-    }
-//    /**
-//     * Test of addTargetSources method, of class JdbcSourceDao. public
-//     * Map<NewOrExistingSourceInfo, NewOrExistingSourceInfo>
-//     * addTargetSources(Number annotationID, List<NewOrExistingSourceInfo>
-//     * sources)
-//     */
+    
+    
 //    @Test
-//    public void testAddTargetSourcesOnExistingSource() {
-//        System.out.println("addTargetSources : adding the old source");
-//
-//        NewOrExistingSourceInfo noesi = new NewOrExistingSourceInfo();
-//        SourceInfo si = new SourceInfo();
-//        si.setLink(TestBackendConstants._TEST_SOURCE_1_LINK);
-//        si.setRef(TestBackendConstants._TEST_SOURCE_1_EXT_ID);
-//        si.setVersion(TestBackendConstants._TEST_VERSION_1_EXT_ID);
-//        noesi.setSource(si);
-//
-//        List<NewOrExistingSourceInfo> listnoesi = new ArrayList<NewOrExistingSourceInfo>();
-//        listnoesi.add(noesi);
-//
-//        try {
-//            Map<String, String> result = jdbcSourceDao.addTargetSources(5, listnoesi);
-//            assertEquals(0, result.size()); // no new peristsent source IDs are produced
-//        } catch (SQLException e) {
-//            System.out.println(e);
-//        }
-//    }
-//
-//    /**
-//     * Test of addTargetSources method, of class JdbcSourceDao. public
-//     * Map<NewOrExistingSourceInfo, NewOrExistingSourceInfo>
-//     * addTargetSources(Number annotationID, List<NewOrExistingSourceInfo>
-//     * sources)
-//     */
-//    @Test
-//    public void testAddTargetSourcesOnNewSource() {
-//        System.out.println("addTargetSources : adding the new source");
-//
-//        NewOrExistingSourceInfo noesi = new NewOrExistingSourceInfo();
-//        NewSourceInfo nsi = new NewSourceInfo();
-//        nsi.setLink(TestBackendConstants._TEST_NEW_SOURCE_LINK);
-//        nsi.setId(TestBackendConstants._TEST_TEMP_SOURCE_ID);
-//        nsi.setVersion(TestBackendConstants._TEST_VERSION_1_EXT_ID);
-//        noesi.setNewSource(nsi);
-//
-//        List<NewOrExistingSourceInfo> listnoesiTwo = new ArrayList<NewOrExistingSourceInfo>();
-//        listnoesiTwo.add(noesi);
+//    public void testCreateSource(){  
+//        NewSourceInfo newSourceInfo = new NewSourceInfo();
+//        newSourceInfo.setLink(TestBackendConstants._TEST_NEW_SOURCE_LINK);
+//        newSourceInfo.setVersion(null);
 //        
-//        mockery.checking(new Expectations() {
-//            {
-//                oneOf(versionDao).getInternalID(new VersionIdentifier(TestBackendConstants._TEST_VERSION_1_EXT_ID));
-//                will(returnValue(1));
-//            }
-//        });
-//
-//        try {
-//            Map<String, String> result = jdbcSourceDao.addTargetSources(5, listnoesiTwo);
-//            assertEquals(1, result.size());// a new identifier must be produced
-//            SourceIdentifier sourceIdentifier = new SourceIdentifier(result.get(TestBackendConstants._TEST_TEMP_SOURCE_ID));
-//            assertFalse(null == sourceIdentifier.getUUID()); // check if a proper uuid has been assigned 
-//        } catch (SQLException e) {
-//            System.out.print(e);
-//        }
-//
+//        Source result = daoDispatcher.createSource(newSourceInfo);
+//        assertEquals(TestBackendConstants._TEST_NEW_SOURCE_LINK, result.getLink());
+//        assertFalse(null == result.getURI());
+//        
 //    }
 //    
+//    @Test
+//    public void testCreateVersion(){  
+//        NewSourceInfo newSourceInfo = new NewSourceInfo();
+//        newSourceInfo.setLink(TestBackendConstants._TEST_NEW_SOURCE_LINK);
+//        newSourceInfo.setVersion(null);
+//        
+//        Version result = daoDispatcher.createVersion(newSourceInfo);
+//        assertFalse(null == result.getVersion()); // will be chnaged once the schema for version is fixed: ID is added
+//        
+//    }
 }
+
+

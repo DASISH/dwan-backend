@@ -22,6 +22,8 @@
 
 package eu.dasish.annotation.backend;
 
+import java.sql.Timestamp;
+
 public class TestBackendConstants {
     
     public static final String _TEST_UID_1_ = "00000000-0000-0000-0000-000000000003";

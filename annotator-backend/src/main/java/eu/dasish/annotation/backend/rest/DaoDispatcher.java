@@ -32,6 +32,7 @@ import eu.dasish.annotation.backend.identifiers.VersionIdentifier;
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.CachedRepresentationInfo;
 import eu.dasish.annotation.schema.NewOrExistingSourceInfo;
+import eu.dasish.annotation.schema.NewOrExistingSourceInfos;
 import eu.dasish.annotation.schema.NewSourceInfo;
 import eu.dasish.annotation.schema.Permission;
 import eu.dasish.annotation.schema.Source;
@@ -86,6 +87,7 @@ public class DaoDispatcher {
       public Annotation getAnnotation(Number annotationID) throws SQLException {
         Annotation result = annotationDao.getAnnotationWithoutSources(annotationID);
         List<Number> sourceIDs = annotationDao.retrieveSourceIDs(annotationID);
+        NewOrExistingSourceInfos noesis = new NewOrExistingSourceInfos();
         for (Number sourceID : sourceIDs) {
             NewOrExistingSourceInfo noesi = new NewOrExistingSourceInfo();
             Source source = sourceDao.getSource(sourceID);
@@ -94,8 +96,9 @@ public class DaoDispatcher {
             sourceInfo.setRef(source.getURI());
             sourceInfo.setVersion(source.getVersion());
             noesi.setSource(sourceInfo);
-            result.getTargetSources().getTarget().add(noesi);
+            noesis.getTarget().add(noesi);
         }
+        result.setTargetSources(noesis);
         return result;
     }
 
@@ -137,11 +140,11 @@ public class DaoDispatcher {
     
       public Number[] addSiblingVersionForSource(Number sourceID, Version version) throws SQLException {
         Number[] result = new Number[2];
-        result[0] = versionDao.getInternalID(new VersionIdentifier(version.getVersion())); // TOT: change to getURI after the schem is fixed
-        if (result[0] == null) {
-            result[0] = versionDao.addVersion(version);
+        result[1] = versionDao.getInternalID(new VersionIdentifier(version.getVersion())); // TOT: change to getURI after the schem is fixed
+        if (result[1] == null) {
+            result[1] = versionDao.addVersion(version);
         }
-        result[1] = sourceDao.addSourceVersion(sourceID, result[0]);
+        result[0] = sourceDao.addSourceVersion(sourceID, result[1]);
         return result;
     }
 
@@ -166,7 +169,7 @@ public class DaoDispatcher {
     }
 
     
-    public Annotation addUsersAnnotation(Annotation annotation, Number userID) throws SQLException {
+    public Number addUsersAnnotation(Annotation annotation, Number userID) throws SQLException {
 
         Number annotationID = annotationDao.addAnnotation(annotation, userID);
 
@@ -180,8 +183,7 @@ public class DaoDispatcher {
         // Add the permission (annotation_id, owner);
         int affectedPermissions = annotationDao.addAnnotationPrincipalPermission(annotationID, userID, Permission.OWNER);
 
-        Annotation newAnnotation = getAnnotation(annotationID);
-        return newAnnotation;
+        return annotationID;
     }
 
       
