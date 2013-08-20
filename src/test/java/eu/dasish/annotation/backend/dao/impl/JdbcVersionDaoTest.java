@@ -108,6 +108,7 @@ public class JdbcVersionDaoTest extends JdbcResourceDaoTest {
         Version freshVersion = new Version();
         Number result = jdbcVersionDao.addVersion(freshVersion);
         assertEquals(8, result);
+        // detailed checking
         Version addedVersion = jdbcVersionDao.getVersion(result);
         assertFalse(null == addedVersion.getVersion()); // extend once "version" information is fixed, and becomes different from externalID
     }

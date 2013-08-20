@@ -19,10 +19,10 @@ Any value defined here will override the pom.xml file value but is only applicab
     <spring-data xmlns="http://www.netbeans.org/ns/spring-data/1">
         <config-files>
             <config-file>src/main/resources/spring-config/sourceDao.xml</config-file>
-            <config-file>src/main/resources/spring-config/VersionDao.xml</config-file>
-            <config-file>src/main/resources/spring-config/CachedRepresentationDao.xml</config-file>
+            <config-file>src/main/resources/spring-config/versionDao.xml</config-file>
+            <config-file>src/main/resources/spring-config/cachedRepresentationDao.xml</config-file>
             <config-file>src/test/resources/spring-test-config/mockVersionDao.xml</config-file>
-            <config-file>src/test/resources/spring-test-config/mockCachedRepresenationDao.xml</config-file>
+            <config-file>src/test/resources/spring-test-config/mockDaoDispatcher.xml</config-file>
         </config-files>
         <config-file-groups/>
     </spring-data>

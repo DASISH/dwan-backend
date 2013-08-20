@@ -122,6 +122,7 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest{
         cached.setRef(null);
         
         Number result = jdbcCachedRepresentationDao.addCachedRepresentationInfo(cached);
+        // checking
         CachedRepresentationInfo addedCached = jdbcCachedRepresentationDao.getCachedRepresentationInfo(result);
         assertEquals(8, result.intValue());
         assertEquals("text/plain", addedCached.getMimeType());
