@@ -23,6 +23,7 @@ import eu.dasish.annotation.backend.dao.NotebookDao;
 import eu.dasish.annotation.backend.dao.SourceDao;
 import eu.dasish.annotation.backend.dao.UserDao;
 import eu.dasish.annotation.backend.dao.VersionDao;
+import eu.dasish.annotation.backend.rest.DaoDispatcher;
 import org.jmock.Mockery;
 
 /**
@@ -61,5 +62,9 @@ public class MockObjectsFactory {
     
     public VersionDao newVersionDao() {
         return context.mock(VersionDao.class);
+    }
+    
+    public DaoDispatcher newDaoDispatcher() {
+        return context.mock(DaoDispatcher.class);
     }
 }

@@ -231,6 +231,7 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         Number newAnnotationID = jdbcAnnotationDao.addAnnotation(annotationToAdd, 5);
         assertEquals(6, newAnnotationID);
         
+        // checking
         Annotation addedAnnotation= jdbcAnnotationDao.getAnnotationWithoutSources(6);
         assertFalse(null == addedAnnotation.getURI());
         assertFalse(null == addedAnnotation.getTimeStamp());

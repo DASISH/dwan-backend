@@ -132,6 +132,7 @@ public class JdbcSourceDaoTest extends JdbcResourceDaoTest {
         
         Number result = jdbcSourceDao.addSource(freshSource);
         assertEquals(6, result);
+        // detailed checking
         Source addedSource = jdbcSourceDao.getSource(result);
         assertEquals(link, addedSource.getLink());
         assertEquals(TestBackendConstants._TEST_VERSION_1_EXT_ID, addedSource.getVersion());
