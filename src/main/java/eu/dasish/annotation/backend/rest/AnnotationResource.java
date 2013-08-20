@@ -87,7 +87,8 @@ public class AnnotationResource {
         if (remoteUser != null) {
             userID = daoDispatcher.getUserInternalIdentifier(new UserIdentifier(remoteUser));
         }
-        Annotation newAnnotation =  daoDispatcher.addUsersAnnotation(annotation, userID);
+        Number newAnnotationID =  daoDispatcher.addUsersAnnotation(annotation, userID);
+        Annotation newAnnotation = daoDispatcher.getAnnotation(newAnnotationID); 
         return (new ObjectFactory().createAnnotation(newAnnotation));
     }
 }
