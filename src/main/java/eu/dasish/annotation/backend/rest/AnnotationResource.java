@@ -86,10 +86,7 @@ public class AnnotationResource {
     @Path("")
     public JAXBElement<Annotation> createAnnotation(Annotation annotation) throws SQLException {
         String remoteUser = httpServletRequest.getRemoteUser();
-        Number userID = null;
-        if (remoteUser != null) {
-            userID = daoDispatcher.getUserInternalIdentifier(new UserIdentifier(remoteUser));
-        }
+        Number userID = daoDispatcher.getUserInternalIdentifier(new UserIdentifier(remoteUser));
         Number newAnnotationID =  daoDispatcher.addUsersAnnotation(annotation, userID);
         Annotation newAnnotation = daoDispatcher.getAnnotation(newAnnotationID); 
         return (new ObjectFactory().createAnnotation(newAnnotation));
