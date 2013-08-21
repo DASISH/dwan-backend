@@ -19,12 +19,13 @@ package eu.dasish.annotation.backend.rest;
 
 import eu.dasish.annotation.backend.dao.DaoDispatcher;
 import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.GenericType;
 import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.TestBackendConstants;
-import eu.dasish.annotation.backend.TestInstances;
 import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
 import eu.dasish.annotation.backend.identifiers.UserIdentifier;
 import eu.dasish.annotation.schema.Annotation;
+import eu.dasish.annotation.schema.AnnotationBody;
 import eu.dasish.annotation.schema.ObjectFactory;
 import eu.dasish.annotation.schema.ResourceREF;
 import java.sql.SQLException;
@@ -55,12 +56,16 @@ public class AnnotationsTest extends ResourcesTest{
      * GET api/annotations/<aid>
      */
     @Test
-    public void testGetAnnotation() throws SQLException{
+    public void testGetAnnotation() throws SQLException, DatatypeConfigurationException{
         System.out.println("testGetAnnotation");
         final String annotationIdentifier= TestBackendConstants._TEST_ANNOT_2_EXT;
         final int annotationID = 2;
-        final Annotation testAnnotation = new ObjectFactory().createAnnotation();
-        final Annotation expectedAnnotation = (new TestInstances()).getAnnotationOne();
+        final Annotation testAnnotation = new Annotation();
+        ResourceREF owner = new ResourceREF();
+        owner.setRef("5");
+        testAnnotation.setOwner(owner);
+        testAnnotation.setURI((new AnnotationIdentifier()).toString());
+        testAnnotation.setTimeStamp(Helpers.setXMLGregorianCalendar(Timestamp.valueOf("2013-08-12 11:25:00.383000")));
         
         //final Number annotationID = daoDispatcher.getAnnotationInternalIdentifier(new AnnotationIdentifier(annotationIdentifier));
         //final Annotation annotation = daoDispatcher.getAnnotation(annotationID);
@@ -70,7 +75,7 @@ public class AnnotationsTest extends ResourcesTest{
                 will(returnValue(annotationID));                
                 
                 oneOf(daoDispatcher).getAnnotation(annotationID);                
-                will(returnValue(expectedAnnotation));
+                will(returnValue(testAnnotation));
             }
         });
         
@@ -81,7 +86,7 @@ public class AnnotationsTest extends ResourcesTest{
         Annotation entity = response.getEntity(Annotation.class);
         assertEquals(testAnnotation.getBody(), entity.getBody());
         assertEquals(testAnnotation.getHeadline(), entity.getHeadline());
-        assertEquals(testAnnotation.getOwner(), entity.getOwner());
+        assertEquals(testAnnotation.getOwner().getRef(), entity.getOwner().getRef());
         assertEquals(testAnnotation.getPermissions(), entity.getPermissions());
         assertEquals(testAnnotation.getTargetSources(), entity.getTargetSources());
         assertEquals(testAnnotation.getTimeStamp(), entity.getTimeStamp());
@@ -127,14 +132,17 @@ public class AnnotationsTest extends ResourcesTest{
     @Test
     public void testCreateAnnotation() throws SQLException, InstantiationException, IllegalAccessException, DatatypeConfigurationException{
         System.out.println("test createAnnotation");
-        final Annotation annotationToAdd = new ObjectFactory().createAnnotation();
+        // Peter's workaround on absence of "ObjectFactory.create... for annotations
+
+        final Annotation annotationToAdd = new Annotation();
+
+        final JAXBElement<Annotation> jaxbElement = new JAXBElement<Annotation>(new QName("http://www.dasish.eu/ns/addit", "annotation"), Annotation.class, null, annotationToAdd);
+         //final Annotation annotToAddJB = jaxbElement.getValue();
         
-//        Number userID = null;
-//        if (remoteUser != null) {
-//            userID = daoDispatcher.getUserInternalIdentifier(new UserIdentifier(remoteUser));
-//        }
-//        Number newAnnotationID =  daoDispatcher.addUsersAnnotation(annotation, userID);
-//        Annotation newAnnotation = daoDispatcher.getAnnotation(newAnnotationID);
+          // for setting up mockery
+        //userID = daoDispatcher.getUserInternalIdentifier(new UserIdentifier(remoteUser));
+        //Number newAnnotationID =  daoDispatcher.addUsersAnnotation(annotation, userID);
+        //Annotation newAnnotation = daoDispatcher.getAnnotation(newAnnotationID);
         final String ownerString = "5";
         final Number ownerID =  5;
         final Number newAnnotationID = 6;
@@ -150,7 +158,8 @@ public class AnnotationsTest extends ResourcesTest{
                 oneOf(daoDispatcher).getUserInternalIdentifier(with(aNonNull(UserIdentifier.class)));
                 will(returnValue(ownerID));
                 
-                oneOf(daoDispatcher).addUsersAnnotation(annotationToAdd, ownerID);
+                //oneOf(daoDispatcher).addUsersAnnotation(annotToAddJB, ownerID);
+                oneOf(daoDispatcher).addUsersAnnotation(with(aNonNull(Annotation.class)), with(aNonNull(Number.class)));
                 will(returnValue(newAnnotationID));
                 
                 oneOf(daoDispatcher).getAnnotation(newAnnotationID);
@@ -158,19 +167,19 @@ public class AnnotationsTest extends ResourcesTest{
             }
         });
         
-         // Peter's workaround on absence of "ObjectFactory.create... for annotations        
-        final JAXBElement<Annotation> jaxbElement = new JAXBElement<Annotation>(new QName("http://www.dasish.eu/ns/addit", "annotation"), Annotation.class, null, annotationToAdd);
+              
         
         final String requestUrl = "annotations";
         System.out.println("requestUrl: " + requestUrl);
-        ClientResponse response = resource().path(requestUrl).accept(MediaType.APPLICATION_XML).type(MediaType.APPLICATION_XML).post(ClientResponse.class, jaxbElement);
+        ClientResponse response = resource().path(requestUrl).type(MediaType.APPLICATION_XML).accept(MediaType.APPLICATION_XML).post(ClientResponse.class, jaxbElement);
         assertEquals(200, response.getStatus());
         
         Annotation entity = response.getEntity(Annotation.class);
-        assertEquals(annotationToAdd.getBody(), entity.getBody());
-        assertEquals(annotationToAdd.getHeadline(), entity.getHeadline());
-        assertEquals(annotationToAdd.getPermissions(), entity.getPermissions());
-        assertEquals(annotationToAdd.getTargetSources(), entity.getTargetSources());
-        assertEquals(annotationToAdd.getTimeStamp(), entity.getTimeStamp());
+        assertEquals(addedAnnotation.getBody(), entity.getBody());
+        assertEquals(addedAnnotation.getHeadline(), entity.getHeadline());
+        assertEquals(addedAnnotation.getPermissions(), entity.getPermissions());
+        assertEquals(addedAnnotation.getTargetSources(), entity.getTargetSources());
+        assertEquals(addedAnnotation.getTimeStamp(), entity.getTimeStamp());
+        assertEquals(addedAnnotation.getOwner().getRef(), entity.getOwner().getRef());
     }
 }

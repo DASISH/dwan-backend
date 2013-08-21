@@ -46,7 +46,7 @@ import static org.junit.Assert.*;
  */
 @RunWith(value = SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = {"/spring-test-config/dataSource.xml", "/spring-test-config/mockAnnotationDao.xml", "/spring-test-config/mockUserDao.xml", 
-    "/spring-test-config/mockSourceDao.xml", "/spring-test-config/mockNotebookDao.xml", "/spring-test-config/mockery.xml"})
+    "/spring-test-config/mockSourceDao.xml", "/spring-test-config/mockNotebookDao.xml", "/spring-test-config/mockDaoDispatcher.xml", "/spring-test-config/mockery.xml"})
 public class NotebookResourceTest {
 
     @Autowired

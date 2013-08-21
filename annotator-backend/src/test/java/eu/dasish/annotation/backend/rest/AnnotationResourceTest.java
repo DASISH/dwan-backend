@@ -139,9 +139,9 @@ public class AnnotationResourceTest {
         ResourceREF owner = new ResourceREF();
         owner.setRef(ownerString);
         addedAnnotation.setOwner(owner);
-        addedAnnotation.setURI((new AnnotationIdentifier()).toString());
-        
+        addedAnnotation.setURI((new AnnotationIdentifier()).toString());        
         addedAnnotation.setTimeStamp(Helpers.setXMLGregorianCalendar(Timestamp.valueOf("2013-08-12 11:25:00.383000")));
+        
         mockery.checking(new Expectations() {
             {
                 oneOf(daoDispatcher).getUserInternalIdentifier(with(aNonNull(UserIdentifier.class)));

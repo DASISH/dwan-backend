@@ -34,12 +34,10 @@ public class TestInstances {
     
     final private Annotation _annotationOne;
     final private Annotation _annotationToAdd;
-    final private Annotation _annotationToAddNewSource;
     
     public TestInstances(){
         _annotationOne = makeAnnotationOne();
-        _annotationToAdd = makeAnnotationToAdd();
-        _annotationToAddNewSource = makeAnnotationToAddNewSource();        
+        _annotationToAdd = makeAnnotationToAdd();    
     }
     
     
@@ -65,29 +63,7 @@ public class TestInstances {
        return result;
     }
     
-    private Annotation makeAnnotationToAddNewSource(){
-       Annotation result = makeAnnotation(TestBackendConstants._TEST_ANNOT_TO_ADD_NEW_SOURCE_BODY, TestBackendConstants._TEST_ANNOT_TO_ADD_NEW_SOURCE_HEADLINE, 5);
-       
-       NewSourceInfo newSourceInfo =  new NewSourceInfo();
-       newSourceInfo.setLink(TestBackendConstants._TEST_NEW_SOURCE_LINK);
-       newSourceInfo.setId(TestBackendConstants._TEST_TEMP_SOURCE_ID);
-       // TODO: so far, the version is the external version id generated when a version is added
-       // because for now the version is used to keep external id of the version, not is human-friendly headline
-       // fix it by adding external Id to the version
-       newSourceInfo.setVersion(null); 
-       
-       NewOrExistingSourceInfo noeSourceInfo =  new NewOrExistingSourceInfo();
-       noeSourceInfo.setNewSource(newSourceInfo);
-       NewOrExistingSourceInfos noeSourceInfos =  new NewOrExistingSourceInfos();
-       noeSourceInfos.getTarget().add(noeSourceInfo);
-       result.setTargetSources(noeSourceInfos);
-       
-       return result;
-    }
-    
-    
-    // so far tests only adding annot with existing sources!!!
-    // TODO: add non-existing sources
+
     private Annotation makeAnnotation(String bodyTxt, String headline, int ownerId){
         Annotation result = new Annotation();
         AnnotationBody body = new AnnotationBody();
@@ -107,8 +83,6 @@ public class TestInstances {
        return result;
     }
     
-    //private 
-    
     
     public Annotation getAnnotationOne(){
         return _annotationOne;
@@ -118,8 +92,5 @@ public class TestInstances {
         return _annotationToAdd;
     }
     
-   public Annotation getAnnotationToAddNewSource(){
-        return _annotationToAddNewSource;
-    }
     
 }
