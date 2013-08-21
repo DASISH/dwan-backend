@@ -23,7 +23,7 @@ import eu.dasish.annotation.backend.dao.NotebookDao;
 import eu.dasish.annotation.backend.dao.SourceDao;
 import eu.dasish.annotation.backend.dao.UserDao;
 import eu.dasish.annotation.backend.dao.VersionDao;
-import eu.dasish.annotation.backend.rest.DaoDispatcher;
+import eu.dasish.annotation.backend.dao.DaoDispatcher;
 import org.jmock.Mockery;
 
 /**

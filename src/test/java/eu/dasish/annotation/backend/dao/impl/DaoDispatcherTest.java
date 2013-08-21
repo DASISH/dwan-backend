@@ -15,7 +15,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package eu.dasish.annotation.backend.rest;
+package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.TestBackendConstants;
@@ -44,7 +44,6 @@ import eu.dasish.annotation.schema.Version;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -64,11 +63,12 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration({"/spring-test-config/dataSource.xml", "/spring-test-config/mockery.xml", "/spring-test-config/mockAnnotationDao.xml",
     "/spring-test-config/mockUserDao.xml", "/spring-test-config/mockNotebookDao.xml",
-    "/spring-test-config/mockSourceDao.xml", "/spring-test-config/mockVersionDao.xml", "/spring-test-config/mockCachedRepresentationDao.xml"})
+    "/spring-test-config/mockSourceDao.xml", "/spring-test-config/mockVersionDao.xml", "/spring-test-config/mockCachedRepresentationDao.xml",
+    "/spring-config/daoDispatcher.xml"})
 public class DaoDispatcherTest {
 
     @Autowired
-    private DaoDispatcher daoDispatcher;
+    private DaoDispatcherImpl daoDispatcher;
     @Autowired
     private Mockery mockery;
     @Autowired
@@ -90,7 +90,7 @@ public class DaoDispatcherTest {
 
     ///////// GETTERS /////////////
     /**
-     * Test of getAnnotationInternalIdentifier method, of class DaoDispatcher.
+     * Test of getAnnotationInternalIdentifier method, of class DaoDispatcherImpl.
      */
     @Test
     public void testGetAnnotationInternalIdentifier() {
@@ -107,7 +107,7 @@ public class DaoDispatcherTest {
     }
 
     /**
-     * Test of getAnnotationExternalIdentifier method, of class DaoDispatcher.
+     * Test of getAnnotationExternalIdentifier method, of class DaoDispatcherImpl.
      */
     @Test
     public void testGetAnnotationExternalIdentifier() {
@@ -124,7 +124,7 @@ public class DaoDispatcherTest {
     }
 
     /**
-     * Test of getUserInternalIdentifier method, of class DaoDispatcher.
+     * Test of getUserInternalIdentifier method, of class DaoDispatcherImpl.
      */
     @Test
     public void testGetUserInternalIdentifier() {
@@ -142,7 +142,7 @@ public class DaoDispatcherTest {
     }
 
     /**
-     * Test of getUserExternalIdentifier method, of class DaoDispatcher.
+     * Test of getUserExternalIdentifier method, of class DaoDispatcherImpl.
      */
     @Test
     public void testGetUserExternalIdentifier() {
@@ -159,7 +159,7 @@ public class DaoDispatcherTest {
     }
 
     /**
-     * Test of getAnnotation method, of class DaoDispatcher.
+     * Test of getAnnotation method, of class DaoDispatcherImpl.
      */
     @Test
     public void testGetAnnotation() throws Exception {
@@ -228,7 +228,7 @@ public class DaoDispatcherTest {
     }
 
     /**
-     * Test of getFilteredAnnotationIDs method, of class DaoDispatcher.
+     * Test of getFilteredAnnotationIDs method, of class DaoDispatcherImpl.
      */
     @Test
     public void testGetFilteredAnnotationIDs() {
@@ -279,7 +279,7 @@ public class DaoDispatcherTest {
 
     ////////////// ADDERS /////////////////////////
     /**
-     * Test of addCachedForVersion method, of class DaoDispatcher.
+     * Test of addCachedForVersion method, of class DaoDispatcherImpl.
      */
     @Test
     public void testAddCachedForVersion() {
@@ -315,7 +315,7 @@ public class DaoDispatcherTest {
     }
 
     /**
-     * Test of addSiblingVersionForSource method, of class DaoDispatcher.
+     * Test of addSiblingVersionForSource method, of class DaoDispatcherImpl.
      */
     @Test
     public void testAddSiblingVersionForSource() throws Exception {
@@ -368,7 +368,7 @@ public class DaoDispatcherTest {
     }
 
     /**
-     * Test of addSourcesForAnnotation method, of class DaoDispatcher.
+     * Test of addSourcesForAnnotation method, of class DaoDispatcherImpl.
      */
     @Test
     public void testAddSourcesForAnnotation() throws Exception {
@@ -442,7 +442,7 @@ public class DaoDispatcherTest {
     }
 
     /**
-     * Test of addUsersAnnotation method, of class DaoDispatcher.
+     * Test of addUsersAnnotation method, of class DaoDispatcherImpl.
      */
     @Test
     public void testAddUsersAnnotation() throws Exception {
@@ -479,7 +479,7 @@ public class DaoDispatcherTest {
 
     //////////////////// DELETERS ////////////////
     /**
-     * Test of deleteCachedForVersion method, of class DaoDispatcher.
+     * Test of deleteCachedForVersion method, of class DaoDispatcherImpl.
      */
     @Test
     public void testDeleteCachedForVersion() {
@@ -603,7 +603,7 @@ public class DaoDispatcherTest {
     }
 
     /**
-     * Test of deleteAnnotationWithSources method, of class DaoDispatcher.
+     * Test of deleteAnnotationWithSources method, of class DaoDispatcherImpl.
      */
     @Test
     public void testDeleteAnnotation() throws Exception {

@@ -18,6 +18,7 @@
 package eu.dasish.annotation.backend.rest;
 
 import eu.dasish.annotation.backend.BackendConstants;
+import eu.dasish.annotation.backend.dao.DaoDispatcher;
 import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
 import eu.dasish.annotation.backend.identifiers.UserIdentifier;
 import eu.dasish.annotation.schema.Annotation;
@@ -34,6 +35,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.xml.bind.JAXBElement;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -43,7 +45,8 @@ import org.springframework.stereotype.Component;
 @Component
 @Path("/annotations")
 public class AnnotationResource {
-
+    
+    @Autowired
     private DaoDispatcher daoDispatcher;
     @Context
     private HttpServletRequest httpServletRequest;

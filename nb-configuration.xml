@@ -23,6 +23,7 @@ Any value defined here will override the pom.xml file value but is only applicab
             <config-file>src/main/resources/spring-config/cachedRepresentationDao.xml</config-file>
             <config-file>src/test/resources/spring-test-config/mockVersionDao.xml</config-file>
             <config-file>src/test/resources/spring-test-config/mockDaoDispatcher.xml</config-file>
+            <config-file>src/main/resources/spring-config/daoDispatcher.xml</config-file>
         </config-files>
         <config-file-groups/>
     </spring-data>

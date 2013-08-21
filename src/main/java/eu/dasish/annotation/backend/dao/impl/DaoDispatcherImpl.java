@@ -15,11 +15,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package eu.dasish.annotation.backend.rest;
+package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.dao.AnnotationDao;
 import eu.dasish.annotation.backend.dao.CachedRepresentationDao;
+import eu.dasish.annotation.backend.dao.DaoDispatcher;
 import eu.dasish.annotation.backend.dao.NotebookDao;
 import eu.dasish.annotation.backend.dao.SourceDao;
 import eu.dasish.annotation.backend.dao.UserDao;
@@ -44,14 +45,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 /**
  *
  * @author olhsha
  */
-@Component
-public class DaoDispatcher {
+public class DaoDispatcherImpl implements DaoDispatcher
+{
 
     @Autowired
     UserDao userDao;
@@ -68,22 +68,27 @@ public class DaoDispatcher {
     
     ///////////// GETTERS //////////////////////////
 
+    @Override
     public Number getAnnotationInternalIdentifier(AnnotationIdentifier annotationIdentifier) {
         return annotationDao.getInternalID(annotationIdentifier);
     }
 
+    @Override
     public AnnotationIdentifier getAnnotationExternalIdentifier(Number annotationID) {
         return annotationDao.getExternalID(annotationID);
     }
 
+    @Override
     public Number getUserInternalIdentifier(UserIdentifier userIdentifier) {
         return userDao.getInternalID(userIdentifier);
     }
 
+    @Override
     public UserIdentifier getUserExternalIdentifier(Number userID) {
         return userDao.getExternalID(userID);
     }
 
+    @Override
       public Annotation getAnnotation(Number annotationID) throws SQLException {
         Annotation result = annotationDao.getAnnotationWithoutSources(annotationID);
         List<Number> sourceIDs = annotationDao.retrieveSourceIDs(annotationID);
@@ -103,6 +108,7 @@ public class DaoDispatcher {
     }
 
     ////////////////////////////////////////////////////////////////////////
+    @Override
     public List<Number> getFilteredAnnotationIDs(String link, String text, String access, String namespace, UserIdentifier owner, Timestamp after, Timestamp before) {
 
         List<Number> annotationIDs = null;
@@ -126,6 +132,7 @@ public class DaoDispatcher {
     
     
     
+    @Override
     public Number[] addCachedForVersion(Number versionID, CachedRepresentationInfo cached) {
         Number[] result = new Number[2];
         result[1] = cachedRepresentationDao.getInternalID(new CachedRepresentationIdentifier(cached.getRef()));
@@ -138,6 +145,7 @@ public class DaoDispatcher {
     }
     
     
+    @Override
       public Number[] addSiblingVersionForSource(Number sourceID, Version version) throws SQLException {
         Number[] result = new Number[2];
         result[1] = versionDao.getInternalID(new VersionIdentifier(version.getVersion())); // TOT: change to getURI after the schem is fixed
@@ -149,6 +157,7 @@ public class DaoDispatcher {
     }
 
       
+    @Override
        public Map<String, String> addSourcesForAnnotation(Number annotationID, List<NewOrExistingSourceInfo> sources) throws SQLException {
         Map<String, String> result = new HashMap<String, String>();
         for (NewOrExistingSourceInfo noesi : sources) {
@@ -169,6 +178,7 @@ public class DaoDispatcher {
     }
 
     
+    @Override
     public Number addUsersAnnotation(Annotation annotation, Number userID) throws SQLException {
 
         Number annotationID = annotationDao.addAnnotation(annotation, userID);
@@ -189,6 +199,7 @@ public class DaoDispatcher {
       
       ////////////// DELETERS //////////////////
       
+    @Override
     public int[] deleteCachedOfVersion(Number versionID, Number cachedID) {
         int[] result = new int[2];
         result[0] = versionDao.deleteVersionCachedRepresentation(versionID, cachedID);
@@ -201,6 +212,7 @@ public class DaoDispatcher {
         return result;
     }
 
+    @Override
     public int[] deleteAllCachedOfVersion(Number versionID) {
         int[] result = new int[3];
         if (!versionDao.versionIsInUse(versionID)) {
@@ -222,6 +234,7 @@ public class DaoDispatcher {
 
   
 
+    @Override
     public int[] deleteAllVersionsOfSource(Number sourceID) throws SQLException {
         int[] result = new int[3];
         if (!sourceDao.sourceIsInUse(sourceID)) {
@@ -243,6 +256,7 @@ public class DaoDispatcher {
     }
 
  
+    @Override
     public int[] deleteAnnotation(Number annotationID) throws SQLException {
         int[] result = new int[4];
         result[1] = annotationDao.deleteAnnotationPrincipalPermissions(annotationID);
