@@ -17,36 +17,36 @@
  */
 package eu.dasish.annotation.backend.rest;
 
+import eu.dasish.annotation.backend.dao.DaoDispatcher;
 import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.GenericType;
+import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.TestBackendConstants;
-import eu.dasish.annotation.backend.dao.AnnotationDao;
-import eu.dasish.annotation.backend.dao.NotebookDao;
+import eu.dasish.annotation.backend.TestInstances;
 import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
 import eu.dasish.annotation.backend.identifiers.UserIdentifier;
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.ObjectFactory;
+import eu.dasish.annotation.schema.ResourceREF;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import javax.ws.rs.core.MediaType;
 import javax.xml.bind.JAXBElement;
+import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.namespace.QName;
 import org.jmock.Expectations;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.junit.Ignore;
 /**
  *
  * @author olhsha
  */
 public class AnnotationsTest extends ResourcesTest{
     
-    private AnnotationDao annotationDao;
-    private NotebookDao notebookDao;
+    private DaoDispatcher daoDispatcher;
     
     public AnnotationsTest() {
         super(AnnotationResource.class.getPackage().getName());        
-        annotationDao = webAppContext.getBean(AnnotationDao.class);
-        notebookDao = webAppContext.getBean(NotebookDao.class);
+        daoDispatcher = webAppContext.getBean(DaoDispatcher.class);
     }
     
 
@@ -60,16 +60,19 @@ public class AnnotationsTest extends ResourcesTest{
         final String annotationIdentifier= TestBackendConstants._TEST_ANNOT_2_EXT;
         final int annotationID = 2;
         final Annotation testAnnotation = new ObjectFactory().createAnnotation();
+        final Annotation expectedAnnotation = (new TestInstances()).getAnnotationOne();
         
-//        mockery.checking(new Expectations() {
-//            {
-//                oneOf(annotationDao).getInternalID(new AnnotationIdentifier(annotationIdentifier));                
-//                will(returnValue(annotationID));
-//                
-//                oneOf(annotationDao).getAnnotation(annotationID); 
-//               will(returnValue(testAnnotation)); 
-//            }
-//        });
+        //final Number annotationID = daoDispatcher.getAnnotationInternalIdentifier(new AnnotationIdentifier(annotationIdentifier));
+        //final Annotation annotation = daoDispatcher.getAnnotation(annotationID);
+        mockery.checking(new Expectations() {
+            {
+                oneOf(daoDispatcher).getAnnotationInternalIdentifier(with(aNonNull(AnnotationIdentifier.class)));                
+                will(returnValue(annotationID));                
+                
+                oneOf(daoDispatcher).getAnnotation(annotationID);                
+                will(returnValue(expectedAnnotation));
+            }
+        });
         
         final String requestUrl = "annotations/" + annotationIdentifier;
         System.out.println("requestUrl: " + requestUrl);
@@ -92,77 +95,74 @@ public class AnnotationsTest extends ResourcesTest{
     @Test
     public void testDeleteAnnotation() throws SQLException{
         System.out.println("testDeleteAnnotation");
-        
+         //final Number annotationID = daoDispatcher.getAnnotationInternalIdentifier(new AnnotationIdentifier(annotationIdentifier));
+        //int[] resultDelete = daoDispatcher.deleteAnnotation(annotationID);
+       
+        final int[] mockDelete = new int[4];
+        mockDelete[0]=1; // # deleted annotations
+        mockDelete[3]=1; // # deleted annotation_prinipal_permissions
+        mockDelete[2]=2; // # deleted  annotations_target_sources, (5,3), (5,4)
+        mockDelete[3]=1; // # deletd sources, 4
         mockery.checking(new Expectations() {
-            {
-                oneOf(annotationDao).getInternalID(new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_5_EXT));                
-                will(returnValue(5));
+            {  
+                oneOf(daoDispatcher).getAnnotationInternalIdentifier(with(aNonNull(AnnotationIdentifier.class)));              
+                will(returnValue(5));     
                 
-                oneOf(annotationDao).deleteAnnotation(5);
-                will(returnValue(1));
+                oneOf(daoDispatcher).deleteAnnotation(5);
+                will(returnValue(mockDelete));
             }
         });
-        
         final String requestUrl = "annotations/" + TestBackendConstants._TEST_ANNOT_5_EXT;
         System.out.println("requestUrl: " + requestUrl);
         ClientResponse response = resource().path(requestUrl).delete(ClientResponse.class);
         assertEquals(200, response.getStatus());
         assertEquals("1", response.getEntity(String.class));
         
-         // now, try to delete the same annotation one more time
-        // if it has been already deleted then the method under testing should return 0
-        
-        mockery.checking(new Expectations() {
-            {
-                oneOf(annotationDao).getInternalID(new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_5_EXT));                
-                will(returnValue(5));
-                
-                oneOf(annotationDao).deleteAnnotation(5);
-                will(returnValue(0));
-            }
-        });
-       
-        response = resource().path(requestUrl).delete(ClientResponse.class);
-        assertEquals(200, response.getStatus());
-        assertEquals("0", response.getEntity(String.class));
+      
     }
     /**
      * Test of createAnnotation method, of class AnnotationResource. 
      * POST api/annotations/
      */
     @Test
-    @Ignore
-    public void testCreateAnnotation() throws SQLException, InstantiationException, IllegalAccessException{
+    public void testCreateAnnotation() throws SQLException, InstantiationException, IllegalAccessException, DatatypeConfigurationException{
         System.out.println("test createAnnotation");
         final Annotation annotationToAdd = new ObjectFactory().createAnnotation();
+        
+//        Number userID = null;
+//        if (remoteUser != null) {
+//            userID = daoDispatcher.getUserInternalIdentifier(new UserIdentifier(remoteUser));
+//        }
+//        Number newAnnotationID =  daoDispatcher.addUsersAnnotation(annotation, userID);
+//        Annotation newAnnotation = daoDispatcher.getAnnotation(newAnnotationID);
+        final String ownerString = "5";
+        final Number ownerID =  5;
+        final Number newAnnotationID = 6;
+        final Annotation addedAnnotation = annotationToAdd;
+        ResourceREF owner = new ResourceREF();
+        owner.setRef(ownerString);
+        addedAnnotation.setOwner(owner);
+        addedAnnotation.setURI((new AnnotationIdentifier()).toString());
+        
+        addedAnnotation.setTimeStamp(Helpers.setXMLGregorianCalendar(Timestamp.valueOf("2013-08-12 11:25:00.383000")));
+        mockery.checking(new Expectations() {
+            {
+                oneOf(daoDispatcher).getUserInternalIdentifier(with(aNonNull(UserIdentifier.class)));
+                will(returnValue(ownerID));
+                
+                oneOf(daoDispatcher).addUsersAnnotation(annotationToAdd, ownerID);
+                will(returnValue(newAnnotationID));
+                
+                oneOf(daoDispatcher).getAnnotation(newAnnotationID);
+                will(returnValue(addedAnnotation));
+            }
+        });
         
          // Peter's workaround on absence of "ObjectFactory.create... for annotations        
         final JAXBElement<Annotation> jaxbElement = new JAXBElement<Annotation>(new QName("http://www.dasish.eu/ns/addit", "annotation"), Annotation.class, null, annotationToAdd);
         
-        
-        final Annotation addedAnnotation = annotationToAdd;
-        final AnnotationIdentifier annotationIdentifier = new GenericType<AnnotationIdentifier>(){}.getRawClass().newInstance();
-        addedAnnotation.setURI(annotationIdentifier.toString());
-        final UserIdentifier owner = new UserIdentifier(TestBackendConstants._TEST_USER_5_EXT_ID);
-//        mockery.checking(new Expectations() {
-//            {   
-//                
-//            // TODO sould be mpre strict demands on  inputs  when the user handling mechanism is settled
-//                oneOf(annotationDao).addAnnotation(with(aNonNull(Annotation.class)), with(any(Number.class)));
-//                will(returnValue(addedAnnotation));
-//                
-//                oneOf(permissionsDao).addAnnotationPrincipalPermission(with(aNonNull(AnnotationIdentifier.class)), with(aNonNull(UserIdentifier.class)), with(aNonNull(Permission.class)));
-//                will(returnValue(1));
-//            }
-//        });
-       
-     
-        
         final String requestUrl = "annotations";
         System.out.println("requestUrl: " + requestUrl);
-        
-        // Peter's workaround on absence of "ObjectFactory.create... for annotations
-        
         ClientResponse response = resource().path(requestUrl).accept(MediaType.APPLICATION_XML).type(MediaType.APPLICATION_XML).post(ClientResponse.class, jaxbElement);
         assertEquals(200, response.getStatus());
         
