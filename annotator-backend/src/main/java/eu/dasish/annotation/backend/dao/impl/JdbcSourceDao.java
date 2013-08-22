@@ -19,7 +19,6 @@ package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.dao.SourceDao;
-import eu.dasish.annotation.backend.identifiers.SourceIdentifier;
 import eu.dasish.annotation.schema.Source;
 import eu.dasish.annotation.schema.SourceInfo;
 import java.sql.ResultSet;
@@ -28,6 +27,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import javax.sql.DataSource;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -46,11 +46,7 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
         resourceTableName = sourceTableName;
     }
 
-    //////////////////////////////////////////////////////////////////////////////////////////////////////
-    @Override
-    public SourceIdentifier getExternalID(Number internalID) {
-        return new SourceIdentifier(super.getExternalIdentifier(internalID));
-    }
+   
 
     ///////////////////////////////////////////////////////////////////////////////
     @Override
@@ -65,7 +61,7 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
             try {
                 XMLGregorianCalendar xmlDate = Helpers.setXMLGregorianCalendar(rs.getTimestamp(time_stamp));
                 Source result = 
-                        constructSource(new SourceIdentifier(rs.getString(external_id)), rs.getString(link_uri), rs.getString(version), xmlDate);
+                        constructSource(UUID.fromString(rs.getString(external_id)), rs.getString(link_uri), rs.getString(version), xmlDate);
                 return result;
             } catch (DatatypeConfigurationException e) {
                 // TODO: which logger are we going to use?
@@ -107,7 +103,7 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
         params.put("version", source.getVersion());
         String sql = "INSERT INTO " + sourceTableName + "(" + external_id + "," + link_uri + "," + version + " ) VALUES (:externalId, :linkUri,  :version)";
         final int affectedRows = getSimpleJdbcTemplate().update(sql, params);        
-        Number internalID = getInternalID(new SourceIdentifier(externalID));
+        Number internalID = getInternalID(UUID.fromString(externalID));
         return internalID;
     }
     
@@ -158,7 +154,7 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
     private final RowMapper<SourceInfo> SourceInfoRowMapper = new RowMapper<SourceInfo>() {
         @Override
         public SourceInfo mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            return constructSourceInfo(new SourceIdentifier(rs.getString(external_id)), rs.getString(link_uri), rs.getString(version));
+            return constructSourceInfo(UUID.fromString(rs.getString(external_id)), rs.getString(link_uri), rs.getString(version));
         }
     };
 
@@ -194,17 +190,17 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
   /////////// HELPERS  ////////////////
    
 
-    private SourceInfo constructSourceInfo(SourceIdentifier sourceIdentifier, String link, String version) {
+    private SourceInfo constructSourceInfo(UUID UUID, String link, String version) {
         SourceInfo sourceInfo = new SourceInfo();
-        sourceInfo.setRef(sourceIdentifier.toString());
+        sourceInfo.setRef(UUID.toString());
         sourceInfo.setLink(link);
         sourceInfo.setVersion(version);
         return sourceInfo;
     }
 
-    private Source constructSource(SourceIdentifier sourceIdentifier, String link, String version, XMLGregorianCalendar xmlTimeStamp) {
+    private Source constructSource(UUID UUID, String link, String version, XMLGregorianCalendar xmlTimeStamp) {
         Source source = new Source();
-        source.setURI(sourceIdentifier.toString());
+        source.setURI(UUID.toString());
         source.setTimeSatmp(xmlTimeStamp);
         source.setLink(link);
         source.setVersion(version);

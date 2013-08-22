@@ -22,8 +22,6 @@ import com.sun.jersey.api.client.GenericType;
 import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.TestInstances;
-import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
-import eu.dasish.annotation.backend.identifiers.UserIdentifier;
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.ResourceREF;
 import java.sql.SQLException;
@@ -38,9 +36,9 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.lang.InstantiationException;
 import java.sql.Timestamp;
+import java.util.UUID;
 import javax.servlet.ServletException;
 import javax.xml.datatype.DatatypeConfigurationException;
-import org.junit.Ignore;
 import org.springframework.mock.web.MockHttpServletRequest;
 /**
  *
@@ -70,15 +68,13 @@ public class AnnotationResourceTest {
     @Test
     public void testGetAnnotation() throws SQLException {
         System.out.println("getAnnotation");
-        final String annotationIdentifier= TestBackendConstants._TEST_ANNOT_2_EXT;
+        final String externalIDstring= TestBackendConstants._TEST_ANNOT_2_EXT;
         final int annotationID = 2;        
         final Annotation expectedAnnotation = (new TestInstances()).getAnnotationOne();
         
-        //final Number annotationID = daoDispatcher.getAnnotationInternalIdentifier(new AnnotationIdentifier(annotationIdentifier));
-        //final Annotation annotation = daoDispatcher.getAnnotation(annotationID);
         mockery.checking(new Expectations() {
             {
-                oneOf(daoDispatcher).getAnnotationInternalIdentifier(with(aNonNull(AnnotationIdentifier.class)));                
+                oneOf(daoDispatcher).getAnnotationInternalIdentifier(with(any(UUID.class)));                
                 will(returnValue(annotationID));                
                 
                 oneOf(daoDispatcher).getAnnotation(annotationID);                
@@ -86,7 +82,7 @@ public class AnnotationResourceTest {
             }
         });
          
-        JAXBElement<Annotation> result = annotationResource.getAnnotation(annotationIdentifier);
+        JAXBElement<Annotation> result = annotationResource.getAnnotation(externalIDstring);
         assertEquals(expectedAnnotation, result.getValue());
     }
     
@@ -96,7 +92,7 @@ public class AnnotationResourceTest {
     @Test
     public void testDeleteAnnotation() throws SQLException {
         System.out.println("deleteAnnotation");
-        //final Number annotationID = daoDispatcher.getAnnotationInternalIdentifier(new AnnotationIdentifier(annotationIdentifier));
+        //final Number annotationID = daoDispatcher.getAnnotationInternalIdentifier(UUID.fromString(UUID));
         //int[] resultDelete = daoDispatcher.deleteAnnotation(annotationID);
        
         final int[] mockDelete = new int[4];
@@ -106,7 +102,7 @@ public class AnnotationResourceTest {
         mockDelete[3]=1; // # deletd sources, 4
         mockery.checking(new Expectations() {
             {  
-                oneOf(daoDispatcher).getAnnotationInternalIdentifier(with(aNonNull(AnnotationIdentifier.class)));              
+                oneOf(daoDispatcher).getAnnotationInternalIdentifier(with(aNonNull(UUID.class)));              
                 will(returnValue(5));     
                 
                 oneOf(daoDispatcher).deleteAnnotation(5);
@@ -128,7 +124,7 @@ public class AnnotationResourceTest {
         
 //        Number userID = null;
 //        if (remoteUser != null) {
-//            userID = daoDispatcher.getUserInternalIdentifier(new UserIdentifier(remoteUser));
+//            userID = daoDispatcher.getUserInternalIdentifier(UUID.fromString(remoteUser));
 //        }
 //        Number newAnnotationID =  daoDispatcher.addUsersAnnotation(annotation, userID);
 //        Annotation newAnnotation = daoDispatcher.getAnnotation(newAnnotationID);
@@ -139,12 +135,12 @@ public class AnnotationResourceTest {
         ResourceREF owner = new ResourceREF();
         owner.setRef(ownerString);
         addedAnnotation.setOwner(owner);
-        addedAnnotation.setURI((new AnnotationIdentifier()).toString());        
+        addedAnnotation.setURI((UUID.randomUUID()).toString());        
         addedAnnotation.setTimeStamp(Helpers.setXMLGregorianCalendar(Timestamp.valueOf("2013-08-12 11:25:00.383000")));
         
         mockery.checking(new Expectations() {
             {
-                oneOf(daoDispatcher).getUserInternalIdentifier(with(aNonNull(UserIdentifier.class)));
+                oneOf(daoDispatcher).getUserInternalIdentifier(with(aNonNull(UUID.class)));
                 will(returnValue(ownerID));
                 
                 oneOf(daoDispatcher).addUsersAnnotation(annotationToAdd, ownerID);

@@ -19,10 +19,10 @@ package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.dao.ResourceDao;
-import eu.dasish.annotation.backend.identifiers.DasishIdentifier;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.UUID;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.XMLGregorianCalendar;
 import org.springframework.jdbc.core.RowMapper;
@@ -88,16 +88,13 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
 
     //////////////////////////////////////////////////////////////////////////////////
     @Override
-    public <T extends DasishIdentifier> Number getInternalID(T externalId) {
+    public Number getInternalID(UUID externalId) {
         if (externalId == null) {
             return null;
         }
         String sql = "SELECT " + internalIdName + " FROM " + resourceTableName + " WHERE " + external_id + "= ? LIMIT 1";
         List<Number> sqlResult = getSimpleJdbcTemplate().query(sql, internalIDRowMapper, externalId.toString());
 
-        if (sqlResult == null) {
-            return null;
-        }
         if (sqlResult.isEmpty()) {
             return null;
         }
@@ -115,17 +112,10 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     };
 
     
-    /////////////////////////////////////////////
-    protected String getExternalIdentifier(Number internalId) {
-        if (internalId == null) {
-            return null;
-        }
+    @Override
+    public UUID getExternalID(Number internalId) {
         String sql = "SELECT " + external_id + " FROM " + resourceTableName + " WHERE " + internalIdName + "= ? LIMIT 1";
-        List<String> sqlResult = getSimpleJdbcTemplate().query(sql, externalIDRowMapper, internalId);
-
-        if (sqlResult == null) {
-            return null;
-        }
+        List<UUID> sqlResult = getSimpleJdbcTemplate().query(sql, externalIDRowMapper, internalId);
         if (sqlResult.isEmpty()) {
             return null;
         }
@@ -133,10 +123,10 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
         return (sqlResult.get(0));
     }
     
-    protected final RowMapper<String> externalIDRowMapper = new RowMapper<String>() {
+    protected final RowMapper<UUID> externalIDRowMapper = new RowMapper<UUID>() {
         @Override
-        public String mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            return (rs.getString(external_id));
+        public UUID mapRow(ResultSet rs, int rowNumber) throws SQLException {
+            return (UUID.fromString(rs.getString(external_id)));
         }
     };
 

@@ -26,11 +26,6 @@ import eu.dasish.annotation.backend.dao.NotebookDao;
 import eu.dasish.annotation.backend.dao.SourceDao;
 import eu.dasish.annotation.backend.dao.UserDao;
 import eu.dasish.annotation.backend.dao.VersionDao;
-import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
-import eu.dasish.annotation.backend.identifiers.CachedRepresentationIdentifier;
-import eu.dasish.annotation.backend.identifiers.SourceIdentifier;
-import eu.dasish.annotation.backend.identifiers.UserIdentifier;
-import eu.dasish.annotation.backend.identifiers.VersionIdentifier;
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationBody;
 import eu.dasish.annotation.schema.CachedRepresentationInfo;
@@ -46,6 +41,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import javax.xml.datatype.XMLGregorianCalendar;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
@@ -95,15 +91,15 @@ public class DaoDispatcherTest {
     @Test
     public void testGetAnnotationInternalIdentifier() {
         System.out.println("getAnnotationInternalIdentifier");
-        final AnnotationIdentifier annotationIdentifier = new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_2_EXT);
+        final UUID externalID = UUID.fromString(TestBackendConstants._TEST_ANNOT_2_EXT);
 
         mockery.checking(new Expectations() {
             {
-                oneOf(annotationDao).getInternalID(annotationIdentifier);
+                oneOf(annotationDao).getInternalID(externalID);
                 will(returnValue(2));
             }
         });
-        assertEquals(2, daoDispatcher.getAnnotationInternalIdentifier(annotationIdentifier));
+        assertEquals(2, daoDispatcher.getAnnotationInternalIdentifier(externalID));
     }
 
     /**
@@ -112,12 +108,12 @@ public class DaoDispatcherTest {
     @Test
     public void testGetAnnotationExternalIdentifier() {
         System.out.println("getAnnotationExternalIdentifier");
-        final AnnotationIdentifier annotationIdentifier = new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_2_EXT);
+        final UUID externalID = UUID.fromString(TestBackendConstants._TEST_ANNOT_2_EXT);
 
         mockery.checking(new Expectations() {
             {
                 oneOf(annotationDao).getExternalID(2);
-                will(returnValue(annotationIdentifier));
+                will(returnValue(externalID));
             }
         });
         assertEquals(TestBackendConstants._TEST_ANNOT_2_EXT, daoDispatcher.getAnnotationExternalIdentifier(2).toString());
@@ -130,15 +126,15 @@ public class DaoDispatcherTest {
     public void testGetUserInternalIdentifier() {
         System.out.println("getUserInternalIdentifier");
 
-        final UserIdentifier userIdentifier = new UserIdentifier(TestBackendConstants._TEST_USER_5_EXT_ID);
+        final UUID externalID = UUID.fromString(TestBackendConstants._TEST_USER_5_EXT_ID);
 
         mockery.checking(new Expectations() {
             {
-                oneOf(userDao).getInternalID(userIdentifier);
+                oneOf(userDao).getInternalID(externalID);
                 will(returnValue(5));
             }
         });
-        assertEquals(5, daoDispatcher.getUserInternalIdentifier(userIdentifier));
+        assertEquals(5, daoDispatcher.getUserInternalIdentifier(externalID));
     }
 
     /**
@@ -147,12 +143,12 @@ public class DaoDispatcherTest {
     @Test
     public void testGetUserExternalIdentifier() {
         System.out.println("getUserExternalIdentifier");
-        final UserIdentifier userIdentifier = new UserIdentifier(TestBackendConstants._TEST_USER_5_EXT_ID);
+        final UUID externalID = UUID.fromString(TestBackendConstants._TEST_USER_5_EXT_ID);
 
         mockery.checking(new Expectations() {
             {
                 oneOf(userDao).getExternalID(5);
-                will(returnValue(userIdentifier));
+                will(returnValue(externalID));
             }
         });
         assertEquals(TestBackendConstants._TEST_USER_5_EXT_ID, daoDispatcher.getUserExternalIdentifier(5).toString());
@@ -247,7 +243,7 @@ public class DaoDispatcherTest {
         final String text = "some html";
         final String access = null;
         final String namespace = null;
-        final UserIdentifier owner = new UserIdentifier(TestBackendConstants._TEST_USER_3_EXT_ID);
+        final UUID owner = UUID.fromString(TestBackendConstants._TEST_USER_3_EXT_ID);
         final Timestamp after = new Timestamp(0);
         final Timestamp before = new Timestamp(System.currentTimeMillis());
 
@@ -295,7 +291,7 @@ public class DaoDispatcherTest {
         final Number versionID = 1;
         mockery.checking(new Expectations() {
             {
-                oneOf(cachedRepresentationDao).getInternalID(new CachedRepresentationIdentifier(newCached.getRef()));
+                oneOf(cachedRepresentationDao).getInternalID(null);
                 will(returnValue(null));
 
                 oneOf(cachedRepresentationDao).addCachedRepresentationInfo(newCached);
@@ -323,12 +319,12 @@ public class DaoDispatcherTest {
 
         // test adding completely new version 
         final Version mockVersion = new Version(); // should be # 8
-        final VersionIdentifier mockVersionIdentifier = new VersionIdentifier();
-        mockVersion.setVersion(mockVersionIdentifier.toString());
+        final UUID mockUUID = UUID.randomUUID();
+        mockVersion.setVersion(mockUUID.toString());
 
         mockery.checking(new Expectations() {
             {
-                oneOf(versionDao).getInternalID(mockVersionIdentifier);
+                oneOf(versionDao).getInternalID(mockUUID);
                 will(returnValue(null));
 
                 oneOf(versionDao).addVersion(mockVersion);
@@ -349,12 +345,12 @@ public class DaoDispatcherTest {
         // Another test: connecting the existing version to the source
 
         final Version mockVersionTwo = new Version(); // should be # 3
-        final VersionIdentifier mockVersionIdentifierTwo = new VersionIdentifier(TestBackendConstants._TEST_VERSION_3_EXT_ID);
-        mockVersionTwo.setVersion(mockVersionIdentifierTwo.toString());
+        final UUID mockUUIDTwo = UUID.fromString(TestBackendConstants._TEST_VERSION_3_EXT_ID);
+        mockVersionTwo.setVersion(mockUUIDTwo.toString());
 
         mockery.checking(new Expectations() {
             {
-                oneOf(versionDao).getInternalID(mockVersionIdentifierTwo);
+                oneOf(versionDao).getInternalID(mockUUIDTwo);
                 will(returnValue(3));
 
                 oneOf(sourceDao).addSourceVersion(1, 3);
@@ -376,7 +372,7 @@ public class DaoDispatcherTest {
 
         // test 1: adding an existing source
         NewOrExistingSourceInfo testSourceOne = new NewOrExistingSourceInfo();
-        final SourceIdentifier mockSourceIdentifierOne = new SourceIdentifier(TestBackendConstants._TEST_SOURCE_1_EXT_ID);
+        final UUID mockUUIDOne = UUID.fromString(TestBackendConstants._TEST_SOURCE_1_EXT_ID);
         SourceInfo testOldSource = new SourceInfo();
         testOldSource.setLink(TestBackendConstants._TEST_SOURCE_1_LINK);
         testOldSource.setRef(TestBackendConstants._TEST_SOURCE_1_EXT_ID);
@@ -387,7 +383,7 @@ public class DaoDispatcherTest {
 
         mockery.checking(new Expectations() {
             {
-                oneOf(sourceDao).getInternalID(with(aNonNull(SourceIdentifier.class)));
+                oneOf(sourceDao).getInternalID(with(aNonNull(UUID.class)));
                 will(returnValue(1));
 
                 oneOf(annotationDao).addAnnotationSourcePair(1, 1);
@@ -418,7 +414,7 @@ public class DaoDispatcherTest {
 
                 ////////////  mockery in the call addSiblingVersionForSource //////////////
 
-                oneOf(versionDao).getInternalID(with(aNonNull(VersionIdentifier.class)));
+                oneOf(versionDao).getInternalID(with(aNonNull(UUID.class)));
                 will(returnValue(null));
 
                 oneOf(versionDao).addVersion(with(aNonNull(Version.class)));
@@ -457,7 +453,7 @@ public class DaoDispatcherTest {
                 will(returnValue(6)); // the next free number is 6
 
                 //  expectations for addSourcesForannotation
-                oneOf(sourceDao).getInternalID(with(aNonNull(SourceIdentifier.class)));
+                oneOf(sourceDao).getInternalID(with(aNonNull(UUID.class)));
                 will(returnValue(1));
 
                 oneOf(annotationDao).addAnnotationSourcePair(6, 1);

@@ -20,7 +20,6 @@ package eu.dasish.annotation.backend.dao.impl;
 import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.TestInstances;
-import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationInfo;
 import eu.dasish.annotation.schema.Permission;
@@ -30,6 +29,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import static org.junit.Assert.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -158,16 +158,16 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
     /**
      *
      * Test of getAnnotationID method, of class JdbcAnnotationDao. Integer
-     * getAnnotationID(AnnotationIdentifier externalID)
+     * getAnnotationID(UUID externalID)
      */
     @Test
     public void getInternalID() throws SQLException {
         System.out.println("test getInternalID");
 
-        final Number annotaionId = jdbcAnnotationDao.getInternalID(new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_2_EXT));
+        final Number annotaionId = jdbcAnnotationDao.getInternalID(UUID.fromString(TestBackendConstants._TEST_ANNOT_2_EXT));
         assertEquals(2, annotaionId.intValue());
 
-        final Number annotaionIdNE = jdbcAnnotationDao.getInternalID(new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_7_EXT_NOT_IN_DB));
+        final Number annotaionIdNE = jdbcAnnotationDao.getInternalID(UUID.fromString(TestBackendConstants._TEST_ANNOT_7_EXT_NOT_IN_DB));
         assertEquals(null, annotaionIdNE);
 
         final Number annotaionIdNull = jdbcAnnotationDao.getInternalID(null);
@@ -265,18 +265,18 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
     public void testGetExternalID() {
         System.out.println("getExternalID");
 
-        final AnnotationIdentifier externalId = jdbcAnnotationDao.getExternalID(2);
-        assertEquals(new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_2_EXT), externalId);
+        final UUID externalId = jdbcAnnotationDao.getExternalID(2);
+        assertEquals(UUID.fromString(TestBackendConstants._TEST_ANNOT_2_EXT), externalId);
 
 
-        final AnnotationIdentifier externalIdThree = jdbcAnnotationDao.getExternalID(null);
-        assertEquals(null, externalIdThree.getUUID());
+        final UUID externalIdThree = jdbcAnnotationDao.getExternalID(null);
+        assertEquals(null, externalIdThree);
 
     }
     
     
     /** test
-     * public List<Number> getFilteredAnnotationIDs(String link, String text, String access, String namespace, UserIdentifier owner, Timestamp after, Timestamp before) {
+     * public List<Number> getFilteredAnnotationIDs(String link, String text, String access, String namespace, UUID owner, Timestamp after, Timestamp before) {
   **/
     
     @Test    

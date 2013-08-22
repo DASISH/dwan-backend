@@ -18,7 +18,6 @@
 package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.dao.UserDao;
-import eu.dasish.annotation.backend.identifiers.UserIdentifier;
 import javax.sql.DataSource;
 
 /**
@@ -33,9 +32,5 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
         resourceTableName = principalTableName;
     }
 
-    /////////////////////////////////////////////////////////////////// 
-    @Override
-    public UserIdentifier getExternalID(Number internalID) {
-        return new UserIdentifier(super.getExternalIdentifier(internalID));
-    }
+    
 }

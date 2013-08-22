@@ -22,9 +22,6 @@ import com.sun.jersey.api.client.GenericType;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.dao.NotebookDao;
-import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
-import eu.dasish.annotation.backend.identifiers.NotebookIdentifier;
-import eu.dasish.annotation.backend.identifiers.UserIdentifier;
 import eu.dasish.annotation.schema.Notebook;
 import eu.dasish.annotation.schema.NotebookInfo;
 import eu.dasish.annotation.schema.NotebookInfos;
@@ -34,7 +31,6 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.MediaType;
 import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
@@ -68,7 +64,7 @@ public class NotebooksTest extends ResourcesTest {
         System.out.println("testGetNotebookInfo");
         mockery.checking(new Expectations() {
             {
-                oneOf(notebookDao).getNotebookInfos(new UserIdentifier(null));
+                oneOf(notebookDao).getNotebookInfos(with(any(UUID.class)));
                 will(returnValue(new ArrayList<NotebookInfo>()));
             }
         });
@@ -85,12 +81,11 @@ public class NotebooksTest extends ResourcesTest {
      * api/notebooks/owned
      */
     @Test
-    @Ignore
     public void testGetUsersNotebooks() {
         System.out.println("testGetUsersNotebooks");
         mockery.checking(new Expectations() {
             {
-                oneOf(notebookDao).getUsersNotebooks(new UserIdentifier("userid"));
+                oneOf(notebookDao).getUsersNotebooks(with(any(UUID.class)));
                 will(returnValue(new ArrayList<Notebook>()));
             }
         });
@@ -137,13 +132,13 @@ public class NotebooksTest extends ResourcesTest {
     public void testGetMetadata() {
         System.out.println("test GetMetadata");
         
-        final String notebookIdentifier= TestBackendConstants._TEST_NOTEBOOK_3_EXT;
+        final String externalIDstring= TestBackendConstants._TEST_NOTEBOOK_3_EXT;
         final int notebookID = 3;
         final NotebookInfo testInfo = new ObjectFactory().createNotebookInfo();
         
         mockery.checking(new Expectations() {
             {
-                oneOf(notebookDao).getNotebookID(new NotebookIdentifier(notebookIdentifier));                
+                oneOf(notebookDao).getInternalID(UUID.fromString(externalIDstring));                
                 will(returnValue(notebookID));
                 
                 oneOf(notebookDao).getNotebookInfo(notebookID); 
@@ -151,7 +146,7 @@ public class NotebooksTest extends ResourcesTest {
             }
         });
         
-        final String requestUrl = "notebooks/" + notebookIdentifier+"/metadata";
+        final String requestUrl = "notebooks/" + externalIDstring+"/metadata";
         System.out.println("requestUrl: " + requestUrl);
         ClientResponse response = resource().path(requestUrl).type(MediaType.TEXT_XML).get(ClientResponse.class);
         assertEquals(200, response.getStatus());
@@ -176,22 +171,22 @@ public class NotebooksTest extends ResourcesTest {
     @Test
     public void testGetAllAnnotations() {
         System.out.println("test GetMetadata");       
-        final String notebookIdentifier= TestBackendConstants._TEST_NOTEBOOK_3_EXT; 
-        final AnnotationIdentifier aIdOne= new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_2_EXT);
-        final AnnotationIdentifier aIdTwo= new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_3_EXT);
-        final List<AnnotationIdentifier> annotationIds = new ArrayList<AnnotationIdentifier>();
+        final String externalIDstring= TestBackendConstants._TEST_NOTEBOOK_3_EXT; 
+        final UUID aIdOne= UUID.fromString(TestBackendConstants._TEST_ANNOT_2_EXT);
+        final UUID aIdTwo= UUID.fromString(TestBackendConstants._TEST_ANNOT_3_EXT);
+        final List<UUID> annotationIds = new ArrayList<UUID>();
         annotationIds.add(aIdOne);
         annotationIds.add(aIdTwo);
         
         mockery.checking(new Expectations() {
             {
-                oneOf(notebookDao).getAnnotationExternalIDs(new NotebookIdentifier(notebookIdentifier));                
+                oneOf(notebookDao).getAnnotationExternalIDs(with(aNonNull(UUID.class)));                
                 will(returnValue(annotationIds));
                 
             }
         });
         
-        final String requestUrl = "notebooks/"+notebookIdentifier;
+        final String requestUrl = "notebooks/"+externalIDstring;
         ClientResponse response = resource().path(requestUrl)
                 .queryParam("maximumAnnotations", "123")
                 .queryParam("startAnnotation", "456")
@@ -200,9 +195,9 @@ public class NotebooksTest extends ResourcesTest {
                 .get(ClientResponse.class);
         System.out.println("requestUrl: " + requestUrl);
         assertEquals(200, response.getStatus());
-        List<AnnotationIdentifier> result = response.getEntity(new GenericType<List<AnnotationIdentifier>>() {});
-        assertEquals(aIdOne, result.get(0));
-        assertEquals(aIdTwo, result.get(1));
+        List<JAXBElement<UUID>> result = response.getEntity(new GenericType<List<JAXBElement<UUID>>>() {});
+        assertEquals(aIdOne, result.get(0).getValue());
+        assertEquals(aIdTwo, result.get(1).getValue());
     }
 
     /**
@@ -250,8 +245,8 @@ public class NotebooksTest extends ResourcesTest {
         System.out.println("testCreateNotebook");
         mockery.checking(new Expectations() {
             {
-                oneOf(notebookDao).addNotebook(new UserIdentifier(null), null);
-                will(returnValue(new NotebookIdentifier(new UUID(0, 1))));
+                oneOf(notebookDao).addNotebook(with(any(UUID.class)), with(any(String.class)));
+                will(returnValue(UUID.fromString(TestBackendConstants._TEST_NOTEBOOK_1_EXT_ID)));
             }
         });
         ClientResponse response = resource().path("notebooks").post(ClientResponse.class);
@@ -283,11 +278,11 @@ public class NotebooksTest extends ResourcesTest {
         System.out.println("testModifyNotebook_String");
         mockery.checking(new Expectations() {
             {
-                oneOf(notebookDao).deleteNotebook(new NotebookIdentifier(new UUID(0, 2)));
+                oneOf(notebookDao).deleteNotebook(UUID.fromString(TestBackendConstants._TEST_NOTEBOOK_2_EXT_ID));
                 will(returnValue(1));
             }
         });
-        final String requestUrl = "notebooks/" + new UUID(0, 2).toString();
+        final String requestUrl = "notebooks/" + TestBackendConstants._TEST_NOTEBOOK_2_EXT_ID;
         System.out.println("requestUrl: " + requestUrl);
         ClientResponse response = resource().path(requestUrl).delete(ClientResponse.class);
         assertEquals(200, response.getStatus());

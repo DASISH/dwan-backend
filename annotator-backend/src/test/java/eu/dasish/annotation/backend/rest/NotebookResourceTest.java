@@ -19,9 +19,6 @@ package eu.dasish.annotation.backend.rest;
 
 import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.dao.NotebookDao;
-import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
-import eu.dasish.annotation.backend.identifiers.NotebookIdentifier;
-import eu.dasish.annotation.backend.identifiers.UserIdentifier;
 import eu.dasish.annotation.schema.Notebook;
 import eu.dasish.annotation.schema.NotebookInfo;
 import eu.dasish.annotation.schema.NotebookInfos;
@@ -70,7 +67,7 @@ public class NotebookResourceTest {
         
         mockery.checking(new Expectations() {
             {
-                oneOf(notebookDao).getNotebookInfos(new UserIdentifier(httpServletRequest.getRemoteUser()));                
+                oneOf(notebookDao).getNotebookInfos(UUID.fromString(httpServletRequest.getRemoteUser()));                
                 will(returnValue(new ArrayList<NotebookInfo>()));
             }
         });
@@ -86,7 +83,7 @@ public class NotebookResourceTest {
         System.out.println("getUsersNotebooks");
         mockery.checking(new Expectations() {
             {
-                oneOf(notebookDao).getUsersNotebooks(new UserIdentifier(TestBackendConstants._TEST_UID_2_));
+                oneOf(notebookDao).getUsersNotebooks(UUID.fromString(TestBackendConstants._TEST_UID_2_));
                 will(returnValue(new ArrayList<Notebook>()));
             }
         });
@@ -106,8 +103,8 @@ public class NotebookResourceTest {
         httpServletRequest.setRemoteUser(TestBackendConstants._TEST_UID_2_);
         mockery.checking(new Expectations() {
             {
-                oneOf(notebookDao).addNotebook(new UserIdentifier(httpServletRequest.getRemoteUser()), null);
-                will(returnValue(new NotebookIdentifier(new UUID(0, 1))));
+                oneOf(notebookDao).addNotebook(UUID.fromString(httpServletRequest.getRemoteUser()), null);
+                will(returnValue(UUID.fromString(TestBackendConstants._TEST_NOTEBOOK_1_EXT_ID)));
             }
         });
         String expResult = "/api/notebooks/00000000-0000-0000-0000-000000000001";
@@ -121,15 +118,15 @@ public class NotebookResourceTest {
     @Test
     public void testDeleteNotebook() {
         System.out.println("deleteNotebook");
-        final NotebookIdentifier notebookIdentifier = new NotebookIdentifier(new UUID(0, 1));
+        final UUID externalID = UUID.fromString(TestBackendConstants._TEST_NOTEBOOK_1_EXT_ID);
         mockery.checking(new Expectations() {
             {
-                oneOf(notebookDao).deleteNotebook(notebookIdentifier);
+                oneOf(notebookDao).deleteNotebook(externalID);
                 will(returnValue(1));
             }
         });
         String expResult = "1";
-        String result = notebookResource.deleteNotebook(notebookIdentifier);
+        String result = notebookResource.deleteNotebook(externalID);
         assertEquals(expResult, result);
     }
     
@@ -142,13 +139,13 @@ public class NotebookResourceTest {
     public void testGetMetadata() {
         System.out.println("test GetMetadata");
         
-        final String notebookIdentifier= TestBackendConstants._TEST_NOTEBOOK_3_EXT;
+        final String externalID= TestBackendConstants._TEST_NOTEBOOK_3_EXT;
         final int notebookID = 3;
         final NotebookInfo testInfo = new ObjectFactory().createNotebookInfo();
         
         mockery.checking(new Expectations() {
             {
-                oneOf(notebookDao).getNotebookID(new NotebookIdentifier(notebookIdentifier));                
+                oneOf(notebookDao).getInternalID(UUID.fromString(externalID));                
                 will(returnValue(notebookID));
                 
                 oneOf(notebookDao).getNotebookInfo(notebookID); 
@@ -156,7 +153,7 @@ public class NotebookResourceTest {
             }
         });
         
-        JAXBElement<NotebookInfo> result = notebookResource.getMetadata(notebookIdentifier);
+        JAXBElement<NotebookInfo> result = notebookResource.getMetadata(externalID);
         NotebookInfo entity = result.getValue();
         assertEquals(testInfo.getRef(), entity.getRef());
         assertEquals(testInfo.getTitle(), entity.getTitle());
@@ -166,25 +163,25 @@ public class NotebookResourceTest {
     @Test
     public void testGetAllAnnotations() {
         System.out.println("test getAllAnnotations");        
-        final String notebookIdentifier= TestBackendConstants._TEST_NOTEBOOK_3_EXT; 
-        final AnnotationIdentifier aIdOne= new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_2_EXT);
-        final AnnotationIdentifier aIdTwo= new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_3_EXT);
-        final List<AnnotationIdentifier> annotationIds = new ArrayList<AnnotationIdentifier>();
+        final String externalID= TestBackendConstants._TEST_NOTEBOOK_3_EXT; 
+        final UUID aIdOne= UUID.fromString(TestBackendConstants._TEST_ANNOT_2_EXT);
+        final UUID aIdTwo= UUID.fromString(TestBackendConstants._TEST_ANNOT_3_EXT);
+        final List<UUID> annotationIds = new ArrayList<UUID>();
         annotationIds.add(aIdOne);
         annotationIds.add(aIdTwo);
         
         mockery.checking(new Expectations() {
             {
-                oneOf(notebookDao).getAnnotationExternalIDs(new NotebookIdentifier(notebookIdentifier));                
+                oneOf(notebookDao).getAnnotationExternalIDs(UUID.fromString(externalID));                
                 will(returnValue(annotationIds));
                 
             }
         });
         
-        List<AnnotationIdentifier> result= notebookResource.getAllAnnotations(notebookIdentifier, 0, 0, null, 0);
+        List<JAXBElement<UUID>> result= notebookResource.getAllAnnotations(externalID, 0, 0, null, 0);
         assertFalse(null==result);
-        assertEquals(aIdOne, result.get(0));
-        assertEquals(aIdTwo, result.get(1));
+        assertEquals(aIdOne, result.get(0).getValue());
+        assertEquals(aIdTwo, result.get(1).getValue());
         
         
     }

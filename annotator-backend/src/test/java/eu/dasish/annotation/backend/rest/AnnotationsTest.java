@@ -19,17 +19,13 @@ package eu.dasish.annotation.backend.rest;
 
 import eu.dasish.annotation.backend.dao.DaoDispatcher;
 import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.GenericType;
 import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.TestBackendConstants;
-import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
-import eu.dasish.annotation.backend.identifiers.UserIdentifier;
 import eu.dasish.annotation.schema.Annotation;
-import eu.dasish.annotation.schema.AnnotationBody;
-import eu.dasish.annotation.schema.ObjectFactory;
 import eu.dasish.annotation.schema.ResourceREF;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.UUID;
 import javax.ws.rs.core.MediaType;
 import javax.xml.bind.JAXBElement;
 import javax.xml.datatype.DatatypeConfigurationException;
@@ -58,20 +54,20 @@ public class AnnotationsTest extends ResourcesTest{
     @Test
     public void testGetAnnotation() throws SQLException, DatatypeConfigurationException{
         System.out.println("testGetAnnotation");
-        final String annotationIdentifier= TestBackendConstants._TEST_ANNOT_2_EXT;
+        final String externalIDstring= TestBackendConstants._TEST_ANNOT_2_EXT;
         final int annotationID = 2;
         final Annotation testAnnotation = new Annotation();
         ResourceREF owner = new ResourceREF();
         owner.setRef("5");
         testAnnotation.setOwner(owner);
-        testAnnotation.setURI((new AnnotationIdentifier()).toString());
+        testAnnotation.setURI(externalIDstring);
         testAnnotation.setTimeStamp(Helpers.setXMLGregorianCalendar(Timestamp.valueOf("2013-08-12 11:25:00.383000")));
         
-        //final Number annotationID = daoDispatcher.getAnnotationInternalIdentifier(new AnnotationIdentifier(annotationIdentifier));
+        //final Number annotationID = daoDispatcher.getAnnotationInternalIdentifier(UUID.fromString(UUID));
         //final Annotation annotation = daoDispatcher.getAnnotation(annotationID);
         mockery.checking(new Expectations() {
             {
-                oneOf(daoDispatcher).getAnnotationInternalIdentifier(with(aNonNull(AnnotationIdentifier.class)));                
+                oneOf(daoDispatcher).getAnnotationInternalIdentifier(with(aNonNull(UUID.class)));                
                 will(returnValue(annotationID));                
                 
                 oneOf(daoDispatcher).getAnnotation(annotationID);                
@@ -79,7 +75,7 @@ public class AnnotationsTest extends ResourcesTest{
             }
         });
         
-        final String requestUrl = "annotations/" + annotationIdentifier;
+        final String requestUrl = "annotations/" + externalIDstring;
         System.out.println("requestUrl: " + requestUrl);
         ClientResponse response = resource().path(requestUrl).accept(MediaType.TEXT_XML).get(ClientResponse.class);
         assertEquals(200, response.getStatus());
@@ -100,7 +96,7 @@ public class AnnotationsTest extends ResourcesTest{
     @Test
     public void testDeleteAnnotation() throws SQLException{
         System.out.println("testDeleteAnnotation");
-         //final Number annotationID = daoDispatcher.getAnnotationInternalIdentifier(new AnnotationIdentifier(annotationIdentifier));
+         //final Number annotationID = daoDispatcher.getAnnotationInternalIdentifier(UUID.fromString(UUID));
         //int[] resultDelete = daoDispatcher.deleteAnnotation(annotationID);
        
         final int[] mockDelete = new int[4];
@@ -110,7 +106,7 @@ public class AnnotationsTest extends ResourcesTest{
         mockDelete[3]=1; // # deletd sources, 4
         mockery.checking(new Expectations() {
             {  
-                oneOf(daoDispatcher).getAnnotationInternalIdentifier(with(aNonNull(AnnotationIdentifier.class)));              
+                oneOf(daoDispatcher).getAnnotationInternalIdentifier(with(aNonNull(UUID.class)));              
                 will(returnValue(5));     
                 
                 oneOf(daoDispatcher).deleteAnnotation(5);
@@ -138,11 +134,7 @@ public class AnnotationsTest extends ResourcesTest{
 
         final JAXBElement<Annotation> jaxbElement = new JAXBElement<Annotation>(new QName("http://www.dasish.eu/ns/addit", "annotation"), Annotation.class, null, annotationToAdd);
          //final Annotation annotToAddJB = jaxbElement.getValue();
-        
-          // for setting up mockery
-        //userID = daoDispatcher.getUserInternalIdentifier(new UserIdentifier(remoteUser));
-        //Number newAnnotationID =  daoDispatcher.addUsersAnnotation(annotation, userID);
-        //Annotation newAnnotation = daoDispatcher.getAnnotation(newAnnotationID);
+       
         final String ownerString = "5";
         final Number ownerID =  5;
         final Number newAnnotationID = 6;
@@ -150,12 +142,12 @@ public class AnnotationsTest extends ResourcesTest{
         ResourceREF owner = new ResourceREF();
         owner.setRef(ownerString);
         addedAnnotation.setOwner(owner);
-        addedAnnotation.setURI((new AnnotationIdentifier()).toString());
+        addedAnnotation.setURI((UUID.randomUUID()).toString());
         
         addedAnnotation.setTimeStamp(Helpers.setXMLGregorianCalendar(Timestamp.valueOf("2013-08-12 11:25:00.383000")));
         mockery.checking(new Expectations() {
             {
-                oneOf(daoDispatcher).getUserInternalIdentifier(with(aNonNull(UserIdentifier.class)));
+                oneOf(daoDispatcher).getUserInternalIdentifier(with(any(UUID.class)));
                 will(returnValue(ownerID));
                 
                 //oneOf(daoDispatcher).addUsersAnnotation(annotToAddJB, ownerID);

@@ -18,8 +18,8 @@
 package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.TestBackendConstants;
-import eu.dasish.annotation.backend.identifiers.CachedRepresentationIdentifier;
 import eu.dasish.annotation.schema.CachedRepresentationInfo;
+import java.util.UUID;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.runner.RunWith;
@@ -47,27 +47,27 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest{
 
     /**
      * Test of getExternalId method, of class JdbcCachedRepresentationDao.
-     * public CachedRepresentationIdentifier getExternalId(Number internalID);
+     * public UUID getExternalId(Number internalID);
     
      */
     @Test  
     public void testGetExternalId() {
         System.out.println("getExternalId");
         Number internalID = 1;
-        CachedRepresentationIdentifier expResult = new CachedRepresentationIdentifier(TestBackendConstants._TEST_CACHED_REPRESENTATION_1_EXT_ID_);
-        CachedRepresentationIdentifier result = jdbcCachedRepresentationDao.getExternalID(internalID);
+        UUID expResult = UUID.fromString(TestBackendConstants._TEST_CACHED_REPRESENTATION_1_EXT_ID_);
+        UUID result = jdbcCachedRepresentationDao.getExternalID(internalID);
         assertEquals(expResult, result);
     }
     
 
     /**
      * Test of getInternalId method, of class JdbcCachedRepresentationDao.
-     * public  Number getInternalId(CachedRepresentationIdentifier externalID);
+     * public  Number getInternalId(UUID externalID);
      */
     @Test
     public void testGetInternalId() {
         System.out.println("getInternalId");
-        CachedRepresentationIdentifier externalID = new CachedRepresentationIdentifier(TestBackendConstants._TEST_CACHED_REPRESENTATION_1_EXT_ID_);
+        UUID externalID = UUID.fromString(TestBackendConstants._TEST_CACHED_REPRESENTATION_1_EXT_ID_);
         Number result = jdbcCachedRepresentationDao.getInternalID(externalID);
         assertEquals(1, result.intValue());
     }

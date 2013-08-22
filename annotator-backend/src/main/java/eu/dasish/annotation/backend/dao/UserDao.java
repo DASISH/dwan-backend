@@ -17,7 +17,6 @@
  */
 package eu.dasish.annotation.backend.dao;
 
-import eu.dasish.annotation.backend.identifiers.UserIdentifier;
 
 /**
  *
@@ -26,12 +25,7 @@ import eu.dasish.annotation.backend.identifiers.UserIdentifier;
 public interface UserDao extends ResourceDao{
     
  
-    /**
-     * 
-     * @param internalId
-     * @return the external UserIdentifier of internalId;
-     */
-    UserIdentifier getExternalID(Number internalID);
+  
 }
 
 

@@ -19,11 +19,10 @@ package eu.dasish.annotation.backend.rest;
 
 import eu.dasish.annotation.backend.BackendConstants;
 import eu.dasish.annotation.backend.dao.DaoDispatcher;
-import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
-import eu.dasish.annotation.backend.identifiers.UserIdentifier;
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.ObjectFactory;
 import java.sql.SQLException;
+import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -61,8 +60,8 @@ public class AnnotationResource {
     @GET
     @Produces(MediaType.TEXT_XML)
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}")
-    public JAXBElement<Annotation> getAnnotation(@PathParam("annotationid") String annotationIdentifier) throws SQLException {
-        final Number annotationID = daoDispatcher.getAnnotationInternalIdentifier(new AnnotationIdentifier(annotationIdentifier));
+    public JAXBElement<Annotation> getAnnotation(@PathParam("annotationid") String ExternalIdentifier) throws SQLException {
+        final Number annotationID = daoDispatcher.getAnnotationInternalIdentifier(UUID.fromString(ExternalIdentifier));
         final Annotation annotation = daoDispatcher.getAnnotation(annotationID);
         return new ObjectFactory().createAnnotation(annotation);
     }
@@ -71,8 +70,8 @@ public class AnnotationResource {
     // TODO: return envelope: deleted or not deleted
     @DELETE
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}")
-    public String deleteAnnotation(@PathParam("annotationid") String annotationIdentifier) throws SQLException {
-        final Number annotationID = daoDispatcher.getAnnotationInternalIdentifier(new AnnotationIdentifier(annotationIdentifier));
+    public String deleteAnnotation(@PathParam("annotationid") String externalIdentifier) throws SQLException {
+        final Number annotationID = daoDispatcher.getAnnotationInternalIdentifier(UUID.fromString(externalIdentifier));
         int[] resultDelete = daoDispatcher.deleteAnnotation(annotationID);
         String result = Integer.toString(resultDelete[0]);
         return result;
@@ -86,7 +85,8 @@ public class AnnotationResource {
     @Path("")
     public JAXBElement<Annotation> createAnnotation(Annotation annotation) throws SQLException {
         String remoteUser = httpServletRequest.getRemoteUser();
-        Number userID = daoDispatcher.getUserInternalIdentifier(new UserIdentifier(remoteUser));
+        UUID userExternalID = (remoteUser != null) ? UUID.fromString(remoteUser) : null;
+        Number userID = daoDispatcher.getUserInternalIdentifier(userExternalID);
         Number newAnnotationID =  daoDispatcher.addUsersAnnotation(annotation, userID);
         Annotation newAnnotation = daoDispatcher.getAnnotation(newAnnotationID); 
         return (new ObjectFactory().createAnnotation(newAnnotation));

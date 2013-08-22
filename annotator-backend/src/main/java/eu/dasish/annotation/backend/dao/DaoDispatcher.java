@@ -17,8 +17,6 @@
  */
 package eu.dasish.annotation.backend.dao;
 
-import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
-import eu.dasish.annotation.backend.identifiers.UserIdentifier;
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.CachedRepresentationInfo;
 import eu.dasish.annotation.schema.NewOrExistingSourceInfo;
@@ -27,6 +25,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  *
@@ -54,16 +53,17 @@ public interface DaoDispatcher{
 
     Annotation getAnnotation(Number annotationID) throws SQLException;
 
-    AnnotationIdentifier getAnnotationExternalIdentifier(Number annotationID);
+    UUID getAnnotationExternalIdentifier(Number annotationID);
 
     ///////////// GETTERS //////////////////////////
-    Number getAnnotationInternalIdentifier(AnnotationIdentifier annotationIdentifier);
+    Number getAnnotationInternalIdentifier(UUID UUID);
 
     ////////////////////////////////////////////////////////////////////////
-    List<Number> getFilteredAnnotationIDs(String link, String text, String access, String namespace, UserIdentifier owner, Timestamp after, Timestamp before);
+    List<Number> getFilteredAnnotationIDs(String link, String text, String access, String namespace, UUID
+            owner, Timestamp after, Timestamp before);
 
-    UserIdentifier getUserExternalIdentifier(Number userID);
+    UUID getUserExternalIdentifier(Number userID);
 
-    Number getUserInternalIdentifier(UserIdentifier userIdentifier);
+    Number getUserInternalIdentifier(UUID UUID);
     
 }

@@ -19,9 +19,6 @@ package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.dao.AnnotationDao;
-import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
-import eu.dasish.annotation.backend.identifiers.NotebookIdentifier;
-import eu.dasish.annotation.backend.identifiers.UserIdentifier;
 import eu.dasish.annotation.schema.Annotations;
 import eu.dasish.annotation.schema.Notebook;
 import eu.dasish.annotation.schema.NotebookInfo;
@@ -70,7 +67,7 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest{
      */
     @Test
     public void testGetNotebookInfos() {
-        final List<NotebookInfo> notebookInfoList = jdbcNotebookDao.getNotebookInfos(new UserIdentifier(TestBackendConstants._TEST_UID_2_));
+        final List<NotebookInfo> notebookInfoList = jdbcNotebookDao.getNotebookInfos(UUID.fromString(TestBackendConstants._TEST_UID_2_));
         assertEquals(2, notebookInfoList.size());
         assertEquals("a notebook", notebookInfoList.get(0).getTitle());
     }
@@ -95,7 +92,7 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest{
             }
         });
         
-        final List<Notebook> notebooks = jdbcNotebookDao.getUsersNotebooks(new UserIdentifier(TestBackendConstants._TEST_UID_2_));
+        final List<Notebook> notebooks = jdbcNotebookDao.getUsersNotebooks(UUID.fromString(TestBackendConstants._TEST_UID_2_));
 
 
         assertEquals(2, notebooks.size());
@@ -114,7 +111,7 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest{
             }
         });
         
-        final List<Notebook> notebooksEmpty = jdbcNotebookDao.getUsersNotebooks(new UserIdentifier(TestBackendConstants._TEST_UID_1_));
+        final List<Notebook> notebooksEmpty = jdbcNotebookDao.getUsersNotebooks(UUID.fromString(TestBackendConstants._TEST_UID_1_));
         assertEquals(0, notebooksEmpty.size());
     }
 
@@ -123,8 +120,8 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest{
      */
     @Test
     public void testAddNotebook() throws URISyntaxException {
-        final NotebookIdentifier addedNotebookId = jdbcNotebookDao.addNotebook(new UserIdentifier(TestBackendConstants._TEST_UID_2_), "a title");
-        assertEquals(36, addedNotebookId.getUUID().toString().length());
+        final UUID addedNotebookId = jdbcNotebookDao.addNotebook(UUID.fromString(TestBackendConstants._TEST_UID_2_), "a title");
+        assertEquals(36, addedNotebookId.toString().length());
     }
 
     /**
@@ -133,7 +130,7 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest{
     @Test
     public void testDeleteNotebook() {
         System.out.println("deleteNotebook");
-        NotebookIdentifier notebookId = new NotebookIdentifier(new UUID(0, 2));
+        UUID notebookId = UUID.fromString(TestBackendConstants._TEST_NOTEBOOK_2_EXT_ID);
         int result = jdbcNotebookDao.deleteNotebook(notebookId);
         assertEquals(1, result);
     }
@@ -163,7 +160,7 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest{
         
         // test four, null-notebook
         final List<Number> annotationIDsFour = jdbcNotebookDao.getAnnotationIDs(null);
-        assertEquals(null, annotationIDsFour);
+        assertEquals(0, annotationIDsFour.size());
         
         
     }
@@ -199,7 +196,7 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest{
         // test Five Null-notebook
         setMockeryNotebookNonExisting();
         List<ResourceREF> testListFive = jdbcNotebookDao.getAnnotationREFsOfNotebook(null);
-        assertEquals(null, testListFive); 
+        assertEquals(0, testListFive.size()); 
     }
 
     /**
@@ -263,12 +260,12 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest{
         System.out.println("test getNotebookID");
         
          // test One        
-        Number resultOne= jdbcNotebookDao.getNotebookID(new NotebookIdentifier(TestBackendConstants._TEST_NOTEBOOK_3_EXT));
+        Number resultOne= jdbcNotebookDao.getInternalID(UUID.fromString(TestBackendConstants._TEST_NOTEBOOK_3_EXT));
         assertEquals(3, resultOne.intValue());
         
       
         // test Three Null-notebook
-       Number resultThree= jdbcNotebookDao.getNotebookID(null);
+       Number resultThree= jdbcNotebookDao.getInternalID(null);
        assertEquals(null, resultThree);
     }
     
@@ -281,22 +278,22 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest{
         mockery.checking(new Expectations() {
             {
               oneOf(annotationDao).getExternalID(2);
-              will(returnValue(new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_2_EXT)));
+              will(returnValue(UUID.fromString(TestBackendConstants._TEST_ANNOT_2_EXT)));
               
               oneOf(annotationDao).getExternalID(3);
-              will(returnValue(new AnnotationIdentifier(TestBackendConstants._TEST_ANNOT_3_EXT)));
+              will(returnValue(UUID.fromString(TestBackendConstants._TEST_ANNOT_3_EXT)));
             }
         }); 
         
-        List<AnnotationIdentifier> resultOne= jdbcNotebookDao.getAnnotationExternalIDs(new NotebookIdentifier(TestBackendConstants._TEST_NOTEBOOK_3_EXT));
+        List<UUID> resultOne= jdbcNotebookDao.getAnnotationExternalIDs(UUID.fromString(TestBackendConstants._TEST_NOTEBOOK_3_EXT));
         assertEquals(TestBackendConstants._TEST_ANNOT_2_EXT, resultOne.get(0).toString());
         assertEquals(TestBackendConstants._TEST_ANNOT_3_EXT, resultOne.get(1).toString());
         
         
       
         // test Two, non-existing notebook
-        List<AnnotationIdentifier> resultThree= jdbcNotebookDao.getAnnotationExternalIDs(null);
-        assertEquals(null, resultThree);
+        List<UUID> resultThree= jdbcNotebookDao.getAnnotationExternalIDs(null);
+        assertEquals(0, resultThree.size());
        
     }
     

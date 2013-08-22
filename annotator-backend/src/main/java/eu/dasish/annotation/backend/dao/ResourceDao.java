@@ -17,7 +17,7 @@
  */
 package eu.dasish.annotation.backend.dao;
 
-import eu.dasish.annotation.backend.identifiers.DasishIdentifier;
+import java.util.UUID;
 
 /**
  *
@@ -30,7 +30,7 @@ public interface ResourceDao {
      * @param externalID
      * @return internal identifier of the resource with externalID
      */
-    public <T extends DasishIdentifier> Number getInternalID(T externalId);
+    public Number getInternalID(UUID externalId);
     
-   
+    public UUID getExternalID(Number internalId);
 }
