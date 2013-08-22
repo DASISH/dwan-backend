@@ -225,30 +225,45 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         }
     };
     
+   /////////////////////////////
     
-   
-    //////////////////////////////////////////////////////
-    @Override
-    public int deleteAnnotation(Number annotationID) throws SQLException {
-        if (annotationIsInUse(annotationID)) {
-            return 0;
+    private boolean annotationIsInUse(Number sourceID) {
+        String sqlNotebooks = "SELECT " + notebook_id + " FROM " + notebooksAnnotationsTableName + " WHERE " + annotation_id + "= ? LIMIT 1";
+        List<Number> resultNotebooks = getSimpleJdbcTemplate().query(sqlNotebooks, notebookIDRowMapper, sourceID);
+        if (resultNotebooks.size() > 0) {
+            return true;
+        }
+        String sqlSources = "SELECT " + source_id + " FROM " + annotationsSourcesTableName + " WHERE " + annotation_id + "= ? LIMIT 1";
+        List<Number> resultSources = getSimpleJdbcTemplate().query(sqlSources, sourceIDRowMapper, sourceID);
+        if (resultSources.size() > 0) {
+            return true;
+        }
+        String sqlPermissions = "SELECT " + principal_id + " FROM " + permissionsTableName + " WHERE " + annotation_id + "= ? LIMIT 1";
+        List<Number> resultPermissions = getSimpleJdbcTemplate().query(sqlPermissions, principalIDRowMapper, sourceID);
+        if (resultPermissions.size() > 0) {
+            return true;
         }
         
-        String sqlAnnotation = "DELETE FROM " + annotationTableName + " where " + annotation_id + " = ?";
-        return (getSimpleJdbcTemplate().update(sqlAnnotation, annotationID)); 
+        return false;
     }
     
-    //////////////////////////////////////////////////////
+    //////////// UPDATERS /////////////
+    
+    
     @Override
-    public int deleteAllAnnotationSource(Number annotationID) throws SQLException {
-        String sqlTargetSources = "DELETE FROM " + annotationsSourcesTableName + " where " + annotation_id + " = ?";
-        return getSimpleJdbcTemplate().update(sqlTargetSources, annotationID); // removed "annotations_target_sources" rows
-       
+    public int updateBody(Number annotationID, String serializedNewBody) {
+        StringBuilder sql = new StringBuilder("UPDATE ");
+        sql.append(annotationTableName).append(" SET ").append(body_xml).append("= '").append(serializedNewBody).append("' WHERE ").append(annotation_id).append("= ?");
+        return getSimpleJdbcTemplate().update(sql.toString(), annotationID);
     }
+
     
 
-    // TODO: so far URI in the xml is the same as the external_id in the DB!!
-    // Change it when the decision is taken!!!
+  
+    
+    //////////// ADDERS ////////////////////////
+    
+   
     @Override
     public Number addAnnotation(Annotation annotation, Number ownerID) throws SQLException {
         // generate a new annotation ID 
@@ -270,19 +285,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         }
 
     }
-
-   
-    ///////////////////////////////////////////////////////////////////////
-    @Override
-    public int updateBody(Number annotationID, String serializedNewBody) {
-        StringBuilder sql = new StringBuilder("UPDATE ");
-        sql.append(annotationTableName).append(" SET ").append(body_xml).append("= '").append(serializedNewBody).append("' WHERE ").append(annotation_id).append("= ?");
-        return getSimpleJdbcTemplate().update(sql.toString(), annotationID);
-    }
-
     
-
-  
     //////////////////////////////////////////////////////////////////////////////////
     @Override
     public int addAnnotationSourcePair(Number annotationID, Number sourceID) throws SQLException {
@@ -295,6 +298,29 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
     }
     //////////////////////////////////////////////////////////////////////////////////
 
+   
+    //////////////////////////////////////////////////////
+    @Override
+    public int deleteAnnotation(Number annotationID) throws SQLException {
+        if (annotationIsInUse(annotationID)) {
+            return 0;
+        }
+        
+        String sqlAnnotation = "DELETE FROM " + annotationTableName + " where " + annotation_id + " = ?";
+        return (getSimpleJdbcTemplate().update(sqlAnnotation, annotationID)); 
+    }
+    
+    //////////////////////////////////////////////////////
+    @Override
+    public int deleteAllAnnotationSource(Number annotationID) throws SQLException {
+        String sqlTargetSources = "DELETE FROM " + annotationsSourcesTableName + " where " + annotation_id + " = ?";
+        return getSimpleJdbcTemplate().update(sqlTargetSources, annotationID); // removed "annotations_target_sources" rows
+       
+    }
+    
+
+  
+    
     /////////////// helpers //////////////////
     
     ///////////////////////////////////////////////////////////
@@ -304,23 +330,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         return result;
     }
     
-        //////////////////////////////
-    private boolean annotationIsInUse(Number sourceID) {
-        String sql = "SELECT " + notebook_id + " FROM " + notebooksAnnotationsTableName + " WHERE " + annotation_id + "= ? LIMIT 1";
-        List<Number> result = getSimpleJdbcTemplate().query(sql, notebookIDRowMapper, sourceID);
-        if (result.size() > 0) {
-            return true;
-        }
-        return false;
-    }
-    
-      private final RowMapper<Number> notebookIDRowMapper = new RowMapper<Number>() {
-        @Override
-        public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            return rs.getInt(notebook_id);
-        }
-    };
-    
+  
     //////////////////////////////////////////////////////
     @Override
     public int deleteAnnotationPrincipalPermissions(Number annotationID) throws SQLException {

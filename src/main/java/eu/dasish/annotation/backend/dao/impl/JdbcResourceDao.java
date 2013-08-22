@@ -102,16 +102,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
         Number result = sqlResult.get(0);
         return result;
     }
-    protected final RowMapper<Number> internalIDRowMapper = new RowMapper<Number>() {
-        @Override
-        public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            int result = rs.getInt(internalIdName);
-            Number resultNumber = result;
-            return resultNumber;
-        }
-    };
 
-    
     @Override
     public UUID getExternalID(Number internalId) {
         String sql = "SELECT " + external_id + " FROM " + resourceTableName + " WHERE " + internalIdName + "= ? LIMIT 1";
@@ -122,13 +113,6 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
 
         return (sqlResult.get(0));
     }
-    
-    protected final RowMapper<UUID> externalIDRowMapper = new RowMapper<UUID>() {
-        @Override
-        public UUID mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            return (UUID.fromString(rs.getString(external_id)));
-        }
-    };
 
     /////////////////////////////////////////////////////
     protected XMLGregorianCalendar retrieveTimeStamp(Number internalID) {
@@ -170,4 +154,59 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
         result = result + vals.get(length - 1).toString() + ")";
         return result;
     }
+    
+    
+    ////////////////// ROW MAPPERS ///////////////////
+    
+    
+    protected final RowMapper<Number> internalIDRowMapper = new RowMapper<Number>() {
+        @Override
+        public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
+            int result = rs.getInt(internalIdName);
+            Number resultNumber = result;
+            return resultNumber;
+        }
+    };
+    protected final RowMapper<UUID> externalIDRowMapper = new RowMapper<UUID>() {
+        @Override
+        public UUID mapRow(ResultSet rs, int rowNumber) throws SQLException {
+            return (UUID.fromString(rs.getString(external_id)));
+        }
+    };
+    protected final RowMapper<Number> cachedIDRowMapper = new RowMapper<Number>() {
+        @Override
+        public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
+            return rs.getInt(cached_representation_id);
+        }
+    };
+    protected final RowMapper<Number> sourceIDRowMapper = new RowMapper<Number>() {
+        @Override
+        public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
+            return rs.getInt(source_id);
+        }
+    };
+    protected final RowMapper<Number> versionIDRowMapper = new RowMapper<Number>() {
+        @Override
+        public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
+            return rs.getInt(version_id);
+        }
+    };
+    protected final RowMapper<Number> annotationIDRowMapper = new RowMapper<Number>() {
+        @Override
+        public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
+            return rs.getInt(annotation_id);
+        }
+    };
+    protected final RowMapper<Number> notebookIDRowMapper = new RowMapper<Number>() {
+        @Override
+        public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
+            return rs.getInt(notebook_id);
+        }
+    };
+     protected final RowMapper<Number> principalIDRowMapper = new RowMapper<Number>() {
+        @Override
+        public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
+            return rs.getInt(principal_id);
+        }
+    };
 }

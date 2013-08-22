@@ -44,7 +44,7 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
 
   
 
-    ///////////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////// GETTERS  ////////////////////////////////////////
     @Override
     public CachedRepresentationInfo getCachedRepresentationInfo(Number internalID) {
 
@@ -71,8 +71,21 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
             return result;
         }
     };
+    
+    //////////////////////////////////////
 
-    ////////////////////////////////////////////////////////////////////////////
+    private boolean cachedIsInUse(Number cachedID) {      
+        String sql = "SELECT " + version_id + " FROM " + versionsCachedRepresentationsTableName + " WHERE " + cached_representation_id + "= ? LIMIT 1";
+        List<Number> result = getSimpleJdbcTemplate().query(sql, versionIDRowMapper, cachedID);
+        if (result.size() > 0) {
+            return true;
+        }
+        return false;
+    }
+    
+ 
+
+    //////////////////////// ADDERS ///////////////////////////////
     @Override
     public Number addCachedRepresentationInfo(CachedRepresentationInfo cached) {
 
@@ -87,7 +100,7 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
         return getInternalID(externalIdentifier);
     }
 
-    //////////////////////////////////////////////////////////////////////////////////////////////
+    /////////////////////// DELETERS  //////////////////////////////////////////////
     @Override
     public int deleteCachedRepresentationInfo(Number internalID) {
         if (cachedIsInUse(internalID)){
@@ -99,25 +112,4 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
     }
     
    
-    
-   
-    //////////////// PRIVATE ////////////////////////
-
-    private boolean cachedIsInUse(Number cachedID) {      
-        String sql = "SELECT " + version_id + " FROM " + versionsCachedRepresentationsTableName + " WHERE " + cached_representation_id + "= ? LIMIT 1";
-        List<Number> result = getSimpleJdbcTemplate().query(sql, versionIDRowMapper, cachedID);
-        if (result.size() > 0) {
-            return true;
-        }
-        return false;
-    }
-    
-    private final RowMapper<Number> versionIDRowMapper = new RowMapper<Number>() {
-        @Override
-        public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            return rs.getInt(version_id);
-        }
-    };
-    
-    
 }
