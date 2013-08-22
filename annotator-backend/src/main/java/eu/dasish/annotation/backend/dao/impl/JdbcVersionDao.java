@@ -42,16 +42,12 @@ public class JdbcVersionDao extends JdbcResourceDao implements VersionDao {
     }
 
   
-    ///////////////////////////////////////////////////////////////
+    /////////////// GETTERS /////////////////////
     @Override
     public Version getVersion(Number internalID) {
 
         String sql = "SELECT " + versionStar + " FROM " + versionTableName + " WHERE " + version_id + "= ? LIMIT 1";
         List<Version> result = getSimpleJdbcTemplate().query(sql, versionRowMapper, internalID);
-
-        if (result == null) {
-            return null;
-        }
         if (result.isEmpty()) {
             return null;
         }
@@ -77,29 +73,29 @@ public class JdbcVersionDao extends JdbcResourceDao implements VersionDao {
         return result;
     }
 
-    private final RowMapper<Number> cachedIDRowMapper = new RowMapper<Number>() {
-        @Override
-        public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            return rs.getInt(cached_representation_id);
-        }
-    };
+  
     
-    ///////////////////////////////////////// 
+    /////////////////////////////////////////////////////////////// 
+    
     @Override
-    public int deleteVersion(Number internalID) {
-        
-        int result = 0;        
-        if (versionIsInUse(internalID)) {
-            return result;
+    public boolean versionIsInUse(Number versionsID) {
+        String sqlSources = "SELECT " + source_id + " FROM " + sourcesVersionsTableName + " WHERE " + version_id + "= ? LIMIT 1";
+        List<Number> resultSources = getSimpleJdbcTemplate().query(sqlSources, sourceIDRowMapper, versionsID);
+        if (resultSources.size() > 0) {
+            return true;
         }
-        
-        String sql = "DELETE FROM " + versionTableName + " where " + version_id + " = ?";
-        result = getSimpleJdbcTemplate().update(sql, internalID);      
-        return result;
-
+        String sqlVersions = "SELECT " + cached_representation_id + " FROM " + versionsCachedRepresentationsTableName + " WHERE " + version_id + "= ? LIMIT 1";
+        List<Number> resultCached = getSimpleJdbcTemplate().query(sqlVersions, cachedIDRowMapper, versionsID);
+        if (resultCached.size() > 0) {
+            return true;
+        }
+        return false;
     }
-
-    /////////////////////////////////////////////////
+    
+  
+    
+    /////////////////// ADDERS ///////////////////
+    
     @Override
     public Number addVersion(Version freshVersion) {
         UUID externalIdentifier = UUID.randomUUID();
@@ -113,6 +109,32 @@ public class JdbcVersionDao extends JdbcResourceDao implements VersionDao {
         final int affectedRows = getSimpleJdbcTemplate().update(sql, params);
         return getInternalID(externalIdentifier);
     }
+    
+       ////////////////////////////////////////////
+    @Override
+    public int addVersionCachedRepresentation(Number versionID, Number cachedID){        
+    Map<String, Object> params = new HashMap<String, Object>();
+        params.put("versionId", versionID);
+        params.put("cachedId", cachedID);
+        String sql = "INSERT INTO " + versionsCachedRepresentationsTableName + "(" + version_id + "," + cached_representation_id + " ) VALUES (:versionId, :cachedId)";
+        return getSimpleJdbcTemplate().update(sql, params);
+    }
+    
+    
+    /////////////// DELETERS ////////////////////////
+    
+    @Override
+    public int deleteVersion(Number internalID) {
+        if (versionIsInUse(internalID)) {
+            return 0;
+        }        
+        String sql = "DELETE FROM " + versionTableName + " where " + version_id + " = ?";
+        int result = getSimpleJdbcTemplate().update(sql, internalID);      
+        return result;
+
+    }
+
+    
     
     ////////////////////////////////////////////
     @Override
@@ -134,35 +156,6 @@ public class JdbcVersionDao extends JdbcResourceDao implements VersionDao {
     return (getSimpleJdbcTemplate().update(sql.toString(), versionID));
     }
         
-    ////////////////////////////////////////////
-    @Override
-    public int addVersionCachedRepresentation(Number versionID, Number cachedID){        
-    Map<String, Object> params = new HashMap<String, Object>();
-        params.put("versionId", versionID);
-        params.put("cachedId", cachedID);
-        String sql = "INSERT INTO " + versionsCachedRepresentationsTableName + "(" + version_id + "," + cached_representation_id + " ) VALUES (:versionId, :cachedId)";
-        return getSimpleJdbcTemplate().update(sql, params);
-    }
-    
-    
-    
-    
-    
-    
-    @Override
-    public boolean versionIsInUse(Number versionsID) {
-        String sql = "SELECT " + source_id + " FROM " + sourcesVersionsTableName + " WHERE " + version_id + "= ? LIMIT 1";
-        List<Number> result = getSimpleJdbcTemplate().query(sql, sourceIDRowMapper, versionsID);
-        if (result.size() > 0) {
-            return true;
-        }
-        return false;
-    }
-    
-     private final RowMapper<Number> sourceIDRowMapper = new RowMapper<Number>() {
-        @Override
-        public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            return rs.getInt(source_id);
-        }
-    };
+ 
+  
 }
