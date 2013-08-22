@@ -62,6 +62,7 @@ public class AnnotationResource {
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}")
     public JAXBElement<Annotation> getAnnotation(@PathParam("annotationid") String ExternalIdentifier) throws SQLException {
         final Number annotationID = daoDispatcher.getAnnotationInternalIdentifier(UUID.fromString(ExternalIdentifier));
+        daoDispatcher.setServiceURI(httpServletRequest.getServletPath());
         final Annotation annotation = daoDispatcher.getAnnotation(annotationID);
         return new ObjectFactory().createAnnotation(annotation);
     }
@@ -84,9 +85,13 @@ public class AnnotationResource {
     @Produces(MediaType.APPLICATION_XML)
     @Path("")
     public JAXBElement<Annotation> createAnnotation(Annotation annotation) throws SQLException {
+        
         String remoteUser = httpServletRequest.getRemoteUser();
         UUID userExternalID = (remoteUser != null) ? UUID.fromString(remoteUser) : null;
         Number userID = daoDispatcher.getUserInternalIdentifier(userExternalID);
+        
+        daoDispatcher.setServiceURI(httpServletRequest.getServletPath());
+        
         Number newAnnotationID =  daoDispatcher.addUsersAnnotation(annotation, userID);
         Annotation newAnnotation = daoDispatcher.getAnnotation(newAnnotationID); 
         return (new ObjectFactory().createAnnotation(newAnnotation));

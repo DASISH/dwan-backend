@@ -189,11 +189,12 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         ////
 
         final Number testAnnotationID = 2;
+        jdbcAnnotationDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI);
         final Annotation annotation = jdbcAnnotationDao.getAnnotationWithoutSources(testAnnotationID);
         assertEquals(TestBackendConstants._TEST_ANNOT_2_HEADLINE, annotation.getHeadline());
         assertEquals(String.valueOf(TestBackendConstants._TEST_ANNOT_2_OWNER), annotation.getOwner().getRef());
         assertEquals(TestBackendConstants._TEST_ANNOT_2_BODY, annotation.getBody().getAny().get(0)); // when the body is elaborated it may be changed
-        assertEquals(TestBackendConstants._TEST_ANNOT_2_EXT, annotation.getURI());
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI+TestBackendConstants._TEST_ANNOT_2_EXT, annotation.getURI());
         assertEquals(TestBackendConstants._TEST_ANNOT_2_TIME_STAMP, annotation.getTimeStamp().toString());
     }
 

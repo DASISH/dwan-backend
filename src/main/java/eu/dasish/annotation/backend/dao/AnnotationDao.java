@@ -37,6 +37,7 @@ import java.util.Map;
 
 public interface AnnotationDao extends ResourceDao{
     
+    
     ////////////// GETTERS //////////////////////////
     
     

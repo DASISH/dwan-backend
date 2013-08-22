@@ -67,6 +67,9 @@ public class AnnotationsTest extends ResourcesTest{
         //final Annotation annotation = daoDispatcher.getAnnotation(annotationID);
         mockery.checking(new Expectations() {
             {
+                oneOf(daoDispatcher).setServiceURI(with(any(String.class)));
+                will(doAll());
+                
                 oneOf(daoDispatcher).getAnnotationInternalIdentifier(with(aNonNull(UUID.class)));                
                 will(returnValue(annotationID));                
                 
@@ -147,6 +150,9 @@ public class AnnotationsTest extends ResourcesTest{
         addedAnnotation.setTimeStamp(Helpers.setXMLGregorianCalendar(Timestamp.valueOf("2013-08-12 11:25:00.383000")));
         mockery.checking(new Expectations() {
             {
+                oneOf(daoDispatcher).setServiceURI(with(any(String.class)));
+                will(doAll());
+                
                 oneOf(daoDispatcher).getUserInternalIdentifier(with(any(UUID.class)));
                 will(returnValue(ownerID));
                 
