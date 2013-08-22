@@ -74,6 +74,9 @@ public class AnnotationResourceTest {
         
         mockery.checking(new Expectations() {
             {
+                oneOf(daoDispatcher).setServiceURI(with(any(String.class)));
+                will(doAll());
+                
                 oneOf(daoDispatcher).getAnnotationInternalIdentifier(with(any(UUID.class)));                
                 will(returnValue(annotationID));                
                 
@@ -81,6 +84,10 @@ public class AnnotationResourceTest {
                 will(returnValue(expectedAnnotation));
             }
         });
+        
+        final MockHttpServletRequest httpServletRequest = new MockHttpServletRequest();
+        httpServletRequest.setServletPath(TestBackendConstants._TEST_SERVLET_URI);        
+        annotationResource.setHttpRequest(httpServletRequest);
          
         JAXBElement<Annotation> result = annotationResource.getAnnotation(externalIDstring);
         assertEquals(expectedAnnotation, result.getValue());
@@ -140,6 +147,9 @@ public class AnnotationResourceTest {
         
         mockery.checking(new Expectations() {
             {
+                oneOf(daoDispatcher).setServiceURI(with(any(String.class)));
+                will(doAll());
+                
                 oneOf(daoDispatcher).getUserInternalIdentifier(with(aNonNull(UUID.class)));
                 will(returnValue(ownerID));
                 
@@ -154,7 +164,8 @@ public class AnnotationResourceTest {
         
         
         final MockHttpServletRequest httpServletRequest = new MockHttpServletRequest();
-        httpServletRequest.setRemoteUser(TestBackendConstants._TEST_USER_5_EXT_ID);        
+        httpServletRequest.setRemoteUser(TestBackendConstants._TEST_USER_5_EXT_ID);         
+        httpServletRequest.setServletPath(TestBackendConstants._TEST_SERVLET_URI);     
         annotationResource.setHttpRequest(httpServletRequest);
         
         JAXBElement<Annotation> result = annotationResource.createAnnotation(annotationToAdd); 

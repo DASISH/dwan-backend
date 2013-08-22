@@ -25,6 +25,8 @@ import java.util.UUID;
  */
 public interface ResourceDao {
     
+    
+    public void setServiceURI(String serviceURI);
      /**
      * 
      * @param externalID

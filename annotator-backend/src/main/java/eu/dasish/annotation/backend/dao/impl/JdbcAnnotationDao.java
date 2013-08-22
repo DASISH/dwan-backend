@@ -43,26 +43,24 @@ import org.springframework.jdbc.core.RowMapper;
  */
 public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao {
 
+   
     public JdbcAnnotationDao(DataSource dataSource) {
         setDataSource(dataSource);
         internalIdName = annotation_id;
         resourceTableName = annotationTableName;
+        
     }
     
- 
+    
+    ///////////// GETTERS /////////////
+  
     @Override
     public List<Number> retrieveSourceIDs(Number annotationID) {
         String sql = "SELECT " + source_id + " FROM " + annotationsSourcesTableName + " WHERE " + annotation_id + "= ?";
         List<Number> result = getSimpleJdbcTemplate().query(sql, sourceIDRowMapper, annotationID);
         return result;
     }
-    private final RowMapper<Number> sourceIDRowMapper = new RowMapper<Number>() {
-        @Override
-        public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            Number result = rs.getInt(source_id);
-            return result;
-        }
-    };
+    
 
     ////////////////////////////////////////////////////////////////////////
     @Override
@@ -123,6 +121,8 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         List<Number> result = getSimpleJdbcTemplate().query(query.toString(), internalIDRowMapper);
         return result;
     }
+    
+    //////////////////////////////////////////////////////////////////////////
 
     @Override
     public List<AnnotationInfo> getAnnotationInfos(List<Number> annotationIDs) {
@@ -194,7 +194,11 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
             return null;
         }
       
-        return respond.get(0);
+        Annotation result = respond.get(0);
+        String externalId = result.getURI();
+        result.setURI(extrnalIDtoURI(_serviceURI, externalId));
+        
+        return result;
     }
     
     private final RowMapper<Annotation> annotationRowMapper = new RowMapper<Annotation>() {
@@ -210,7 +214,6 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
 
             annotation.setBody(Helpers.deserializeBody(rs.getString(body_xml)));
             annotation.setTargetSources(null);
-
             // TODO: fix: rpelace URI in the schema with external id, or make here the conversion:
             // from external ID in the DB to the URI for the class
             annotation.setURI(rs.getString(external_id));

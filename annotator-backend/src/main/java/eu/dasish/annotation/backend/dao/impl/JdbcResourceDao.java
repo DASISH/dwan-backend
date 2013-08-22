@@ -85,6 +85,18 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     ///////////////////////////////////////////////////
     protected String internalIdName = null;
     protected String resourceTableName = null;
+    protected String _serviceURI;
+    
+    
+    
+    /////////////////// Class field SETTERS /////////////
+    @Override
+    public void setServiceURI(String serviceURI){
+        _serviceURI = serviceURI;
+    }
+       
+    
+    
 
     //////////////////////////////////////////////////////////////////////////////////
     @Override
@@ -135,30 +147,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
             }
         }
     };
-
-    protected <T> String makeListOfValues(List<T> vals) {
-
-        if (vals == null) {
-            return null;
-        }
-
-        if (vals.isEmpty()) {
-            return null;
-        }
-
-        String result = "(";
-        int length = vals.size();
-        for (int i = 0; i < length - 1; i++) {
-            result = result + vals.get(i).toString() + ", ";
-        }
-        result = result + vals.get(length - 1).toString() + ")";
-        return result;
-    }
-    
-    
     ////////////////// ROW MAPPERS ///////////////////
-    
-    
     protected final RowMapper<Number> internalIDRowMapper = new RowMapper<Number>() {
         @Override
         public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
@@ -203,10 +192,41 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
             return rs.getInt(notebook_id);
         }
     };
-     protected final RowMapper<Number> principalIDRowMapper = new RowMapper<Number>() {
+    protected final RowMapper<Number> principalIDRowMapper = new RowMapper<Number>() {
         @Override
         public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
             return rs.getInt(principal_id);
         }
     };
+
+    /////////////// HELPERS ///////////////
+    
+     
+    protected String extrnalIDtoURI(String serviceURI, String externalID) {
+        if (_serviceURI != null) {
+            return _serviceURI + externalID;
+        } else {
+            return externalID;
+        }
+    }
+
+    ////////////////////////////
+    protected <T> String makeListOfValues(List<T> vals) {
+
+        if (vals == null) {
+            return null;
+        }
+
+        if (vals.isEmpty()) {
+            return null;
+        }
+
+        String result = "(";
+        int length = vals.size();
+        for (int i = 0; i < length - 1; i++) {
+            result = result + vals.get(i).toString() + ", ";
+        }
+        result = result + vals.get(length - 1).toString() + ")";
+        return result;
+    }
 }

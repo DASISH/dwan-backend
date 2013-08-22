@@ -27,8 +27,7 @@
 ">
 
     
-    <!-- Context for testing the nortebooks service with mock implementations -->
-	   
+   	   
     <!-- This enables injection of the translator bean into the service object -->
     <context:component-scan base-package="eu.dasish.annotation.backend.rest" />
 	 

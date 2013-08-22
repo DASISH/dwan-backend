@@ -62,6 +62,18 @@ public class DaoDispatcherImpl implements DaoDispatcher
     @Autowired
     NotebookDao notebookDao;
     
+    //////////////////////////////////
+    @Override
+    public void setServiceURI(String serviceURI){
+        userDao.setServiceURI(serviceURI);
+        cachedRepresentationDao.setServiceURI(serviceURI);
+        versionDao.setServiceURI(serviceURI);
+        sourceDao.setServiceURI(serviceURI);
+        annotationDao.setServiceURI(serviceURI);
+        notebookDao.setServiceURI(serviceURI);
+    }
+            
+    
     ///////////// GETTERS //////////////////////////
 
     @Override

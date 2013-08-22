@@ -98,5 +98,7 @@ public class TestBackendConstants {
     public static final String _TEST_ANNOT_TO_ADD_NEW_SOURCE_BODY = "refers to "+_TEST_TEMP_SOURCE_ID;
     public static final String _TEST_ANNOT_TO_ADD_NEW_SOURCE_HEADLINE = "SF in Catalan";
     public static final String _TEST_NEW_SOURCE_LINK = "http://www.sagradafamilia.cat/docs_instit/historia.php ";
+    
+    public static final String _TEST_SERVLET_URI = "/dasish/";
 }
 

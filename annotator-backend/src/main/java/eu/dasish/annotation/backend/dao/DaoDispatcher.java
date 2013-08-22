@@ -32,6 +32,8 @@ import java.util.UUID;
  * @author olhsha
  */
 public interface DaoDispatcher{
+    
+    public void setServiceURI(String serviceURI);
 
     /////////////// ADDERS  /////////////////////////////////
     Number[] addCachedForVersion(Number versionID, CachedRepresentationInfo cached);
