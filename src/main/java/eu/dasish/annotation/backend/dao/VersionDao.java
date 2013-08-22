@@ -17,7 +17,6 @@
  */
 package eu.dasish.annotation.backend.dao;
 
-import eu.dasish.annotation.backend.identifiers.VersionIdentifier;
 import eu.dasish.annotation.schema.Version;
 import java.util.List;
 
@@ -25,24 +24,9 @@ import java.util.List;
  *
  * @author olhsha
  */
-public interface VersionDao {
+public interface VersionDao extends ResourceDao{
     
-      /**
-     * 
-     * @param internalID
-     * @return extrnalID identifier of the resource with internalID
-     */
-    
-    public VersionIdentifier getExternalID(Number internalID);    
-   
-   /**
-    * 
-    * @param externalID
-    * @return the internal Id of the Version with the external ID "externalID"
-    */
-    public Number getInternalID(VersionIdentifier externalID);
-    
-   
+  
     /**
      * 
      * @param internalID

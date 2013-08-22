@@ -18,13 +18,13 @@
 package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.dao.VersionDao;
-import eu.dasish.annotation.backend.identifiers.VersionIdentifier;
 import eu.dasish.annotation.schema.Version;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import javax.sql.DataSource;
 import org.springframework.jdbc.core.RowMapper;
 
@@ -41,18 +41,7 @@ public class JdbcVersionDao extends JdbcResourceDao implements VersionDao {
         resourceTableName = versionTableName;
     }
 
-    //////////////////////////////////////////////////////////////////////////////////////////////////////    
-    @Override
-    public VersionIdentifier getExternalID(Number internalID) {
-        return new VersionIdentifier(super.getExternalIdentifier(internalID));
-    }
-
-    //////////////////////////////////////////////////////////////////////////////////////////////////////    
-    @Override
-    public Number getInternalID(VersionIdentifier externalID) {
-        return (super.getInternalID(externalID));
-    }
-
+  
     ///////////////////////////////////////////////////////////////
     @Override
     public Version getVersion(Number internalID) {
@@ -85,11 +74,6 @@ public class JdbcVersionDao extends JdbcResourceDao implements VersionDao {
     public List<Number> retrieveCachedRepresentationList(Number versionID) {
         String sql = "SELECT " + cached_representation_id + " FROM " + versionsCachedRepresentationsTableName + " WHERE " + version_id + "= ?";
         List<Number> result = getSimpleJdbcTemplate().query(sql, cachedIDRowMapper, versionID);
-
-        if (result == null) {
-            return null;
-        }
-
         return result;
     }
 
@@ -118,7 +102,7 @@ public class JdbcVersionDao extends JdbcResourceDao implements VersionDao {
     /////////////////////////////////////////////////
     @Override
     public Number addVersion(Version freshVersion) {
-        VersionIdentifier externalIdentifier = new VersionIdentifier();
+        UUID externalIdentifier = UUID.randomUUID();
         String newExternalIdentifier = externalIdentifier.toString();
 
         Map<String, Object> params = new HashMap<String, Object>();

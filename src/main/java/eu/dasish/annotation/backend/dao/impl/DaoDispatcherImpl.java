@@ -25,11 +25,6 @@ import eu.dasish.annotation.backend.dao.NotebookDao;
 import eu.dasish.annotation.backend.dao.SourceDao;
 import eu.dasish.annotation.backend.dao.UserDao;
 import eu.dasish.annotation.backend.dao.VersionDao;
-import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
-import eu.dasish.annotation.backend.identifiers.CachedRepresentationIdentifier;
-import eu.dasish.annotation.backend.identifiers.SourceIdentifier;
-import eu.dasish.annotation.backend.identifiers.UserIdentifier;
-import eu.dasish.annotation.backend.identifiers.VersionIdentifier;
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.CachedRepresentationInfo;
 import eu.dasish.annotation.schema.NewOrExistingSourceInfo;
@@ -44,6 +39,7 @@ import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -69,22 +65,22 @@ public class DaoDispatcherImpl implements DaoDispatcher
     ///////////// GETTERS //////////////////////////
 
     @Override
-    public Number getAnnotationInternalIdentifier(AnnotationIdentifier annotationIdentifier) {
-        return annotationDao.getInternalID(annotationIdentifier);
+    public Number getAnnotationInternalIdentifier(UUID UUID) {
+        return annotationDao.getInternalID(UUID);
     }
 
     @Override
-    public AnnotationIdentifier getAnnotationExternalIdentifier(Number annotationID) {
+    public UUID getAnnotationExternalIdentifier(Number annotationID) {
         return annotationDao.getExternalID(annotationID);
     }
 
     @Override
-    public Number getUserInternalIdentifier(UserIdentifier userIdentifier) {
-        return userDao.getInternalID(userIdentifier);
+    public Number getUserInternalIdentifier(UUID UUID) {
+        return userDao.getInternalID(UUID);
     }
 
     @Override
-    public UserIdentifier getUserExternalIdentifier(Number userID) {
+    public UUID getUserExternalIdentifier(Number userID) {
         return userDao.getExternalID(userID);
     }
 
@@ -109,7 +105,7 @@ public class DaoDispatcherImpl implements DaoDispatcher
 
     ////////////////////////////////////////////////////////////////////////
     @Override
-    public List<Number> getFilteredAnnotationIDs(String link, String text, String access, String namespace, UserIdentifier owner, Timestamp after, Timestamp before) {
+    public List<Number> getFilteredAnnotationIDs(String link, String text, String access, String namespace, UUID owner, Timestamp after, Timestamp before) {
 
         List<Number> annotationIDs = null;
 
@@ -135,7 +131,9 @@ public class DaoDispatcherImpl implements DaoDispatcher
     @Override
     public Number[] addCachedForVersion(Number versionID, CachedRepresentationInfo cached) {
         Number[] result = new Number[2];
-        result[1] = cachedRepresentationDao.getInternalID(new CachedRepresentationIdentifier(cached.getRef()));
+        String cachedExternalIDstring = cached.getRef();
+        UUID cachedUUID = (cachedExternalIDstring != null) ? UUID.fromString(cachedExternalIDstring) : null;
+        result[1] = cachedRepresentationDao.getInternalID(cachedUUID);
         if (result[1] == null) {
             result[1] = cachedRepresentationDao.addCachedRepresentationInfo(cached);
         }
@@ -148,7 +146,9 @@ public class DaoDispatcherImpl implements DaoDispatcher
     @Override
       public Number[] addSiblingVersionForSource(Number sourceID, Version version) throws SQLException {
         Number[] result = new Number[2];
-        result[1] = versionDao.getInternalID(new VersionIdentifier(version.getVersion())); // TOT: change to getURI after the schem is fixed
+        String versionExternalIDstring = version.getVersion();// TOT: change to getURI after the schem is fixed
+        UUID versionUUID = (versionExternalIDstring != null) ? UUID.fromString(versionExternalIDstring) : null;
+        result[1] = versionDao.getInternalID(versionUUID); 
         if (result[1] == null) {
             result[1] = versionDao.addVersion(version);
         }
@@ -163,7 +163,7 @@ public class DaoDispatcherImpl implements DaoDispatcher
         for (NewOrExistingSourceInfo noesi : sources) {
             SourceInfo source = noesi.getSource();
             if (source != null) {
-                int affectedRows = annotationDao.addAnnotationSourcePair(annotationID, sourceDao.getInternalID(new SourceIdentifier(source.getRef())));
+                int affectedRows = annotationDao.addAnnotationSourcePair(annotationID, sourceDao.getInternalID(UUID.fromString(source.getRef())));
             } else {
                 Source newSource = createSource(noesi.getNewSource());
                 Version newVersion = createVersion(noesi.getNewSource());
@@ -276,7 +276,7 @@ public class DaoDispatcherImpl implements DaoDispatcher
   ////////////// HELPERS ////////////////////
     private Source createSource(NewSourceInfo newSource) {
         Source source = new Source();
-        SourceIdentifier externalIdentifier = new SourceIdentifier();
+        UUID externalIdentifier = UUID.randomUUID();
         source.setURI(externalIdentifier.toString());
         source.setLink(newSource.getLink());
         return source;
@@ -285,8 +285,8 @@ public class DaoDispatcherImpl implements DaoDispatcher
     /////////////////////////////////////////
     private Version createVersion(NewSourceInfo newSource) {
         Version version = new Version();
-        VersionIdentifier versionIdentifier = new VersionIdentifier();
-        version.setVersion(versionIdentifier.toString()); // TODO change after the schem is fixed, shoul be setURI, 
+        UUID externalIdentifier = UUID.randomUUID();
+        version.setVersion(externalIdentifier.toString()); // TODO change after the schem is fixed, shoul be setURI, 
         return version;
     }
 }

@@ -19,7 +19,6 @@ package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.dao.AnnotationDao;
-import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationInfo;
 import eu.dasish.annotation.schema.Permission;
@@ -32,6 +31,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import javax.sql.DataSource;
 import javax.xml.datatype.DatatypeConfigurationException;
 import org.springframework.jdbc.core.RowMapper;
@@ -48,7 +48,8 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         internalIdName = annotation_id;
         resourceTableName = annotationTableName;
     }
-
+    
+ 
     @Override
     public List<Number> retrieveSourceIDs(Number annotationID) {
         String sql = "SELECT " + source_id + " FROM " + annotationsSourcesTableName + " WHERE " + annotation_id + "= ?";
@@ -251,9 +252,9 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
     @Override
     public Number addAnnotation(Annotation annotation, Number ownerID) throws SQLException {
         // generate a new annotation ID 
-        AnnotationIdentifier annotationIdentifier = new AnnotationIdentifier();
+        UUID externalID = UUID.randomUUID();
         Map<String, Object> params = new HashMap<String, Object>();
-        params.put("externalId", annotationIdentifier.toString());
+        params.put("externalId", externalID.toString());
         params.put("ownerId", ownerID);
         params.put("headline", annotation.getHeadline());
         params.put("bodyXml", annotation.getBody().getAny().get(0).toString());
@@ -263,19 +264,14 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         sql.append(",").append(headline).append(",").append(body_xml).append(" ) VALUES (:externalId, :ownerId, :headline, :bodyXml)");
         int affectedRows = getSimpleJdbcTemplate().update(sql.toString(), params);
         if (affectedRows == 1) {
-            return getInternalID(annotationIdentifier);
+            return getInternalID(externalID);
         } else {
             return null;
         }
 
     }
 
-    //////////////////////////////////////////////////
-    @Override
-    public AnnotationIdentifier getExternalID(Number internalID) {
-        return new AnnotationIdentifier(super.getExternalIdentifier(internalID));
-    }
-
+   
     ///////////////////////////////////////////////////////////////////////
     @Override
     public int updateBody(Number annotationID, String serializedNewBody) {

@@ -18,12 +18,12 @@
 package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.TestBackendConstants;
-import eu.dasish.annotation.backend.identifiers.SourceIdentifier;
 import eu.dasish.annotation.schema.Source;
 import eu.dasish.annotation.schema.SourceInfo;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.runner.RunWith;
@@ -49,7 +49,7 @@ public class JdbcSourceDaoTest extends JdbcResourceDaoTest {
     public void testGetExternalID() {
         System.out.println("getExternalID");
         Number internalID = 1;
-        SourceIdentifier result = jdbcSourceDao.getExternalID(internalID);
+        UUID result = jdbcSourceDao.getExternalID(internalID);
         assertEquals(TestBackendConstants._TEST_SOURCE_1_EXT_ID, result.toString());
     }
 
@@ -59,7 +59,7 @@ public class JdbcSourceDaoTest extends JdbcResourceDaoTest {
     @Test
     public void testGetInternalId() {
         System.out.println("getInternalId");
-        SourceIdentifier externalID = new SourceIdentifier(TestBackendConstants._TEST_SOURCE_1_EXT_ID);
+        UUID externalID = UUID.fromString(TestBackendConstants._TEST_SOURCE_1_EXT_ID);
         Number expResult = 1;
         Number result = jdbcSourceDao.getInternalID(externalID);
         assertEquals(expResult, result);
@@ -127,7 +127,7 @@ public class JdbcSourceDaoTest extends JdbcResourceDaoTest {
         Source freshSource = new Source();
         freshSource.setLink(link);
         freshSource.setVersion(TestBackendConstants._TEST_VERSION_1_EXT_ID);
-        freshSource.setURI((new SourceIdentifier()).toString());
+        freshSource.setURI((UUID.randomUUID()).toString());
         freshSource.setTimeSatmp(null);
         
         Number result = jdbcSourceDao.addSource(freshSource);

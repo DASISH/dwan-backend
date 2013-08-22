@@ -18,10 +18,10 @@
 package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.TestBackendConstants;
-import eu.dasish.annotation.backend.identifiers.VersionIdentifier;
 import eu.dasish.annotation.schema.Version;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.runner.RunWith;
@@ -48,7 +48,7 @@ public class JdbcVersionDaoTest extends JdbcResourceDaoTest {
     public void testGetExternalId() {
         System.out.println("getExternalId");
         Number internalID = 1;
-        VersionIdentifier result = jdbcVersionDao.getExternalID(internalID);
+        UUID result = jdbcVersionDao.getExternalID(internalID);
         assertEquals(TestBackendConstants._TEST_VERSION_1_EXT_ID, result.toString());
     }
 
@@ -58,7 +58,7 @@ public class JdbcVersionDaoTest extends JdbcResourceDaoTest {
     @Test
     public void testGetInternalId() {
         System.out.println("getInternalId");
-        VersionIdentifier externalID = new VersionIdentifier(TestBackendConstants._TEST_VERSION_1_EXT_ID);
+        UUID externalID = UUID.fromString(TestBackendConstants._TEST_VERSION_1_EXT_ID);
         Number expResult = 1;
         Number result = jdbcVersionDao.getInternalID(externalID);
         assertEquals(expResult, result);

@@ -17,30 +17,16 @@
  */
 package eu.dasish.annotation.backend.dao;
 
-import eu.dasish.annotation.backend.identifiers.CachedRepresentationIdentifier;
 import eu.dasish.annotation.schema.CachedRepresentationInfo;
 
 /**
  *
  * @author olhsha
  */
-public interface CachedRepresentationDao {
+public interface CachedRepresentationDao extends ResourceDao{
     
-    /**
-     * 
-     * @param internalID
-     * @return extrnalID identifier of the resource with internalID
-     */
-    public CachedRepresentationIdentifier getExternalID(Number internalID);
-    
-     
-    /**
-     * 
-     * @param externalID
-     * @return the internal identifier of the resource with the "externalID"
-     */   
-    public Number getInternalID(CachedRepresentationIdentifier externalID);
-    
+   
+  
   
     /**
      * 

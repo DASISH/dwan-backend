@@ -18,13 +18,14 @@
 package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.dao.CachedRepresentationDao;
-import eu.dasish.annotation.backend.identifiers.CachedRepresentationIdentifier;
 import eu.dasish.annotation.schema.CachedRepresentationInfo;
+import java.lang.String;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import javax.sql.DataSource;
 import org.springframework.jdbc.core.RowMapper;
 
@@ -41,18 +42,7 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
         resourceTableName = cachedRepresentationTableName;
     }
 
-    //////////////////////////////////////////////////////////////////////////////////////////////////////
-    @Override
-    public CachedRepresentationIdentifier getExternalID(Number internalID) {
-        return new CachedRepresentationIdentifier(super.getExternalIdentifier(internalID));
-    }
-    
-     //////////////////////////////////////////////////////////////////////////////////////////////////////
-    @Override
-    public Number getInternalID(CachedRepresentationIdentifier externalID) {
-        return super.getInternalID(externalID);
-    }
-
+  
 
     ///////////////////////////////////////////////////////////////////////////////////////
     @Override
@@ -86,8 +76,7 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
     @Override
     public Number addCachedRepresentationInfo(CachedRepresentationInfo cached) {
 
-        CachedRepresentationIdentifier externalIdentifier = new CachedRepresentationIdentifier();
-
+        UUID externalIdentifier = UUID.randomUUID();
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("externalId", externalIdentifier.toString());
         params.put("mime_type", cached.getMimeType());

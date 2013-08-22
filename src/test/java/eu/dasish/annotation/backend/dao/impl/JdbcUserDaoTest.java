@@ -19,7 +19,7 @@ package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.TestInstances;
-import eu.dasish.annotation.backend.identifiers.UserIdentifier;
+import java.util.UUID;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.runner.RunWith;
@@ -42,14 +42,14 @@ public class JdbcUserDaoTest extends JdbcResourceDaoTest{
 
     /**
      * Test of getInternalID method, of class JdbcUserDao. Number
-     * getInternalID(UserIdentifier userIDentifier);
+     * getInternalID(UUID UUID);
      */
     @Test
     public void testGetInternalID() {
-        Number testOne = jdbcUserDao.getInternalID(new UserIdentifier(TestBackendConstants._TEST_USER_3_EXT_ID));
+        Number testOne = jdbcUserDao.getInternalID(UUID.fromString(TestBackendConstants._TEST_USER_3_EXT_ID));
         assertEquals(3, testOne.intValue());
         
-        Number testTwo = jdbcUserDao.getInternalID(new UserIdentifier(TestBackendConstants._TEST_USER_XXX_EXT_ID));
+        Number testTwo = jdbcUserDao.getInternalID(UUID.fromString(TestBackendConstants._TEST_USER_XXX_EXT_ID));
         assertEquals(null, testTwo);
         
         Number testThree = jdbcUserDao.getInternalID(null);
@@ -58,15 +58,15 @@ public class JdbcUserDaoTest extends JdbcResourceDaoTest{
     
     
     /**
-     * public UserIdentifier getExternalID(Number internalId)
+     * public UUID getExternalID(Number internalId)
      */
     @Test
     public void testGetExternalID() {
-        UserIdentifier testOne = jdbcUserDao.getExternalID(3);
+        UUID testOne = jdbcUserDao.getExternalID(3);
         assertEquals(TestBackendConstants._TEST_USER_3_EXT_ID, testOne.toString());
         
-        UserIdentifier testTwo = jdbcUserDao.getExternalID(null);
-        assertEquals(null, testTwo.getUUID());
+        UUID testTwo = jdbcUserDao.getExternalID(null);
+        assertEquals(null, testTwo);
     }
     
     

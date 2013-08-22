@@ -19,10 +19,7 @@ package eu.dasish.annotation.backend.rest;
 
 import eu.dasish.annotation.backend.BackendConstants;
 import eu.dasish.annotation.backend.dao.AnnotationDao;
-import eu.dasish.annotation.backend.identifiers.UserIdentifier;
 import eu.dasish.annotation.backend.dao.NotebookDao;
-import eu.dasish.annotation.backend.identifiers.AnnotationIdentifier;
-import eu.dasish.annotation.backend.identifiers.NotebookIdentifier;
 import eu.dasish.annotation.schema.Notebook;
 import eu.dasish.annotation.schema.NotebookInfo;
 import eu.dasish.annotation.schema.NotebookInfos;
@@ -31,6 +28,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -45,6 +43,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.xml.bind.JAXBElement;
+import javax.xml.namespace.QName;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -68,7 +67,9 @@ public class NotebookResource {
     // Returns notebook-infos for the notebooks accessible to the current user.
     public JAXBElement<NotebookInfos> getNotebookInfo(@Context HttpServletRequest httpServletRequest) {
         final NotebookInfos notebookInfos = new NotebookInfos();
-        notebookInfos.getNotebook().addAll(notebookDao.getNotebookInfos(new UserIdentifier(httpServletRequest.getRemoteUser())));
+        String remoteUser = httpServletRequest.getRemoteUser();
+        UUID remoteUserUUID = (remoteUser != null) ? UUID.fromString(remoteUser) : null;
+        notebookInfos.getNotebook().addAll(notebookDao.getNotebookInfos(remoteUserUUID));
         return new ObjectFactory().createNotebooks(notebookInfos);
     }
 
@@ -78,7 +79,7 @@ public class NotebookResource {
     // This is not in the standards definition and is only used for testing
     public JAXBElement<NotebookInfos> getNotebookInfo(@QueryParam("userid") String userId) {
         final NotebookInfos notebookInfos = new NotebookInfos();
-        notebookInfos.getNotebook().addAll(notebookDao.getNotebookInfos(new UserIdentifier(userId)));
+        notebookInfos.getNotebook().addAll(notebookDao.getNotebookInfos(UUID.fromString(userId)));
         return new ObjectFactory().createNotebooks(notebookInfos);
     }
 
@@ -88,7 +89,9 @@ public class NotebookResource {
     // Returns the list of all notebooks owned by the current logged user.
     public List<Notebook> getUsersNotebooks(@Context HttpServletRequest httpServletRequest) {
         // todo: sort out how the user id is obtained and how it is stored it the db
-        return notebookDao.getUsersNotebooks(new UserIdentifier(httpServletRequest.getRemoteUser()));
+        String remoteUser = httpServletRequest.getRemoteUser();
+        UUID remoteUserUUID = (remoteUser != null) ? UUID.fromString(remoteUser) : null;
+        return notebookDao.getUsersNotebooks(remoteUserUUID);
     }
 
     @GET
@@ -109,17 +112,17 @@ public class NotebookResource {
 
     @GET
     @Produces(MediaType.TEXT_XML)
-    @Path("{notebookid: "+BackendConstants.regExpIdentifier+"}/metadata")
+    @Path("{notebookid: " + BackendConstants.regExpIdentifier + "}/metadata")
     // Get all metadata about a specified notebook _nid_, including the information if it is private or not.
     public JAXBElement<NotebookInfo> getMetadata(@PathParam("notebookid") String notebookId) {
-        NotebookInfo result = notebookDao.getNotebookInfo(notebookDao.getNotebookID(new NotebookIdentifier(notebookId)));
+        NotebookInfo result = notebookDao.getNotebookInfo(notebookDao.getInternalID(UUID.fromString(notebookId)));
         // TODO change the name of the create method to createNotebookInfo!
         return new ObjectFactory().createNotebook(result);
-        
+
     }
 
     @GET
-    @Path("{notebookid: "+BackendConstants.regExpIdentifier+"}")
+    @Path("{notebookid: " + BackendConstants.regExpIdentifier + "}")
     /*
      * Get the list of all annotations _aid_-s contained within a Notebook with related metadata. 
      * Parameters: _nid_, 
@@ -129,13 +132,18 @@ public class NotebookResource {
      * optional orderingMode specifies if the results should be sorted using a descending order desc=1 or an ascending order desc=0 (default: 0 ).
      * */
     @Produces(MediaType.TEXT_XML)
-    public List<AnnotationIdentifier> getAllAnnotations(@PathParam("notebookid") String notebookId, @DefaultValue("-1") @QueryParam(value = "maximumAnnotations") final int maximumAnnotations,
+    public List<JAXBElement<UUID>> getAllAnnotations(@PathParam("notebookid") String notebookId, @DefaultValue("-1") @QueryParam(value = "maximumAnnotations") final int maximumAnnotations,
             @DefaultValue("-1") @QueryParam(value = "startAnnotation") final int startAnnotation,
             @DefaultValue("dc:created") @QueryParam(value = "orderby") final String orderby,
-            @DefaultValue("0") @QueryParam(value = "orderingMode") final int orderingMode) { 
-        List<AnnotationIdentifier> annotationIds  = notebookDao.getAnnotationExternalIDs(new NotebookIdentifier(notebookId));                
-        
-        return annotationIds;
+            @DefaultValue("0") @QueryParam(value = "orderingMode") final int orderingMode) {
+        UUID notebookUUID = UUID.fromString(notebookId);
+        List<UUID> annotationIDs = notebookDao.getAnnotationExternalIDs(notebookUUID);
+        List<JAXBElement<UUID>> result = new ArrayList<JAXBElement<UUID>>();
+        for (UUID annotationID : annotationIDs) {
+            final JAXBElement<UUID> jaxbElement = new JAXBElement<UUID>(new QName("http://www.dasish.eu/ns/addit", "uuid"), UUID.class, null, annotationID);
+            result.add(jaxbElement);
+        }
+        return result;
         // TODO implement optional parameters!!
     }
 
@@ -174,9 +182,11 @@ public class NotebookResource {
      * The name of the new notebook can be specified sending a specific payload.
      */
     public String createNotebook(@Context HttpServletRequest httpServletRequest) throws URISyntaxException {
-        NotebookIdentifier notebookId = notebookDao.addNotebook(new UserIdentifier(httpServletRequest.getRemoteUser()), null);
+        String remoteUser = httpServletRequest.getRemoteUser();
+        UUID remoteUserUUID = (remoteUser != null) ? UUID.fromString(remoteUser) : null;
+        UUID notebookId = notebookDao.addNotebook(remoteUserUUID, null);
         final URI serverUri = new URI(httpServletRequest.getRequestURL().toString());
-        String fullUrlString = "/api/notebooks/" + notebookId.getUUID().toString();
+        String fullUrlString = "/api/notebooks/" + notebookId.toString();
         return serverUri.resolve(fullUrlString).toString();
     }
 
@@ -197,7 +207,7 @@ public class NotebookResource {
     /*
      Delete _nid_. Annotations stay, they just lose connection to _nid_.<br>
      */
-    public String deleteNotebook(@PathParam("notebookid") NotebookIdentifier notebookId) {
+    public String deleteNotebook(@PathParam("notebookid") UUID notebookId) {
         // todo: sort out how the id string passsed in here is mapped eg db column for _nid_
         return Integer.toString(notebookDao.deleteNotebook(notebookId));
     }
