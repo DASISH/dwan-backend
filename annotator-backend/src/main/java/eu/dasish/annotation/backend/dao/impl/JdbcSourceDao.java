@@ -52,7 +52,7 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
     public Source getSource(Number internalID) {
         String sql = "SELECT " + sourceStar + "FROM " + sourceTableName + " WHERE " + source_id + " = ?";
         List<Source> result = getSimpleJdbcTemplate().query(sql, sourceRowMapper, internalID);
-        return result.get(0);
+        return (!result.isEmpty() ? result.get(0) : null);
     }
     private final RowMapper<Source> sourceRowMapper = new RowMapper<Source>() {
         @Override
@@ -60,7 +60,7 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
             try {
                 XMLGregorianCalendar xmlDate = Helpers.setXMLGregorianCalendar(rs.getTimestamp(time_stamp));
                 Source result = 
-                        constructSource(UUID.fromString(rs.getString(external_id)), rs.getString(link_uri), rs.getString(version), xmlDate);
+                        constructSource(rs.getString(external_id), rs.getString(link_uri), rs.getString(version), xmlDate);
                 return result;
             } catch (DatatypeConfigurationException e) {
                 // TODO: which logger are we going to use?
@@ -74,8 +74,7 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
     @Override
     public List<Number> retrieveVersionList(Number sourceID) {
         String sql = "SELECT " + version_id + " FROM " + sourcesVersionsTableName + " WHERE " + source_id + " = ?";
-        List<Number> result = getSimpleJdbcTemplate().query(sql, versionIDRowMapper, sourceID);
-        return result;
+        return getSimpleJdbcTemplate().query(sql, versionIDRowMapper, sourceID);
     }
 
     
@@ -91,13 +90,12 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
 
         String sourceIDs = makeListOfValues(sources);
         String sql = "SELECT " + external_id + "," + link_uri + "," + version + " FROM " + sourceTableName + " WHERE " + source_id + " IN " + sourceIDs;
-        List<SourceInfo> result = getSimpleJdbcTemplate().query(sql, SourceInfoRowMapper);
-        return result;
+        return getSimpleJdbcTemplate().query(sql, SourceInfoRowMapper);
     }
     private final RowMapper<SourceInfo> SourceInfoRowMapper = new RowMapper<SourceInfo>() {
         @Override
         public SourceInfo mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            return constructSourceInfo(UUID.fromString(rs.getString(external_id)), rs.getString(link_uri), rs.getString(version));
+            return constructSourceInfo(rs.getString(external_id), rs.getString(link_uri), rs.getString(version));
         }
     };
 
@@ -107,8 +105,7 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
     public List<Number> getSourcesForLink(String link) {
         StringBuilder sql = new StringBuilder("SELECT ");
         sql.append(source_id).append(" FROM ").append(sourceTableName).append(" WHERE ").append(link_uri).append(" LIKE '%").append(link).append("%'");
-        List<Number> result = getSimpleJdbcTemplate().query(sql.toString(), internalIDRowMapper);
-        return result;
+        return getSimpleJdbcTemplate().query(sql.toString(), internalIDRowMapper);
     }
 
     
@@ -122,10 +119,7 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
         }
         String sqlVersions = "SELECT " + version_id + " FROM " + sourcesVersionsTableName + " WHERE " + source_id + "= ? LIMIT 1";
         List<Number> resultVersions = getSimpleJdbcTemplate().query(sqlVersions, versionIDRowMapper, sourceID);
-        if (resultVersions.size() > 0) {
-            return true;
-        }
-        return false;
+        return (resultVersions.size() > 0);
     }
     
   
@@ -134,15 +128,14 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
     ///////////////////////// ADDERS /////////////////////////////////
     @Override
     public Number addSource(Source source) throws SQLException {        
-        String externalID = source.getURI();        
+        UUID externalID = UUID.randomUUID();      
         Map<String, Object> params = new HashMap<String, Object>();
-        params.put("externalId", externalID);
+        params.put("externalId", externalID.toString());
         params.put("linkUri", source.getLink());
         params.put("version", source.getVersion());
         String sql = "INSERT INTO " + sourceTableName + "(" + external_id + "," + link_uri + "," + version + " ) VALUES (:externalId, :linkUri,  :version)";
-        final int affectedRows = getSimpleJdbcTemplate().update(sql, params);        
-        Number internalID = getInternalID(UUID.fromString(externalID));
-        return internalID;
+        final int affectedRows = getSimpleJdbcTemplate().update(sql, params);  
+        return (affectedRows>0 ? getInternalID(UUID.fromString(externalID.toString())) : null);
     }
     
     
@@ -163,8 +156,7 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
             return 0;
         }
         String sqlSourcesVersions = "DELETE FROM " + sourceTableName + " WHERE " + source_id + " = ? ";
-        int result = getSimpleJdbcTemplate().update(sqlSourcesVersions, internalID);
-        return result;
+        return getSimpleJdbcTemplate().update(sqlSourcesVersions, internalID);
 
     }
 
@@ -173,8 +165,7 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
     @Override
     public int deleteAllSourceVersion(Number internalID) {
         String sqlSourcesVersions = "DELETE FROM " + sourcesVersionsTableName + " WHERE " + source_id + " = ?";
-        int result = getSimpleJdbcTemplate().update(sqlSourcesVersions, internalID);
-        return result;
+        return getSimpleJdbcTemplate().update(sqlSourcesVersions, internalID);
 
     }
  
@@ -182,17 +173,17 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
   /////////// HELPERS  ////////////////
    
 
-    private SourceInfo constructSourceInfo(UUID UUID, String link, String version) {
+    private SourceInfo constructSourceInfo(String externalID, String link, String version) {
         SourceInfo sourceInfo = new SourceInfo();
-        sourceInfo.setRef(UUID.toString());
+        sourceInfo.setRef(externalIDtoURI(_serviceURI,externalID));
         sourceInfo.setLink(link);
         sourceInfo.setVersion(version);
         return sourceInfo;
     }
 
-    private Source constructSource(UUID UUID, String link, String version, XMLGregorianCalendar xmlTimeStamp) {
+    private Source constructSource(String externalID, String link, String version, XMLGregorianCalendar xmlTimeStamp) {
         Source source = new Source();
-        source.setURI(UUID.toString());
+        source.setURI(externalIDtoURI(_serviceURI, externalID));
         source.setTimeSatmp(xmlTimeStamp);
         source.setLink(link);
         source.setVersion(version);

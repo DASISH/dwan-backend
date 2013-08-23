@@ -63,7 +63,9 @@ public class NotebookResourceTest {
     public void testGetNotebookInfo() {
         System.out.println("getNotebookInfo");
         final MockHttpServletRequest httpServletRequest = new MockHttpServletRequest();
-        httpServletRequest.setRemoteUser(TestBackendConstants._TEST_UID_1_);
+        httpServletRequest.setRemoteUser(TestBackendConstants._TEST_UID_1_);        
+        httpServletRequest.setServletPath(TestBackendConstants._TEST_SERVLET_URI);
+        
         
         mockery.checking(new Expectations() {
             {
@@ -88,7 +90,8 @@ public class NotebookResourceTest {
             }
         });
         final MockHttpServletRequest httpServletRequest = new MockHttpServletRequest();
-        httpServletRequest.setRemoteUser(TestBackendConstants._TEST_UID_2_);
+        httpServletRequest.setRemoteUser(TestBackendConstants._TEST_UID_2_);               
+        httpServletRequest.setServletPath(TestBackendConstants._TEST_SERVLET_URI);
         List result = notebookResource.getUsersNotebooks(httpServletRequest);
         assertEquals(0, result.size());
     }
@@ -100,7 +103,9 @@ public class NotebookResourceTest {
     public void testCreateNotebook() throws Exception {
         System.out.println("createNotebook");
         final MockHttpServletRequest httpServletRequest = new MockHttpServletRequest();
-        httpServletRequest.setRemoteUser(TestBackendConstants._TEST_UID_2_);
+        httpServletRequest.setRemoteUser(TestBackendConstants._TEST_UID_2_);               
+        httpServletRequest.setServletPath(TestBackendConstants._TEST_SERVLET_URI);
+        
         mockery.checking(new Expectations() {
             {
                 oneOf(notebookDao).addNotebook(UUID.fromString(httpServletRequest.getRemoteUser()), null);
