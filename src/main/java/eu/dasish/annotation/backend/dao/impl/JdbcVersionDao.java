@@ -46,8 +46,9 @@ public class JdbcVersionDao extends JdbcResourceDao implements VersionDao {
     @Override
     public Version getVersion(Number internalID) {
 
-        String sql = "SELECT " + versionStar + " FROM " + versionTableName + " WHERE " + version_id + "= ? LIMIT 1";
-        List<Version> result = getSimpleJdbcTemplate().query(sql, versionRowMapper, internalID);
+        StringBuilder sql  = new StringBuilder("SELECT ");
+        sql.append(versionStar).append(" FROM ").append(versionTableName).append(" WHERE ").append(version_id).append("= ? LIMIT 1");
+        List<Version> result = getSimpleJdbcTemplate().query(sql.toString(), versionRowMapper, internalID);
         return (!result.isEmpty() ? result.get(0) : null);
     }
     private final RowMapper<Version> versionRowMapper = new RowMapper<Version>() {
@@ -65,8 +66,9 @@ public class JdbcVersionDao extends JdbcResourceDao implements VersionDao {
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public List<Number> retrieveCachedRepresentationList(Number versionID) {
-        String sql = "SELECT DISTINCT " + cached_representation_id + " FROM " + versionsCachedRepresentationsTableName + " WHERE " + version_id + "= ?";
-        return getSimpleJdbcTemplate().query(sql, cachedIDRowMapper, versionID);
+        StringBuilder sql  = new StringBuilder("SELECT DISTINCT ");
+        sql.append(cached_representation_id).append(" FROM ").append(versionsCachedRepresentationsTableName).append(" WHERE ").append(version_id).append("= ?");
+        return getSimpleJdbcTemplate().query(sql.toString(), cachedIDRowMapper, versionID);
     }
 
   
@@ -75,13 +77,15 @@ public class JdbcVersionDao extends JdbcResourceDao implements VersionDao {
     
     @Override
     public boolean versionIsInUse(Number versionsID) {
-        String sqlSources = "SELECT " + source_id + " FROM " + sourcesVersionsTableName + " WHERE " + version_id + "= ? LIMIT 1";
-        List<Number> resultSources = getSimpleJdbcTemplate().query(sqlSources, sourceIDRowMapper, versionsID);
+        StringBuilder sqlSources  = new StringBuilder("SELECT ");
+        sqlSources.append(source_id).append(" FROM ").append(sourcesVersionsTableName).append(" WHERE ").append(version_id).append("= ? LIMIT 1");
+        List<Number> resultSources = getSimpleJdbcTemplate().query(sqlSources.toString(), sourceIDRowMapper, versionsID);
         if (resultSources.size() > 0) {
             return true;
         }
-        String sqlVersions = "SELECT " + cached_representation_id + " FROM " + versionsCachedRepresentationsTableName + " WHERE " + version_id + "= ? LIMIT 1";
-        List<Number> resultCached = getSimpleJdbcTemplate().query(sqlVersions, cachedIDRowMapper, versionsID);
+        StringBuilder sqlCached  = new StringBuilder("SELECT ");
+        sqlCached.append(cached_representation_id).append(" FROM ").append(versionsCachedRepresentationsTableName).append(" WHERE ").append(version_id).append("= ? LIMIT 1");
+        List<Number> resultCached = getSimpleJdbcTemplate().query(sqlCached.toString(), cachedIDRowMapper, versionsID);
         return (resultCached.size() > 0) ;
     }
     
@@ -98,8 +102,9 @@ public class JdbcVersionDao extends JdbcResourceDao implements VersionDao {
         params.put("externalId", newExternalIdentifier);
         //TODO: till the schema is fixed, version-text and version's external Id are the same (now version do not have URI's/ext id's)
         params.put("version", newExternalIdentifier);
-        String sql = "INSERT INTO " + versionTableName + "(" + external_id + "," + version + " ) VALUES (:externalId, :version)";
-        final int affectedRows = getSimpleJdbcTemplate().update(sql, params);
+        StringBuilder sql = new StringBuilder("INSERT INTO ");
+        sql.append(versionTableName).append("(").append(external_id).append(",").append(version).append(" ) VALUES (:externalId, :version)");
+        final int affectedRows = getSimpleJdbcTemplate().update(sql.toString(), params);
         return (affectedRows>0 ? getInternalID(externalIdentifier) : null);
     }
     
@@ -109,8 +114,9 @@ public class JdbcVersionDao extends JdbcResourceDao implements VersionDao {
     Map<String, Object> params = new HashMap<String, Object>();
         params.put("versionId", versionID);
         params.put("cachedId", cachedID);
-        String sql = "INSERT INTO " + versionsCachedRepresentationsTableName + "(" + version_id + "," + cached_representation_id + " ) VALUES (:versionId, :cachedId)";
-        return getSimpleJdbcTemplate().update(sql, params);
+        StringBuilder sql = new StringBuilder("INSERT INTO ");
+        sql.append(versionsCachedRepresentationsTableName).append("(").append(version_id).append(",").append(cached_representation_id).append(" ) VALUES (:versionId, :cachedId)");
+        return getSimpleJdbcTemplate().update(sql.toString(), params);
     }
     
     
@@ -121,8 +127,9 @@ public class JdbcVersionDao extends JdbcResourceDao implements VersionDao {
         if (versionIsInUse(internalID)) {
             return 0;
         }        
-        String sql = "DELETE FROM " + versionTableName + " where " + version_id + " = ?";
-        return getSimpleJdbcTemplate().update(sql, internalID);
+        StringBuilder sql = new StringBuilder("DELETE FROM ");
+        sql.append(versionTableName).append(" where ").append(version_id).append(" = ?");
+        return getSimpleJdbcTemplate().update(sql.toString(), internalID);
 
     }
 
