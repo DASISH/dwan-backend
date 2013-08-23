@@ -48,8 +48,9 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
     @Override
     public CachedRepresentationInfo getCachedRepresentationInfo(Number internalID) {
 
-        String sql = "SELECT " + cachedRepresentationStar + " FROM " + cachedRepresentationTableName + " WHERE " + cached_representation_id + "= ? LIMIT 1";
-        List<CachedRepresentationInfo> result = getSimpleJdbcTemplate().query(sql, cachedRepresentationRowMapper, internalID);
+        StringBuilder sql = new StringBuilder("SELECT ");
+        sql.append(cachedRepresentationStar).append(" FROM ").append(cachedRepresentationTableName).append(" WHERE ").append(cached_representation_id).append("= ? LIMIT 1");
+        List<CachedRepresentationInfo> result = getSimpleJdbcTemplate().query(sql.toString(), cachedRepresentationRowMapper, internalID);
 
         if (result.isEmpty()) {
             return null;
@@ -72,8 +73,9 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
     //////////////////////////////////////
 
     private boolean cachedIsInUse(Number cachedID) {      
-        String sql = "SELECT " + version_id + " FROM " + versionsCachedRepresentationsTableName + " WHERE " + cached_representation_id + "= ? LIMIT 1";
-        List<Number> result = getSimpleJdbcTemplate().query(sql, versionIDRowMapper, cachedID);
+        StringBuilder sql = new StringBuilder("SELECT ");
+        sql.append(version_id).append(" FROM ").append(versionsCachedRepresentationsTableName).append(" WHERE ").append(cached_representation_id).append("= ? LIMIT 1");
+        List<Number> result = getSimpleJdbcTemplate().query(sql.toString(), versionIDRowMapper, cachedID);
         return (!result.isEmpty());
     }
     
@@ -88,8 +90,9 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
         params.put("mime_type", cached.getMimeType());
         params.put("tool", cached.getTool());
         params.put("type", cached.getType());
-        String sql = "INSERT INTO " + cachedRepresentationTableName + "(" + external_id + "," + mime_type + "," + tool + "," + type_ + " ) VALUES (:externalId, :mime_type,  :tool, :type)";
-        final int affectedRows = getSimpleJdbcTemplate().update(sql, params);
+        StringBuilder sql = new StringBuilder("INSERT INTO ");
+        sql.append(cachedRepresentationTableName).append("(").append(external_id).append(",").append(mime_type).append(",").append(tool).append("," ).append(type_).append(" ) VALUES (:externalId, :mime_type,  :tool, :type)");
+        final int affectedRows = getSimpleJdbcTemplate().update(sql.toString(), params);
         return (affectedRows > 0 ? getInternalID(externalIdentifier) : null);
     }
 
@@ -100,8 +103,9 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
            return 0;
         }
         
-        String sql = "DELETE FROM " + cachedRepresentationTableName + " where " + cached_representation_id + " = ?";
-        return  getSimpleJdbcTemplate().update(sql, internalID);
+        StringBuilder sql = new StringBuilder("DELETE FROM ");
+        sql.append(cachedRepresentationTableName).append(" WHERE ").append(cached_representation_id).append(" = ?");
+        return  getSimpleJdbcTemplate().update(sql.toString(), internalID);
     }
     
    

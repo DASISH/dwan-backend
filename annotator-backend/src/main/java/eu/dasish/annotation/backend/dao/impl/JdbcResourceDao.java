@@ -104,32 +104,25 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
         if (externalId == null) {
             return null;
         }
-        String sql = "SELECT " + internalIdName + " FROM " + resourceTableName + " WHERE " + external_id + "= ? LIMIT 1";
-        List<Number> sqlResult = getSimpleJdbcTemplate().query(sql, internalIDRowMapper, externalId.toString());
-
-        if (sqlResult.isEmpty()) {
-            return null;
-        }
-
-        Number result = sqlResult.get(0);
-        return result;
+        StringBuilder sql = new StringBuilder("SELECT ");
+        sql.append(internalIdName).append(" FROM ").append(resourceTableName).append(" WHERE ").append(external_id).append("= ? LIMIT 1");
+        List<Number> sqlResult = getSimpleJdbcTemplate().query(sql.toString(), internalIDRowMapper, externalId.toString());
+        return (sqlResult.isEmpty() ? null: sqlResult.get(0));
     }
 
     @Override
     public UUID getExternalID(Number internalId) {
-        String sql = "SELECT " + external_id + " FROM " + resourceTableName + " WHERE " + internalIdName + "= ? LIMIT 1";
-        List<UUID> sqlResult = getSimpleJdbcTemplate().query(sql, externalIDRowMapper, internalId);
-        if (sqlResult.isEmpty()) {
-            return null;
-        }
-
-        return (sqlResult.get(0));
+        StringBuilder sql = new StringBuilder("SELECT ");
+        sql.append(external_id).append(" FROM ").append(resourceTableName).append(" WHERE ").append(internalIdName).append("= ? LIMIT 1");
+        List<UUID> sqlResult = getSimpleJdbcTemplate().query(sql.toString(), externalIDRowMapper, internalId);
+        return (sqlResult.isEmpty() ? null : sqlResult.get(0));
     }
 
     /////////////////////////////////////////////////////
     protected XMLGregorianCalendar retrieveTimeStamp(Number internalID) {
-        String sqlTime = "SELECT " + time_stamp + " FROM " + resourceTableName + " WHERE " + internalIdName + "= ? LIMIT 1";
-        List<XMLGregorianCalendar> timeStamp = getSimpleJdbcTemplate().query(sqlTime, timeStampRowMapper, internalID);
+        StringBuilder sqlTime = new  StringBuilder("SELECT ");
+        sqlTime.append(time_stamp).append(" FROM ").append(resourceTableName).append(" WHERE ").append(internalIdName).append("= ? LIMIT 1");
+        List<XMLGregorianCalendar> timeStamp = getSimpleJdbcTemplate().query(sqlTime.toString(), timeStampRowMapper, internalID);
         if (timeStamp.isEmpty()) {
             return null;
         }

@@ -50,8 +50,9 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
     //////////////////////// GETTERS ///////////////////////////////////
     @Override
     public Source getSource(Number internalID) {
-        String sql = "SELECT " + sourceStar + "FROM " + sourceTableName + " WHERE " + source_id + " = ?";
-        List<Source> result = getSimpleJdbcTemplate().query(sql, sourceRowMapper, internalID);
+        StringBuilder sql = new StringBuilder("SELECT ");
+        sql.append(sourceStar).append(" FROM ").append(sourceTableName).append(" WHERE ").append(source_id).append("= ? LIMIT 1");
+        List<Source> result = getSimpleJdbcTemplate().query(sql.toString(), sourceRowMapper, internalID);
         return (!result.isEmpty() ? result.get(0) : null);
     }
     private final RowMapper<Source> sourceRowMapper = new RowMapper<Source>() {
@@ -73,6 +74,7 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
     /////////////////////////////////////////
     @Override
     public List<Number> retrieveVersionList(Number sourceID) {
+       
         String sql = "SELECT " + version_id + " FROM " + sourcesVersionsTableName + " WHERE " + source_id + " = ?";
         return getSimpleJdbcTemplate().query(sql, versionIDRowMapper, sourceID);
     }
@@ -89,8 +91,11 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
         }
 
         String sourceIDs = makeListOfValues(sources);
-        String sql = "SELECT " + external_id + "," + link_uri + "," + version + " FROM " + sourceTableName + " WHERE " + source_id + " IN " + sourceIDs;
-        return getSimpleJdbcTemplate().query(sql, SourceInfoRowMapper);
+        
+        StringBuilder sql = new StringBuilder("SELECT ");
+        sql.append(external_id).append(",").append(link_uri).append(",").append(version).
+                append(" FROM ").append(sourceTableName).append(" WHERE ").append(source_id).append(" IN ").append(sourceIDs);
+        return getSimpleJdbcTemplate().query(sql.toString(), SourceInfoRowMapper);
     }
     private final RowMapper<SourceInfo> SourceInfoRowMapper = new RowMapper<SourceInfo>() {
         @Override
@@ -112,13 +117,15 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
     /////////////////////////////////////////////////
     @Override
     public boolean sourceIsInUse(Number sourceID) {
-        String sqlAnnotations = "SELECT " + annotation_id + " FROM " + annotationsSourcesTableName + " WHERE " + source_id + "= ? LIMIT 1";
-        List<Number> resultAnnotations = getSimpleJdbcTemplate().query(sqlAnnotations, annotationIDRowMapper, sourceID);
+        StringBuilder sqlAnnotations = new StringBuilder("SELECT ");
+        sqlAnnotations.append(annotation_id).append(" FROM ").append(annotationsSourcesTableName).append(" WHERE ").append(source_id).append(" = ? LIMIT 1");
+        List<Number> resultAnnotations = getSimpleJdbcTemplate().query(sqlAnnotations.toString(), annotationIDRowMapper, sourceID);
         if (resultAnnotations.size() > 0) {
             return true;
-        }
-        String sqlVersions = "SELECT " + version_id + " FROM " + sourcesVersionsTableName + " WHERE " + source_id + "= ? LIMIT 1";
-        List<Number> resultVersions = getSimpleJdbcTemplate().query(sqlVersions, versionIDRowMapper, sourceID);
+        }        
+        StringBuilder sqlVersions = new StringBuilder("SELECT ");
+        sqlVersions.append(version_id).append(" FROM ").append(sourcesVersionsTableName).append(" WHERE ").append(source_id).append(" = ? LIMIT 1");
+        List<Number> resultVersions = getSimpleJdbcTemplate().query(sqlVersions.toString(), versionIDRowMapper, sourceID);
         return (resultVersions.size() > 0);
     }
     
@@ -133,8 +140,9 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
         params.put("externalId", externalID.toString());
         params.put("linkUri", source.getLink());
         params.put("version", source.getVersion());
-        String sql = "INSERT INTO " + sourceTableName + "(" + external_id + "," + link_uri + "," + version + " ) VALUES (:externalId, :linkUri,  :version)";
-        final int affectedRows = getSimpleJdbcTemplate().update(sql, params);  
+        StringBuilder sql = new StringBuilder("INSERT INTO ");
+        sql.append(sourceTableName).append("(").append(external_id).append(",").append(link_uri).append(",").append(version).append(" ) VALUES (:externalId, :linkUri,  :version)");
+        final int affectedRows = getSimpleJdbcTemplate().update(sql.toString(), params);  
         return (affectedRows>0 ? getInternalID(UUID.fromString(externalID.toString())) : null);
     }
     
@@ -145,8 +153,8 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
         Map<String, Object> paramsJoint = new HashMap<String, Object>();
         paramsJoint.put("sourceId", sourceID);
         paramsJoint.put("versionId", versionID);
-        String sqlJoint = "INSERT INTO " + sourcesVersionsTableName + "(" + source_id + "," + version_id + " ) VALUES (:sourceId, :versionId)";
-        return getSimpleJdbcTemplate().update(sqlJoint, paramsJoint);
+        StringBuilder sqlJoint = new StringBuilder("INSERT INTO ").append(sourcesVersionsTableName).append("(").append(source_id).append(",").append(version_id).append(" ) VALUES (:sourceId, :versionId)");
+        return getSimpleJdbcTemplate().update(sqlJoint.toString(), paramsJoint);
     }
    
 ////////////////////// DELETERS ////////////////////////
@@ -155,8 +163,9 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
         if (sourceIsInUse(internalID)){
             return 0;
         }
-        String sqlSourcesVersions = "DELETE FROM " + sourceTableName + " WHERE " + source_id + " = ? ";
-        return getSimpleJdbcTemplate().update(sqlSourcesVersions, internalID);
+        StringBuilder sqlSourcesVersions = new StringBuilder("DELETE FROM ");
+        sqlSourcesVersions.append(sourceTableName).append(" WHERE ").append(source_id).append(" = ? ");
+        return getSimpleJdbcTemplate().update(sqlSourcesVersions.toString(), internalID);
 
     }
 
@@ -164,8 +173,9 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
     ///////////////////////////////////////////////////////////////////
     @Override
     public int deleteAllSourceVersion(Number internalID) {
-        String sqlSourcesVersions = "DELETE FROM " + sourcesVersionsTableName + " WHERE " + source_id + " = ?";
-        return getSimpleJdbcTemplate().update(sqlSourcesVersions, internalID);
+        StringBuilder sqlSourcesVersions = new StringBuilder("DELETE FROM ");
+        sqlSourcesVersions.append(sourcesVersionsTableName).append(" WHERE ").append(source_id).append(" = ?");
+        return getSimpleJdbcTemplate().update(sqlSourcesVersions.toString(), internalID);
 
     }
  
