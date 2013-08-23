@@ -69,10 +69,12 @@ public class JdbcVersionDaoTest extends JdbcResourceDaoTest {
      */
     @Test
     public void testGetVersion() {
-        System.out.println("getVersion");
+        System.out.println("getVersion");        
+        jdbcVersionDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI);
         Number internalID = 1;
+        
         Version result = jdbcVersionDao.getVersion(internalID);
-        assertEquals(TestBackendConstants._TEST_VERSION_1_EXT_ID, result.getVersion());
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI+TestBackendConstants._TEST_VERSION_1_EXT_ID, result.getVersion());
         //TODO: once the schems is fixed, test "version" and "URI/external-id" separately
         // at the moment "version" corresponds "external_id"
     }

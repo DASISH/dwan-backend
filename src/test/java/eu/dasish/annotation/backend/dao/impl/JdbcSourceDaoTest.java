@@ -72,11 +72,13 @@ public class JdbcSourceDaoTest extends JdbcResourceDaoTest {
     public void testGetSource() {
         System.out.println("getSource");
         Number internalID = 1;
+        jdbcSourceDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI);
         Source result = jdbcSourceDao.getSource(internalID);
-        assertEquals(TestBackendConstants._TEST_SOURCE_1_EXT_ID, result.getURI());
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI+TestBackendConstants._TEST_SOURCE_1_EXT_ID, result.getURI());
         assertEquals(TestBackendConstants._TEST_SOURCE_1_LINK, result.getLink());
         assertEquals(TestBackendConstants._TEST_VERSION_1_EXT_ID, result.getVersion());
-        //TODO: time stamp is not checked: do not know with what to compare 
+        // TODO :add time stamp test
+        
     }
 
     /**
@@ -127,7 +129,6 @@ public class JdbcSourceDaoTest extends JdbcResourceDaoTest {
         Source freshSource = new Source();
         freshSource.setLink(link);
         freshSource.setVersion(TestBackendConstants._TEST_VERSION_1_EXT_ID);
-        freshSource.setURI((UUID.randomUUID()).toString());
         freshSource.setTimeSatmp(null);
         
         Number result = jdbcSourceDao.addSource(freshSource);
@@ -136,7 +137,7 @@ public class JdbcSourceDaoTest extends JdbcResourceDaoTest {
         Source addedSource = jdbcSourceDao.getSource(result);
         assertEquals(link, addedSource.getLink());
         assertEquals(TestBackendConstants._TEST_VERSION_1_EXT_ID, addedSource.getVersion());
-        assertEquals(freshSource.getURI(), addedSource.getURI());
+        assertTrue(addedSource.getURI().startsWith(TestBackendConstants._TEST_SERVLET_URI));
     }
 
     /**
@@ -144,14 +145,15 @@ public class JdbcSourceDaoTest extends JdbcResourceDaoTest {
      */
     @Test
     public void testGetSourceInfos() {
-        System.out.println("getSourceInfos");
+        System.out.println("getSourceInfos");        
+        jdbcSourceDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI);
         List<Number> test = new ArrayList<Number>();
         test.add(1);
         test.add(2);
         List<SourceInfo> result = jdbcSourceDao.getSourceInfos(test);
         assertEquals(2, result.size());
-        assertEquals(TestBackendConstants._TEST_SOURCE_1_EXT_ID, result.get(0).getRef());
-        assertEquals(TestBackendConstants._TEST_SOURCE_2_EXT_ID, result.get(1).getRef());
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI+TestBackendConstants._TEST_SOURCE_1_EXT_ID, result.get(0).getRef());
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI+TestBackendConstants._TEST_SOURCE_2_EXT_ID, result.get(1).getRef());
         assertEquals(TestBackendConstants._TEST_VERSION_1_EXT_ID, result.get(0).getVersion());
         assertEquals(TestBackendConstants._TEST_VERSION_3_EXT_ID, result.get(1).getVersion());
         assertEquals(TestBackendConstants._TEST_SOURCE_1_LINK, result.get(0).getLink());

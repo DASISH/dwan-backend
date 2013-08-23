@@ -48,12 +48,9 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
     @Override
     public CachedRepresentationInfo getCachedRepresentationInfo(Number internalID) {
 
-        String sql = "SELECT " + cachedRepresentationStar + " FROM " + cachedRepresentationTableName + " WHERE " + cached_representation_id + "= ?";
+        String sql = "SELECT " + cachedRepresentationStar + " FROM " + cachedRepresentationTableName + " WHERE " + cached_representation_id + "= ? LIMIT 1";
         List<CachedRepresentationInfo> result = getSimpleJdbcTemplate().query(sql, cachedRepresentationRowMapper, internalID);
 
-        if (result == null) {
-            return null;
-        }
         if (result.isEmpty()) {
             return null;
         }
@@ -64,7 +61,7 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
         public CachedRepresentationInfo mapRow(ResultSet rs, int rowNumber) throws SQLException {
             CachedRepresentationInfo result = new CachedRepresentationInfo();
             result.setMimeType(rs.getString(mime_type));
-            result.setRef(rs.getString(external_id));
+            result.setRef(externalIDtoURI(_serviceURI, rs.getString(external_id)));
             result.setTool(rs.getString(tool));
             result.setType(rs.getString(type_));
             // TODO add "where is the file when the schema" is updated!!!!s
@@ -77,10 +74,7 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
     private boolean cachedIsInUse(Number cachedID) {      
         String sql = "SELECT " + version_id + " FROM " + versionsCachedRepresentationsTableName + " WHERE " + cached_representation_id + "= ? LIMIT 1";
         List<Number> result = getSimpleJdbcTemplate().query(sql, versionIDRowMapper, cachedID);
-        if (result.size() > 0) {
-            return true;
-        }
-        return false;
+        return (!result.isEmpty());
     }
     
  
@@ -88,7 +82,6 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
     //////////////////////// ADDERS ///////////////////////////////
     @Override
     public Number addCachedRepresentationInfo(CachedRepresentationInfo cached) {
-
         UUID externalIdentifier = UUID.randomUUID();
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("externalId", externalIdentifier.toString());
@@ -97,7 +90,7 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
         params.put("type", cached.getType());
         String sql = "INSERT INTO " + cachedRepresentationTableName + "(" + external_id + "," + mime_type + "," + tool + "," + type_ + " ) VALUES (:externalId, :mime_type,  :tool, :type)";
         final int affectedRows = getSimpleJdbcTemplate().update(sql, params);
-        return getInternalID(externalIdentifier);
+        return (affectedRows > 0 ? getInternalID(externalIdentifier) : null);
     }
 
     /////////////////////// DELETERS  //////////////////////////////////////////////

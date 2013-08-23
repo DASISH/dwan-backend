@@ -23,6 +23,7 @@ import eu.dasish.annotation.schema.Annotations;
 import eu.dasish.annotation.schema.Notebook;
 import eu.dasish.annotation.schema.NotebookInfo;
 import eu.dasish.annotation.schema.ResourceREF;
+import eu.dasish.annotation.schema.Version;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -56,17 +57,50 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
         resourceTableName = notebookTableName;
     }
 
+    ////////////////////////////////////////////////
     @Override
     public List<NotebookInfo> getNotebookInfos(UUID  userID) {
         String sql = "SELECT " + notebookTitle + ", " + notebookExternal_id + " FROM " + notebookTableName + ", " + principalTableName + " where " + principalPrincipal_id + " = " + notebookOwner_id + " and " + principalExternal_id + " = ?";
         return getSimpleJdbcTemplate().query(sql, notebookInfoRowMapper, userID.toString());
     }
+    
+    private final RowMapper<NotebookInfo> notebookInfoRowMapper = new RowMapper<NotebookInfo>() {
+        @Override
+        public NotebookInfo mapRow(ResultSet rs, int rowNumber) throws SQLException {
+            NotebookInfo notebookInfo = new NotebookInfo();
+            notebookInfo.setRef(externalIDtoURI(_serviceURI, rs.getString(external_id))); 
+            notebookInfo.setTitle(rs.getString(title));
+            return notebookInfo;
+        }
+    };
+    
+    ////////////////////////////////////////////////
 
     @Override
     public List<Notebook> getUsersNotebooks(UUID userID) {
         String sql = "SELECT " + notebookStar + " FROM " + notebookTableName + ", " + principalTableName + " where " + principal_id + " = " + owner_id + " and " + principalExternal_id + " = ?";
         return getSimpleJdbcTemplate().query(sql, notebookRowMapper, userID.toString());
     }
+    
+       private final RowMapper<Notebook> notebookRowMapper = new RowMapper<Notebook>() {
+        @Override
+        public Notebook mapRow(ResultSet rs, int rowNumber) throws SQLException {
+            Notebook notebook = new Notebook();
+//	    notebook.setId(rs.getInt("notebook_id"));
+            notebook.setTitle(rs.getString(title));
+            GregorianCalendar calendar = new GregorianCalendar();
+            calendar.setTime(rs.getTimestamp(time_stamp));
+            try {
+                XMLGregorianCalendar gregorianCalendar = DatatypeFactory.newInstance().newXMLGregorianCalendar(calendar);
+                notebook.setTimeStamp(gregorianCalendar);
+            } catch (DatatypeConfigurationException exception) {
+                throw new SQLException(exception);
+            }
+            notebook.setURI(externalIDtoURI(_serviceURI,rs.getString("external_id")));
+            notebook.setAnnotations(getAnnotations(rs.getInt(notebook_id)));
+            return notebook;
+        }
+    };
 
     @Override
     public UUID addNotebook(UUID userID, String title) {
@@ -83,35 +117,8 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
             throw exception;
         }
     }
-    private final RowMapper<NotebookInfo> notebookInfoRowMapper = new RowMapper<NotebookInfo>() {
-        @Override
-        public NotebookInfo mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            NotebookInfo notebookInfo = new NotebookInfo();
-            notebookInfo.setRef(rs.getString(external_id)); // todo: what is ref? should it be the external id? Olha: "yes"
-            notebookInfo.setTitle(rs.getString(title));
-//            notebookInfo.setRef(rs.getString("URI"));
-            return notebookInfo;
-        }
-    };
-    private final RowMapper<Notebook> notebookRowMapper = new RowMapper<Notebook>() {
-        @Override
-        public Notebook mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            Notebook notebook = new Notebook();
-//	    notebook.setId(rs.getInt("notebook_id"));
-            notebook.setTitle(rs.getString(title));
-            GregorianCalendar calendar = new GregorianCalendar();
-            calendar.setTime(rs.getTimestamp(time_stamp));
-            try {
-                XMLGregorianCalendar gregorianCalendar = DatatypeFactory.newInstance().newXMLGregorianCalendar(calendar);
-                notebook.setTimeStamp(gregorianCalendar);
-            } catch (DatatypeConfigurationException exception) {
-                throw new SQLException(exception);
-            }
-//            notebook.setURI(rs.getString("URI_ID"));
-            notebook.setAnnotations(getAnnotations(rs.getInt(notebook_id)));
-            return notebook;
-        }
-    };
+    
+ 
 
     // returns the number of affected annotations
     @Override
@@ -151,14 +158,7 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
         sql.append(notebooksAnnotationsTableNameAnnotation_id).append("  FROM ").append(notebooksAnnotationsTableName).append(" where ").append(notebook_id).append(" = ?");
         return getSimpleJdbcTemplate().query(sql.toString(), annotationIDRowMapper, notebookID);
     }
-    private final RowMapper<Number> annotationIDRowMapper = new RowMapper<Number>() {
-        @Override
-        public Integer mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            Integer annotationId = rs.getInt("annotation_id");
-            return annotationId;
-        }
-    };
-
+  
     //////////////////////////////////////////////////
     /**
      *
@@ -215,15 +215,9 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
         if (notebookID == null) {
             return null;
         }
-        String sql = "SELECT  " + notebookExternal_id + "," + notebookTitle + " FROM " + notebookTableName + " where " + notebook_id + " = ?";
+        String sql = "SELECT  " + notebookExternal_id + "," + notebookTitle + " FROM " + notebookTableName + " where " + notebook_id + " = ? LIMIT 1";
         List<NotebookInfo> result = getSimpleJdbcTemplate().query(sql, notebookInfoRowMapper, notebookID.toString());
-        if (result == null) {
-            return null;
-        }
-        if (result.isEmpty()) {
-            return null;
-        }
-        return result.get(0);
+        return (!result.isEmpty() ? result.get(0) : null);
     }
 
     
