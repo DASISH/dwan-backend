@@ -29,6 +29,9 @@ import java.util.List;
 public interface SourceDao extends ResourceDao{
     
   
+    /** 
+     * GETTERS 
+     **/
     
     /**
      * 
@@ -37,31 +40,9 @@ public interface SourceDao extends ResourceDao{
      */
     public Source getSource(Number internalID);
     
-   
     
-    /**
-     * 
-     * @param internalId
-     * @return # deleted rows in "source" table
-     */
-    public int deleteSource(Number internalID);
-    
-    /**
-     * 
-     * @param source
-     * @param versionID
-     * adds freshSource to the DB and assigns the fresh external Identifier to it
-     * @return the internal ID of the just added source
-     * return -1 id the source cannot be added because its version is not in the DB
-     */
-    public Number addSource(Source source) throws SQLException;   
-    
-    public int addSourceVersion(Number sourceID, Number versionID) throws SQLException;  
-    
-    public int deleteAllSourceVersion(Number sourceID) throws SQLException;  
-    
-    
-    
+    public List<SourceInfo> getSourceInfos(List<Number> sources);
+      
      /**
      * 
      * @param sourceID
@@ -69,10 +50,7 @@ public interface SourceDao extends ResourceDao{
      */
     public List<Number> retrieveVersionList(Number sourceID);
     
-  
-    public List<SourceInfo> getSourceInfos(List<Number> sources);
     
-  
     /**
      * 
      * @param link
@@ -82,4 +60,39 @@ public interface SourceDao extends ResourceDao{
   
     
     public boolean sourceIsInUse(Number sourceID);
+  
+    /** 
+     * ADDERS
+     **/
+    
+     /**
+     * 
+     * @param source
+     * @param versionID
+     * adds freshSource to the DB and assigns the fresh external Identifier to it
+     * @return the internal ID of the just added source
+     * return -1 id the source cannot be added because its version is not in the DB
+     */
+    public Number addSource(Source source) throws SQLException;   
+    
+    public int addSourceVersion(Number sourceID, Number versionID) throws SQLException; 
+    
+    
+    /** 
+     * DELETERS
+     **/
+    
+    /**
+     * 
+     * @param internalId
+     * @return # deleted rows in "source" table
+     */
+    public int deleteSource(Number internalID);
+    
+   
+    
+    public int deleteAllSourceVersion(Number sourceID) throws SQLException;  
+    
+    
+  
 }

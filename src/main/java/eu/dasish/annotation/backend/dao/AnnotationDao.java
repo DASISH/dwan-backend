@@ -40,8 +40,6 @@ public interface AnnotationDao extends ResourceDao{
     
     ////////////// GETTERS //////////////////////////
     
-    
-    
     /**
      * 
      * @param annotationID

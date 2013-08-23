@@ -32,23 +32,16 @@ import java.util.UUID;
  */
 public interface NotebookDao extends ResourceDao {
 
+    
+    ////////// GETTERS /////////////////////
     // Returns a list of notebook-info for the notebooks accessible to the current user.
     List<NotebookInfo> getNotebookInfos(UUID userID);
 
     // Returns the list of all notebooks owned by the current logged user.
     List<Notebook> getUsersNotebooks(UUID userID);
 
-    // Creates a new notebook and returns the _nid_ of the created Notebook
-    UUID addNotebook(UUID userID, String title);
-
-    // Delete _nid_. Annotations stay, they just lose connection to _nid_.<br>
-    // returns the number of records deleted
-    public int deleteNotebook(UUID notebookId);
-
-    // Adds an annotation _aid_ to the list of annotations of _nid_.
-    public int addAnnotation(UUID notebookId, UUID annotationId);
     
-     // Returns the list of annotation Id-s  for the notebook id.
+      // Returns the list of annotation Id-s  for the notebook id.
     public List<Number> getAnnotationIDs(Number notebookID);
     
       /*Returns the list of annotation info-s  for the notebook id.
@@ -76,6 +69,22 @@ public interface NotebookDao extends ResourceDao {
      */
     List<UUID> getAnnotationExternalIDs(UUID notebookId);
     
+    
+    ////////////  ADDERS ///////////////////////////
+    
+    // Creates a new notebook and returns the _nid_ of the created Notebook
+    UUID addNotebook(UUID userID, String title);
+
+      // Adds an annotation _aid_ to the list of annotations of _nid_.
+    public int addAnnotation(UUID notebookId, UUID annotationId);
+    
+   
+    
+    ///////////// DELETERS ///////////////
+    
+    // Delete _nid_. Annotations stay, they just lose connection to _nid_.<br>
+    // returns the number of records deleted
+    public int deleteNotebook(UUID notebookId);
     /**
      * 
      * @param annotationID

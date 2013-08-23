@@ -26,7 +26,10 @@ import java.util.List;
  */
 public interface VersionDao extends ResourceDao{
     
-  
+   /** 
+     * GETTERS 
+     **/
+    
     /**
      * 
      * @param internalID
@@ -35,13 +38,26 @@ public interface VersionDao extends ResourceDao{
      */
     public Version getVersion(Number internalID);
     
-   
-     
-    /** @param versionID
-     * @return deleted rows in "version" table
-     */
     
-    public int deleteVersion(Number versionID);
+       /**
+     * 
+     * @param versionID
+     * @return The list of the cached representation internal id-s of all the cached representations of the version with "versionID"
+     */
+    public List<Number> retrieveCachedRepresentationList(Number versionID);
+    
+     
+    // Not tested
+    public boolean versionIsInUse(Number versionsID);
+    
+    
+    /** 
+     * ADDERS
+     **/
+    
+    
+    public int addVersionCachedRepresentation(Number versionID, Number cachedID);
+    
     
     /**
      * 
@@ -52,23 +68,25 @@ public interface VersionDao extends ResourceDao{
     public Number addVersion(Version version);
    
   
-     /**
-     * 
-     * @param versionID
-     * @return The list of the cached representation internal id-s of all the cached representations of the version with "versionID"
+    
+    /** 
+     * DELETERS  
+     **/
+    
+     
+    /** @param versionID
+     * @return deleted rows in "version" table
      */
-    public List<Number> retrieveCachedRepresentationList(Number versionID);
+    
+    public int deleteVersion(Number versionID);
     
     
     public int deleteVersionCachedRepresentation(Number versionID, Number cachedID);
     
     
-    public int addVersionCachedRepresentation(Number versionID, Number cachedID);
     
     public int deleteAllVersionCachedRepresentation(Number versionID);
-    
-    // Not tested
-    public boolean versionIsInUse(Number versionsID);
+   
 }
     
 

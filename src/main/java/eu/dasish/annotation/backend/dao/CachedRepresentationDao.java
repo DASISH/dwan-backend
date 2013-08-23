@@ -36,19 +36,20 @@ public interface CachedRepresentationDao extends ResourceDao{
     public CachedRepresentationInfo getCachedRepresentationInfo(Number internalID);
     
   
+     /**
+     * 
+     * @param cached
+     * @return the internal Id of the just added "cached"
+     */
+    public Number addCachedRepresentationInfo(CachedRepresentationInfo cached);
+    
+   
     /**
      * 
      * @param internalID
      * @return  # deleted rows on the table "cached_representation"
      */
     public  int deleteCachedRepresentationInfo(Number internalID);
-    
-    /**
-     * 
-     * @param cached
-     * @return the internal Id of the just added "cached"
-     */
-    public Number addCachedRepresentationInfo(CachedRepresentationInfo cached);
     
    
     
