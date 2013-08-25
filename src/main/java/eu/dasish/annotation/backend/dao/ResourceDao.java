@@ -27,12 +27,18 @@ public interface ResourceDao {
     
     
     public void setServiceURI(String serviceURI);
+    
      /**
      * 
      * @param externalID
-     * @return internal identifier of the resource with externalID
+     * @return internal identifier of the resource with externalID, or null if there is no resource with this identifier
      */
     public Number getInternalID(UUID externalId);
     
+    /**
+     * 
+     * @param internalId
+     * @return the UUID (external ID) of the resource with the "internalID".
+     */
     public UUID getExternalID(Number internalId);
 }

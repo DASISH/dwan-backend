@@ -36,17 +36,21 @@ public interface SourceDao extends ResourceDao{
     /**
      * 
      * @param inernalID
-     * @return the object containing the source with the intrenal Id "internalId"
+     * @return the source with the intrenal Id "internalID".
      */
     public Source getSource(Number internalID);
     
-    
+    /**
+     * 
+     * @param sources
+     * @return the list of SoirceInfo objects corresponding to the sources with the internalIds from the list "sources".
+     */
     public List<SourceInfo> getSourceInfos(List<Number> sources);
       
      /**
      * 
      * @param sourceID
-     * @return the list of the internal version id-s for the  target source with the internal Id "sourceID" 
+     * @return the list of the internal version ID-s ("siblings") for the target source with the internal ID "sourceID". 
      */
     public List<Number> retrieveVersionList(Number sourceID);
     
@@ -54,11 +58,16 @@ public interface SourceDao extends ResourceDao{
     /**
      * 
      * @param link
-     * @return the list source ID's which link-fields contain "link" as a substring
+     * @return the list of source ID's which link-fields contain "link" as a substring.
      */ 
     public List<Number> getSourcesForLink(String link);
   
     
+    /**
+     * 
+     * @param sourceID
+     * @return true if "sourceID" occurs in at least one of the joint tables "annotations_target_sources" and "sources_versions".
+     */
     public boolean sourceIsInUse(Number sourceID);
   
     /** 
@@ -67,14 +76,18 @@ public interface SourceDao extends ResourceDao{
     
      /**
      * 
-     * @param source
-     * @param versionID
-     * adds freshSource to the DB and assigns the fresh external Identifier to it
-     * @return the internal ID of the just added source
-     * return -1 id the source cannot be added because its version is not in the DB
+     * @param source: the Source-object of the source to be added to "source" table.
+     * @return the internal ID of the just added source or null if it has not been added.
      */
     public Number addSource(Source source) throws SQLException;   
     
+    /**
+     * 
+     * @param sourceID
+     * @param versionID
+     * @return # added rows to the table "annotations_target_sources". Should be "1" if the pair (sourceID, versionID) has been added.
+     * @throws SQLException 
+     */
     public int addSourceVersion(Number sourceID, Number versionID) throws SQLException; 
     
     
@@ -85,12 +98,17 @@ public interface SourceDao extends ResourceDao{
     /**
      * 
      * @param internalId
-     * @return # deleted rows in "source" table
+     * @return # deleted rows in "source" table. Should be "1" if the source has been deleted.
      */
     public int deleteSource(Number internalID);
     
    
-    
+    /**
+     * 
+     * @param sourceID
+     * @return # deleted rows in the table "sources_versions" when deleting all the pairs of the form (sourceID, *).
+     * @throws SQLException 
+     */
     public int deleteAllSourceVersion(Number sourceID) throws SQLException;  
     
     

@@ -30,6 +30,9 @@ import java.util.UUID;
  *
  * @author Peter Withers <peter.withers@mpi.nl>
  */
+
+// TODO: not yet fully updated.
+
 public interface NotebookDao extends ResourceDao {
 
     

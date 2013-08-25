@@ -33,7 +33,7 @@ public interface VersionDao extends ResourceDao{
     /**
      * 
      * @param internalID
-     * @return the instance of Version.class  with the internal Id equal to "internalID"
+     * @return the Version-object build from the version  with the "internalID".
      * 
      */
     public Version getVersion(Number internalID);
@@ -42,27 +42,36 @@ public interface VersionDao extends ResourceDao{
        /**
      * 
      * @param versionID
-     * @return The list of the cached representation internal id-s of all the cached representations of the version with "versionID"
+     * @return The list of the cached-representation internal ID-s of all the cached representations of the version with "versionID".
      */
     public List<Number> retrieveCachedRepresentationList(Number versionID);
     
      
-    // Not tested
-    public boolean versionIsInUse(Number versionsID);
+    /**
+     * 
+     * @param versionsID
+     * @return true if "versionID" occurs in the table "versions_cached_representations".
+     */
+    public boolean versionIsInUse(Number versionID);
     
     
     /** 
      * ADDERS
      **/
     
-    
+    /**
+     * 
+     * @param versionID
+     * @param cachedID
+     * @return # rows added to the table "versions_cached_representations", when adding the pair (versionID, sourceID). Should be 1, if it has been added.
+     */
     public int addVersionCachedRepresentation(Number versionID, Number cachedID);
     
     
     /**
      * 
      * @param version
-     * @return the internal Id of the just added version
+     * @return the internal Id of the just added "version", or null if it has not been added.
      * 
      */
     public Number addVersion(Version version);
@@ -75,16 +84,25 @@ public interface VersionDao extends ResourceDao{
     
      
     /** @param versionID
-     * @return deleted rows in "version" table
+     * @return # deleted rows in "version" table after deleting the version with "versionID". Should be "1" if the version has been deleted.
      */
     
     public int deleteVersion(Number versionID);
     
-    
+    /**
+     * 
+     * @param versionID
+     * @param cachedID
+     * @return # deleted rows in the table "versions_cached_representations" after deleting the pair (versionID, cachedID).
+     */
     public int deleteVersionCachedRepresentation(Number versionID, Number cachedID);
     
     
-    
+    /**
+     * 
+     * @param versionID
+     * @return # deleted rows in the table "versions_cached_representations" after deleting all the pairs of the form (versionID, *).
+     */
     public int deleteAllVersionCachedRepresentation(Number versionID);
    
 }
