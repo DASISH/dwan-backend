@@ -218,25 +218,25 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
     };
     
    /////////////////////////////
-    
-    private boolean annotationIsInUse(Number sourceID) {
+    @Override
+    public boolean annotationIsInUse(Number annotationID) {
         StringBuilder sqlNotebooks = new StringBuilder("SELECT ");
         sqlNotebooks.append(notebook_id).append(" FROM ").append(notebooksAnnotationsTableName).append(" WHERE ").append(annotation_id).append("= ? LIMIT 1");
-        List<Number> resultNotebooks = getSimpleJdbcTemplate().query(sqlNotebooks.toString(), notebookIDRowMapper, sourceID);
+        List<Number> resultNotebooks = getSimpleJdbcTemplate().query(sqlNotebooks.toString(), notebookIDRowMapper, annotationID);
         if (resultNotebooks.size() > 0) {
             return true;
         }
         
         StringBuilder sqlSources = new StringBuilder("SELECT ");
         sqlSources.append(source_id).append(" FROM ").append(annotationsSourcesTableName).append(" WHERE ").append(annotation_id).append("= ? LIMIT 1");
-        List<Number> resultSources = getSimpleJdbcTemplate().query(sqlSources.toString(), sourceIDRowMapper, sourceID);
+        List<Number> resultSources = getSimpleJdbcTemplate().query(sqlSources.toString(), sourceIDRowMapper, annotationID);
         if (resultSources.size() > 0) {
             return true;
         }
         
         StringBuilder sqlPermissions = new StringBuilder("SELECT ");
         sqlPermissions.append(principal_id).append(" FROM ").append(permissionsTableName).append(" WHERE ").append(annotation_id).append("= ? LIMIT 1");
-        List<Number> resultPermissions = getSimpleJdbcTemplate().query(sqlPermissions.toString(), principalIDRowMapper, sourceID);
+        List<Number> resultPermissions = getSimpleJdbcTemplate().query(sqlPermissions.toString(), principalIDRowMapper, annotationID);
         return (resultPermissions.size() > 0);
     }
     

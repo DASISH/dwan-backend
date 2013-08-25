@@ -31,7 +31,7 @@ public interface CachedRepresentationDao extends ResourceDao{
     /**
      * 
      * @param internalID
-     * @return the object "cCachedRepresentationInfo"  with the internal id "internalID"
+     * @return the object of the class "CachedRepresentationInfo"  with the internal id "internalID".
      */
     public CachedRepresentationInfo getCachedRepresentationInfo(Number internalID);
     
@@ -39,7 +39,7 @@ public interface CachedRepresentationDao extends ResourceDao{
      /**
      * 
      * @param cached
-     * @return the internal Id of the just added "cached"
+     * @return the internal ID of the just added "cached", or null if the cached representation is not added for some reason.
      */
     public Number addCachedRepresentationInfo(CachedRepresentationInfo cached);
     
@@ -47,7 +47,7 @@ public interface CachedRepresentationDao extends ResourceDao{
     /**
      * 
      * @param internalID
-     * @return  # deleted rows on the table "cached_representation"
+     * @return  # deleted rows on the table "cached_representation".
      */
     public  int deleteCachedRepresentationInfo(Number internalID);
     
