@@ -36,7 +36,9 @@ import java.util.Map;
 public interface AnnotationDao extends ResourceDao{
     
     
-    ////////////// GETTERS //////////////////////////
+    /**
+     * GETTERS
+     */
     
     /**
      * 
@@ -116,7 +118,9 @@ public interface AnnotationDao extends ResourceDao{
      */
     public boolean annotationIsInUse(Number annotationID);
     
-    ///////////// ADDERS /////////////////////
+    /**
+     * ADDERS 
+     */
     
     /**
      * 
@@ -160,7 +164,9 @@ public interface AnnotationDao extends ResourceDao{
     public int updateBody(Number annotationID, String serializedNewBody);
     
     
-    //////////// DELETERS ///////////////////////
+   /**
+    * DELETERS 
+    */
     
     /**
      * 
