@@ -36,7 +36,11 @@ import java.util.UUID;
 public interface NotebookDao extends ResourceDao {
 
     
-    ////////// GETTERS /////////////////////
+    /**
+     * 
+     * GETTERS 
+     * 
+     */
     // Returns a list of notebook-info for the notebooks accessible to the current user.
     List<NotebookInfo> getNotebookInfos(UUID userID);
 
@@ -73,7 +77,10 @@ public interface NotebookDao extends ResourceDao {
     List<UUID> getAnnotationExternalIDs(UUID notebookId);
     
     
-    ////////////  ADDERS ///////////////////////////
+    /**
+     * 
+     *  ADDERS 
+     */
     
     // Creates a new notebook and returns the _nid_ of the created Notebook
     UUID addNotebook(UUID userID, String title);
@@ -83,7 +90,11 @@ public interface NotebookDao extends ResourceDao {
     
    
     
-    ///////////// DELETERS ///////////////
+   /**
+    * 
+    * DELETE 
+    * 
+    */
     
     // Delete _nid_. Annotations stay, they just lose connection to _nid_.<br>
     // returns the number of records deleted

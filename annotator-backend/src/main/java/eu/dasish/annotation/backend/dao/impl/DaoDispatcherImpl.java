@@ -77,8 +77,8 @@ public class DaoDispatcherImpl implements DaoDispatcher
     ///////////// GETTERS //////////////////////////
 
     @Override
-    public Number getAnnotationInternalIdentifier(UUID UUID) {
-        return annotationDao.getInternalID(UUID);
+    public Number getAnnotationInternalIdentifier(UUID externalID) {
+        return annotationDao.getInternalID(externalID);
     }
 
     @Override
@@ -87,8 +87,8 @@ public class DaoDispatcherImpl implements DaoDispatcher
     }
 
     @Override
-    public Number getUserInternalIdentifier(UUID UUID) {
-        return userDao.getInternalID(UUID);
+    public Number getUserInternalIdentifier(UUID externalID) {
+        return userDao.getInternalID(externalID);
     }
 
     @Override

@@ -26,7 +26,9 @@ import eu.dasish.annotation.schema.CachedRepresentationInfo;
 public interface CachedRepresentationDao extends ResourceDao{
     
    
-  
+    /** GETTERS
+     * 
+     */
   
     /**
      * 
@@ -36,6 +38,10 @@ public interface CachedRepresentationDao extends ResourceDao{
     public CachedRepresentationInfo getCachedRepresentationInfo(Number internalID);
     
   
+    /**
+     * ADDERS
+     */
+    
      /**
      * 
      * @param cached
@@ -43,7 +49,9 @@ public interface CachedRepresentationDao extends ResourceDao{
      */
     public Number addCachedRepresentationInfo(CachedRepresentationInfo cached);
     
-   
+   /**
+    * DELETERS
+    */
     /**
      * 
      * @param internalID
