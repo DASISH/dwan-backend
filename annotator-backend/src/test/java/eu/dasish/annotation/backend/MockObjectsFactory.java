@@ -23,7 +23,7 @@ import eu.dasish.annotation.backend.dao.NotebookDao;
 import eu.dasish.annotation.backend.dao.SourceDao;
 import eu.dasish.annotation.backend.dao.UserDao;
 import eu.dasish.annotation.backend.dao.VersionDao;
-import eu.dasish.annotation.backend.dao.DaoDispatcher;
+import eu.dasish.annotation.backend.dao.DBIntegrityService;
 import org.jmock.Mockery;
 
 /**
@@ -64,7 +64,7 @@ public class MockObjectsFactory {
         return context.mock(VersionDao.class);
     }
     
-    public DaoDispatcher newDaoDispatcher() {
-        return context.mock(DaoDispatcher.class);
+    public DBIntegrityService newDBIntegrityService() {
+        return context.mock(DBIntegrityService.class);
     }
 }

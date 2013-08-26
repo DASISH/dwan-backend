@@ -18,7 +18,7 @@
 package eu.dasish.annotation.backend.rest;
 
 import eu.dasish.annotation.backend.BackendConstants;
-import eu.dasish.annotation.backend.dao.DaoDispatcher;
+import eu.dasish.annotation.backend.dao.DBIntegrityService;
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.ObjectFactory;
 import java.sql.SQLException;
@@ -46,7 +46,7 @@ import org.springframework.stereotype.Component;
 public class AnnotationResource {
     
     @Autowired
-    private DaoDispatcher daoDispatcher;
+    private DBIntegrityService dbIntegrityService;
     @Context
     private HttpServletRequest httpServletRequest;
 
@@ -61,9 +61,9 @@ public class AnnotationResource {
     @Produces(MediaType.TEXT_XML)
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}")
     public JAXBElement<Annotation> getAnnotation(@PathParam("annotationid") String ExternalIdentifier) throws SQLException {
-        final Number annotationID = daoDispatcher.getAnnotationInternalIdentifier(UUID.fromString(ExternalIdentifier));
-        daoDispatcher.setServiceURI(httpServletRequest.getServletPath());
-        final Annotation annotation = daoDispatcher.getAnnotation(annotationID);
+        final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(ExternalIdentifier));
+        dbIntegrityService.setServiceURI(httpServletRequest.getServletPath());
+        final Annotation annotation = dbIntegrityService.getAnnotation(annotationID);
         return new ObjectFactory().createAnnotation(annotation);
     }
 
@@ -72,8 +72,8 @@ public class AnnotationResource {
     @DELETE
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}")
     public String deleteAnnotation(@PathParam("annotationid") String externalIdentifier) throws SQLException {
-        final Number annotationID = daoDispatcher.getAnnotationInternalIdentifier(UUID.fromString(externalIdentifier));
-        int[] resultDelete = daoDispatcher.deleteAnnotation(annotationID);
+        final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(externalIdentifier));
+        int[] resultDelete = dbIntegrityService.deleteAnnotation(annotationID);
         String result = Integer.toString(resultDelete[0]);
         return result;
     }
@@ -88,12 +88,12 @@ public class AnnotationResource {
         
         String remoteUser = httpServletRequest.getRemoteUser();
         UUID userExternalID = (remoteUser != null) ? UUID.fromString(remoteUser) : null;
-        Number userID = daoDispatcher.getUserInternalIdentifier(userExternalID);
+        Number userID = dbIntegrityService.getUserInternalIdentifier(userExternalID);
         
-        daoDispatcher.setServiceURI(httpServletRequest.getServletPath());
+        dbIntegrityService.setServiceURI(httpServletRequest.getServletPath());
         
-        Number newAnnotationID =  daoDispatcher.addUsersAnnotation(annotation, userID);
-        Annotation newAnnotation = daoDispatcher.getAnnotation(newAnnotationID); 
+        Number newAnnotationID =  dbIntegrityService.addUsersAnnotation(annotation, userID);
+        Annotation newAnnotation = dbIntegrityService.getAnnotation(newAnnotationID); 
         return (new ObjectFactory().createAnnotation(newAnnotation));
     }
 }

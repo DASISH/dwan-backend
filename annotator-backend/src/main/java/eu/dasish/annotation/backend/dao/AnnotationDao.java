@@ -45,7 +45,7 @@ public interface AnnotationDao extends ResourceDao{
      * @param annotationID
      * @return the Annotation object with empty list of sources.
      * 
-     * (Constructing a complete Annotation object using  "getAnnotationWithoutSources" and "retrieveSourceIDs" is done in "DaoDispatchter"
+     * (Constructing a complete Annotation object using  "getAnnotationWithoutSources" and "retrieveSourceIDs" is done in "DaoDispatchter".)
      * 
      */
     public Annotation getAnnotationWithoutSources(Number annotationID) throws SQLException;

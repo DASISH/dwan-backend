@@ -23,21 +23,6 @@ package eu.dasish.annotation.backend;
  */
 public class BackendConstants {
     
-     // Hash Parameters 
-    public static final int NOTEBOOK_HASH_PARAM_1 =  7;
-    public static final int NOTEBOOK_HASH_PARAM_2 =  29;
-    public static final int ANNOTATION_HASH_PARAM_1 =  5;
-    public static final int ANNOTATION_HASH_PARAM_2 =  23;
-    public static final int USER_HASH_PARAM_1 =  5;
-    public static final int USER_HASH_PARAM_2 =  19;
-    // peter, is it okay?
-    public static final int SOURCE_HASH_PARAM_1 =  7;
-    public static final int SOURCE_HASH_PARAM_2 =  23;
-    public static final int CACHED_REPRESENTATION_HASH_PARAM_1 =  7;
-    public static final int CACHED_REPRESENTATION_HASH_PARAM_2 =  19;
-    public static final int VERSION_HASH_PARAM_1 =  5;
-    public static final int VERSION_HASH_PARAM_2 =  29;
-    
     public static final String regExpIdentifier = "[a-zA-Z0-9_-]*";
     
 }

@@ -30,6 +30,9 @@ import java.util.UUID;
 /**
  *
  * @author olhsha
+ **/
+
+/**
  * 
  * Resource  and the corresponding Dao's are, so to say, "lavelled".  Notebook has level 5, Annotation has level 4, Source has level 3, Version has level 2 and CachedRepresentation has level 1. Users are not subject to this hierarchy.
  * The hierarchy is based on the way the schemas  for the resources are designed: to describe resource of the level X we need resource X-1.
@@ -42,22 +45,20 @@ import java.util.UUID;
  * If "yes" the nothing happens. Otherwise  the deletion proceeds.
  * Second, delete<X> is called from the corresponding Dao.
  * Third, delete<X-1> are recursively called for all the related sub-resources of the level X-1. E.g., after deleting an annotation itself all the sources (which are not used by other annotations) must be deleted as well.
- **/
-
-/**
+ 
  * 
  * Comments on Dao-classes.
  * 
- * -- Each Dao-class contains "isInUse(internalID") method. It return "true" if the resource  with ID occurs at least in one of the joint tables. Used in "delete(internalID)" methods.
+ * Each Dao-class contains "isInUse(internalID") method. It return "true" if the resource  with ID occurs at least in one of the joint tables. Used in "delete(internalID)" methods.
  * 
- * -- If the resource with "internalID" is asked to be deleted, the deletion methods will first call "isInUse(internalID)". If it returns 'true" nothing will happen. Otherwise deletion is happen. 
+ * If the resource with "internalID" is asked to be deleted, the deletion methods will first call "isInUse(internalID)". If it returns 'true" nothing will happen. Otherwise deletion is happen. 
  * 
- * -- every "add(object)" method return the added object new internalID or null if the DB has not been updated for some reason.
+ * Each "add(object)" method returns the added-object's new internalID or null if the DB has not been updated for some reason.
  * 
  **/
 
 
-public interface DaoDispatcher{
+public interface DBIntegrityService{
     
     public void setServiceURI(String serviceURI);
     
@@ -200,9 +201,9 @@ public interface DaoDispatcher{
    /**
     * 
     * @param sourceID
-    * @return result[0] = # deleted rows in the table "source" ( 0 is the source is in use).
+    * @return result[0] = # deleted rows in the table "source" (0 is the source is in use).
     * result[1] = # deleted rows in the table "sources_versions".
-    * result[2] = # deleted rows in the table source.
+    * result[2] = # deleted rows in the table "version".
     * @throws SQLException 
     */
     int[] deleteAllVersionsOfSource(Number sourceID) throws SQLException;

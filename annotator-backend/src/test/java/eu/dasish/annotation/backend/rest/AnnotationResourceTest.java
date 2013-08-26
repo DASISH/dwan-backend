@@ -17,7 +17,7 @@
  */
 package eu.dasish.annotation.backend.rest;
 
-import eu.dasish.annotation.backend.dao.DaoDispatcher;
+import eu.dasish.annotation.backend.dao.DBIntegrityService;
 import com.sun.jersey.api.client.GenericType;
 import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.TestBackendConstants;
@@ -46,7 +46,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
  */
 
 @RunWith(value = SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = { "/spring-test-config/mockery.xml", "/spring-test-config/mockDaoDispatcher.xml", 
+@ContextConfiguration(locations = { "/spring-test-config/mockery.xml", "/spring-test-config/mockDBIntegrityService.xml", 
 "/spring-test-config/mockAnnotationDao.xml","/spring-test-config/mockUserDao.xml", "/spring-test-config/mockNotebookDao.xml",
 "/spring-test-config/mockSourceDao.xml", "/spring-test-config/mockVersionDao.xml", "/spring-test-config/mockCachedRepresentationDao.xml"})
 public class AnnotationResourceTest {
@@ -54,7 +54,7 @@ public class AnnotationResourceTest {
     @Autowired
     private Mockery mockery;
     @Autowired
-    private DaoDispatcher daoDispatcher;
+    private DBIntegrityService daoDispatcher;
     @Autowired
     private AnnotationResource annotationResource;
     
