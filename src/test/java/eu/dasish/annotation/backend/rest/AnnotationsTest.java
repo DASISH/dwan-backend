@@ -17,7 +17,7 @@
  */
 package eu.dasish.annotation.backend.rest;
 
-import eu.dasish.annotation.backend.dao.DaoDispatcher;
+import eu.dasish.annotation.backend.dao.DBIntegrityService;
 import com.sun.jersey.api.client.ClientResponse;
 import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.TestBackendConstants;
@@ -39,11 +39,11 @@ import static org.junit.Assert.*;
  */
 public class AnnotationsTest extends ResourcesTest{
     
-    private DaoDispatcher daoDispatcher;
+    private DBIntegrityService daoDispatcher;
     
     public AnnotationsTest() {
         super(AnnotationResource.class.getPackage().getName());        
-        daoDispatcher = webAppContext.getBean(DaoDispatcher.class);
+        daoDispatcher = webAppContext.getBean(DBIntegrityService.class);
     }
     
 

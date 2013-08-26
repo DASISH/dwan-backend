@@ -60,11 +60,11 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @ContextConfiguration({"/spring-test-config/dataSource.xml", "/spring-test-config/mockery.xml", "/spring-test-config/mockAnnotationDao.xml",
     "/spring-test-config/mockUserDao.xml", "/spring-test-config/mockNotebookDao.xml",
     "/spring-test-config/mockSourceDao.xml", "/spring-test-config/mockVersionDao.xml", "/spring-test-config/mockCachedRepresentationDao.xml",
-    "/spring-config/daoDispatcher.xml"})
-public class DaoDispatcherTest {
+    "/spring-config/dbIntegrityService.xml"})
+public class DBIntegrityServiceTest {
 
     @Autowired
-    private DaoDispatcherImpl daoDispatcher;
+    private DBIntegrityServiceImlp dbIntegrityService;
     @Autowired
     private Mockery mockery;
     @Autowired
@@ -81,12 +81,12 @@ public class DaoDispatcherTest {
     private NotebookDao notebookDao;
     TestInstances testInstances = new TestInstances();
 
-    public DaoDispatcherTest() {
+    public DBIntegrityServiceTest() {
     }
 
     ///////// GETTERS /////////////
     /**
-     * Test of getAnnotationInternalIdentifier method, of class DaoDispatcherImpl.
+     * Test of getAnnotationInternalIdentifier method, of class DBIntegrityServiceImlp.
      */
     @Test
     public void testGetAnnotationInternalIdentifier() {
@@ -99,11 +99,11 @@ public class DaoDispatcherTest {
                 will(returnValue(2));
             }
         });
-        assertEquals(2, daoDispatcher.getAnnotationInternalIdentifier(externalID));
+        assertEquals(2, dbIntegrityService.getAnnotationInternalIdentifier(externalID));
     }
 
     /**
-     * Test of getAnnotationExternalIdentifier method, of class DaoDispatcherImpl.
+     * Test of getAnnotationExternalIdentifier method, of class DBIntegrityServiceImlp.
      */
     @Test
     public void testGetAnnotationExternalIdentifier() {
@@ -116,11 +116,11 @@ public class DaoDispatcherTest {
                 will(returnValue(externalID));
             }
         });
-        assertEquals(TestBackendConstants._TEST_ANNOT_2_EXT, daoDispatcher.getAnnotationExternalIdentifier(2).toString());
+        assertEquals(TestBackendConstants._TEST_ANNOT_2_EXT, dbIntegrityService.getAnnotationExternalIdentifier(2).toString());
     }
 
     /**
-     * Test of getUserInternalIdentifier method, of class DaoDispatcherImpl.
+     * Test of getUserInternalIdentifier method, of class DBIntegrityServiceImlp.
      */
     @Test
     public void testGetUserInternalIdentifier() {
@@ -134,11 +134,11 @@ public class DaoDispatcherTest {
                 will(returnValue(5));
             }
         });
-        assertEquals(5, daoDispatcher.getUserInternalIdentifier(externalID));
+        assertEquals(5, dbIntegrityService.getUserInternalIdentifier(externalID));
     }
 
     /**
-     * Test of getUserExternalIdentifier method, of class DaoDispatcherImpl.
+     * Test of getUserExternalIdentifier method, of class DBIntegrityServiceImlp.
      */
     @Test
     public void testGetUserExternalIdentifier() {
@@ -151,11 +151,11 @@ public class DaoDispatcherTest {
                 will(returnValue(externalID));
             }
         });
-        assertEquals(TestBackendConstants._TEST_USER_5_EXT_ID, daoDispatcher.getUserExternalIdentifier(5).toString());
+        assertEquals(TestBackendConstants._TEST_USER_5_EXT_ID, dbIntegrityService.getUserExternalIdentifier(5).toString());
     }
 
     /**
-     * Test of getAnnotation method, of class DaoDispatcherImpl.
+     * Test of getAnnotation method, of class DBIntegrityServiceImlp.
      */
     @Test
     public void testGetAnnotation() throws Exception {
@@ -209,7 +209,7 @@ public class DaoDispatcherTest {
             }
         });
 
-        Annotation result = daoDispatcher.getAnnotation(1);
+        Annotation result = dbIntegrityService.getAnnotation(1);
         assertEquals(TestBackendConstants._TEST_ANNOT_2_EXT, result.getURI());
         assertEquals(TestBackendConstants._TEST_ANNOT_2_BODY, result.getBody().getAny().get(0));
         assertEquals(TestBackendConstants._TEST_ANNOT_2_HEADLINE, result.getHeadline());
@@ -224,7 +224,7 @@ public class DaoDispatcherTest {
     }
 
     /**
-     * Test of getFilteredAnnotationIDs method, of class DaoDispatcherImpl.
+     * Test of getFilteredAnnotationIDs method, of class DBIntegrityServiceImlp.
      */
     @Test
     public void testGetFilteredAnnotationIDs() {
@@ -268,14 +268,14 @@ public class DaoDispatcherTest {
         });
 
 
-        List result = daoDispatcher.getFilteredAnnotationIDs(link, text, access, namespace, owner, after, before);
+        List result = dbIntegrityService.getFilteredAnnotationIDs(link, text, access, namespace, owner, after, before);
         assertEquals(1, result.size());
         assertEquals(2, result.get(0));
     }
 
     ////////////// ADDERS /////////////////////////
     /**
-     * Test of addCachedForVersion method, of class DaoDispatcherImpl.
+     * Test of addCachedForVersion method, of class DBIntegrityServiceImlp.
      */
     @Test
     public void testAddCachedForVersion() {
@@ -304,14 +304,14 @@ public class DaoDispatcherTest {
         });
 
 
-        Number[] result = daoDispatcher.addCachedForVersion(versionID, newCached);
+        Number[] result = dbIntegrityService.addCachedForVersion(versionID, newCached);
         assertEquals(2, result.length);
         assertEquals(1, result[0]);
         assertEquals(newCachedID, result[1]);
     }
 
     /**
-     * Test of addSiblingVersionForSource method, of class DaoDispatcherImpl.
+     * Test of addSiblingVersionForSource method, of class DBIntegrityServiceImlp.
      */
     @Test
     public void testAddSiblingVersionForSource() throws Exception {
@@ -336,7 +336,7 @@ public class DaoDispatcherTest {
             }
         });
 
-        Number[] result = daoDispatcher.addSiblingVersionForSource(1, mockVersion);
+        Number[] result = dbIntegrityService.addSiblingVersionForSource(1, mockVersion);
         assertEquals(2, result.length);
         assertEquals(1, result[0]);
         assertEquals(8, result[1]);
@@ -357,14 +357,14 @@ public class DaoDispatcherTest {
                 will(returnValue(1));
             }
         });
-        Number[] resultTwo = daoDispatcher.addSiblingVersionForSource(1, mockVersionTwo);
+        Number[] resultTwo = dbIntegrityService.addSiblingVersionForSource(1, mockVersionTwo);
         assertEquals(2, resultTwo.length);
         assertEquals(1, resultTwo[0]);
         assertEquals(3, resultTwo[1]);
     }
 
     /**
-     * Test of addSourcesForAnnotation method, of class DaoDispatcherImpl.
+     * Test of addSourcesForAnnotation method, of class DBIntegrityServiceImlp.
      */
     @Test
     public void testAddSourcesForAnnotation() throws Exception {
@@ -391,7 +391,7 @@ public class DaoDispatcherTest {
             }
         });
 
-        Map<String, String> result = daoDispatcher.addSourcesForAnnotation(1, mockSourceSOne);
+        Map<String, String> result = dbIntegrityService.addSourcesForAnnotation(1, mockSourceSOne);
         assertEquals(0, result.size());
 
         // test 2: adding a new source
@@ -404,8 +404,8 @@ public class DaoDispatcherTest {
         List<NewOrExistingSourceInfo> mockSourceSTwo = new ArrayList<NewOrExistingSourceInfo>();
         mockSourceSTwo.add(testSourceTwo);
 
-//        final Source mockNewSource = daoDispatcher.createSource(testNewSource);
-//        final Version mockNewVersion = daoDispatcher.createVersion(testNewSource);
+//        final Source mockNewSource = dbIntegrityService.createSource(testNewSource);
+//        final Version mockNewVersion = dbIntegrityService.createVersion(testNewSource);
 
         mockery.checking(new Expectations() {
             {
@@ -431,14 +431,14 @@ public class DaoDispatcherTest {
             }
         });
 
-        Map<String, String> resultTwo = daoDispatcher.addSourcesForAnnotation(1, mockSourceSTwo);
+        Map<String, String> resultTwo = dbIntegrityService.addSourcesForAnnotation(1, mockSourceSTwo);
         assertEquals(1, resultTwo.size());
         assertFalse(null == resultTwo.get(testNewSource.getId()));
 
     }
 
     /**
-     * Test of addUsersAnnotation method, of class DaoDispatcherImpl.
+     * Test of addUsersAnnotation method, of class DBIntegrityServiceImlp.
      */
     @Test
     public void testAddUsersAnnotation() throws Exception {
@@ -469,13 +469,13 @@ public class DaoDispatcherTest {
             }
         });
 
-        Number result = daoDispatcher.addUsersAnnotation(testAnnotation, 5);
+        Number result = dbIntegrityService.addUsersAnnotation(testAnnotation, 5);
         assertEquals(6, result);
     }
 
     //////////////////// DELETERS ////////////////
     /**
-     * Test of deleteCachedForVersion method, of class DaoDispatcherImpl.
+     * Test of deleteCachedForVersion method, of class DBIntegrityServiceImlp.
      */
     @Test
     public void testDeleteCachedForVersion() {
@@ -491,7 +491,7 @@ public class DaoDispatcherTest {
             }
         });
 
-        int[] result = daoDispatcher.deleteCachedOfVersion(6, 5);
+        int[] result = dbIntegrityService.deleteCachedOfVersion(6, 5);
         assertEquals(2, result.length);
         assertEquals(1, result[0]);
         assertEquals(0, result[1]);
@@ -523,7 +523,7 @@ public class DaoDispatcherTest {
             }
         });
 
-        int[] result = daoDispatcher.deleteAllCachedOfVersion(6);
+        int[] result = dbIntegrityService.deleteAllCachedOfVersion(6);
         assertEquals(1, result[0]); //version
         assertEquals(1, result[1]); // versions-cached
         assertEquals(0, result[2]);//cached 5 is in use
@@ -539,7 +539,7 @@ public class DaoDispatcherTest {
         });
 
 
-        int[] resultTwo = daoDispatcher.deleteAllCachedOfVersion(5); // version is in use by the source 4
+        int[] resultTwo = dbIntegrityService.deleteAllCachedOfVersion(5); // version is in use by the source 4
         assertEquals(0, resultTwo[0]);
         assertEquals(0, resultTwo[1]);
         assertEquals(0, resultTwo[2]);
@@ -556,7 +556,7 @@ public class DaoDispatcherTest {
             }
         });
 
-        int[] result = daoDispatcher.deleteAllVersionsOfSource(1); //the source is in use, should not be deleted
+        int[] result = dbIntegrityService.deleteAllVersionsOfSource(1); //the source is in use, should not be deleted
         assertEquals(0, result[0]); // 
         assertEquals(0, result[1]);
 
@@ -591,7 +591,7 @@ public class DaoDispatcherTest {
         });
 
 
-        int[] resultTwo = daoDispatcher.deleteAllVersionsOfSource(5);// the source will be deleted because it is not referred by any annotation
+        int[] resultTwo = dbIntegrityService.deleteAllVersionsOfSource(5);// the source will be deleted because it is not referred by any annotation
         assertEquals(3, resultTwo.length);
         assertEquals(1, resultTwo[0]); // source 7 is deleted
         assertEquals(1, resultTwo[1]); // row (5,7) in "sorces_versions" is deleted
@@ -599,7 +599,7 @@ public class DaoDispatcherTest {
     }
 
     /**
-     * Test of deleteAnnotationWithSources method, of class DaoDispatcherImpl.
+     * Test of deleteAnnotationWithSources method, of class DBIntegrityServiceImlp.
      */
     @Test
     public void testDeleteAnnotation() throws Exception {
@@ -627,7 +627,7 @@ public class DaoDispatcherTest {
                 will(returnValue(true));
             }
         });
-        int[] result = daoDispatcher.deleteAnnotation(3);// the source will be deleted because it is not referred by any annotation
+        int[] result = dbIntegrityService.deleteAnnotation(3);// the source will be deleted because it is not referred by any annotation
         assertEquals(4, result.length);
         assertEquals(1, result[0]); // annotation 3 is deleted
         assertEquals(3, result[1]); // 3 rows in "annotation proncipal permissions are deleted"
@@ -642,7 +642,7 @@ public class DaoDispatcherTest {
 //        newSourceInfo.setLink(TestBackendConstants._TEST_NEW_SOURCE_LINK);
 //        newSourceInfo.setVersion(null);
 //        
-//        Source result = daoDispatcher.createSource(newSourceInfo);
+//        Source result = dbIntegrityService.createSource(newSourceInfo);
 //        assertEquals(TestBackendConstants._TEST_NEW_SOURCE_LINK, result.getLink());
 //        assertFalse(null == result.getURI());
 //        
@@ -654,7 +654,7 @@ public class DaoDispatcherTest {
 //        newSourceInfo.setLink(TestBackendConstants._TEST_NEW_SOURCE_LINK);
 //        newSourceInfo.setVersion(null);
 //        
-//        Version result = daoDispatcher.createVersion(newSourceInfo);
+//        Version result = dbIntegrityService.createVersion(newSourceInfo);
 //        assertFalse(null == result.getVersion()); // will be chnaged once the schema for version is fixed: ID is added
 //        
 //    }

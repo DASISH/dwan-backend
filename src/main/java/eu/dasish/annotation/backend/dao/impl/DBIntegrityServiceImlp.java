@@ -20,7 +20,7 @@ package eu.dasish.annotation.backend.dao.impl;
 import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.dao.AnnotationDao;
 import eu.dasish.annotation.backend.dao.CachedRepresentationDao;
-import eu.dasish.annotation.backend.dao.DaoDispatcher;
+import eu.dasish.annotation.backend.dao.DBIntegrityService;
 import eu.dasish.annotation.backend.dao.NotebookDao;
 import eu.dasish.annotation.backend.dao.SourceDao;
 import eu.dasish.annotation.backend.dao.UserDao;
@@ -46,7 +46,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author olhsha
  */
-public class DaoDispatcherImpl implements DaoDispatcher
+public class DBIntegrityServiceImlp implements DBIntegrityService
 {
 
     @Autowired

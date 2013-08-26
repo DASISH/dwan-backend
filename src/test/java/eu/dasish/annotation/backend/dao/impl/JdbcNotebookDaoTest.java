@@ -50,7 +50,7 @@ import static org.junit.Assert.assertNotNull;
 @ContextConfiguration({"/spring-test-config/mockery.xml", "/spring-test-config/mockAnnotationDao.xml", 
     "/spring-test-config/mockSourceDao.xml", "/spring-test-config/mockUserDao.xml",
     "/spring-test-config/mockCachedRepresentationDao.xml", "/spring-test-config/mockVersionDao.xml",
-    "/spring-test-config/dataSource.xml", "/spring-test-config/mockDaoDispatcher.xml","/spring-config/notebookDao.xml"})
+    "/spring-test-config/dataSource.xml", "/spring-test-config/mockDBIntegrityService.xml","/spring-config/notebookDao.xml"})
 public class JdbcNotebookDaoTest extends JdbcResourceDaoTest{
 
     @Autowired
