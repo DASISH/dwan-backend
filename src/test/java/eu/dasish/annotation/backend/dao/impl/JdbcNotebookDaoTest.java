@@ -19,7 +19,7 @@ package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.dao.AnnotationDao;
-import eu.dasish.annotation.schema.Annotations;
+import eu.dasish.annotation.schema.AnnotationList;
 import eu.dasish.annotation.schema.Notebook;
 import eu.dasish.annotation.schema.NotebookInfo;
 import eu.dasish.annotation.schema.ResourceREF;
@@ -214,14 +214,14 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest{
         
          // test One
         setMockeryNotebookOne(); 
-        Annotations annotations = jdbcNotebookDao.getAnnotations(3);
+        AnnotationList annotations = jdbcNotebookDao.getAnnotations(3);
         assertEquals(2, annotations.getAnnotation().size());        
         assertEquals(TestBackendConstants._TEST_SERVLET_URI+TestBackendConstants._TEST_ANNOT_2_EXT, annotations.getAnnotation().get(0).getRef());
         assertEquals(TestBackendConstants._TEST_SERVLET_URI+TestBackendConstants._TEST_ANNOT_3_EXT, annotations.getAnnotation().get(1).getRef());
         
         // test Two
         setMockeryNotebookTwo(); 
-        Annotations annotationsTwo = jdbcNotebookDao.getAnnotations(4);
+        AnnotationList annotationsTwo = jdbcNotebookDao.getAnnotations(4);
         assertEquals(1, annotationsTwo.getAnnotation().size());        
         assertEquals(TestBackendConstants._TEST_SERVLET_URI+TestBackendConstants._TEST_ANNOT_4_EXT, annotationsTwo.getAnnotation().get(0).getRef());
         
@@ -229,13 +229,13 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest{
         // according to dasish.xsd if an Annotation is created then its list of annotations must contain at least one element!
         // therefore: no annotations in the notebook ==> Annotations-pbject must be null :(
         setMockeryNotebookThreeEmpty(); 
-        Annotations annotationsThree = jdbcNotebookDao.getAnnotations(6);
+        AnnotationList annotationsThree = jdbcNotebookDao.getAnnotations(6);
         assertEquals(null, annotationsThree); 
         
        
         // test Five Null-notebook
         setMockeryNotebookNonExisting();
-        Annotations annotationsFive = jdbcNotebookDao.getAnnotations(null);
+        AnnotationList annotationsFive = jdbcNotebookDao.getAnnotations(null);
         assertEquals(null, annotationsFive);
     }
     

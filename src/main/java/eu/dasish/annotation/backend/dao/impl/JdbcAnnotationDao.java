@@ -20,6 +20,7 @@ package eu.dasish.annotation.backend.dao.impl;
 import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.dao.AnnotationDao;
 import eu.dasish.annotation.schema.Annotation;
+import eu.dasish.annotation.schema.AnnotationBody;
 import eu.dasish.annotation.schema.AnnotationInfo;
 import eu.dasish.annotation.schema.Permission;
 import eu.dasish.annotation.schema.ResourceREF;
@@ -142,7 +143,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         @Override
         public AnnotationInfo mapRow(ResultSet rs, int rowNumber) throws SQLException {
             AnnotationInfo annotationInfo = new AnnotationInfo();
-            annotationInfo.setRef(externalIDtoURI(_serviceURI, rs.getString(external_id)));
+            annotationInfo.setRef(externalIDtoURI(rs.getString(external_id)));
             annotationInfo.setOwner(getResourceREF(Integer.toString(rs.getInt(owner_id))));
             annotationInfo.setHeadline(rs.getString(headline));
             return annotationInfo;
@@ -176,7 +177,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         @Override
         public ResourceREF mapRow(ResultSet rs, int rowNumber) throws SQLException {
             ResourceREF annotationREF = new ResourceREF();
-            annotationREF.setRef(externalIDtoURI(_serviceURI, rs.getString(external_id)));
+            annotationREF.setRef(externalIDtoURI(rs.getString(external_id)));
             return annotationREF;
         }
     };
@@ -203,9 +204,16 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
 
             annotation.setHeadline(rs.getString(headline));
 
-            annotation.setBody(Helpers.deserializeBody(rs.getString(body_xml)));
+            // TODO change the DB by adding a mime type for the BODY!!!!
+            // add flexible mimetype here
+            AnnotationBody body = new AnnotationBody();
+            body.setMimeType("text/plain");
+            body.setValue(rs.getString(body_xml));
+            annotation.setBody(body);
+            
             annotation.setTargetSources(null);
-            annotation.setURI(externalIDtoURI(_serviceURI, rs.getString(external_id)));
+            
+            annotation.setURI(externalIDtoURI(rs.getString(external_id)));
 
             try {
                 annotation.setTimeStamp(Helpers.setXMLGregorianCalendar(rs.getTimestamp(time_stamp)));
@@ -244,9 +252,9 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
     
     
     @Override
-    public int updateBody(Number annotationID, String serializedNewBody) {
+    public int updateBodyText(Number annotationID, String newBodyText) {
         StringBuilder sql = new StringBuilder("UPDATE ");
-        sql.append(annotationTableName).append(" SET ").append(body_xml).append("= '").append(serializedNewBody).append("' WHERE ").append(annotation_id).append("= ?");
+        sql.append(annotationTableName).append(" SET ").append(body_xml).append("= '").append(newBodyText).append("' WHERE ").append(annotation_id).append("= ?");
         return getSimpleJdbcTemplate().update(sql.toString(), annotationID);
     }
 
@@ -264,19 +272,21 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("externalId", externalID.toString());
         params.put("ownerId", ownerID);
-        params.put("headline", annotation.getHeadline());
-        params.put("bodyXml", annotation.getBody().getAny().get(0).toString());
-
+        params.put("headline", annotation.getHeadline());       
+        params.put("bodyText", annotation.getBody().getValue());
+        params.put("bodyMimeType", annotation.getBody().getValue());
+        // TODO: add mime type for the body once the DB is updated!!
+        
         StringBuilder sql = new StringBuilder("INSERT INTO ");
         sql.append(annotationTableName).append("(").append(external_id).append(",").append(owner_id);
-        sql.append(",").append(headline).append(",").append(body_xml).append(" ) VALUES (:externalId, :ownerId, :headline, :bodyXml)");
+        sql.append(",").append(headline).append(",").append(body_xml).append(" ) VALUES (:externalId, :ownerId, :headline, :bodyText)");
         int affectedRows = getSimpleJdbcTemplate().update(sql.toString(), params);
         return ((affectedRows > 0) ? getInternalID(externalID) : null);
     }
     
     //////////////////////////////////////////////////////////////////////////////////
     @Override
-    public int addAnnotationSourcePair(Number annotationID, Number sourceID) throws SQLException {
+    public int addAnnotationSource(Number annotationID, Number sourceID) throws SQLException {
         Map<String, Object> paramsAnnotationsSources = new HashMap<String, Object>();
         paramsAnnotationsSources.put("annotationId", annotationID);
         paramsAnnotationsSources.put("sourceId", sourceID);
@@ -311,6 +321,22 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
   
     
     /////////////// helpers //////////////////
+    
+    @Override
+    public String[] splitBody(AnnotationBody body) {
+        String[] result= new String[2];
+        result[0] = body.getMimeType();
+        result[1] = body.getValue();
+        return result;
+    }
+
+    @Override
+    public AnnotationBody makeBody(String text, String mimeType) {
+        AnnotationBody result = new AnnotationBody();
+        result.setMimeType(mimeType);
+        result.setValue(text);
+        return result;
+    }
     
     ///////////////////////////////////////////////////////////
     private ResourceREF getResourceREF(String resourceID) {

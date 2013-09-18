@@ -27,9 +27,7 @@ import eu.dasish.annotation.backend.dao.UserDao;
 import eu.dasish.annotation.backend.dao.VersionDao;
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.CachedRepresentationInfo;
-import eu.dasish.annotation.schema.NewOrExistingSourceInfo;
-import eu.dasish.annotation.schema.NewOrExistingSourceInfos;
-import eu.dasish.annotation.schema.NewSourceInfo;
+import eu.dasish.annotation.schema.SourceInfoList;
 import eu.dasish.annotation.schema.Permission;
 import eu.dasish.annotation.schema.Source;
 import eu.dasish.annotation.schema.SourceInfo;
@@ -46,8 +44,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author olhsha
  */
-public class DBIntegrityServiceImlp implements DBIntegrityService
-{
+public class DBIntegrityServiceImlp implements DBIntegrityService {
 
     @Autowired
     UserDao userDao;
@@ -61,10 +58,10 @@ public class DBIntegrityServiceImlp implements DBIntegrityService
     AnnotationDao annotationDao;
     @Autowired
     NotebookDao notebookDao;
-    
+
     //////////////////////////////////
     @Override
-    public void setServiceURI(String serviceURI){
+    public void setServiceURI(String serviceURI) {
         userDao.setServiceURI(serviceURI);
         cachedRepresentationDao.setServiceURI(serviceURI);
         versionDao.setServiceURI(serviceURI);
@@ -72,10 +69,8 @@ public class DBIntegrityServiceImlp implements DBIntegrityService
         annotationDao.setServiceURI(serviceURI);
         notebookDao.setServiceURI(serviceURI);
     }
-            
-    
-    ///////////// GETTERS //////////////////////////
 
+    ///////////// GETTERS //////////////////////////
     @Override
     public Number getAnnotationInternalIdentifier(UUID externalID) {
         return annotationDao.getInternalID(externalID);
@@ -97,21 +92,19 @@ public class DBIntegrityServiceImlp implements DBIntegrityService
     }
 
     @Override
-      public Annotation getAnnotation(Number annotationID) throws SQLException {
+    public Annotation getAnnotation(Number annotationID) throws SQLException {
         Annotation result = annotationDao.getAnnotationWithoutSources(annotationID);
         List<Number> sourceIDs = annotationDao.retrieveSourceIDs(annotationID);
-        NewOrExistingSourceInfos noesis = new NewOrExistingSourceInfos();
+        SourceInfoList sis = new SourceInfoList();
         for (Number sourceID : sourceIDs) {
-            NewOrExistingSourceInfo noesi = new NewOrExistingSourceInfo();
             Source source = sourceDao.getSource(sourceID);
             SourceInfo sourceInfo = new SourceInfo();
             sourceInfo.setLink(source.getLink());
             sourceInfo.setRef(source.getURI());
             sourceInfo.setVersion(source.getVersion());
-            noesi.setSource(sourceInfo);
-            noesis.getTarget().add(noesi);
+            sis.getTargetSource().add(sourceInfo);
         }
-        result.setTargetSources(noesis);
+        result.setTargetSources(sis);
         return result;
     }
 
@@ -134,12 +127,7 @@ public class DBIntegrityServiceImlp implements DBIntegrityService
         return annotationDao.getFilteredAnnotationIDs(annotationIDs, text, access, namespace, ownerID, after, before);
     }
 
-    
-    
     /////////////// ADDERS  /////////////////////////////////
-    
-    
-    
     @Override
     public Number[] addCachedForVersion(Number versionID, CachedRepresentationInfo cached) {
         Number[] result = new Number[2];
@@ -151,16 +139,15 @@ public class DBIntegrityServiceImlp implements DBIntegrityService
         }
         result[0] = versionDao.addVersionCachedRepresentation(versionID, result[1]);
         return result;
-        
+
     }
-    
-    
+
     @Override
-      public Number[] addSiblingVersionForSource(Number sourceID, Version version) throws SQLException {
+    public Number[] addSiblingVersionForSource(Number sourceID, Version version) throws SQLException {
         Number[] result = new Number[2];
-        String versionExternalIDstring = version.getVersion();// TOT: change to getURI after the schem is fixed
-        UUID versionUUID = (versionExternalIDstring != null) ? UUID.fromString(versionExternalIDstring) : null;
-        result[1] = versionDao.getInternalID(versionUUID); 
+        String versionURI = version.getURI();
+        UUID versionUUID = (versionURI != null) ? UUID.fromString(versionDao.stringURItoExternalID(versionURI)) : null;
+        result[1] = versionDao.getInternalID(versionUUID);
         if (result[1] == null) {
             result[1] = versionDao.addVersion(version);
         }
@@ -168,39 +155,41 @@ public class DBIntegrityServiceImlp implements DBIntegrityService
         return result;
     }
 
-      
     @Override
-       public Map<String, String> addSourcesForAnnotation(Number annotationID, List<NewOrExistingSourceInfo> sources) throws SQLException {
+    public Map<String, String> addSourcesForAnnotation(Number annotationID, List<SourceInfo> sources) throws SQLException {
         Map<String, String> result = new HashMap<String, String>();
-        for (NewOrExistingSourceInfo noesi : sources) {
-            SourceInfo source = noesi.getSource();
-            if (source != null) {
-                int affectedRows = annotationDao.addAnnotationSourcePair(annotationID, sourceDao.getInternalID(UUID.fromString(source.getRef())));
+        for (SourceInfo sourceInfo : sources) {
+            if (sourceExists(sourceInfo)) {
+                int affectedRows = annotationDao.addAnnotationSource(annotationID, sourceDao.getInternalID(UUID.fromString(sourceInfo.getRef())));
             } else {
-                Source newSource = createSource(noesi.getNewSource());
-                Version newVersion = createVersion(noesi.getNewSource());
-                newSource.setVersion(newVersion.getVersion()); // TOTO: change to getURI after the schema is fixed
+                Source newSource = createFreshSource(sourceInfo);
+                Version newVersion = createFreshVersion(sourceInfo);
                 Number sourceID = sourceDao.addSource(newSource);
                 Number[] intermediateResult = addSiblingVersionForSource(sourceID, newVersion);
-                result.put(noesi.getNewSource().getId(), newSource.getURI().toString());
-                int affectedRows = annotationDao.addAnnotationSourcePair(annotationID, sourceID);
+                result.put(sourceInfo.getRef(), sourceDao.getExternalID(sourceID).toString());
+                int affectedRows = annotationDao.addAnnotationSource(annotationID, sourceID);
             }
         }
         return result;
     }
 
-    
+    // TODO add more criteria of being an existing sources 
+    private boolean sourceExists(SourceInfo sourceInfo) {
+        boolean result = (sourceDao.getInternalID(UUID.fromString(sourceInfo.getRef())) != null);
+        return result;
+    }
+
     @Override
     public Number addUsersAnnotation(Annotation annotation, Number userID) throws SQLException {
 
         Number annotationID = annotationDao.addAnnotation(annotation, userID);
 
-        List<NewOrExistingSourceInfo> sources = annotation.getTargetSources().getTarget();
+        List<SourceInfo> sources = annotation.getTargetSources().getTargetSource();
         Map<String, String> sourceIdPairs = addSourcesForAnnotation(annotationID, sources);
 
-        String body = Helpers.serializeBody(annotation.getBody());
-        String newBody = Helpers.replace(body, sourceIdPairs);
-        int affectedAnnotRows = annotationDao.updateBody(annotationID, newBody);
+        String bodyText = annotation.getBody().getValue();
+        String newBody = Helpers.replace(bodyText, sourceIdPairs);
+        int affectedAnnotRows = annotationDao.updateBodyText(annotationID, newBody);
 
         // Add the permission (annotation_id, owner);
         int affectedPermissions = annotationDao.addAnnotationPrincipalPermission(annotationID, userID, Permission.OWNER);
@@ -208,9 +197,7 @@ public class DBIntegrityServiceImlp implements DBIntegrityService
         return annotationID;
     }
 
-      
-      ////////////// DELETERS //////////////////
-      
+    ////////////// DELETERS //////////////////
     @Override
     public int[] deleteCachedOfVersion(Number versionID, Number cachedID) {
         int[] result = new int[2];
@@ -244,8 +231,6 @@ public class DBIntegrityServiceImlp implements DBIntegrityService
         return result;
     }
 
-  
-
     @Override
     public int[] deleteAllVersionsOfSource(Number sourceID) throws SQLException {
         int[] result = new int[3];
@@ -267,7 +252,6 @@ public class DBIntegrityServiceImlp implements DBIntegrityService
 
     }
 
- 
     @Override
     public int[] deleteAnnotation(Number annotationID) throws SQLException {
         int[] result = new int[4];
@@ -282,23 +266,19 @@ public class DBIntegrityServiceImlp implements DBIntegrityService
         }
         return result;
     }
-    
-    
 
-  ////////////// HELPERS ////////////////////
-    private Source createSource(NewSourceInfo newSource) {
+    ////////////// HELPERS ////////////////////
+    private Source createFreshSource(SourceInfo sourceInfo) {
         Source source = new Source();
-        UUID externalIdentifier = UUID.randomUUID();
-        source.setURI(externalIdentifier.toString());
-        source.setLink(newSource.getLink());
+        source.setLink(sourceInfo.getLink());
+        source.setVersion(sourceInfo.getVersion());
         return source;
     }
 
     /////////////////////////////////////////
-    private Version createVersion(NewSourceInfo newSource) {
+    private Version createFreshVersion(SourceInfo sourceInfo) {
         Version version = new Version();
-        UUID externalIdentifier = UUID.randomUUID();
-        version.setVersion(externalIdentifier.toString()); // TODO change after the schem is fixed, shoul be setURI, 
+        version.setVersion(sourceInfo.getVersion());
         return version;
     }
 }

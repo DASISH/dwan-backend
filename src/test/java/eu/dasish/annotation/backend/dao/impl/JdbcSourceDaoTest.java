@@ -129,7 +129,7 @@ public class JdbcSourceDaoTest extends JdbcResourceDaoTest {
         Source freshSource = new Source();
         freshSource.setLink(link);
         freshSource.setVersion(TestBackendConstants._TEST_VERSION_1_EXT_ID);
-        freshSource.setTimeSatmp(null);
+        freshSource.setTimeStamp(null);
         
         Number result = jdbcSourceDao.addSource(freshSource);
         assertEquals(6, result);

@@ -62,7 +62,7 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
         public CachedRepresentationInfo mapRow(ResultSet rs, int rowNumber) throws SQLException {
             CachedRepresentationInfo result = new CachedRepresentationInfo();
             result.setMimeType(rs.getString(mime_type));
-            result.setRef(externalIDtoURI(_serviceURI, rs.getString(external_id)));
+            result.setRef(externalIDtoURI(rs.getString(external_id)));
             result.setTool(rs.getString(tool));
             result.setType(rs.getString(type_));
             // TODO add "where is the file when the schema" is updated!!!!s

@@ -185,7 +185,7 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
 
     private SourceInfo constructSourceInfo(String externalID, String link, String version) {
         SourceInfo sourceInfo = new SourceInfo();
-        sourceInfo.setRef(externalIDtoURI(_serviceURI,externalID));
+        sourceInfo.setRef(externalIDtoURI(externalID));
         sourceInfo.setLink(link);
         sourceInfo.setVersion(version);
         return sourceInfo;
@@ -193,8 +193,8 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
 
     private Source constructSource(String externalID, String link, String version, XMLGregorianCalendar xmlTimeStamp) {
         Source source = new Source();
-        source.setURI(externalIDtoURI(_serviceURI, externalID));
-        source.setTimeSatmp(xmlTimeStamp);
+        source.setURI(externalIDtoURI(externalID));
+        source.setTimeStamp(xmlTimeStamp);
         source.setLink(link);
         source.setVersion(version);
 

@@ -19,9 +19,8 @@ package eu.dasish.annotation.backend;
 
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationBody;
-import eu.dasish.annotation.schema.NewOrExistingSourceInfo;
-import eu.dasish.annotation.schema.NewOrExistingSourceInfos;
-import eu.dasish.annotation.schema.NewSourceInfo;
+import eu.dasish.annotation.schema.SourceInfo;
+import eu.dasish.annotation.schema.SourceInfoList;
 import eu.dasish.annotation.schema.ResourceREF;
 import eu.dasish.annotation.schema.SourceInfo;
 import java.util.List;
@@ -54,11 +53,9 @@ public class TestInstances {
        sourceInfo.setRef(TestBackendConstants._TEST_SOURCE_1_EXT_ID);
        sourceInfo.setVersion(TestBackendConstants._TEST_VERSION_1_EXT_ID); 
        
-       NewOrExistingSourceInfo noeSourceInfo =  new NewOrExistingSourceInfo();
-       noeSourceInfo.setSource(sourceInfo);
-       NewOrExistingSourceInfos noeSourceInfos =  new NewOrExistingSourceInfos();
-       noeSourceInfos.getTarget().add(noeSourceInfo);
-       result.setTargetSources(noeSourceInfos);
+       SourceInfoList sourceInfos =  new SourceInfoList();
+       sourceInfos.getTargetSource().add(sourceInfo);
+       result.setTargetSources(sourceInfos);
        
        return result;
     }
@@ -67,8 +64,8 @@ public class TestInstances {
     private Annotation makeAnnotation(String bodyTxt, String headline, int ownerId){
         Annotation result = new Annotation();
         AnnotationBody body = new AnnotationBody();
-        List<Object> bodyContent = body.getAny();
-        bodyContent.add(bodyTxt);        
+        body.setMimeType("text/plain");
+        body.setValue(bodyTxt);       
         result.setBody(body);
         result.setHeadline(headline);
         ResourceREF owner = new ResourceREF();

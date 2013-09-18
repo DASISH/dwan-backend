@@ -19,11 +19,10 @@ package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.dao.AnnotationDao;
 import eu.dasish.annotation.backend.dao.NotebookDao;
-import eu.dasish.annotation.schema.Annotations;
+import eu.dasish.annotation.schema.AnnotationList;
 import eu.dasish.annotation.schema.Notebook;
 import eu.dasish.annotation.schema.NotebookInfo;
 import eu.dasish.annotation.schema.ResourceREF;
-import eu.dasish.annotation.schema.Version;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -71,7 +70,7 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
         @Override
         public NotebookInfo mapRow(ResultSet rs, int rowNumber) throws SQLException {
             NotebookInfo notebookInfo = new NotebookInfo();
-            notebookInfo.setRef(externalIDtoURI(_serviceURI, rs.getString(external_id))); 
+            notebookInfo.setRef(externalIDtoURI(rs.getString(external_id))); 
             notebookInfo.setTitle(rs.getString(title));
             return notebookInfo;
         }
@@ -99,7 +98,7 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
             } catch (DatatypeConfigurationException exception) {
                 throw new SQLException(exception);
             }
-            notebook.setURI(externalIDtoURI(_serviceURI,rs.getString("external_id")));
+            notebook.setURI(externalIDtoURI(rs.getString("external_id")));
             notebook.setAnnotations(getAnnotations(rs.getInt(notebook_id)));
             return notebook;
         }
@@ -200,11 +199,11 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
      *
      */
     @Override
-    public Annotations getAnnotations(Number notebookID) {
+    public AnnotationList getAnnotations(Number notebookID) {
         if (notebookID == null) {
             return null;
         }
-        Annotations result = new Annotations();
+        AnnotationList result = new AnnotationList();
         List<ResourceREF> annotREFs = result.getAnnotation();
         boolean test = annotREFs.addAll(getAnnotationREFsOfNotebook(notebookID));
         return (test ? result : null);

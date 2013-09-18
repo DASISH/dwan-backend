@@ -22,6 +22,7 @@ import com.sun.jersey.api.client.ClientResponse;
 import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.schema.Annotation;
+import eu.dasish.annotation.schema.ObjectFactory;
 import eu.dasish.annotation.schema.ResourceREF;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -135,8 +136,8 @@ public class AnnotationsTest extends ResourcesTest{
 
         final Annotation annotationToAdd = new Annotation();
 
-        final JAXBElement<Annotation> jaxbElement = new JAXBElement<Annotation>(new QName("http://www.dasish.eu/ns/addit", "annotation"), Annotation.class, null, annotationToAdd);
-         //final Annotation annotToAddJB = jaxbElement.getValue();
+        //final JAXBElement<Annotation> jaxbElement = new JAXBElement<Annotation>(new QName("http://www.dasish.eu/ns/addit", "annotation"), Annotation.class, null, annotationToAdd);
+        final JAXBElement<Annotation> jaxbElement = (new ObjectFactory()).createAnnotation(annotationToAdd);
        
         final String ownerString = "5";
         final Number ownerID =  5;

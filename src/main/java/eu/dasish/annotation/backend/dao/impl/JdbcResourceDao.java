@@ -192,15 +192,19 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
         }
     };
 
-    /////////////// HELPERS ///////////////
     
-     
-    protected String externalIDtoURI(String serviceURI, String externalID) {
+    @Override 
+    public String externalIDtoURI(String externalID) {
         if (_serviceURI != null) {
             return _serviceURI + externalID;
         } else {
             return externalID;
         }
+    }
+    
+    @Override 
+    public String stringURItoExternalID(String stringURI) {
+        return stringURI.substring(_serviceURI.length());
     }
 
     ////////////////////////////

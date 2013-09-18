@@ -21,7 +21,7 @@ import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.dao.NotebookDao;
 import eu.dasish.annotation.schema.Notebook;
 import eu.dasish.annotation.schema.NotebookInfo;
-import eu.dasish.annotation.schema.NotebookInfos;
+import eu.dasish.annotation.schema.NotebookInfoList;
 import eu.dasish.annotation.schema.ObjectFactory;
 import java.util.ArrayList;
 import java.util.List;
@@ -73,7 +73,7 @@ public class NotebookResourceTest {
                 will(returnValue(new ArrayList<NotebookInfo>()));
             }
         });
-        JAXBElement<NotebookInfos> result = notebookResource.getNotebookInfo(httpServletRequest);
+        JAXBElement<NotebookInfoList> result = notebookResource.getNotebookInfo(httpServletRequest);
         assertEquals(0, result.getValue().getNotebook().size()); // todo: shoudnt this return 3 infos?
     }
 

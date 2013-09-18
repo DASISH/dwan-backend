@@ -19,7 +19,7 @@ package eu.dasish.annotation.backend.dao;
 
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.CachedRepresentationInfo;
-import eu.dasish.annotation.schema.NewOrExistingSourceInfo;
+import eu.dasish.annotation.schema.SourceInfo;
 import eu.dasish.annotation.schema.Version;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -158,7 +158,7 @@ public interface DBIntegrityService{
      * @return map temporarySourceID |--> sourceExternalID. Its domain is the temporary IDs of all the new sources. While adding a new source a new external ID is generated for it and it becomes the value of the map. The sourceIDs which are already present in the DB are not in the domain. If all sources are old, then the map is empty. 
      * @throws SQLException 
      */
-    Map<String, String> addSourcesForAnnotation(Number annotationID, List<NewOrExistingSourceInfo> sources) throws SQLException;
+    Map<String, String> addSourcesForAnnotation(Number annotationID, List<SourceInfo> sources) throws SQLException;
 
     /**
      * 

@@ -41,4 +41,18 @@ public interface ResourceDao {
      * @return the UUID (external ID) of the resource with the "internalID".
      */
     public UUID getExternalID(Number internalId);
+    
+    /**
+     * 
+     * @param externalID
+     * @return returns the URI which is a concatenation of the serviceURI and externalID
+     */
+    public String externalIDtoURI(String externalID);
+    
+    /**
+     * 
+     * @param stringURI
+     * @return returns the extranlID which is a suffix of stringURI
+     */
+    public String stringURItoExternalID(String stringURI);
 }
