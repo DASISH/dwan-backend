@@ -18,6 +18,7 @@
 package eu.dasish.annotation.backend.dao;
 
 import eu.dasish.annotation.schema.Annotation;
+import eu.dasish.annotation.schema.AnnotationBody;
 import eu.dasish.annotation.schema.AnnotationInfo;
 import eu.dasish.annotation.schema.Permission;
 import eu.dasish.annotation.schema.ResourceREF;
@@ -130,7 +131,7 @@ public interface AnnotationDao extends ResourceDao{
      * @throws SQLException 
      * Connects the annotation to its target source by adding the pair (annotationID, sourceID) to the joint table.
      */ 
-    public int addAnnotationSourcePair(Number annotationID, Number sourceID) throws SQLException;
+    public int addAnnotationSource(Number annotationID, Number sourceID) throws SQLException;
     
    
     /**
@@ -161,7 +162,7 @@ public interface AnnotationDao extends ResourceDao{
      * @param serializedNewBody
      * @return # of updated rows in "annotation" table after updating the annotation's body with "serializedNewBody". Should return 1.
      */
-    public int updateBody(Number annotationID, String serializedNewBody);
+    public int updateBodyText(Number annotationID, String newBodyText);
     
     
    /**
@@ -196,6 +197,8 @@ public interface AnnotationDao extends ResourceDao{
     public int deleteAnnotationPrincipalPermissions(Number annotationID) throws SQLException ;
 
   
+   public String[] splitBody(AnnotationBody body);
   
+   public AnnotationBody makeBody(String text, String mimeType);
     
 }

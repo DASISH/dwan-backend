@@ -22,7 +22,7 @@ import eu.dasish.annotation.backend.dao.AnnotationDao;
 import eu.dasish.annotation.backend.dao.NotebookDao;
 import eu.dasish.annotation.schema.Notebook;
 import eu.dasish.annotation.schema.NotebookInfo;
-import eu.dasish.annotation.schema.NotebookInfos;
+import eu.dasish.annotation.schema.NotebookInfoList;
 import eu.dasish.annotation.schema.ObjectFactory;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -65,22 +65,22 @@ public class NotebookResource {
     @Produces(MediaType.TEXT_XML)
     @Path("")
     // Returns notebook-infos for the notebooks accessible to the current user.
-    public JAXBElement<NotebookInfos> getNotebookInfo(@Context HttpServletRequest httpServletRequest) {
-        final NotebookInfos notebookInfos = new NotebookInfos();
+    public JAXBElement<NotebookInfoList> getNotebookInfo(@Context HttpServletRequest httpServletRequest) {
+        final NotebookInfoList notebookInfoList = new NotebookInfoList();
         String remoteUser = httpServletRequest.getRemoteUser();
         UUID remoteUserUUID = (remoteUser != null) ? UUID.fromString(remoteUser) : null;
-        notebookInfos.getNotebook().addAll(notebookDao.getNotebookInfos(remoteUserUUID));
-        return new ObjectFactory().createNotebooks(notebookInfos);
+        notebookInfoList.getNotebook().addAll(notebookDao.getNotebookInfos(remoteUserUUID));
+        return new ObjectFactory().createNotebookInfoList(notebookInfoList);
     }
 
     @GET
     @Produces(MediaType.TEXT_XML)
     @Path("test")
     // This is not in the standards definition and is only used for testing
-    public JAXBElement<NotebookInfos> getNotebookInfo(@QueryParam("userid") String userId) {
-        final NotebookInfos notebookInfos = new NotebookInfos();
+    public JAXBElement<NotebookInfoList> getNotebookInfo(@QueryParam("userid") String userId) {
+        final NotebookInfoList notebookInfos = new NotebookInfoList();
         notebookInfos.getNotebook().addAll(notebookDao.getNotebookInfos(UUID.fromString(userId)));
-        return new ObjectFactory().createNotebooks(notebookInfos);
+        return new ObjectFactory().createNotebookInfoList(notebookInfos);
     }
 
     @GET
@@ -117,7 +117,7 @@ public class NotebookResource {
     public JAXBElement<NotebookInfo> getMetadata(@PathParam("notebookid") String notebookId) {
         NotebookInfo result = notebookDao.getNotebookInfo(notebookDao.getInternalID(UUID.fromString(notebookId)));
         // TODO change the name of the create method to createNotebookInfo!
-        return new ObjectFactory().createNotebook(result);
+        return new ObjectFactory().createNotebookInfo(result);
 
     }
 

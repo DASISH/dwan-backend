@@ -38,17 +38,8 @@ public class Helpers {
     }
     
         
-    // TODO: change when serialization mechanism for bodies is fixed
-    public static String serializeBody(AnnotationBody body) {
-        return body.getAny().get(0).toString();
-    }
-
-    // TODO: change when serialization mechanism for bodies is fixed
-    public static AnnotationBody deserializeBody(String bodyXml) {
-        AnnotationBody result = new AnnotationBody();
-        result.getAny().add(bodyXml);
-        return result;
-    }
+    
+  
     
      
     public static String replace(String text, Map<String, String> pairs) {

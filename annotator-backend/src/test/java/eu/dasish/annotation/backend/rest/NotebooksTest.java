@@ -24,7 +24,7 @@ import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.dao.NotebookDao;
 import eu.dasish.annotation.schema.Notebook;
 import eu.dasish.annotation.schema.NotebookInfo;
-import eu.dasish.annotation.schema.NotebookInfos;
+import eu.dasish.annotation.schema.NotebookInfoList;
 import eu.dasish.annotation.schema.ObjectFactory;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -71,7 +71,7 @@ public class NotebooksTest extends ResourcesTest {
         client().addFilter(new HTTPBasicAuthFilter("userid", "userpass"));
         ClientResponse response = resource().path("notebooks").accept(MediaType.TEXT_XML).get(ClientResponse.class);
         assertEquals(200, response.getStatus());
-        assertEquals(0, response.getEntity(new GenericType<NotebookInfos>() {
+        assertEquals(0, response.getEntity(new GenericType<NotebookInfoList>() {
         }).getNotebook().size());
     }
 
@@ -209,13 +209,17 @@ public class NotebooksTest extends ResourcesTest {
     @Test
     public void testModifyNotebook_String() {
         System.out.println("testModifyNotebook_String");
-        final Notebook notebook = new Notebook();
+        final Notebook notebook = new Notebook();        
+        notebook.setTitle("a title");
+        /*
         // this JAXBElement should be returned by the generated ObjectFactory, however it is not. This could be due to name space polution in the schema?
         // todo: this JAXBElement should be removed and replaced by the same as returned by the ObjectFactory when cause of it not being auto generated is resolved, in the mean time this line below makes it clear where the issue starts from.
         // see ticket #348
         final JAXBElement<Notebook> jaxbElement = new JAXBElement<Notebook>(new QName("http://www.dasish.eu/ns/addit", "notebook"), Notebook.class, null, notebook);
-        notebook.setTitle("a title");
-        ClientResponse response = resource().path("notebooks/_nid_").type(MediaType.APPLICATION_XML).accept(MediaType.APPLICATION_XML).put(ClientResponse.class, jaxbElement);
+        */
+        
+        final JAXBElement<Notebook> notebookJAXB = (new ObjectFactory()).createNotebook(notebook);
+        ClientResponse response = resource().path("notebooks/_nid_").type(MediaType.APPLICATION_XML).accept(MediaType.APPLICATION_XML).put(ClientResponse.class, notebookJAXB);
         assertEquals(200, response.getStatus());
         assertEquals("modifyNotebook _nid_a title", response.getEntity(String.class));
     }

@@ -92,7 +92,7 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
     @Test
     public void testAddAnnotationSourcePair() throws SQLException{
         System.out.println("test addAnnotationSourcePair");
-        assertEquals(1, jdbcAnnotationDao.addAnnotationSourcePair(1,2));
+        assertEquals(1, jdbcAnnotationDao.addAnnotationSource(1,2));
     }
     
     ////////////////////////////////
@@ -201,7 +201,7 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         final Annotation annotation = jdbcAnnotationDao.getAnnotationWithoutSources(testAnnotationID);
         assertEquals(TestBackendConstants._TEST_ANNOT_2_HEADLINE, annotation.getHeadline());
         assertEquals(String.valueOf(TestBackendConstants._TEST_ANNOT_2_OWNER), annotation.getOwner().getRef());
-        assertEquals(TestBackendConstants._TEST_ANNOT_2_BODY, annotation.getBody().getAny().get(0)); // when the body is elaborated it may be changed
+        assertEquals(TestBackendConstants._TEST_ANNOT_2_BODY, annotation.getBody().getValue()); 
         assertEquals(TestBackendConstants._TEST_SERVLET_URI+TestBackendConstants._TEST_ANNOT_2_EXT, annotation.getURI());
         assertEquals(TestBackendConstants._TEST_ANNOT_2_TIME_STAMP, annotation.getTimeStamp().toString());
     }
@@ -245,7 +245,8 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         assertFalse(null == addedAnnotation.getURI());
         assertFalse(null == addedAnnotation.getTimeStamp());
         assertEquals(Integer.toString(5), addedAnnotation.getOwner().getRef());
-        assertEquals(annotationToAdd.getBody().getAny().get(0), addedAnnotation.getBody().getAny().get(0)); // TODO: to be changed after serialization is fixed
+        assertEquals(annotationToAdd.getBody().getMimeType(), addedAnnotation.getBody().getMimeType());
+        assertEquals(annotationToAdd.getBody().getValue(), addedAnnotation.getBody().getValue()); 
         assertEquals(annotationToAdd.getHeadline(), addedAnnotation.getHeadline());
     }
 
@@ -336,11 +337,11 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
     @Test
     public void testUpdateBody() throws SQLException{
         System.out.println("test UpdateAnnotationBody");
-        String serializedNewBody = "new body";
-        int result = jdbcAnnotationDao.updateBody(2, serializedNewBody);
+        String newBodyText = "new body";
+        int result = jdbcAnnotationDao.updateBodyText(2, newBodyText);
         assertEquals(1, result);
         Annotation updatedAnnotation= jdbcAnnotationDao.getAnnotationWithoutSources(2);
-        assertEquals(serializedNewBody, Helpers.serializeBody(updatedAnnotation.getBody()));
+        assertEquals(newBodyText, updatedAnnotation.getBody().getValue());
     }
 
     

@@ -58,7 +58,7 @@ public class JdbcVersionDao extends JdbcResourceDao implements VersionDao {
             // TODO: clarify situation with the attribute cached representation
             //result.setCachedRepresentations!!! The same situation as with permissions lists: we cannot refer from a filed to a list of smth, we have a separate joint table
             // TODO: attribute URI (external-id is missing)
-            result.setVersion(externalIDtoURI(_serviceURI, rs.getString(external_id)));
+            result.setVersion(externalIDtoURI(rs.getString(external_id)));
             return result;
         }
     };
