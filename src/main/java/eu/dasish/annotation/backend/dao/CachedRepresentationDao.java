@@ -18,6 +18,7 @@
 package eu.dasish.annotation.backend.dao;
 
 import eu.dasish.annotation.schema.CachedRepresentationInfo;
+import java.sql.Blob;
 
 /**
  *
@@ -37,6 +38,13 @@ public interface CachedRepresentationDao extends ResourceDao{
      */
     public CachedRepresentationInfo getCachedRepresentationInfo(Number internalID);
     
+    
+    /**
+     * 
+     * @param internalID
+     * @return the Blob of the cached representation  with the internal id "internalID".
+     */
+    public Blob getCachedRepresentationBlob(Number internalID);
   
     /**
      * ADDERS
@@ -44,10 +52,12 @@ public interface CachedRepresentationDao extends ResourceDao{
     
      /**
      * 
-     * @param cached
+     * @param cachedInfo
+     * @param cachedBlob
      * @return the internal ID of the just added "cached", or null if the cached representation is not added for some reason.
      */
-    public Number addCachedRepresentationInfo(CachedRepresentationInfo cached);
+    public Number addCachedRepresentation(CachedRepresentationInfo cachedInfo, Blob cachedBlob);
+    
     
    /**
     * DELETERS
@@ -57,7 +67,7 @@ public interface CachedRepresentationDao extends ResourceDao{
      * @param internalID
      * @return  # deleted rows on the table "cached_representation".
      */
-    public  int deleteCachedRepresentationInfo(Number internalID);
+    public  int deleteCachedRepresentation(Number internalID);
     
    
     

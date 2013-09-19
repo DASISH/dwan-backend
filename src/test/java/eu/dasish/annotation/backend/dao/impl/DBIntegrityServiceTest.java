@@ -34,18 +34,20 @@ import eu.dasish.annotation.schema.ResourceREF;
 import eu.dasish.annotation.schema.Source;
 import eu.dasish.annotation.schema.SourceInfo;
 import eu.dasish.annotation.schema.Version;
+import java.sql.Blob;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import javax.sql.rowset.serial.SerialBlob;
+import javax.sql.rowset.serial.SerialException;
 import javax.xml.datatype.XMLGregorianCalendar;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -280,15 +282,19 @@ public class DBIntegrityServiceTest {
      * Test of addCachedForVersion method, of class DBIntegrityServiceImlp.
      */
     @Test 
-    public void testAddCachedForVersion() {
+    public void testAddCachedForVersion() throws SerialException, SQLException{
         System.out.println("addCachedForVersion");
         String mime = "text/html";
         String type = "text";
         String tool = "latex";
-        final CachedRepresentationInfo newCached = new CachedRepresentationInfo();
-        newCached.setMimeType(mime);
-        newCached.setType(type);
-        newCached.setTool(tool);
+        final CachedRepresentationInfo newCachedInfo = new CachedRepresentationInfo();
+        newCachedInfo.setMimeType(mime);
+        newCachedInfo.setType(type);
+        newCachedInfo.setTool(tool);
+        
+        String  blobString = "aaa";
+        byte[] blobBytes = blobString.getBytes();        
+        final Blob newCachedBlob = new SerialBlob(blobBytes);
         final Number newCachedID = 8;
         final Number versionID = 1;
         mockery.checking(new Expectations() {
@@ -296,7 +302,7 @@ public class DBIntegrityServiceTest {
                 oneOf(cachedRepresentationDao).getInternalID(null);
                 will(returnValue(null));
 
-                oneOf(cachedRepresentationDao).addCachedRepresentationInfo(newCached);
+                oneOf(cachedRepresentationDao).addCachedRepresentation(newCachedInfo, newCachedBlob);
                 will(returnValue(newCachedID));
 
                 one(versionDao).addVersionCachedRepresentation(versionID, newCachedID);
@@ -306,7 +312,7 @@ public class DBIntegrityServiceTest {
         });
 
 
-        Number[] result = dbIntegrityService.addCachedForVersion(versionID, newCached);
+        Number[] result = dbIntegrityService.addCachedForVersion(versionID, newCachedInfo, newCachedBlob);
         assertEquals(2, result.length);
         assertEquals(1, result[0]);
         assertEquals(newCachedID, result[1]);
@@ -505,7 +511,7 @@ public class DBIntegrityServiceTest {
                 oneOf(versionDao).deleteVersionCachedRepresentation(6, 5);
                 will(returnValue(1));
 
-                oneOf(cachedRepresentationDao).deleteCachedRepresentationInfo(5);
+                oneOf(cachedRepresentationDao).deleteCachedRepresentation(5);
                 will(returnValue(0)); // cached is used by another version
 
             }
@@ -538,7 +544,7 @@ public class DBIntegrityServiceTest {
                 oneOf(versionDao).deleteVersion(6);
                 will(returnValue(1));
 
-                oneOf(cachedRepresentationDao).deleteCachedRepresentationInfo(5);
+                oneOf(cachedRepresentationDao).deleteCachedRepresentation(5);
                 will(returnValue(0)); // cached is used by another version
             }
         });
