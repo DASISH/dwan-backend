@@ -99,7 +99,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         }
 
         if (text != null) {
-            sql.append(" AND ").append(body_xml).append("  LIKE '%").append(text).append("%'");
+            sql.append(" AND ").append(body_text).append("  LIKE '%").append(text).append("%'");
         }
 
         return getSimpleJdbcTemplate().query(sql.toString(), internalIDRowMapper, params);
@@ -207,8 +207,8 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
             // TODO change the DB by adding a mime type for the BODY!!!!
             // add flexible mimetype here
             AnnotationBody body = new AnnotationBody();
-            body.setMimeType("text/plain");
-            body.setValue(rs.getString(body_xml));
+            body.setMimeType(rs.getString(body_mimetype));
+            body.setValue(rs.getString(body_text));
             annotation.setBody(body);
             
             annotation.setTargetSources(null);
@@ -254,12 +254,16 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
     @Override
     public int updateBodyText(Number annotationID, String newBodyText) {
         StringBuilder sql = new StringBuilder("UPDATE ");
-        sql.append(annotationTableName).append(" SET ").append(body_xml).append("= '").append(newBodyText).append("' WHERE ").append(annotation_id).append("= ?");
+        sql.append(annotationTableName).append(" SET ").append(body_text).append("= '").append(newBodyText).append("' WHERE ").append(annotation_id).append("= ?");
         return getSimpleJdbcTemplate().update(sql.toString(), annotationID);
     }
 
-    
-
+    @Override
+    public int updateBodyMimeType(Number annotationID, String newMimeType){
+        StringBuilder sql = new StringBuilder("UPDATE ");
+        sql.append(annotationTableName).append(" SET ").append(body_mimetype).append("= '").append(newMimeType).append("' WHERE ").append(annotation_id).append("= ?");
+        return getSimpleJdbcTemplate().update(sql.toString(), annotationID);
+    }
   
     
     //////////// ADDERS ////////////////////////
@@ -274,12 +278,11 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         params.put("ownerId", ownerID);
         params.put("headline", annotation.getHeadline());       
         params.put("bodyText", annotation.getBody().getValue());
-        params.put("bodyMimeType", annotation.getBody().getValue());
-        // TODO: add mime type for the body once the DB is updated!!
+        params.put("bodyMimeType", annotation.getBody().getMimeType());
         
         StringBuilder sql = new StringBuilder("INSERT INTO ");
         sql.append(annotationTableName).append("(").append(external_id).append(",").append(owner_id);
-        sql.append(",").append(headline).append(",").append(body_xml).append(" ) VALUES (:externalId, :ownerId, :headline, :bodyText)");
+        sql.append(",").append(headline).append(",").append(body_text).append(",").append(body_mimetype).append(" ) VALUES (:externalId, :ownerId, :headline, :bodyText, :bodyMimeType)");
         int affectedRows = getSimpleJdbcTemplate().update(sql.toString(), params);
         return ((affectedRows > 0) ? getInternalID(externalID) : null);
     }

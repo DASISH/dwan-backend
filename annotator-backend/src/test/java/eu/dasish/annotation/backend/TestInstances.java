@@ -41,12 +41,12 @@ public class TestInstances {
     
     
     private Annotation makeAnnotationOne(){
-        Annotation result = makeAnnotation(TestBackendConstants._TEST_ANNOT_2_BODY, TestBackendConstants._TEST_ANNOT_2_HEADLINE, TestBackendConstants._TEST_ANNOT_2_OWNER);
+        Annotation result = makeAnnotation(TestBackendConstants._TEST_ANNOT_2_BODY, TestBackendConstants._TEST_BODY_MIMETYPE_HTML, TestBackendConstants._TEST_ANNOT_2_HEADLINE, TestBackendConstants._TEST_ANNOT_2_OWNER);
         return result;
     }
     
     private Annotation makeAnnotationToAdd(){
-       Annotation result = makeAnnotation(TestBackendConstants._TEST_ANNOT_TO_ADD_BODY, TestBackendConstants._TEST_ANNOT_TO_ADD_HEADLINE, 5);
+       Annotation result = makeAnnotation(TestBackendConstants._TEST_ANNOT_TO_ADD_BODY, TestBackendConstants._TEST_BODY_MIMETYPE_TEXT, TestBackendConstants._TEST_ANNOT_TO_ADD_HEADLINE, 5);
        
        SourceInfo sourceInfo =  new SourceInfo();
        sourceInfo.setLink(TestBackendConstants._TEST_SOURCE_1_LINK);
@@ -61,10 +61,10 @@ public class TestInstances {
     }
     
 
-    private Annotation makeAnnotation(String bodyTxt, String headline, int ownerId){
+    private Annotation makeAnnotation(String bodyTxt, String bodyMimeType, String headline, int ownerId){
         Annotation result = new Annotation();
         AnnotationBody body = new AnnotationBody();
-        body.setMimeType("text/plain");
+        body.setMimeType(bodyMimeType);
         body.setValue(bodyTxt);       
         result.setBody(body);
         result.setHeadline(headline);

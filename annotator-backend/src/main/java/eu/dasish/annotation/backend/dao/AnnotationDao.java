@@ -159,10 +159,19 @@ public interface AnnotationDao extends ResourceDao{
     /**
      * 
      * @param annotationID
-     * @param serializedNewBody
-     * @return # of updated rows in "annotation" table after updating the annotation's body with "serializedNewBody". Should return 1.
+     * @param newBodyText
+     * @return # of updated rows in "annotation" table after updating the annotation's body text with "newBodyText". Should return 1.
      */
     public int updateBodyText(Number annotationID, String newBodyText);
+    
+    /////// UPDATERS //////////////////
+    /**
+     * 
+     * @param annotationID
+     * @param newMimeType
+     * @return # of updated rows in "annotation" table after updating the annotation's body with "newMimeType". Should return 1.
+     */
+    public int updateBodyMimeType(Number annotationID, String newMimeType);
     
     
    /**
