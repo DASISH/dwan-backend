@@ -124,16 +124,16 @@ INSERT INTO sources_versions (source_id, version_id) VALUES (5, 7);
 --     mime_type text,
 --     tool text,
 --     type_ text, 
---     where_is_the_file text -- DIFFERS FROM the schema
+--     file_ text -- DIFFERS FROM the schema
 -- );
 
-INSERT INTO cached_representation_info (external_id, mime_type, tool, type_, where_is_the_file) VALUES ('00000000-0000-0000-0000-000000000051', 'text/html', 'latex', 'text', 'corpus1'); --1
-INSERT INTO cached_representation_info (external_id, mime_type, tool, type_, where_is_the_file) VALUES ('00000000-0000-0000-0000-000000000052', 'text/html', 'vi', 'text', 'corpus1'); -- 2
-INSERT INTO cached_representation_info (external_id, mime_type, tool, type_, where_is_the_file) VALUES ('00000000-0000-0000-0000-000000000053', 'image/png', 'screenshooter', 'image', 'corpus1'); -- 3
-INSERT INTO cached_representation_info (external_id, mime_type, tool, type_, where_is_the_file) VALUES ('00000000-0000-0000-0000-000000000054', 'text/html', 'oxygen', 'text', 'corpus1'); --4 
-INSERT INTO cached_representation_info (external_id, mime_type, tool, type_, where_is_the_file) VALUES ('00000000-0000-0000-0000-000000000055', 'image/jpg', 'photomaster', 'image', 'TLAscratch'); --5 
-INSERT INTO cached_representation_info (external_id, mime_type, tool, type_, where_is_the_file) VALUES ('00000000-0000-0000-0000-000000000056', 'text/plain', 'some tool', 'text', 'TLAscratch'); --6 
-INSERT INTO cached_representation_info (external_id, mime_type, tool, type_, where_is_the_file) VALUES ('00000000-0000-0000-0000-000000000057', 'text/html', 'some tool 2', 'text', 'TLAscratch'); --7 
+INSERT INTO cached_representation (external_id, mime_type, tool, type_, file_) VALUES ('00000000-0000-0000-0000-000000000051', 'text/html', 'latex', 'text', X'1001'); --1
+INSERT INTO cached_representation (external_id, mime_type, tool, type_, file_) VALUES ('00000000-0000-0000-0000-000000000052', 'text/html', 'vi', 'text', X'1002'); -- 2
+INSERT INTO cached_representation (external_id, mime_type, tool, type_, file_) VALUES ('00000000-0000-0000-0000-000000000053', 'image/png', 'screenshooter', 'image', X'1003'); -- 3
+INSERT INTO cached_representation (external_id, mime_type, tool, type_, file_) VALUES ('00000000-0000-0000-0000-000000000054', 'text/html', 'oxygen', 'text', X'1004'); --4 
+INSERT INTO cached_representation (external_id, mime_type, tool, type_, file_) VALUES ('00000000-0000-0000-0000-000000000055', 'image/jpg', 'photomaster', 'image', X'1005'); --5 
+INSERT INTO cached_representation (external_id, mime_type, tool, type_, file_) VALUES ('00000000-0000-0000-0000-000000000056', 'text/plain', 'some tool', 'text', X'1006'); --6 
+INSERT INTO cached_representation (external_id, mime_type, tool, type_, file_) VALUES ('00000000-0000-0000-0000-000000000057', 'text/html', 'some tool 2', 'text', X'1007'); --7 
 
 --------------------------------------------------------------
 

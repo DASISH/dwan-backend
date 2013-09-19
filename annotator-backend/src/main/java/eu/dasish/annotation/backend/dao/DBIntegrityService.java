@@ -21,6 +21,7 @@ import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.CachedRepresentationInfo;
 import eu.dasish.annotation.schema.SourceInfo;
 import eu.dasish.annotation.schema.Version;
+import java.sql.Blob;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.List;
@@ -131,11 +132,12 @@ public interface DBIntegrityService{
     /**
      * 
      * @param versionID
-     * @param cached
+     * @param cachedInfo
+     * @param cachedBlob
      * @return result[0] = # updated rows in the table "versions_cached_representations" (must be 1 or 0).
      * result[1] = the internal ID of the added cached (a new one if "cached" was new for the Data Base).
      */
-    Number[] addCachedForVersion(Number versionID, CachedRepresentationInfo cached);
+    Number[] addCachedForVersion(Number versionID, CachedRepresentationInfo cachedInfo, Blob cachedBlob);
     
     
 

@@ -38,7 +38,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     final static protected String notebookTableName = "notebook";
     final static protected String annotationTableName = "annotation";
     final static protected String sourceTableName = "target_source";
-    final static protected String cachedRepresentationTableName = "cached_representation_info";
+    final static protected String cachedRepresentationTableName = "cached_representation";
     final static protected String versionTableName = "version";
     final static protected String principalTableName = "principal";
     // joint tablenames
@@ -67,7 +67,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     final static protected String mime_type = "mime_type";
     final static protected String tool = "tool";
     final static protected String type_ = "type_";
-    final static protected String where_is_the_file = "where_is_the_file";
+    final static protected String file_ = "file_";
     // derived string constants: table+field names 
     final static protected String annotationStar = annotationTableName + ".*";
     final static protected String annotationAnnotation_id = annotationTableName + "." + annotation_id;

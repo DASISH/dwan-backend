@@ -32,6 +32,7 @@ import eu.dasish.annotation.schema.Permission;
 import eu.dasish.annotation.schema.Source;
 import eu.dasish.annotation.schema.SourceInfo;
 import eu.dasish.annotation.schema.Version;
+import java.sql.Blob;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.HashMap;
@@ -129,13 +130,13 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
 
     /////////////// ADDERS  /////////////////////////////////
     @Override
-    public Number[] addCachedForVersion(Number versionID, CachedRepresentationInfo cached) {
+    public Number[] addCachedForVersion(Number versionID, CachedRepresentationInfo cachedInfo, Blob cachedBlob) {
         Number[] result = new Number[2];
-        String cachedExternalIDstring = cached.getRef();
+        String cachedExternalIDstring = cachedInfo.getRef();
         UUID cachedUUID = (cachedExternalIDstring != null) ? UUID.fromString(cachedExternalIDstring) : null;
         result[1] = cachedRepresentationDao.getInternalID(cachedUUID);
         if (result[1] == null) {
-            result[1] = cachedRepresentationDao.addCachedRepresentationInfo(cached);
+            result[1] = cachedRepresentationDao.addCachedRepresentation(cachedInfo, cachedBlob);
         }
         result[0] = versionDao.addVersionCachedRepresentation(versionID, result[1]);
         return result;
@@ -203,7 +204,7 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         int[] result = new int[2];
         result[0] = versionDao.deleteVersionCachedRepresentation(versionID, cachedID);
         if (result[0] > 0) {
-            result[1] = cachedRepresentationDao.deleteCachedRepresentationInfo(cachedID);
+            result[1] = cachedRepresentationDao.deleteCachedRepresentation(cachedID);
         } else {
             result[1] = 0;
 
@@ -220,7 +221,7 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
             result[0] = versionDao.deleteVersion(versionID);
             result[2] = 0;
             for (Number cachedID : cachedRepresentations) {
-                result[2] = result[2] + cachedRepresentationDao.deleteCachedRepresentationInfo(cachedID);
+                result[2] = result[2] + cachedRepresentationDao.deleteCachedRepresentation(cachedID);
 
             }
         } else {

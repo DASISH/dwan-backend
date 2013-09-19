@@ -100,17 +100,22 @@ CREATE TABLE annotation (
 --        <xs:attribute name="type" type="xs:string" use="required"/>
 --    </xs:complexType>
 
-CREATE TABLE cached_representation_info (
+-- quoting the standard about BLOB:
+-- For the BLOB type, the length limit can be defined in units of kilobyte (K, 1024), 
+-- megabyte (M, 1024 * 1024) or gigabyte (G, 1024 * 1024 * 1024), using the <multiplier>. 
+-- If BLOB is used without specifying the length, the length defaults to 1GB.
+
+
+CREATE TABLE cached_representation (
     cached_representation_id SERIAL UNIQUE NOT NULL,
     external_id UUID UNIQUE NOT NULL,
     mime_type text,
     tool text,
     type_ text, 
-    where_is_the_file text -- DIFFERS FROM the schema
+    file_ blob 
 );
 
 -- soundness there must be at least one version referring to this cahced representation
-
 
 ----------------------------------------------------------------------
 -- <xs:complexType name="Version">
@@ -202,7 +207,7 @@ CREATE TABLE sources_versions (
 
 CREATE TABLE versions_cached_representations (
     version_id integer REFERENCES version(version_id),
-    cached_representation_id integer REFERENCES cached_representation_info(cached_representation_id),
+    cached_representation_id integer REFERENCES cached_representation(cached_representation_id),
     unique(version_id, cached_representation_id),
 );
 

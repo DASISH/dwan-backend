@@ -19,7 +19,14 @@ package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.schema.CachedRepresentationInfo;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.sql.Blob;
+import java.sql.SQLException;
 import java.util.UUID;
+import javax.sql.rowset.serial.SerialBlob;
+import javax.sql.rowset.serial.SerialException;
+import org.hsqldb.jdbc.JDBCBlobClient;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.runner.RunWith;
@@ -89,6 +96,20 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest{
         assertEquals(TestBackendConstants._TEST_SERVLET_URI+TestBackendConstants._TEST_CACHED_REPRESENTATION_1_EXT_ID_, result.getRef());
     }
 
+    /**
+     * Test of getCachedRepresentationBlob method, of class JdbcCachedRepresentationDao.
+     *  public CachedRepresentationInfo getCachedRepresentationInfo(Number internalID);
+     */
+    @Test  
+    public void testGetCachedRepresentationBlob() throws SQLException, UnsupportedEncodingException{
+        System.out.println("getCachedRepresentationBlob ");
+        Blob result = jdbcCachedRepresentationDao.getCachedRepresentationBlob(1);
+        int lengthBlob = 2;
+        byte[] resultBytes = result.getBytes(1, lengthBlob);
+        assertEquals(TestBackendConstants._TEST_CACHED_REPRESENTATION_1_BLOB_BYTE_1, resultBytes[0]);
+        assertEquals(TestBackendConstants._TEST_CACHED_REPRESENTATION_1_BLOB_BYTE_2, resultBytes[1]);
+    }
+    
     
     /**
      * Test of deleteCachedRepresentationInfo method, of class JdbcCachedRepresentationDao.
@@ -98,14 +119,14 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest{
     public void testDeleteCachedRepresentationInfo() {
         System.out.println("deleteCachedRepresentationInfo");
         Number internalID = 6; /// deleted because no version refers to it
-        int result = jdbcCachedRepresentationDao.deleteCachedRepresentationInfo(internalID);
+        int result = jdbcCachedRepresentationDao.deleteCachedRepresentation(internalID);
         assertEquals(1, result);
         
-        int resultTwo = jdbcCachedRepresentationDao.deleteCachedRepresentationInfo(internalID);
+        int resultTwo = jdbcCachedRepresentationDao.deleteCachedRepresentation(internalID);
         assertEquals(0, resultTwo);
         
         Number internalIDDoNotDelete = 5;
-        int resultThree =jdbcCachedRepresentationDao.deleteCachedRepresentationInfo(internalIDDoNotDelete);
+        int resultThree =jdbcCachedRepresentationDao.deleteCachedRepresentation(internalIDDoNotDelete);
         assertEquals(0, resultThree);
     }
 
@@ -114,23 +135,33 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest{
      * public CachedRepresentationInfo addCachedRepresentationInfo(CachedRepresentationInfo cached);    
      */
     @Test  
-    public void testAddCachedRepresentationInfo() {
-        System.out.println("addCachedRepresentationInfo");
+    public void testAddCachedRepresentation() throws SerialException, SQLException{
+        System.out.println("addCachedRepresentation");
         
-        CachedRepresentationInfo cached = new CachedRepresentationInfo();
-        cached.setMimeType("text/plain");
-        cached.setTool("vi");
-        cached.setType("text");
-        cached.setRef(null);
+        CachedRepresentationInfo cachedInfo = new CachedRepresentationInfo();
+        cachedInfo.setMimeType("text/plain");
+        cachedInfo.setTool("vi");
+        cachedInfo.setType("text");
+        cachedInfo.setRef(null);
         
-        Number result = jdbcCachedRepresentationDao.addCachedRepresentationInfo(cached);
+        String  blobString = "111";
+        byte[] blobBytes = blobString.getBytes();        
+        final Blob cachedBlob = new SerialBlob(blobBytes);
+        
+        Number result = jdbcCachedRepresentationDao.addCachedRepresentation(cachedInfo, cachedBlob);
         // checking
-        CachedRepresentationInfo addedCached = jdbcCachedRepresentationDao.getCachedRepresentationInfo(result);
+        CachedRepresentationInfo addedCachedInfo = jdbcCachedRepresentationDao.getCachedRepresentationInfo(result);
         assertEquals(8, result.intValue());
-        assertEquals("text/plain", addedCached.getMimeType());
-        assertEquals("vi", addedCached.getTool());
-        assertEquals("text", addedCached.getType());
-        assertFalse(addedCached.getRef() == null); // new non-null external identifier should be assigned
+        assertEquals("text/plain", addedCachedInfo.getMimeType());
+        assertEquals("vi", addedCachedInfo.getTool());
+        assertEquals("text", addedCachedInfo.getType());
+        assertFalse(addedCachedInfo.getRef() == null); // new non-null external identifier should be assigned
+        
+        Blob addedBlob = jdbcCachedRepresentationDao.getCachedRepresentationBlob(result);
+        int lengthBlob = 3;
+        String addedBlobString = new String(addedBlob.getBytes(1, lengthBlob));
+        assertEquals(blobString, addedBlobString);
+      
     }
     
   
