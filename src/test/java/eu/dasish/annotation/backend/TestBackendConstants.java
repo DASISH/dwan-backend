@@ -51,6 +51,9 @@ public class TestBackendConstants {
     public static final String _TEST_ANNOT_4_HEADLINE = "Art Nuveau";
     public static final String _TEST_ANNOT_TO_ADD_HEADLINE = "Annotation to add to test DAO";
     
+    public static final String _TEST_BODY_MIMETYPE_HTML = "text/html"; 
+    public static final String _TEST_BODY_MIMETYPE_TEXT = "text/plain"; 
+    
     public static final int _TEST_ANNOT_2_OWNER = 3;
     public static final int _TEST_ANNOT_3_OWNER = 4;
     public static final int _TEST_ANNOT_4_OWNER = 5;
@@ -60,7 +63,7 @@ public class TestBackendConstants {
     
     public static final String _TEST_ANNOT_2_TIME_STAMP = "2013-08-12T11:25:00.383+02:00";
     
-    public static final String annotaiontoDeleteInDB="INSERT INTO annotation (annotation_id, owner_id,headline,body_xml, external_id) VALUES (25, 111, 'Annotation to delete','<html><body>some html 4</body></html>', '00000000-0000-0000-0000-000000000025');";
+    public static final String annotaiontoDeleteInDB="INSERT INTO annotation (annotation_id, owner_id,headline,body_text, body_mimetype, external_id) VALUES (25, 111, 'Annotation to delete','<html><body>some html 4</body></html>', 'text/html', 00000000-0000-0000-0000-000000000025');";
     
     public static final String _TEST_USER_3_EXT_ID = "00000000-0000-0000-0000-000000000111";
     public static final String _TEST_USER_4_EXT_ID = "00000000-0000-0000-0000-000000000112";  

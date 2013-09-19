@@ -54,7 +54,8 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     final static protected String external_id = "external_id";
     final static protected String owner_id = "owner_id";
     final static protected String headline = "headline";
-    final static protected String body_xml = "body_xml";
+    final static protected String body_text = "body_text";
+    final static protected String body_mimetype = "body_mimetype";
     final static protected String title = "title";
     final static protected String principal_id = "principal_id";
     final static protected String time_stamp = "time_stamp";

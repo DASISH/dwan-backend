@@ -88,7 +88,8 @@ CREATE TABLE annotation (
     --  there must be exactly one owner ++ 
      -- and this owner must be in the table "permissions" as owner!!
     headline text,
-    body_xml xml
+    body_text text,
+    body_mimetype text
 );
 
 -----------------------------------------------------------------------
