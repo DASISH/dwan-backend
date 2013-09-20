@@ -64,6 +64,20 @@ public class JdbcSourceDaoTest extends JdbcResourceDaoTest {
         Number result = jdbcSourceDao.getInternalID(externalID);
         assertEquals(expResult, result);
     }
+    
+    /**
+     * Test of getInternalIDFromURI method,
+     * public Number getInternalIDFromURI(UUID externalID);
+     */
+    @Test
+    public void testGetInternalIDFRomURI() {
+        System.out.println("test getInternalIDFromURI");
+        jdbcSourceDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI);
+        String uri = TestBackendConstants._TEST_SERVLET_URI + TestBackendConstants._TEST_SOURCE_1_EXT_ID;
+        Number result = jdbcSourceDao.getInternalIDFromURI(uri);
+        assertEquals(1, result.intValue());
+    }
+    
 
     /**
      * Test of getSource method, of class JdbcSourceDao.

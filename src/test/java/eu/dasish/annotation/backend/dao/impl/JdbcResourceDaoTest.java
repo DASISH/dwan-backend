@@ -17,21 +17,29 @@
  */
 package eu.dasish.annotation.backend.dao.impl;
 
+import eu.dasish.annotation.backend.TestBackendConstants;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Scanner;
+import java.util.UUID;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import static org.junit.Assert.*;
+import org.junit.runner.RunWith;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 /**
  *
  * @author olhsha
  */
-
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration({"/spring-test-config/dataSource.xml"})
 public class JdbcResourceDaoTest {
    
    @Autowired
@@ -39,7 +47,7 @@ public class JdbcResourceDaoTest {
    
    private String getNormalisedSql() throws FileNotFoundException, URISyntaxException {
         // remove the unsupported sql for the test
-        final URL sqlUrl = JdbcNotebookDaoTest.class.getResource("/sql/DashishAnnotatorCreate.sql");
+        final URL sqlUrl = JdbcResourceDaoTest.class.getResource("/sql/DashishAnnotatorCreate.sql");
         String sqlString = new Scanner(new File(sqlUrl.toURI()), "UTF8").useDelimiter("\\Z").next();
         for (String unknownToken : new String[]{
             "SET client_encoding",
@@ -79,6 +87,34 @@ public class JdbcResourceDaoTest {
     public void tearDown() {
     }
     
-   
+    /**
+     * Test of stringURItoExternalID method
+     * public String stringURItoExternalID(String uri);
+     */
+    @Test
+    public void testStringURItoExternalID() {
+        JdbcResourceDao jdbcResourceDao = new JdbcResourceDao();
+        System.out.println("test stringURItoExternalID");
+        jdbcResourceDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI);
+        String randomUUID = UUID.randomUUID().toString();
+        String uri = TestBackendConstants._TEST_SERVLET_URI + randomUUID;
+        String externalID = jdbcResourceDao.stringURItoExternalID(uri);
+        assertEquals(randomUUID, externalID);
+    }
+    
+    /**
+     * Test of externalIDtoURI method
+     * public String externalIDtoURI(String externalID);
+     */
+    @Test
+    public void testExternalIDtoURI() {
+        System.out.println("test stringURItoExternalID");
+        JdbcResourceDao jdbcResourceDao = new JdbcResourceDao();
+        jdbcResourceDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI);
+        String randomUUID = UUID.randomUUID().toString();
+        String uri = TestBackendConstants._TEST_SERVLET_URI + randomUUID;
+        String uriResult = jdbcResourceDao.externalIDtoURI(randomUUID);
+        assertEquals(uri, uriResult);
+    }
 
 }

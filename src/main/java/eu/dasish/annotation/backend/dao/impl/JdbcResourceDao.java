@@ -23,6 +23,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.UUID;
+import javax.sql.DataSource;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.XMLGregorianCalendar;
 import org.springframework.jdbc.core.RowMapper;
@@ -88,7 +89,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     protected String resourceTableName = null;
     protected String _serviceURI;
     
-    
+  
     
     /////////////////// Class field SETTERS /////////////
     @Override
@@ -111,6 +112,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
         return (sqlResult.isEmpty() ? null: sqlResult.get(0));
     }
 
+    /////////////////////////////////////////////
     @Override
     public UUID getExternalID(Number internalId) {
         StringBuilder sql = new StringBuilder("SELECT ");
@@ -119,6 +121,13 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
         return (sqlResult.isEmpty() ? null : sqlResult.get(0));
     }
 
+    //////////////////////////////////////////////
+    @Override
+    public Number getInternalIDFromURI(String uri) {
+        String externalID = stringURItoExternalID(uri);
+        return getInternalID(UUID.fromString(externalID));
+    }
+    
     /////////////////////////////////////////////////////
     protected XMLGregorianCalendar retrieveTimeStamp(Number internalID) {
         StringBuilder sqlTime = new  StringBuilder("SELECT ");

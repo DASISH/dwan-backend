@@ -63,6 +63,21 @@ public class JdbcVersionDaoTest extends JdbcResourceDaoTest {
         Number result = jdbcVersionDao.getInternalID(externalID);
         assertEquals(expResult, result);
     }
+    
+    /**
+     * Test of getInternalIDFromURI method,
+     * public Number getInternalIDFromURI(UUID externalID);
+     */
+    @Test
+    public void testGetInternalIDFRomURI() {
+        System.out.println("test getInternalIDFromURI");
+        jdbcVersionDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI);
+        String uri = TestBackendConstants._TEST_SERVLET_URI + TestBackendConstants._TEST_VERSION_1_EXT_ID;
+        Number result = jdbcVersionDao.getInternalIDFromURI(uri);
+        assertEquals(1, result.intValue());
+    }
+    
+
 
     /**
      * Test of getVersion method, of class JdbcVersionDao.

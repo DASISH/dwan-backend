@@ -35,6 +35,14 @@ public interface ResourceDao {
      */
     public Number getInternalID(UUID externalId);
     
+    
+     /**
+     * 
+     * @param uri
+     * @return internal identifier of the resource with uri, or null if there is no resource with this uri
+     */
+    public Number getInternalIDFromURI(String uri);
+    
     /**
      * 
      * @param internalId
