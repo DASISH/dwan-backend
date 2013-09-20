@@ -21,6 +21,7 @@ import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationBody;
 import eu.dasish.annotation.schema.AnnotationInfo;
 import eu.dasish.annotation.schema.Permission;
+import eu.dasish.annotation.schema.PermissionList;
 import eu.dasish.annotation.schema.ResourceREF;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -49,7 +50,7 @@ public interface AnnotationDao extends ResourceDao{
      * (Constructing a complete Annotation object using  "getAnnotationWithoutSources" and "retrieveSourceIDs" is done in "DaoDispatchter".)
      * 
      */
-    public Annotation getAnnotationWithoutSources(Number annotationID) throws SQLException;
+    public Annotation getAnnotationWithoutSourcesAndPermissions(Number annotationID) throws SQLException;
     
     
      /**
