@@ -36,7 +36,7 @@ public interface VersionDao extends ResourceDao{
      * @return the Version-object build from the version  with the "internalID".
      * 
      */
-    public Version getVersion(Number internalID);
+    public Version getVersionWithoutCachedRepresentations(Number internalID);
     
     
        /**

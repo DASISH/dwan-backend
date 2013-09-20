@@ -83,15 +83,13 @@ public class JdbcVersionDaoTest extends JdbcResourceDaoTest {
      * Test of getVersion method, of class JdbcVersionDao.
      */
     @Test
-    public void testGetVersion() {
+    public void testGetVersionWithoutCachedRepresentations() {
         System.out.println("getVersion");        
         jdbcVersionDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI);
-        Number internalID = 1;
-        
-        Version result = jdbcVersionDao.getVersion(internalID);
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI+TestBackendConstants._TEST_VERSION_1_EXT_ID, result.getVersion());
-        //TODO: once the schems is fixed, test "version" and "URI/external-id" separately
-        // at the moment "version" corresponds "external_id"
+        Number internalID = 1;        
+        Version result = jdbcVersionDao.getVersionWithoutCachedRepresentations(internalID);
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI+TestBackendConstants._TEST_VERSION_1_EXT_ID, result.getURI());
+        assertEquals(TestBackendConstants._TEST_VERSION_1_VERSIONSTRING, result.getVersion());
     }
 
     /**
@@ -123,11 +121,13 @@ public class JdbcVersionDaoTest extends JdbcResourceDaoTest {
         System.out.println("addVersion");
 
         Version freshVersion = new Version();
+        freshVersion.setVersion("Version XXL");
         Number result = jdbcVersionDao.addVersion(freshVersion);
         assertEquals(8, result);
         // detailed checking
-        Version addedVersion = jdbcVersionDao.getVersion(result);
-        assertFalse(null == addedVersion.getVersion()); // extend once "version" information is fixed, and becomes different from externalID
+        Version addedVersion = jdbcVersionDao.getVersionWithoutCachedRepresentations(result);
+        assertFalse(null == jdbcVersionDao.stringURItoExternalID(addedVersion.getURI())); // new externalId has been succesfully assigned 
+        assertEquals(freshVersion.getVersion(), addedVersion.getVersion());
     }
     
     

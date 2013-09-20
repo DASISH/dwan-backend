@@ -44,7 +44,7 @@ public class JdbcVersionDao extends JdbcResourceDao implements VersionDao {
   
     /////////////// GETTERS /////////////////////
     @Override
-    public Version getVersion(Number internalID) {
+    public Version getVersionWithoutCachedRepresentations(Number internalID) {
 
         StringBuilder sql  = new StringBuilder("SELECT ");
         sql.append(versionStar).append(" FROM ").append(versionTableName).append(" WHERE ").append(version_id).append("= ? LIMIT 1");
@@ -55,10 +55,8 @@ public class JdbcVersionDao extends JdbcResourceDao implements VersionDao {
         @Override
         public Version mapRow(ResultSet rs, int rowNumber) throws SQLException {
             Version result = new Version();
-            // TODO: clarify situation with the attribute cached representation
-            //result.setCachedRepresentations!!! The same situation as with permissions lists: we cannot refer from a filed to a list of smth, we have a separate joint table
-            // TODO: attribute URI (external-id is missing)
-            result.setVersion(externalIDtoURI(rs.getString(external_id)));
+            result.setVersion(rs.getString(version));
+            result.setURI(externalIDtoURI(rs.getString(external_id)));
             return result;
         }
     };
@@ -97,11 +95,9 @@ public class JdbcVersionDao extends JdbcResourceDao implements VersionDao {
     public Number addVersion(Version freshVersion) {
         UUID externalIdentifier = UUID.randomUUID();
         String newExternalIdentifier = externalIdentifier.toString();
-
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("externalId", newExternalIdentifier);
-        //TODO: till the schema is fixed, version-text and version's external Id are the same (now version do not have URI's/ext id's)
-        params.put("version", newExternalIdentifier);
+        params.put("version", freshVersion.getVersion());
         StringBuilder sql = new StringBuilder("INSERT INTO ");
         sql.append(versionTableName).append("(").append(external_id).append(",").append(version).append(" ) VALUES (:externalId, :version)");
         final int affectedRows = getSimpleJdbcTemplate().update(sql.toString(), params);
