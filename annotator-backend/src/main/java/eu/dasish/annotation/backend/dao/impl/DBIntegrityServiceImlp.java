@@ -132,9 +132,7 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     @Override
     public Number[] addCachedForVersion(Number versionID, CachedRepresentationInfo cachedInfo, Blob cachedBlob) {
         Number[] result = new Number[2];
-        String cachedExternalIDstring = cachedInfo.getRef();
-        UUID cachedUUID = (cachedExternalIDstring != null) ? UUID.fromString(cachedExternalIDstring) : null;
-        result[1] = cachedRepresentationDao.getInternalID(cachedUUID);
+        result[1] = cachedRepresentationDao.getInternalIDFromURI(cachedInfo.getRef());
         if (result[1] == null) {
             result[1] = cachedRepresentationDao.addCachedRepresentation(cachedInfo, cachedBlob);
         }
@@ -143,12 +141,11 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
 
     }
 
+   
     @Override
     public Number[] addSiblingVersionForSource(Number sourceID, Version version) throws SQLException {
         Number[] result = new Number[2];
-        String versionURI = version.getURI();
-        UUID versionUUID = (versionURI != null) ? UUID.fromString(versionDao.stringURItoExternalID(versionURI)) : null;
-        result[1] = versionDao.getInternalID(versionUUID);
+        result[1] = versionDao.getInternalIDFromURI(version.getURI());
         if (result[1] == null) {
             result[1] = versionDao.addVersion(version);
         }
@@ -156,29 +153,28 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         return result;
     }
 
+    // TODo: mapping uri to external ID
     @Override
     public Map<String, String> addSourcesForAnnotation(Number annotationID, List<SourceInfo> sources) throws SQLException {
         Map<String, String> result = new HashMap<String, String>();
-        for (SourceInfo sourceInfo : sources) {
-            if (sourceExists(sourceInfo)) {
-                int affectedRows = annotationDao.addAnnotationSource(annotationID, sourceDao.getInternalID(UUID.fromString(sourceInfo.getRef())));
+        Number sourceIDRunner;
+        for (SourceInfo sourceInfo : sources) {  
+            sourceIDRunner = sourceDao.getInternalIDFromURI(sourceInfo.getRef());
+            if (sourceIDRunner != null) { 
+                int affectedRows = annotationDao.addAnnotationSource(annotationID, sourceIDRunner);
             } else {
                 Source newSource = createFreshSource(sourceInfo);
                 Version newVersion = createFreshVersion(sourceInfo);
                 Number sourceID = sourceDao.addSource(newSource);
                 Number[] intermediateResult = addSiblingVersionForSource(sourceID, newVersion);
-                result.put(sourceInfo.getRef(), sourceDao.getExternalID(sourceID).toString());
+                String sourceTemporaryID = sourceDao.stringURItoExternalID(sourceInfo.getRef());
+                result.put(sourceTemporaryID, sourceDao.getExternalID(sourceID).toString());
                 int affectedRows = annotationDao.addAnnotationSource(annotationID, sourceID);
             }
         }
         return result;
     }
 
-    // TODO add more criteria of being an existing sources 
-    private boolean sourceExists(SourceInfo sourceInfo) {
-        boolean result = (sourceDao.getInternalID(UUID.fromString(sourceInfo.getRef())) != null);
-        return result;
-    }
 
     @Override
     public Number addUsersAnnotation(Annotation annotation, Number userID) throws SQLException {

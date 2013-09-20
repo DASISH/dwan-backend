@@ -181,6 +181,19 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         final Number annotaionIdNull = jdbcAnnotationDao.getInternalID(null);
         assertEquals(null, annotaionIdNull);
     }
+    
+      /**
+     * Test of getInternalIDFromURI method,
+     * public Number getInternalIDFromURI(UUID externalID);
+     */
+    @Test
+    public void testGetInternalIDFRomURI() {
+        System.out.println("test getInternalIDFromURI");
+        jdbcAnnotationDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI);
+        String uri = TestBackendConstants._TEST_SERVLET_URI + TestBackendConstants._TEST_ANNOT_2_EXT;
+        Number result = jdbcAnnotationDao.getInternalIDFromURI(uri);
+        assertEquals(2, result.intValue());
+    }
 
     /**
      *

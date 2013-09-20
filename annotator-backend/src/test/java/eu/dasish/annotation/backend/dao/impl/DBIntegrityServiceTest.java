@@ -78,8 +78,8 @@ public class DBIntegrityServiceTest {
     private SourceDao sourceDao;
     @Autowired
     private AnnotationDao annotationDao;
-    @Autowired
-    private NotebookDao notebookDao;
+    
+    
     TestInstances testInstances = new TestInstances();
 
     public DBIntegrityServiceTest() {
@@ -287,10 +287,12 @@ public class DBIntegrityServiceTest {
         String mime = "text/html";
         String type = "text";
         String tool = "latex";
+        String externalID = UUID.randomUUID().toString();
         final CachedRepresentationInfo newCachedInfo = new CachedRepresentationInfo();
         newCachedInfo.setMimeType(mime);
         newCachedInfo.setType(type);
         newCachedInfo.setTool(tool);
+        newCachedInfo.setRef(TestBackendConstants._TEST_SERVLET_URI + externalID);
         
         String  blobString = "aaa";
         byte[] blobBytes = blobString.getBytes();        
@@ -299,7 +301,8 @@ public class DBIntegrityServiceTest {
         final Number versionID = 1;
         mockery.checking(new Expectations() {
             {
-                oneOf(cachedRepresentationDao).getInternalID(null);
+                
+                oneOf(cachedRepresentationDao).getInternalIDFromURI(newCachedInfo.getRef());
                 will(returnValue(null));
 
                 oneOf(cachedRepresentationDao).addCachedRepresentation(newCachedInfo, newCachedBlob);
@@ -321,22 +324,20 @@ public class DBIntegrityServiceTest {
     /**
      * Test of addSiblingVersionForSource method, of class DBIntegrityServiceImlp.
      */
+    // TODO: teset with non-null esrive URI
     @Test 
     public void testAddSiblingVersionForSource() throws Exception {
         System.out.println("test addSiblingVersionForSource ");
 
         // test adding completely new version 
         final Version mockVersion = new Version(); // should be # 8
-        final UUID mockUUID = UUID.randomUUID();
-        mockVersion.setURI(mockUUID.toString()); // _serviceURI is assumed to be null for this test, therefore URI coincides with the externalID of the version
+        String externalID = UUID.randomUUID().toString();
+        mockVersion.setURI(TestBackendConstants._TEST_SERVLET_URI + externalID); 
         mockVersion.setVersion("version 8");
 
         mockery.checking(new Expectations() {
             {
-                oneOf(versionDao).stringURItoExternalID(mockUUID.toString());
-                will(returnValue(mockUUID.toString()));
-                        
-                oneOf(versionDao).getInternalID(mockUUID);
+                oneOf(versionDao).getInternalIDFromURI(mockVersion.getURI());
                 will(returnValue(null));
 
                 oneOf(versionDao).addVersion(mockVersion);
@@ -357,16 +358,12 @@ public class DBIntegrityServiceTest {
         // Another test: connecting the existing version to the source
 
         final Version mockVersionTwo = new Version(); // should be # 3
-        final UUID mockUUIDTwo = UUID.fromString(TestBackendConstants._TEST_VERSION_3_EXT_ID);
-        mockVersionTwo.setURI(mockUUIDTwo.toString()); // _serviceURI is assumed to be null for this test,therefore URI coincides with the externalID of the version
+        mockVersionTwo.setURI(TestBackendConstants._TEST_SERVLET_URI + TestBackendConstants._TEST_VERSION_3_EXT_ID); 
         mockVersionTwo.setVersion("version 3");
 
         mockery.checking(new Expectations() {
             {
-                oneOf(versionDao).stringURItoExternalID(mockUUIDTwo.toString());
-                will(returnValue(mockUUIDTwo.toString()));
-                
-                oneOf(versionDao).getInternalID(mockUUIDTwo);
+                oneOf(versionDao).getInternalIDFromURI(mockVersionTwo.getURI());
                 will(returnValue(3));
 
                 oneOf(sourceDao).addSourceVersion(1, 3);
@@ -389,21 +386,16 @@ public class DBIntegrityServiceTest {
         // test 1: adding an existing source
         SourceInfo testSourceOne = new SourceInfo();
         testSourceOne.setLink(TestBackendConstants._TEST_SOURCE_1_LINK);
-        testSourceOne.setRef(TestBackendConstants._TEST_SOURCE_1_EXT_ID);
+        testSourceOne.setRef(TestBackendConstants._TEST_SERVLET_URI + TestBackendConstants._TEST_SOURCE_1_EXT_ID);
         testSourceOne.setVersion(TestBackendConstants._TEST_VERSION_1_EXT_ID);
-        List<SourceInfo> mockSourceListOne = new ArrayList<SourceInfo>();
+        final List<SourceInfo> mockSourceListOne = new ArrayList<SourceInfo>();
         mockSourceListOne.add(testSourceOne);
 
         mockery.checking(new Expectations() {
             {   
-                // in sourceExists
-                oneOf(sourceDao).getInternalID(with(aNonNull(UUID.class)));
+                oneOf(sourceDao).getInternalIDFromURI(mockSourceListOne.get(0).getRef());
                 will(returnValue(1));
                 
-                // in addSourceForAnnotationItself
-                oneOf(sourceDao).getInternalID(with(aNonNull(UUID.class)));
-                will(returnValue(1));
-
                 oneOf(annotationDao).addAnnotationSource(1, 1);
                 will(returnValue(1));
             }
@@ -414,28 +406,28 @@ public class DBIntegrityServiceTest {
 
         // test 2: adding a new source
         SourceInfo testSourceTwo = new SourceInfo();
-        testSourceTwo.setRef(UUID.randomUUID().toString());
+        final String tempSourceID =  UUID.randomUUID().toString();
+        testSourceTwo.setRef(TestBackendConstants._TEST_SERVLET_URI + tempSourceID);
         testSourceTwo.setLink(TestBackendConstants._TEST_NEW_SOURCE_LINK);
         testSourceTwo.setVersion("version 1.0");
-        List<SourceInfo> mockSourceListTwo = new ArrayList<SourceInfo>();
+        final List<SourceInfo> mockSourceListTwo = new ArrayList<SourceInfo>();
         mockSourceListTwo.add(testSourceTwo);
 
         final UUID mockNewSourceUUID = UUID.randomUUID();
 
         mockery.checking(new Expectations() {
             {
-                // in sourceExists
-                oneOf(sourceDao).getInternalID(with(aNonNull(UUID.class)));
+                oneOf(sourceDao).getInternalIDFromURI(mockSourceListTwo.get(0).getRef());
                 will(returnValue(null));
+                
                                 
                 oneOf(sourceDao).addSource(with(aNonNull(Source.class)));
                 will(returnValue(6)); //# the next new number is 6, we have already 5 sources
 
                 ////////////  mockery in the call addSiblingVersionForSource //////////////
-                
-                oneOf(versionDao).getInternalID(null);
+                oneOf(versionDao).getInternalIDFromURI(null);
                 will(returnValue(null));
-
+                
                 oneOf(versionDao).addVersion(with(aNonNull(Version.class)));
                 will(returnValue(8)); // next free number
 
@@ -444,6 +436,9 @@ public class DBIntegrityServiceTest {
 
                 //////////////////////////////////////
                 
+                oneOf(sourceDao).stringURItoExternalID(mockSourceListTwo.get(0).getRef());
+                will(returnValue(tempSourceID));
+                        
                 oneOf(sourceDao).getExternalID(6);
                 will(returnValue(mockNewSourceUUID));
 
@@ -455,7 +450,7 @@ public class DBIntegrityServiceTest {
 
         Map<String, String> resultTwo = dbIntegrityService.addSourcesForAnnotation(1, mockSourceListTwo);
         assertEquals(1, resultTwo.size());
-        assertEquals(resultTwo.get(testSourceTwo.getRef()), mockNewSourceUUID.toString());
+        assertEquals(mockNewSourceUUID.toString(), resultTwo.get(tempSourceID));
 
     }
 
@@ -475,13 +470,9 @@ public class DBIntegrityServiceTest {
                 will(returnValue(6)); // the next free number is 6
 
                 //  expectations for addSourcesForannotation
-                // first check if the source exists
-                oneOf(sourceDao).getInternalID(with(aNonNull(UUID.class)));
+                oneOf(sourceDao).getInternalIDFromURI(with(aNonNull(String.class)));
                 will(returnValue(1));
                 
-                oneOf(sourceDao).getInternalID(with(aNonNull(UUID.class)));
-                will(returnValue(1));
-
                 oneOf(annotationDao).addAnnotationSource(6, 1);
                 will(returnValue(1)); 
 
