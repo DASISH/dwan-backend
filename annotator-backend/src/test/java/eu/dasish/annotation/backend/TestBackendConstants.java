@@ -99,6 +99,8 @@ public class TestBackendConstants {
     public static final String _TEST_VERSION_3_EXT_ID = "00000000-0000-0000-0000-000000000043";
     public static final String _TEST_VERSION_NONEXIST_EXT_ID = "00000000-0000-0000-0000-000000000049";
     
+    public static final String _TEST_VERSION_1_VERSIONSTRING = "SF-version 2013";
+    
     public static final String _TEST_TEMP_SOURCE_ID = "Barcelona-1";
     public static final String _TEST_ANNOT_TO_ADD_NEW_SOURCE_BODY = "refers to "+_TEST_TEMP_SOURCE_ID;
     public static final String _TEST_ANNOT_TO_ADD_NEW_SOURCE_HEADLINE = "SF in Catalan";
