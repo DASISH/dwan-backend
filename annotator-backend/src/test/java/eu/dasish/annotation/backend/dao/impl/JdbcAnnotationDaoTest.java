@@ -197,21 +197,21 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
 
     /**
      *
-     * Test of getAnnotationWithoutSources method, of class JdbcAnnotationDao. Annotation
+     * Test of getAnnotationWithoutSourcesAndPermissions method, of class JdbcAnnotationDao. Annotation
      * getAnnotation(Number annotationlID)
      */
     @Test
-    public void getAnnotationWithoutSources() throws SQLException {
+    public void getAnnotationWithoutSourcesAndPermissions() throws SQLException {
         System.out.println("test getAnnotationWithoutSources");
 
         /// dummy test
-        final Annotation annotaionNull = jdbcAnnotationDao.getAnnotationWithoutSources(null);
+        final Annotation annotaionNull = jdbcAnnotationDao.getAnnotationWithoutSourcesAndPermissions(null);
         assertEquals(null, annotaionNull);
         ////
              
         final Number testAnnotationID = 2;
         jdbcAnnotationDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI);
-        final Annotation annotation = jdbcAnnotationDao.getAnnotationWithoutSources(testAnnotationID);
+        final Annotation annotation = jdbcAnnotationDao.getAnnotationWithoutSourcesAndPermissions(testAnnotationID);
         assertEquals(TestBackendConstants._TEST_ANNOT_2_HEADLINE, annotation.getHeadline());
         assertEquals(String.valueOf(TestBackendConstants._TEST_ANNOT_2_OWNER), annotation.getOwner().getRef());
         assertEquals(TestBackendConstants._TEST_ANNOT_2_BODY, annotation.getBody().getValue()); 
@@ -255,7 +255,7 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         assertEquals(6, newAnnotationID);
         
         // checking
-        Annotation addedAnnotation= jdbcAnnotationDao.getAnnotationWithoutSources(6);
+        Annotation addedAnnotation= jdbcAnnotationDao.getAnnotationWithoutSourcesAndPermissions(6);
         assertFalse(null == addedAnnotation.getURI());
         assertFalse(null == addedAnnotation.getTimeStamp());
         assertEquals(Integer.toString(5), addedAnnotation.getOwner().getRef());
@@ -354,7 +354,7 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         String newBodyText = "new body";
         int result = jdbcAnnotationDao.updateBodyText(2, newBodyText);
         assertEquals(1, result);
-        Annotation updatedAnnotation= jdbcAnnotationDao.getAnnotationWithoutSources(2);
+        Annotation updatedAnnotation= jdbcAnnotationDao.getAnnotationWithoutSourcesAndPermissions(2);
         assertEquals(newBodyText, updatedAnnotation.getBody().getValue());
     }
 
@@ -365,7 +365,7 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         String newBodyMimeType = "text/xml";
         int result = jdbcAnnotationDao.updateBodyMimeType(2, newBodyMimeType);
         assertEquals(1, result);
-        Annotation updatedAnnotation= jdbcAnnotationDao.getAnnotationWithoutSources(2);
+        Annotation updatedAnnotation= jdbcAnnotationDao.getAnnotationWithoutSourcesAndPermissions(2);
         assertEquals(newBodyMimeType, updatedAnnotation.getBody().getMimeType());
     }
     

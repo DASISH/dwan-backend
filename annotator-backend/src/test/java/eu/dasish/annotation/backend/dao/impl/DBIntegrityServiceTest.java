@@ -22,7 +22,6 @@ import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.TestInstances;
 import eu.dasish.annotation.backend.dao.AnnotationDao;
 import eu.dasish.annotation.backend.dao.CachedRepresentationDao;
-import eu.dasish.annotation.backend.dao.NotebookDao;
 import eu.dasish.annotation.backend.dao.SourceDao;
 import eu.dasish.annotation.backend.dao.UserDao;
 import eu.dasish.annotation.backend.dao.VersionDao;
@@ -38,6 +37,7 @@ import java.sql.Blob;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -192,15 +192,32 @@ public class DBIntegrityServiceTest {
         mockSourceTwo.setURI(TestBackendConstants._TEST_SOURCE_2_EXT_ID);
         mockSourceTwo.setVersion(TestBackendConstants._TEST_SOURCE_2_EXT_ID);
 
-
-        // NOT CHECKED: time stamp for sources
-
+        final List<Map<Number, String>> listMap = new ArrayList<Map<Number, String>>();
+        Map<Number, String> map3 = new HashMap<Number, String>();
+        map3.put(3, "owner");
+        listMap.add(map3);
+        Map<Number, String> map4 = new HashMap<Number, String>();
+        map4.put(4, "writer");
+        listMap.add(map4);
+        Map<Number, String> map5 = new HashMap<Number, String>();
+        map5.put(5, "reader");
+        listMap.add(map5);
+        
+        final UUID externalID3 = UUID.fromString(TestBackendConstants._TEST_USER_3_EXT_ID);
+        final UUID externalID4 = UUID.fromString(TestBackendConstants._TEST_USER_4_EXT_ID);
+        final UUID externalID5 = UUID.fromString(TestBackendConstants._TEST_USER_5_EXT_ID);
+        
+        final String uri3 = TestBackendConstants._TEST_SERVLET_URI + TestBackendConstants._TEST_USER_3_EXT_ID;
+        final String uri4 = TestBackendConstants._TEST_SERVLET_URI + TestBackendConstants._TEST_USER_4_EXT_ID;
+        final String uri5 = TestBackendConstants._TEST_SERVLET_URI + TestBackendConstants._TEST_USER_5_EXT_ID;
+        
+        
         mockery.checking(new Expectations() {
             {
-                oneOf(annotationDao).getAnnotationWithoutSources(1);
+                oneOf(annotationDao).getAnnotationWithoutSourcesAndPermissions(2);
                 will(returnValue(mockAnnotation));
 
-                oneOf(annotationDao).retrieveSourceIDs(1);
+                oneOf(annotationDao).retrieveSourceIDs(2);
                 will(returnValue(mockSourceIDs));
 
                 oneOf(sourceDao).getSource(1);
@@ -208,23 +225,56 @@ public class DBIntegrityServiceTest {
 
                 oneOf(sourceDao).getSource(2);
                 will(returnValue(mockSourceTwo));
-
+                
+                /// getPermissionsForAnnotation
+                
+                oneOf(annotationDao).retrievePermissions(2);
+                will(returnValue(listMap));
+                
+                oneOf(userDao).getExternalID(3);
+                will(returnValue(externalID3));
+                
+                oneOf(userDao).externalIDtoURI(TestBackendConstants._TEST_USER_3_EXT_ID);
+                will(returnValue(uri3));
+                
+                 
+                oneOf(userDao).getExternalID(4);
+                will(returnValue(externalID4));
+                
+                oneOf(userDao).externalIDtoURI(TestBackendConstants._TEST_USER_4_EXT_ID);
+                will(returnValue(uri4));
+                
+                oneOf(userDao).getExternalID(5);
+                will(returnValue(externalID5));
+                
+                oneOf(userDao).externalIDtoURI(TestBackendConstants._TEST_USER_5_EXT_ID);
+                will(returnValue(uri5));
             }
         });
 
-        Annotation result = dbIntegrityService.getAnnotation(1);
+        Annotation result = dbIntegrityService.getAnnotation(2);
         assertEquals(TestBackendConstants._TEST_ANNOT_2_EXT, result.getURI());
         assertEquals("text/plain", result.getBody().getMimeType());
         assertEquals(TestBackendConstants._TEST_ANNOT_2_BODY, result.getBody().getValue());
         assertEquals(TestBackendConstants._TEST_ANNOT_2_HEADLINE, result.getHeadline());
         assertEquals(TestBackendConstants._TEST_ANNOT_2_TIME_STAMP, result.getTimeStamp().toString());
         assertEquals(TestBackendConstants._TEST_ANNOT_2_OWNER, Integer.parseInt(result.getOwner().getRef()));
+        
         assertEquals(mockSourceOne.getLink(), result.getTargetSources().getTargetSource().get(0).getLink());
         assertEquals(mockSourceOne.getURI(), result.getTargetSources().getTargetSource().get(0).getRef());
         assertEquals(mockSourceOne.getVersion(), result.getTargetSources().getTargetSource().get(0).getVersion());
         assertEquals(mockSourceTwo.getLink(), result.getTargetSources().getTargetSource().get(1).getLink());
         assertEquals(mockSourceTwo.getURI(), result.getTargetSources().getTargetSource().get(1).getRef());
         assertEquals(mockSourceTwo.getVersion(), result.getTargetSources().getTargetSource().get(1).getVersion());
+        
+        assertEquals(Permission.OWNER, result.getPermissions().getUser().get(0).getPermission());
+        assertEquals(uri3, result.getPermissions().getUser().get(0).getRef());
+        
+        assertEquals(Permission.WRITER, result.getPermissions().getUser().get(1).getPermission());
+        assertEquals(uri4, result.getPermissions().getUser().get(1).getRef());
+        
+        assertEquals(Permission.READER, result.getPermissions().getUser().get(2).getPermission());
+        assertEquals(uri5, result.getPermissions().getUser().get(2).getRef());
     }
 
     /**

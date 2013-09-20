@@ -23,6 +23,7 @@ import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationBody;
 import eu.dasish.annotation.schema.AnnotationInfo;
 import eu.dasish.annotation.schema.Permission;
+import eu.dasish.annotation.schema.PermissionList;
 import eu.dasish.annotation.schema.ResourceREF;
 import java.lang.String;
 import java.sql.ResultSet;
@@ -62,7 +63,25 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         return getSimpleJdbcTemplate().query(sql.toString(), sourceIDRowMapper, annotationID);
     }
     
-
+    ///////////////////////////////////////////////////////////////////
+    @Override
+    public List<Map<Number, String>> retrievePermissions(Number annotationId) {
+        if (annotationId == null) {
+            return null;
+        }
+        StringBuilder sql = new StringBuilder("SELECT ");
+        sql.append(principal_id).append(",").append(permission).append(" FROM ").append(permissionsTableName).append(" WHERE ").append(annotation_id).append("  = ?");
+        return getSimpleJdbcTemplate().query(sql.toString(), principalsPermissionsRowMapper, annotationId.toString());
+    }
+    private final RowMapper<Map<Number, String>> principalsPermissionsRowMapper = new RowMapper<Map<Number, String>>() {
+        @Override
+        public Map<Number, String> mapRow(ResultSet rs, int rowNumber) throws SQLException {
+            Map<Number,String> result = new HashMap<Number, String>();
+            result.put(rs.getInt(principal_id),rs.getString(permission));
+            return result;
+        }
+    };
+    
     ////////////////////////////////////////////////////////////////////////
     @Override
     public List<Number> getFilteredAnnotationIDs(List<Number> annotationIDs, String text, String access, String namespace, Number ownerID, Timestamp after, Timestamp before) {
@@ -184,7 +203,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
 
     //////////////////////////////////////////////////////////////////////////
     @Override    
-    public Annotation getAnnotationWithoutSources(Number annotationID) throws SQLException {
+    public Annotation getAnnotationWithoutSourcesAndPermissions(Number annotationID) throws SQLException {
         if (annotationID == null) {
             return null;        }
         StringBuilder sql = new StringBuilder("SELECT ");
@@ -203,9 +222,6 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
             annotation.setOwner(ownerREF);
 
             annotation.setHeadline(rs.getString(headline));
-
-            // TODO change the DB by adding a mime type for the BODY!!!!
-            // add flexible mimetype here
             AnnotationBody body = new AnnotationBody();
             body.setMimeType(rs.getString(body_mimetype));
             body.setValue(rs.getString(body_text));
@@ -297,6 +313,23 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         sqlAnnotationsSources.append(annotationsSourcesTableName ).append("(").append(annotation_id).append(",").append(source_id).append(" ) VALUES (:annotationId, :sourceId)");
         return getSimpleJdbcTemplate().update(sqlAnnotationsSources.toString(), paramsAnnotationsSources);
     }
+    
+    
+         /////////////////////////////////////////////////////////////////////////////////////////
+    @Override
+    public int addAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission) throws SQLException {
+        Map<String, Object> paramsPermissions = new HashMap<String, Object>();
+        paramsPermissions.put("annotationId", annotationID);
+        paramsPermissions.put("principalId", userID);
+        paramsPermissions.put("status", permission.value());
+        StringBuilder sqlUpdatePermissionTable = new StringBuilder("INSERT INTO ");
+        sqlUpdatePermissionTable.append(permissionsTableName).append(" (").append(annotation_id).append(",").append(principal_id).append(",").append(this.permission ).append(") VALUES (:annotationId, :principalId, :status)");
+        final int affectedPermissions = getSimpleJdbcTemplate().update(sqlUpdatePermissionTable.toString(), paramsPermissions);
+        return affectedPermissions;
+    }
+    
+    
+ 
     //////////////////////////////////////////////////////////////////////////////////
 
    
@@ -311,7 +344,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         return (getSimpleJdbcTemplate().update(sqlAnnotation.toString(), annotationID)); 
     }
     
-    //////////////////////////////////////////////////////
+    
     @Override
     public int deleteAllAnnotationSource(Number annotationID) throws SQLException {
         StringBuilder sqlTargetSources = new StringBuilder("DELETE FROM ");
@@ -321,7 +354,16 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
     }
     
 
-  
+    //////////////////////////////////////////////////////
+    @Override
+    public int deleteAnnotationPrincipalPermissions(Number annotationID) throws SQLException {
+        StringBuilder sqlPermissions = new StringBuilder("DELETE FROM ");
+        sqlPermissions.append(permissionsTableName).append(" WHERE ").append(annotation_id).append(" = ?");
+        return getSimpleJdbcTemplate().update(sqlPermissions.toString(), annotationID); // removed "permission" rows 
+        
+    }
+    
+
     
     /////////////// helpers //////////////////
     
@@ -349,46 +391,6 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
     }
     
   
-    //////////////////////////////////////////////////////
-    @Override
-    public int deleteAnnotationPrincipalPermissions(Number annotationID) throws SQLException {
-        StringBuilder sqlPermissions = new StringBuilder("DELETE FROM ");
-        sqlPermissions.append(permissionsTableName).append(" WHERE ").append(annotation_id).append(" = ?");
-        return getSimpleJdbcTemplate().update(sqlPermissions.toString(), annotationID); // removed "permission" rows 
-        
-    }
-    
-     /////////////////////////////////////////////////////////////////////////////////////////
-    @Override
-    public int addAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission) throws SQLException {
-        Map<String, Object> paramsPermissions = new HashMap<String, Object>();
-        paramsPermissions.put("annotationId", annotationID);
-        paramsPermissions.put("principalId", userID);
-        paramsPermissions.put("status", permission.value());
-        StringBuilder sqlUpdatePermissionTable = new StringBuilder("INSERT INTO ");
-        sqlUpdatePermissionTable.append(permissionsTableName).append(" (").append(annotation_id).append(",").append(principal_id).append(",").append(this.permission ).append(") VALUES (:annotationId, :principalId, :status)");
-        final int affectedPermissions = getSimpleJdbcTemplate().update(sqlUpdatePermissionTable.toString(), paramsPermissions);
-        return affectedPermissions;
-    }
-    
-    
-      ///////////////////////////////////////////////////////////////////
-    @Override
-    public List<Map<Number, String>> retrievePermissions(Number annotationId) {
-        if (annotationId == null) {
-            return null;
-        }
-        StringBuilder sql = new StringBuilder("SELECT ");
-        sql.append(principal_id).append(",").append(permission).append(" FROM ").append(permissionsTableName).append(" WHERE ").append(annotation_id).append("  = ?");
-        return getSimpleJdbcTemplate().query(sql.toString(), principalsPermissionsRowMapper, annotationId.toString());
-    }
-    private final RowMapper<Map<Number, String>> principalsPermissionsRowMapper = new RowMapper<Map<Number, String>>() {
-        @Override
-        public Map<Number, String> mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            Map<Number,String> result = new HashMap<Number, String>();
-            result.put(rs.getInt(principal_id),rs.getString(permission));
-            return result;
-        }
-    };
+  
     
 }

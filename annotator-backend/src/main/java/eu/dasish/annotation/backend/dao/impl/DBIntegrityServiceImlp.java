@@ -29,8 +29,10 @@ import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.CachedRepresentationInfo;
 import eu.dasish.annotation.schema.SourceInfoList;
 import eu.dasish.annotation.schema.Permission;
+import eu.dasish.annotation.schema.PermissionList;
 import eu.dasish.annotation.schema.Source;
 import eu.dasish.annotation.schema.SourceInfo;
+import eu.dasish.annotation.schema.UserWithPermission;
 import eu.dasish.annotation.schema.Version;
 import java.sql.Blob;
 import java.sql.SQLException;
@@ -92,9 +94,10 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         return userDao.getExternalID(userID);
     }
 
+    ////////////////////////////////////////////////////////
     @Override
     public Annotation getAnnotation(Number annotationID) throws SQLException {
-        Annotation result = annotationDao.getAnnotationWithoutSources(annotationID);
+        Annotation result = annotationDao.getAnnotationWithoutSourcesAndPermissions(annotationID);
         List<Number> sourceIDs = annotationDao.retrieveSourceIDs(annotationID);
         SourceInfoList sis = new SourceInfoList();
         for (Number sourceID : sourceIDs) {
@@ -106,8 +109,31 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
             sis.getTargetSource().add(sourceInfo);
         }
         result.setTargetSources(sis);
+        
+        result.setPermissions(getPermissionsForAnnotation(annotationID));
         return result;
     }
+    
+    ///////////////////////////////////////////////////
+    
+    private PermissionList getPermissionsForAnnotation(Number annotationID) throws SQLException {
+        List<Map<Number, String>> principalsPermissions = annotationDao.retrievePermissions(annotationID);
+        PermissionList result  = new PermissionList();
+        List<UserWithPermission> list = result.getUser();
+        for (Map<Number, String> principalPermission: principalsPermissions) {
+            
+            Number[] principal = new Number[1];
+            principalPermission.keySet().toArray(principal);           
+            
+            UserWithPermission userWithPermission = new UserWithPermission();
+            userWithPermission.setRef(userDao.externalIDtoURI(userDao.getExternalID(principal[0]).toString()));
+            userWithPermission.setPermission(Permission.fromValue(principalPermission.get(principal[0])));
+            
+            list.add(userWithPermission);
+        }
+        return result;
+    }
+    
 
     ////////////////////////////////////////////////////////////////////////
     @Override
