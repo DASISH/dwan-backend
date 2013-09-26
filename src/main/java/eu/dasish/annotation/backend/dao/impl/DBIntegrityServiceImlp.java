@@ -26,17 +26,29 @@ import eu.dasish.annotation.backend.dao.SourceDao;
 import eu.dasish.annotation.backend.dao.UserDao;
 import eu.dasish.annotation.backend.dao.VersionDao;
 import eu.dasish.annotation.schema.Annotation;
+import eu.dasish.annotation.schema.AnnotationInfo;
+import eu.dasish.annotation.schema.AnnotationInfoList;
 import eu.dasish.annotation.schema.CachedRepresentationInfo;
 import eu.dasish.annotation.schema.SourceInfoList;
 import eu.dasish.annotation.schema.Permission;
 import eu.dasish.annotation.schema.PermissionList;
+import eu.dasish.annotation.schema.ReferenceList;
+import eu.dasish.annotation.schema.ResourceREF;
 import eu.dasish.annotation.schema.Source;
 import eu.dasish.annotation.schema.SourceInfo;
+import eu.dasish.annotation.schema.SourceList;
+import eu.dasish.annotation.schema.User;
 import eu.dasish.annotation.schema.UserWithPermission;
 import eu.dasish.annotation.schema.Version;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.sql.Blob;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -94,7 +106,18 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         return userDao.getExternalID(userID);
     }
 
+    @Override
+    public Number getCachedRepresentationInternalIdentifier(UUID externalID) {
+        return cachedRepresentationDao.getInternalID(externalID);
+    }
+
+    @Override
+    public UUID getCachedRepresentationExternalIdentifier(Number cachedID) {
+        return cachedRepresentationDao.getExternalID(cachedID);
+    }
+
     ////////////////////////////////////////////////////////
+    // TODO: refactor, source grabbing should be made a separate private method
     @Override
     public Annotation getAnnotation(Number annotationID) throws SQLException {
         Annotation result = annotationDao.getAnnotationWithoutSourcesAndPermissions(annotationID);
@@ -109,31 +132,31 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
             sis.getTargetSource().add(sourceInfo);
         }
         result.setTargetSources(sis);
-        
+
         result.setPermissions(getPermissionsForAnnotation(annotationID));
         return result;
     }
-    
+
     ///////////////////////////////////////////////////
-    
-    private PermissionList getPermissionsForAnnotation(Number annotationID) throws SQLException {
+    // TODO UNIT tests
+    @Override
+    public PermissionList getPermissionsForAnnotation(Number annotationID) throws SQLException {
         List<Map<Number, String>> principalsPermissions = annotationDao.retrievePermissions(annotationID);
-        PermissionList result  = new PermissionList();
+        PermissionList result = new PermissionList();
         List<UserWithPermission> list = result.getUser();
-        for (Map<Number, String> principalPermission: principalsPermissions) {
-            
+        for (Map<Number, String> principalPermission : principalsPermissions) {
+
             Number[] principal = new Number[1];
-            principalPermission.keySet().toArray(principal);           
-            
+            principalPermission.keySet().toArray(principal);
+
             UserWithPermission userWithPermission = new UserWithPermission();
             userWithPermission.setRef(userDao.externalIDtoURI(userDao.getExternalID(principal[0]).toString()));
             userWithPermission.setPermission(Permission.fromValue(principalPermission.get(principal[0])));
-            
+
             list.add(userWithPermission);
         }
         return result;
     }
-    
 
     ////////////////////////////////////////////////////////////////////////
     @Override
@@ -154,6 +177,73 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         return annotationDao.getFilteredAnnotationIDs(annotationIDs, text, access, namespace, ownerID, after, before);
     }
 
+    @Override
+    public SourceList getAnnotationSources(Number annotationID) throws SQLException {
+        SourceList result = new SourceList();
+        List<Number> sourceIDs = annotationDao.retrieveSourceIDs(annotationID);
+        for (Number sourceID : sourceIDs) {
+            ResourceREF ref = new ResourceREF();
+            ref.setRef(annotationDao.getExternalID(sourceID).toString());
+            result.getTargetSource().add(ref);
+        }
+        return result;
+    }
+
+    @Override
+    public List<Number> getSourcesWithNoCachedRepresentation(Number annotationID) {
+        List<Number> result = new ArrayList<Number>();
+        List<Number> sourceIDs = annotationDao.retrieveSourceIDs(annotationID);
+        for (Number sourceID : sourceIDs) {
+            List<Number> versions = sourceDao.retrieveVersionList(sourceID);
+            for (Number versionID : versions) {
+                List<Number> cachedRepresentations = versionDao.retrieveCachedRepresentationList(versionID);
+                if (cachedRepresentations == null) {
+                    result.add(sourceID);
+                } else {
+                    if (cachedRepresentations.isEmpty()) {
+                        result.add(sourceID);
+                    }
+
+                }
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public AnnotationInfoList getFilteredAnnotationInfos(String link, String text, String access, String namespace, UUID owner, Timestamp after, Timestamp before) {
+        List<Number> annotationIDs = getFilteredAnnotationIDs(link, text, access, namespace, owner, after, before);
+        List<AnnotationInfo> listAnnotationInfo = annotationDao.getAnnotationInfos(annotationIDs);
+        AnnotationInfoList result = new AnnotationInfoList();
+        result.getAnnotation().addAll(listAnnotationInfo);
+        return result;
+    }
+
+    // TODO UNIT test
+    @Override
+    public ReferenceList retrieveVersionList(Number sourceID) {
+        ReferenceList versionList = new ReferenceList();
+        List<Number> versionIDs = sourceDao.retrieveVersionList(sourceID);
+        List<String> versionREFs = new ArrayList<String>();
+        for (Number versionID : versionIDs) {
+            versionREFs.add(versionDao.getExternalID(versionID).toString());
+        }
+        versionList.getRef().addAll(versionREFs);
+        return versionList;
+    }
+
+    // TODO unit test
+    @Override
+    public CachedRepresentationInfo getCachedRepresentationInfo(Number internalID) {
+        return cachedRepresentationDao.getCachedRepresentationInfo(internalID);
+    }
+
+    //TODO unit test
+    @Override
+    public Blob getCachedRepresentationBlob(Number cachedID) throws SQLException {
+        return cachedRepresentationDao.getCachedRepresentationBlob(cachedID);
+    }
+
     /////////////// ADDERS  /////////////////////////////////
     @Override
     public Number[] addCachedForVersion(Number versionID, CachedRepresentationInfo cachedInfo, Blob cachedBlob) {
@@ -167,7 +257,6 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
 
     }
 
-   
     @Override
     public Number[] addSiblingVersionForSource(Number sourceID, Version version) throws SQLException {
         Number[] result = new Number[2];
@@ -184,9 +273,9 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     public Map<String, String> addSourcesForAnnotation(Number annotationID, List<SourceInfo> sources) throws SQLException {
         Map<String, String> result = new HashMap<String, String>();
         Number sourceIDRunner;
-        for (SourceInfo sourceInfo : sources) {  
+        for (SourceInfo sourceInfo : sources) {
             sourceIDRunner = sourceDao.getInternalIDFromURI(sourceInfo.getRef());
-            if (sourceIDRunner != null) { 
+            if (sourceIDRunner != null) {
                 int affectedRows = annotationDao.addAnnotationSource(annotationID, sourceIDRunner);
             } else {
                 Source newSource = createFreshSource(sourceInfo);
@@ -201,26 +290,38 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         return result;
     }
 
-
     @Override
-    public Number addUsersAnnotation(Annotation annotation, Number userID) throws SQLException {
-
+    public Number addUsersAnnotation(Number userID, Annotation annotation) throws SQLException {
         Number annotationID = annotationDao.addAnnotation(annotation, userID);
-
-        List<SourceInfo> sources = annotation.getTargetSources().getTargetSource();
-        Map<String, String> sourceIdPairs = addSourcesForAnnotation(annotationID, sources);
-
-        String bodyText = annotation.getBody().getValue();
-        String newBody = Helpers.replace(bodyText, sourceIdPairs);
-        int affectedAnnotRows = annotationDao.updateBodyText(annotationID, newBody);
-
-        // Add the permission (annotation_id, owner);
+        int affectedAnnotRows = addSources(annotation, annotationID);
         int affectedPermissions = annotationDao.addAnnotationPrincipalPermission(annotationID, userID, Permission.OWNER);
-
         return annotationID;
     }
 
+    // TODO: units test
+    @Override
+    public Number updateUsersAnnotation(Number userID, Annotation annotation) throws SQLException {
+        Number annotationID = annotationDao.updateAnnotation(annotation, userID);
+        int affectedAnnotRows = addSources(annotation, annotationID);
+        int affectedPermissions = annotationDao.addAnnotationPrincipalPermission(annotationID, userID, Permission.OWNER);
+        return annotationID;
+    }
+
+    @Override
+    public Number addUser(User user, String remoteID) {
+        if (userDao.userExists(user)) {
+            return null;
+        } else {
+            return userDao.addUser(user, remoteID);
+        }
+    }
+
     ////////////// DELETERS //////////////////
+    @Override
+    public int deleteUser(Number userID) {
+        return userDao.deleteUser(userID);
+    }
+
     @Override
     public int[] deleteCachedOfVersion(Number versionID, Number cachedID) {
         int[] result = new int[2];
@@ -303,5 +404,14 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         Version version = new Version();
         version.setVersion(sourceInfo.getVersion());
         return version;
+    }
+
+    private int addSources(Annotation annotation, Number annotationID) throws SQLException {
+        List<SourceInfo> sources = annotation.getTargetSources().getTargetSource();
+        Map<String, String> sourceIdPairs = addSourcesForAnnotation(annotationID, sources);
+
+        String bodyText = annotation.getBody().getValue();
+        String newBody = Helpers.replace(bodyText, sourceIdPairs);
+        return annotationDao.updateBodyText(annotationID, newBody);
     }
 }
