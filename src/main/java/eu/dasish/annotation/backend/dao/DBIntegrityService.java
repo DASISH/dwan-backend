@@ -17,10 +17,19 @@
  */
 package eu.dasish.annotation.backend.dao;
 
+
 import eu.dasish.annotation.schema.Annotation;
+import eu.dasish.annotation.schema.AnnotationInfoList;
 import eu.dasish.annotation.schema.CachedRepresentationInfo;
+import eu.dasish.annotation.schema.PermissionList;
+import eu.dasish.annotation.schema.ReferenceList;
 import eu.dasish.annotation.schema.SourceInfo;
+import eu.dasish.annotation.schema.SourceList;
+import eu.dasish.annotation.schema.User;
 import eu.dasish.annotation.schema.Version;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.sql.Blob;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -102,6 +111,28 @@ public interface DBIntegrityService{
     */
     List<Number> getFilteredAnnotationIDs(String link, String text, String access, String namespace, UUID
             owner, Timestamp after, Timestamp before);
+    
+    
+    
+    /**
+     * 
+     @param link
+    * @param text
+    * @param access
+    * @param namespace
+    * @param owner
+    * @param after
+    * @param before
+     * @return the list of the annotationInfos of the annotations such that:
+    * -- sources' links of which contain "link" (as a substring),
+    * -- serialized bodies of which contain "text",
+    * -- current user has "access" (owner, reader, writer)  to them,
+    * -- namespace ???,
+    * -- owned by "owner",
+    * -- created after time-samp "after and before time-stamp "before".
+     */
+    AnnotationInfoList getFilteredAnnotationInfos(String link, String text, String access, String namespace, UUID
+            ownerI, Timestamp after, Timestamp before);
 
     /**
      * 
@@ -117,6 +148,27 @@ public interface DBIntegrityService{
      */
     Number getUserInternalIdentifier(UUID externalID);
     
+      /**
+     * 
+     * @param cachedID
+     * @return the external identifier of the cached representation "cachedID", or null if no such one.
+     */
+    UUID getCachedRepresentationExternalIdentifier(Number cachedID);
+
+    /**
+     * 
+     * @param externalID
+     * @return the internal identifier of the cachedRepresentation with "externalID", or null if there is no such one.
+     */
+    Number getCachedRepresentationInternalIdentifier(UUID externalID);
+    
+    /**
+     * 
+     * @param internalID
+     * @return CachedRepresentationInfo (i.e. "metadata") for cached representation with the internal id "intenalID"
+     */
+    CachedRepresentationInfo getCachedRepresentationInfo(Number internalID);
+    
     /**
      * 
      * @param annotationID
@@ -124,7 +176,52 @@ public interface DBIntegrityService{
      * @throws SQLException 
      */
     Annotation getAnnotation(Number annotationID) throws SQLException;
-
+    
+     /**
+     * 
+     * @param annotationID
+     * @return the object SourceList containing all target sources of the annotationID
+     * @throws SQLException 
+     */
+    SourceList getAnnotationSources(Number annotationID) throws SQLException;
+    
+    
+    /**
+     * 
+     * @param annotationID
+     * @return the list of sourceID's for which there is no cached representation
+     */
+    List<Number> getSourcesWithNoCachedRepresentation(Number annotationID);
+    
+    /**
+     * 
+     * @param annotationID
+     * @return the list of sourceID's for which there is no cached representation
+     */
+    public PermissionList getPermissionsForAnnotation(Number annotationID) throws SQLException;
+    
+     /**
+     * 
+     * @param sourceID
+     * @return the list of the external version ID-s ("siblings") for the target source with the internal ID "sourceID". 
+     */
+    public ReferenceList retrieveVersionList(Number sourceID);
+    
+    /**
+     * 
+     * @param cachedID
+     * @return BLOB of the cachedID
+     */
+    public Blob getCachedRepresentationBlob(Number cachedID) throws SQLException;
+    
+    /**
+     * 
+     * @param userID
+     * @param annotation
+     * @return the internalId of the annotation if it is updated
+     * @throws SQLException 
+     */
+    Number updateUsersAnnotation(Number userID, Annotation annotation) throws SQLException;
    
    /**
     * ADDERS
@@ -164,17 +261,35 @@ public interface DBIntegrityService{
 
     /**
      * 
-     * @param annotation
      * @param userID
+     * @param annotation
      * @return the internalId of the just added "annotation" (or null if it is not added) by the owner "userID". 
      * calls "addSourcesForAnnotation" 
      * @throws SQLException 
      */
-    Number addUsersAnnotation(Annotation annotation, Number userID) throws SQLException;
+    Number addUsersAnnotation(Number userID, Annotation annotation) throws SQLException;
+    
+    /**
+     * 
+     * @param user
+     * @param remoteID is got from the server
+     * @return the internal Id of the just added "user", or null if it was not added for some reason (already exists)
+     * @throws SQLException 
+     */
+    Number addUser(User user, String remoteID) throws SQLException;
 
     /**
      * DELETERS
      */
+    
+    /**
+     * 
+     * @param userID
+     * @return # of affected rows in the table "principal". 
+     * It is 1 if the userId is found and deleted; 
+     * it is 0 if it is not found or not deleted, e.g. because it is in use in the table "annotationsPreincipalsPermissions"
+     */
+    public int deleteUser(Number userID);
     
     /**
      * 
