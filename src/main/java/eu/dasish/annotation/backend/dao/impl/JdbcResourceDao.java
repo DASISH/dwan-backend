@@ -69,6 +69,10 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     final static protected String tool = "tool";
     final static protected String type_ = "type_";
     final static protected String file_ = "file_";
+    final static protected String principal_name = "principal_name";
+    final static protected String e_mail = "e_mail";
+    final static protected String remote_id = "remote_id";
+    
     // derived string constants: table+field names 
     final static protected String annotationStar = annotationTableName + ".*";
     final static protected String annotationAnnotation_id = annotationTableName + "." + annotation_id;
@@ -84,6 +88,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     final static protected String cachedRepresentationStar = cachedRepresentationTableName + ".*";
     final static protected String versionStar = versionTableName + ".*";
     final static protected String sourceStar = sourceTableName + ".*";
+    final static protected String principalStar = principalTableName + ".*";
     ///////////////////////////////////////////////////
     protected String internalIdName = null;
     protected String resourceTableName = null;
@@ -202,6 +207,14 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
         }
     };
 
+    protected final RowMapper<Number> ownerIDRowMapper = new RowMapper<Number>() {
+        @Override
+        public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
+            return rs.getInt(owner_id);
+        }
+    };
+
+    
     
     @Override 
     public String externalIDtoURI(String externalID) {
