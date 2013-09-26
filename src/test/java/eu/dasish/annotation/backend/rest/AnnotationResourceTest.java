@@ -18,12 +18,17 @@
 package eu.dasish.annotation.backend.rest;
 
 import eu.dasish.annotation.backend.dao.DBIntegrityService;
-import com.sun.jersey.api.client.GenericType;
 import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.TestInstances;
 import eu.dasish.annotation.schema.Annotation;
+import eu.dasish.annotation.schema.AnnotationActionName;
+import eu.dasish.annotation.schema.AnnotationBody;
+import eu.dasish.annotation.schema.ObjectFactory;
 import eu.dasish.annotation.schema.ResourceREF;
+import eu.dasish.annotation.schema.ResponseBody;
+import eu.dasish.annotation.schema.SourceInfo;
+import eu.dasish.annotation.schema.SourceInfoList;
 import java.sql.SQLException;
 import javax.xml.bind.JAXBElement;
 import org.jmock.Expectations;
@@ -36,6 +41,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.lang.InstantiationException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import javax.servlet.ServletException;
 import javax.xml.datatype.DatatypeConfigurationException;
@@ -118,7 +125,7 @@ public class AnnotationResourceTest {
         });
         
         String result = annotationResource.deleteAnnotation(TestBackendConstants._TEST_ANNOT_5_EXT);
-        assertEquals("1", result);
+        assertEquals("1 annotation(s) deleted.", result);
     }
     
     /**
@@ -127,23 +134,36 @@ public class AnnotationResourceTest {
     @Test
     public void testCreateAnnotation() throws SQLException, InstantiationException, IllegalAccessException, ServletException, DatatypeConfigurationException {
         System.out.println("test createAnnotation");
-        final Annotation annotationToAdd = new GenericType<Annotation>(){}.getRawClass().newInstance();
         
-//        Number userID = null;
-//        if (remoteUser != null) {
-//            userID = daoDispatcher.getUserInternalIdentifier(UUID.fromString(remoteUser));
-//        }
-//        Number newAnnotationID =  daoDispatcher.addUsersAnnotation(annotation, userID);
-//        Annotation newAnnotation = daoDispatcher.getAnnotation(newAnnotationID);
+        final Annotation annotationToAdd = new Annotation();
         final String ownerString = "5";
         final Number ownerID =  5;
         final Number newAnnotationID = 6;
-        final Annotation addedAnnotation = annotationToAdd;
+        String bodyMimeType = "text/plain";
+        String bodyText = "blah";
+        String headline = "headline";         
         ResourceREF owner = new ResourceREF();
+        AnnotationBody body   = new AnnotationBody();
+        SourceInfoList sourceInfoList = new SourceInfoList();
+        annotationToAdd.setTargetSources(sourceInfoList);
+        annotationToAdd.setBody(body);
+        annotationToAdd.setOwner(owner);      
+        annotationToAdd.setTimeStamp(Helpers.setXMLGregorianCalendar(Timestamp.valueOf("2013-08-12 11:25:00.383000")));
+        annotationToAdd.setHeadline(headline);
+        annotationToAdd.setTargetSources(sourceInfoList);
         owner.setRef(ownerString);
-        addedAnnotation.setOwner(owner);
-        addedAnnotation.setURI((UUID.randomUUID()).toString());        
-        addedAnnotation.setTimeStamp(Helpers.setXMLGregorianCalendar(Timestamp.valueOf("2013-08-12 11:25:00.383000")));
+        body.setMimeType(bodyMimeType);
+        body.setValue(bodyText);
+        SourceInfo sourceInfo = new SourceInfo();
+        sourceInfo.setLink("google.nl");
+        sourceInfo.setRef(UUID.randomUUID().toString());
+        sourceInfo.setVersion("vandaag");
+        
+        final List<Number> sources = new ArrayList<Number>();
+        sources.add(6);
+        
+        final Annotation addedAnnotation = (new ObjectFactory()).createAnnotation(annotationToAdd).getValue();
+        addedAnnotation.setURI(TestBackendConstants._TEST_SERVLET_URI + UUID.randomUUID().toString());
         
         mockery.checking(new Expectations() {
             {
@@ -153,11 +173,14 @@ public class AnnotationResourceTest {
                 oneOf(daoDispatcher).getUserInternalIdentifier(with(aNonNull(UUID.class)));
                 will(returnValue(ownerID));
                 
-                oneOf(daoDispatcher).addUsersAnnotation(annotationToAdd, ownerID);
+                oneOf(daoDispatcher).addUsersAnnotation(ownerID, annotationToAdd);
                 will(returnValue(newAnnotationID));
                 
                 oneOf(daoDispatcher).getAnnotation(newAnnotationID);
                 will(returnValue(addedAnnotation));
+                
+                oneOf(daoDispatcher).getSourcesWithNoCachedRepresentation(newAnnotationID);
+                will(returnValue(sources));
             }
         });
         
@@ -168,14 +191,15 @@ public class AnnotationResourceTest {
         httpServletRequest.setServletPath(TestBackendConstants._TEST_SERVLET_URI);     
         annotationResource.setHttpRequest(httpServletRequest);
         
-        JAXBElement<Annotation> result = annotationResource.createAnnotation(annotationToAdd); 
-        assertEquals(addedAnnotation.getOwner().getRef(), result.getValue().getOwner().getRef());
-        assertEquals(addedAnnotation.getURI(), result.getValue().getURI());
-        assertEquals(addedAnnotation.getHeadline(), result.getValue().getHeadline());
-        assertEquals(addedAnnotation.getPermissions(), result.getValue().getPermissions());
-        assertEquals(addedAnnotation.getTargetSources(), result.getValue().getTargetSources()); 
-        assertEquals(addedAnnotation.getTimeStamp(), result.getValue().getTimeStamp());
-        assertEquals(addedAnnotation.getBody(), result.getValue().getBody());
-        
+        JAXBElement<ResponseBody> result = annotationResource.createAnnotation(annotationToAdd);
+        Annotation newAnnotation = result.getValue().getAnnotationResponse().getContent().getAnnotation();
+        AnnotationActionName actionName = result.getValue().getAnnotationResponse().getActions().getAction().getAction();
+        assertEquals(addedAnnotation.getOwner().getRef(), newAnnotation.getOwner().getRef());
+        assertEquals(addedAnnotation.getURI(), newAnnotation.getURI());
+        assertEquals(addedAnnotation.getHeadline(), newAnnotation.getHeadline());
+        assertEquals(addedAnnotation.getTargetSources(), newAnnotation.getTargetSources()); 
+        assertEquals(addedAnnotation.getTimeStamp(), newAnnotation.getTimeStamp());
+        assertEquals(addedAnnotation.getBody(), newAnnotation.getBody());
+        assertEquals(AnnotationActionName.CREATE_CACHED_REPRESENTATION, actionName);
     }
 }
