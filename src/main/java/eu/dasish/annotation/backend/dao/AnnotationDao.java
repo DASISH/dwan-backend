@@ -21,7 +21,6 @@ import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationBody;
 import eu.dasish.annotation.schema.AnnotationInfo;
 import eu.dasish.annotation.schema.Permission;
-import eu.dasish.annotation.schema.PermissionList;
 import eu.dasish.annotation.schema.ResourceREF;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -173,6 +172,15 @@ public interface AnnotationDao extends ResourceDao{
      * @return # of updated rows in "annotation" table after updating the annotation's body with "newMimeType". Should return 1.
      */
     public int updateBodyMimeType(Number annotationID, String newMimeType);
+    
+    /**
+     * 
+     * @param annotation
+     * @param ownerID
+     * @return # of updated rows in "annotation" table after updating the annotation. Should return the internalID Of the annotation if update  happen
+     * @throws SQLException 
+     */
+    public Number updateAnnotation(Annotation annotation, Number ownerID) throws SQLException;
     
     
    /**
