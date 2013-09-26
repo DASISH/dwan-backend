@@ -58,9 +58,9 @@ SET default_with_oids = false;
 CREATE TABLE principal (
     principal_id SERIAL UNIQUE NOT NULL,
     external_id UUID UNIQUE NOT NULL,
+    remote_id text,
     principal_name text,
-    e_mail text,
-    additional_info text
+    e_mail text
 );
 
 
