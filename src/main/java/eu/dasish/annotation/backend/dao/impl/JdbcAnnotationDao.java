@@ -23,7 +23,6 @@ import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationBody;
 import eu.dasish.annotation.schema.AnnotationInfo;
 import eu.dasish.annotation.schema.Permission;
-import eu.dasish.annotation.schema.PermissionList;
 import eu.dasish.annotation.schema.ResourceREF;
 import java.lang.String;
 import java.sql.ResultSet;
@@ -280,7 +279,25 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         sql.append(annotationTableName).append(" SET ").append(body_mimetype).append("= '").append(newMimeType).append("' WHERE ").append(annotation_id).append("= ?");
         return getSimpleJdbcTemplate().update(sql.toString(), annotationID);
     }
+    
   
+    // TODO Unit test
+    @Override
+    public Number updateAnnotation(Annotation annotation, Number ownerID) throws SQLException {
+       
+        String externalID = stringURItoExternalID(annotation.getURI());
+        StringBuilder sql = new StringBuilder("UPDATE ");
+        sql.append(annotationTableName).append(" SET ").
+                append(body_text).append("= '").append(annotation.getBody().getValue()).append("',").
+                append(body_mimetype).append("= '").append(annotation.getBody().getMimeType()).append("',").
+                append(headline).append("= '").append(annotation.getHeadline()).append("',").
+                append(owner_id).append("= '").append(annotation.getOwner()).append("',").
+                append(time_stamp).append("= '").append(annotation.getTimeStamp().toString()).
+                append("' WHERE ").append(external_id).append("= ?");
+        int affectedRows = getSimpleJdbcTemplate().update(sql.toString(), externalID);
+        return ((affectedRows > 0) ? getInternalID(UUID.fromString(externalID)) : null);
+    }
+    
     
     //////////// ADDERS ////////////////////////
     
@@ -302,6 +319,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         int affectedRows = getSimpleJdbcTemplate().update(sql.toString(), params);
         return ((affectedRows > 0) ? getInternalID(externalID) : null);
     }
+    
     
     //////////////////////////////////////////////////////////////////////////////////
     @Override
@@ -390,7 +408,6 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         return result;
     }
     
-  
   
     
 }
