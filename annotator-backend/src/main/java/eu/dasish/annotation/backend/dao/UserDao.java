@@ -17,6 +17,8 @@
  */
 package eu.dasish.annotation.backend.dao;
 
+import eu.dasish.annotation.schema.User;
+
 
 /**
  *
@@ -24,8 +26,15 @@ package eu.dasish.annotation.backend.dao;
  */
 public interface UserDao extends ResourceDao{
     
- 
+     public User getUser(Number internalID);
+     
+     public Number addUser(User user, String remoteID);
+     
+     public int deleteUser(Number intenralID);
   
+     public boolean userIsInUse(Number userID);
+     
+     public boolean userExists(User user);
 }
 
 
