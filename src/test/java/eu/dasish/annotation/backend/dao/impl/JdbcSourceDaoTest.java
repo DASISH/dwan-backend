@@ -108,7 +108,7 @@ public class JdbcSourceDaoTest extends JdbcResourceDaoTest {
 
         // test 2
         jdbcSourceDao.deleteAllSourceVersion(5);
-        int resultTwo = jdbcSourceDao.deleteSource(5);// the source will be deleted because it is not referred by any annotation
+        int resultTwo = jdbcSourceDao.deleteSource(6);// the source will be deleted because it is not referred by any annotation
         assertEquals(1, resultTwo); 
     }
     
@@ -146,7 +146,7 @@ public class JdbcSourceDaoTest extends JdbcResourceDaoTest {
         freshSource.setTimeStamp(null);
         
         Number result = jdbcSourceDao.addSource(freshSource);
-        assertEquals(6, result);
+        assertEquals(7, result);
         // detailed checking
         Source addedSource = jdbcSourceDao.getSource(result);
         assertEquals(link, addedSource.getLink());
