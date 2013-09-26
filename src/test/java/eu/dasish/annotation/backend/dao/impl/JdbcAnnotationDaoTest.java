@@ -17,7 +17,6 @@
  */
 package eu.dasish.annotation.backend.dao.impl;
 
-import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.TestInstances;
 import eu.dasish.annotation.schema.Annotation;
@@ -291,8 +290,7 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
 
         final UUID externalId = jdbcAnnotationDao.getExternalID(2);
         assertEquals(UUID.fromString(TestBackendConstants._TEST_ANNOT_2_EXT), externalId);
-
-
+        
         final UUID externalIdThree = jdbcAnnotationDao.getExternalID(null);
         assertEquals(null, externalIdThree);
 
