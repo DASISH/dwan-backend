@@ -2,6 +2,10 @@
 -- Copyright (C) 2013 DASISH
 --
 -- This program is free software; you can redistribute it and/or
+--
+-- Copyright (C) 2013 DASISH
+--
+-- This program is free software; you can redistribute it and/or
 -- modify it under the terms of the GNU General Public License
 -- as published by the Free Software Foundation; either version 2
 -- of the License, or (at your option) any later version.
@@ -16,8 +20,8 @@
 -- Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 --
 
-INSERT INTO principal (principal_name, external_id) VALUES ('a user', '00000000-0000-0000-0000-000000000003'); -- 1
-INSERT INTO principal (principal_name, external_id) VALUES ('b user', '00000000-0000-0000-0000-000000000004');-- 2
+INSERT INTO principal (principal_name, external_id, remote_id, e_mail) VALUES ('a user', '00000000-0000-0000-0000-000000000003', 'a1', 'a.user@gmail.com'); -- 1
+INSERT INTO principal (principal_name, external_id, remote_id, e_mail) VALUES ('b user', '00000000-0000-0000-0000-000000000004', 'b2', 'b.user@gmail.com');-- 2
 
 INSERT INTO notebook (title, owner_id, external_id) VALUES ('a notebook', 2, '00000000-0000-0000-0000-000000000001'); -- 1 
 -- INSERT INTO notebook (title, owner_id, external_id) VALUES ('a notebook', 1, 1);
@@ -32,9 +36,11 @@ INSERT INTO notebooks_annotations (notebook_id,annotation_id) VALUES (2,1);
 
 -- Test data for jdbcAnnotationDao --
 
-INSERT INTO principal (principal_name, external_id) VALUES ('Twan', '00000000-0000-0000-0000-000000000111'); --3 
-INSERT INTO principal (principal_name, external_id) VALUES ('Peter', '00000000-0000-0000-0000-000000000112'); -- 4
-INSERT INTO principal (principal_name, external_id) VALUES ('Olha', '00000000-0000-0000-0000-000000000113'); -- 5
+INSERT INTO principal (principal_name, external_id, remote_id, e_mail) VALUES ('Twan', '00000000-0000-0000-0000-000000000111', 'x3', 'twagoo@mpi.nl'); --3 
+INSERT INTO principal (principal_name, external_id, remote_id, e_mail) VALUES ('Peter', '00000000-0000-0000-0000-000000000112', 'y4', 'Peter.Withers@mpi.nl'); -- 4
+INSERT INTO principal (principal_name, external_id, remote_id, e_mail) VALUES ('Olha', '00000000-0000-0000-0000-000000000113', 'z5', 'olhsha@mpi.nl'); -- 5
+INSERT INTO principal (principal_name, external_id, remote_id, e_mail) VALUES ('Eric', '00000000-0000-0000-0000-000000000114', 'v6', 'eriaue@mpi.nl'); -- 6
+
 
 INSERT INTO notebook (title, owner_id, external_id) VALUES ('Notebook 3', 3, '00000000-0000-0000-0000-000000000011'); -- 3
 INSERT INTO notebook (title, owner_id, external_id) VALUES ('Notebook 4', 4, '00000000-0000-0000-0000-000000000012'); --4
@@ -87,6 +93,7 @@ INSERT INTO target_source (external_id, link_uri, version) VALUES ('00000000-000
 INSERT INTO target_source (external_id, link_uri, version) VALUES ('00000000-0000-0000-0000-000000000033', 'http://en.wikipedia.org/wiki/Art_Nouveau', '00000000-0000-0000-0000-000000000044'); --3
 INSERT INTO target_source (external_id, link_uri, version) VALUES ('00000000-0000-0000-0000-000000000034', '???', '00000000-0000-0000-0000-000000000045'); --4
 INSERT INTO target_source (external_id, link_uri, version) VALUES ('00000000-0000-0000-0000-000000000035', '???', '00000000-0000-0000-0000-000000000045'); --5
+INSERT INTO target_source (external_id, link_uri, version) VALUES ('00000000-0000-0000-0000-000000000036', '???', '00000000-0000-0000-0000-000000000047'); --6
 
 -- CREATE TABLE annotations_target_sources (
 --    annotation_id integer REFERENCES annotation(annotation_id), -- defining a foreign key: there must be a uniquely defined row in "annotation", that is defined by "annotation_id"
@@ -100,6 +107,7 @@ INSERT INTO annotations_target_sources (annotation_id, source_id) VALUES (3, 2);
 INSERT INTO annotations_target_sources (annotation_id, source_id) VALUES (4, 3); 
 INSERT INTO annotations_target_sources (annotation_id, source_id) VALUES (5, 3); -- source 3 should not be deleted when annot 5 is deleted
 INSERT INTO annotations_target_sources (annotation_id, source_id) VALUES (5, 4); -- source 4 to be deleted when annot 5 is deleted
+INSERT INTO annotations_target_sources (annotation_id, source_id) VALUES (4, 5); 
 
 ----------------------------------------------------------------
 
