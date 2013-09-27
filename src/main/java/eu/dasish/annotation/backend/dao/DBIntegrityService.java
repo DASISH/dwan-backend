@@ -26,10 +26,6 @@ import eu.dasish.annotation.schema.ReferenceList;
 import eu.dasish.annotation.schema.SourceInfo;
 import eu.dasish.annotation.schema.SourceList;
 import eu.dasish.annotation.schema.User;
-import eu.dasish.annotation.schema.Version;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.sql.Blob;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -205,7 +201,7 @@ public interface DBIntegrityService{
      * @param sourceID
      * @return the list of the external version ID-s ("siblings") for the target source with the internal ID "sourceID". 
      */
-    public ReferenceList retrieveVersionList(Number sourceID);
+    public ReferenceList getSiblingSources(Number sourceID) throws SQLException;
     
     /**
      * 
@@ -213,6 +209,10 @@ public interface DBIntegrityService{
      * @return BLOB of the cachedID
      */
     public Blob getCachedRepresentationBlob(Number cachedID) throws SQLException;
+  
+    /**
+     * UPDATERS
+     */
     
     /**
      * 
@@ -222,34 +222,30 @@ public interface DBIntegrityService{
      * @throws SQLException 
      */
     Number updateUsersAnnotation(Number userID, Annotation annotation) throws SQLException;
+    
+       /**
+     * 
+     * @param sourceID
+     * @param siblingSourceID
+     * @return # of updated rows when row of sourceID is updated with siblingSourceID (should be 1 if it happens, and 0 if not because siblingSourceID's class is set to 0);
+     * @throws SQLException 
+     */
+     int updateSiblingSourceClassForSource(Number sourceID, Number siblingSourceID) throws SQLException;
    
    /**
     * ADDERS
     */
     /**
      * 
-     * @param versionID
+     * @param sourceID
      * @param cachedInfo
      * @param cachedBlob
-     * @return result[0] = # updated rows in the table "versions_cached_representations" (must be 1 or 0).
+     * @return result[0] = # updated rows in the table "sources_cached_representations" (must be 1 or 0).
      * result[1] = the internal ID of the added cached (a new one if "cached" was new for the Data Base).
      */
-    Number[] addCachedForVersion(Number versionID, CachedRepresentationInfo cachedInfo, Blob cachedBlob);
+    Number[] addCachedForSource(Number sourceID, CachedRepresentationInfo cachedInfo, Blob cachedBlob) throws SQLException;
     
-    
-
-    /**
-     * 
-     * @param sourceID
-     * @param version
-     * @return result[0] = added rows in the table "sources_versions" (1, or 0)
-     * result[1] = the internal id of the added "version" ( a new one if the version was new for the DB
-     * @throws SQLException 
-     */
-    
-    Number[] addSiblingVersionForSource(Number sourceID, Version version) throws SQLException;
-
-    
+ 
     /**
      * 
      * @param annotationID
@@ -293,38 +289,29 @@ public interface DBIntegrityService{
     
     /**
      * 
-     * @param versionID
+     * @param sourceID
      * @param cachedID
-     * @return result[0] = # deleted rows in the table "versions_cached_representations" (1, or 0).
-     * result[1] = # deleted rows in the table "cached_representation" (should be 0 if the cached representation is in use by some other version).
+     * @return result[0] = # deleted rows in the table "sources_cached_representations" (1, or 0).
+     * result[1] = # deleted rows in the table "cached_representation" (should be 0 if the cached representation is in use by some other source???).
      */
-    int[] deleteCachedOfVersion(Number versionID, Number cachedID);
+    int[] deleteCachedRepresentationOfSource(Number sourceID, Number cachedID) throws SQLException;
 
-
+    
+    
 
     
     /**
      * 
-     * @param versionID
-     * @return result[0] = # deleted tows in the table "version".
-     * result[1] =  # deleted rows in the table "versions_cached_representations".
-     * result[2] = # deleted rows in the table "cached_representation".
-     * If the version "versionId" is in use (occurs in at least one of the joint tables) then nothing happes in the DB and all the three values result[0], result[1] and result[2] are zeros.
-     */
+     * @param sourceID
+     * @return 
+     * result[0] =  # deleted rows in the table "sources_cached_representations".
+     * result[1] = # deleted rows in the table "cached_representation".
+     **/
     
-    int[] deleteAllCachedOfVersion(Number versionID);
+    int[] deleteAllCachedRepresentationsOfSource(Number versionID) throws SQLException;
 
+      
     
-   /**
-    * 
-    * @param sourceID
-    * @return result[0] = # deleted rows in the table "source" (0 is the source is in use).
-    * result[1] = # deleted rows in the table "sources_versions".
-    * result[2] = # deleted rows in the table "version".
-    * @throws SQLException 
-    */
-    int[] deleteAllVersionsOfSource(Number sourceID) throws SQLException;
-
     /**
      * 
      * @param annotationID

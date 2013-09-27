@@ -22,7 +22,6 @@ import eu.dasish.annotation.backend.dao.CachedRepresentationDao;
 import eu.dasish.annotation.backend.dao.NotebookDao;
 import eu.dasish.annotation.backend.dao.SourceDao;
 import eu.dasish.annotation.backend.dao.UserDao;
-import eu.dasish.annotation.backend.dao.VersionDao;
 import eu.dasish.annotation.backend.dao.DBIntegrityService;
 import org.jmock.Mockery;
 
@@ -59,11 +58,7 @@ public class MockObjectsFactory {
     public CachedRepresentationDao newCachedRepresentationDao() {
         return context.mock(CachedRepresentationDao.class);
     }
-    
-    public VersionDao newVersionDao() {
-        return context.mock(VersionDao.class);
-    }
-    
+ 
     public DBIntegrityService newDBIntegrityService() {
         return context.mock(DBIntegrityService.class);
     }

@@ -46,14 +46,27 @@ public interface SourceDao extends ResourceDao{
      * @return the list of SoirceInfo objects corresponding to the sources with the internalIds from the list "sources".
      */
     public List<SourceInfo> getSourceInfos(List<Number> sources);
+    
+    /**
+     * 
+     * @param sourceID
+     * @return id of the sibling-source class of sourceID if defined, or null otherwise
+     */
+    public Integer getSourceSiblingClass(Number sourceID);
       
      /**
      * 
      * @param sourceID
-     * @return the list of the internal version ID-s ("siblings") for the target source with the internal ID "sourceID". 
+     * @return the list of the internal source ID-s ("siblings") for the target source with the internal ID "sourceID". 
      */
-    public List<Number> retrieveVersionList(Number sourceID);
+    public List<Number> getSiblingSources(Number sourceID);
     
+     /**
+     * 
+     * @param sourceID
+     * @return the list of the cached representation's ID-s for the target source with the internal ID "sourceID". 
+     */
+    public List<Number> getCachedRepresentations(Number sourceID);
     
     /**
      * 
@@ -84,11 +97,20 @@ public interface SourceDao extends ResourceDao{
     /**
      * 
      * @param sourceID
-     * @param versionID
-     * @return # added rows to the table "annotations_target_sources". Should be "1" if the pair (sourceID, versionID) has been added.
+     * @param cachedID
+     * @return # added rows to the table "sources_cached_representations". Should be "1" if the pair (sourceID, cachedID) has been added.
      * @throws SQLException 
      */
-    public int addSourceVersion(Number sourceID, Number versionID) throws SQLException; 
+    public int addSourceCachedRepresentation(Number sourceID, Number cachedID) throws SQLException; 
+    
+    /**
+     * 
+     * @param sourceID
+     * @param classID
+     * @return # of updated rows (should be 1) when updating the row for sourceID by class classID
+     * @throws SQLException 
+     */
+    public int updateSiblingClass(Number sourceID, int classID) throws SQLException;
     
     
     /** 
@@ -106,10 +128,10 @@ public interface SourceDao extends ResourceDao{
     /**
      * 
      * @param sourceID
-     * @return # deleted rows in the table "sources_versions" when deleting all the pairs of the form (sourceID, *).
+     * @return # deleted rows in the table "sources_cached_representation" when deleting the pair (sourceID, chachedID)
      * @throws SQLException 
      */
-    public int deleteAllSourceVersion(Number sourceID) throws SQLException;  
+    public int deleteSourceCachedRepresentation(Number sourceID, Number chachedID) throws SQLException;  
     
     
   

@@ -58,7 +58,7 @@ public class CachedRepresentationResource {
     //changed path, /source/cached part is removed
     @GET
     @Produces(MediaType.TEXT_XML)
-    @Path("{cachedid: "+ BackendConstants.regExpIdentifier+"/metadata}")
+    @Path("{cachedid: "+ BackendConstants.regExpIdentifier+"}/metadata")
     public JAXBElement<CachedRepresentationInfo> getCachedRepresentationInfo(@PathParam("cachedid") String externalId) throws SQLException {
         final Number cachedID = dbIntegrityService.getCachedRepresentationInternalIdentifier(UUID.fromString(externalId));
         dbIntegrityService.setServiceURI(httpServletRequest.getServletPath());
@@ -72,7 +72,7 @@ public class CachedRepresentationResource {
     // using mime type as well
     @GET
     @Produces(MediaType.TEXT_XML)
-    @Path("{cachedid: "+ BackendConstants.regExpIdentifier+"/content}")
+    @Path("{cachedid: "+ BackendConstants.regExpIdentifier+"}/content")
     public InputStream getCachedRepresentationContent(@PathParam("cachedid") String externalId) throws SQLException {
         final Number cachedID = dbIntegrityService.getCachedRepresentationInternalIdentifier(UUID.fromString(externalId));
         dbIntegrityService.setServiceURI(httpServletRequest.getServletPath());

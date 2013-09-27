@@ -46,8 +46,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     final static protected String notebooksAnnotationsTableName = "notebooks_annotations";
     final static protected String permissionsTableName = "annotations_principals_permissions";
     final static protected String annotationsSourcesTableName = "annotations_target_sources";
-    final static protected String versionsCachedRepresentationsTableName = "versions_cached_representations";
-    final static protected String sourcesVersionsTableName = "sources_versions";
+    final static protected String sourcesCachedRepresentationsTableName = "sources_cached_representations";
     // base string constants: field Names
     final static protected String annotation_id = "annotation_id";
     final static protected String notebook_id = "notebook_id";
@@ -60,11 +59,11 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     final static protected String title = "title";
     final static protected String principal_id = "principal_id";
     final static protected String time_stamp = "time_stamp";
+    final static protected String version = "version";
     final static protected String permission = "permission_";
     final static protected String link_uri = "link_uri";
-    final static protected String version = "version";
     final static protected String cached_representation_id = "cached_representation_id";
-    final static protected String version_id = "version_id";
+    final static protected String sibling_source_class = "sibling_source_class";
     final static protected String mime_type = "mime_type";
     final static protected String tool = "tool";
     final static protected String type_ = "type_";
@@ -86,7 +85,6 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     final static protected String principalPrincipal_id = principalTableName + "." + principal_id;
     final static protected String principalExternal_id = principalTableName + "." + external_id;
     final static protected String cachedRepresentationStar = cachedRepresentationTableName + ".*";
-    final static protected String versionStar = versionTableName + ".*";
     final static protected String sourceStar = sourceTableName + ".*";
     final static protected String principalStar = principalTableName + ".*";
     ///////////////////////////////////////////////////
@@ -182,12 +180,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
             return rs.getInt(source_id);
         }
     };
-    protected final RowMapper<Number> versionIDRowMapper = new RowMapper<Number>() {
-        @Override
-        public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            return rs.getInt(version_id);
-        }
-    };
+   
     protected final RowMapper<Number> annotationIDRowMapper = new RowMapper<Number>() {
         @Override
         public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {

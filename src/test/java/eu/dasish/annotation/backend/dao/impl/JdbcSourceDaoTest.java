@@ -90,7 +90,7 @@ public class JdbcSourceDaoTest extends JdbcResourceDaoTest {
         Source result = jdbcSourceDao.getSource(internalID);
         assertEquals(TestBackendConstants._TEST_SERVLET_URI+TestBackendConstants._TEST_SOURCE_1_EXT_ID, result.getURI());
         assertEquals(TestBackendConstants._TEST_SOURCE_1_LINK, result.getLink());
-        assertEquals(TestBackendConstants._TEST_VERSION_1_EXT_ID, result.getVersion());
+        assertEquals(TestBackendConstants._TEST_SOURCE_1_VERSION, result.getVersion());
         // TODO :add time stamp test
         
     }
@@ -107,28 +107,19 @@ public class JdbcSourceDaoTest extends JdbcResourceDaoTest {
         assertEquals(0, result); 
 
         // test 2
-        jdbcSourceDao.deleteAllSourceVersion(5);
         int resultTwo = jdbcSourceDao.deleteSource(6);// the source will be deleted because it is not referred by any annotation
         assertEquals(1, resultTwo); 
     }
     
-    /**
-     * Test of deleteAllSourceVersion method, of class JdbcSourceDao.
-     */
-    @Test
-    public void testDeleteAllSourceVersion() {
-        System.out.println("test deleteAllSourceVersion");
-       assertEquals(2, jdbcSourceDao.deleteAllSourceVersion(1)); 
-
-    }
+  
 
     /**
-     * Test of addSourceVersion method, of class JdbcSourceDao.
+     * Test of addSourceCachedRepresentation method, of class JdbcSourceDao.
      */
     @Test
-    public void testAddSourceVersion() throws SQLException{
-        System.out.println("test addSourceVersion");
-       assertEquals(1, jdbcSourceDao.addSourceVersion(1,3)); 
+    public void testAddSourceCachedRepresentation() throws SQLException{
+       System.out.println("test addSourceCachedRepresentation");
+       assertEquals(1, jdbcSourceDao.addSourceCachedRepresentation(6, 7));
 
     }
     
@@ -142,15 +133,15 @@ public class JdbcSourceDaoTest extends JdbcResourceDaoTest {
         String link = "http://www.sagradafamilia.cat/";
         Source freshSource = new Source();
         freshSource.setLink(link);
-        freshSource.setVersion(TestBackendConstants._TEST_VERSION_1_EXT_ID);
+        freshSource.setVersion(TestBackendConstants._TEST_SOURCE_1_VERSION);
         freshSource.setTimeStamp(null);
         
         Number result = jdbcSourceDao.addSource(freshSource);
-        assertEquals(7, result);
+        assertEquals(8, result);
         // detailed checking
         Source addedSource = jdbcSourceDao.getSource(result);
         assertEquals(link, addedSource.getLink());
-        assertEquals(TestBackendConstants._TEST_VERSION_1_EXT_ID, addedSource.getVersion());
+        assertEquals(TestBackendConstants._TEST_SOURCE_1_VERSION, addedSource.getVersion());
         assertTrue(addedSource.getURI().startsWith(TestBackendConstants._TEST_SERVLET_URI));
     }
 
@@ -168,8 +159,8 @@ public class JdbcSourceDaoTest extends JdbcResourceDaoTest {
         assertEquals(2, result.size());
         assertEquals(TestBackendConstants._TEST_SERVLET_URI+TestBackendConstants._TEST_SOURCE_1_EXT_ID, result.get(0).getRef());
         assertEquals(TestBackendConstants._TEST_SERVLET_URI+TestBackendConstants._TEST_SOURCE_2_EXT_ID, result.get(1).getRef());
-        assertEquals(TestBackendConstants._TEST_VERSION_1_EXT_ID, result.get(0).getVersion());
-        assertEquals(TestBackendConstants._TEST_VERSION_3_EXT_ID, result.get(1).getVersion());
+        assertEquals(TestBackendConstants._TEST_SOURCE_1_VERSION, result.get(0).getVersion());
+        assertEquals(TestBackendConstants._TEST_SOURCE_2_VERSION, result.get(1).getVersion());
         assertEquals(TestBackendConstants._TEST_SOURCE_1_LINK, result.get(0).getLink());
         assertEquals(TestBackendConstants._TEST_SOURCE_2_LINK, result.get(1).getLink());
 
@@ -191,13 +182,13 @@ public class JdbcSourceDaoTest extends JdbcResourceDaoTest {
         assertEquals(2, result.get(1));
     }
 
-    /* Test of retrieveVersionList method, of class JdbcSourceDao.
+    /* Test of getCachedRepresentations method, of class JdbcSourceDao.
      */
     @Test
-    public void testRetrieveVersionList() {
-        System.out.println("retrieveVersionList");
+    public void testGetCachedRepresentations() {
+        System.out.println("test getCachedRepresentations");
         Number sourceID = 1;
-        List<Number> result = jdbcSourceDao.retrieveVersionList(sourceID);
+        List<Number> result = jdbcSourceDao.getCachedRepresentations(sourceID);
         assertEquals(1, result.get(0));
         assertEquals(2, result.get(1));
     }

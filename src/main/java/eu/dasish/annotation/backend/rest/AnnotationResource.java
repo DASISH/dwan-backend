@@ -83,7 +83,7 @@ public class AnnotationResource {
      //TODO: unit test
     @GET
     @Produces(MediaType.TEXT_XML)
-    @Path("{annotationid: " + BackendConstants.regExpIdentifier + "/sources}")
+    @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}/sources")
     public JAXBElement<SourceList> getAnnotationSources(@PathParam("annotationid") String ExternalIdentifier) throws SQLException {
         final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(ExternalIdentifier));
         dbIntegrityService.setServiceURI(httpServletRequest.getServletPath());
@@ -114,7 +114,7 @@ public class AnnotationResource {
     // TODO Unit test    
     @GET
     @Produces(MediaType.TEXT_XML)
-    @Path("{annotationid: " + BackendConstants.regExpIdentifier + "/permissions}")
+    @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}/permissions")
     public JAXBElement<PermissionList> getAnnotationPermissions(@PathParam("annotationid") String ExternalIdentifier) throws SQLException {
         final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(ExternalIdentifier));
         dbIntegrityService.setServiceURI(httpServletRequest.getServletPath());

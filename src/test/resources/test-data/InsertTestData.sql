@@ -60,106 +60,45 @@ INSERT INTO notebooks_annotations (notebook_id,annotation_id) VALUES (4,4);
 INSERT INTO notebooks_annotations (notebook_id,annotation_id) VALUES (5,4);
 
 
+INSERT INTO target_source (external_id, link_uri, sibling_source_class, version) VALUES ('00000000-0000-0000-0000-000000000031', 'http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia', 1, 'version 1.0'); -- 1
+INSERT INTO target_source (external_id, link_uri, sibling_source_class, version) VALUES ('00000000-0000-0000-0000-000000000032', 'http://nl.wikipedia.org/wiki/Antoni_Gaud%C3%AD', 2, 'version 1.0'); --2
+INSERT INTO target_source (external_id, link_uri, sibling_source_class, version) VALUES ('00000000-0000-0000-0000-000000000033', 'http://en.wikipedia.org/wiki/Art_Nouveau', 3, 'june 1013'); --3
+INSERT INTO target_source (external_id, link_uri, sibling_source_class, version) VALUES ('00000000-0000-0000-0000-000000000034', '???', 1, 'back up'); --4
+INSERT INTO target_source (external_id, link_uri, sibling_source_class, version) VALUES ('00000000-0000-0000-0000-000000000035', '???', 2, 'back up'); --5
+INSERT INTO target_source (external_id, link_uri, sibling_source_class, version) VALUES ('00000000-0000-0000-0000-000000000036', '???', 2, 'version 2.0'); --6 not used by any annotation
+INSERT INTO target_source (external_id, link_uri, sibling_source_class, version) VALUES ('00000000-0000-0000-0000-000000000037', '???', 3, 'version 2.0')
 
 
--- CREATE TABLE version (
---     version_id SERIAL UNIQUE NOT NULL,
---     external_id UUID UNIQUE NOT NULL,
---     version text,
---     --  SOUNDNESS: there must be at least one row with this version_id in the verions_cached_representations table
--- );
-
-INSERT INTO version (external_id, version) VALUES ('00000000-0000-0000-0000-000000000041', 'SF-version 2013'); -- 1
-INSERT INTO version (external_id, version) VALUES ('00000000-0000-0000-0000-000000000042', 'SF-version 2012'); -- 2
-INSERT INTO version (external_id, version) VALUES ('00000000-0000-0000-0000-000000000043', 'Gaudi wiki -version 2013'); -- 3
-INSERT INTO version (external_id, version) VALUES ('00000000-0000-0000-0000-000000000044', 'Art Nuveau wiki -version 2013'); --4 
-INSERT INTO version (external_id, version) VALUES ('00000000-0000-0000-0000-000000000045', 'Art Nuveau wiki -version 2012'); --5 
-INSERT INTO version (external_id, version) VALUES ('00000000-0000-0000-0000-000000000046', 'Art Nuveau wiki -version 2011'); --6  not used
-INSERT INTO version (external_id, version) VALUES ('00000000-0000-0000-0000-000000000047', 'Art Nuveau wiki -version 2010'); --7
-
--- CREATE TABLE target_source (
---     source_id SERIAL UNIQUE NOT NULL,
---   external_id UUID UNIQUE NOT NULL,
---     time_stamp timestamp with time zone default now(),
---     link_uri text,
---     version_id integer REFERENCES version(version_id), ---- DIFFERS from the xml structure, 
---     -- SOUNDNESS: there must be exactly version at the version table  ++   
---     -- soundness: there must be at least one annotation referring to this source
--- );
-
-
-INSERT INTO target_source (external_id, link_uri, version) VALUES ('00000000-0000-0000-0000-000000000031', 'http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia', '00000000-0000-0000-0000-000000000041'); -- 1
-INSERT INTO target_source (external_id, link_uri, version) VALUES ('00000000-0000-0000-0000-000000000032', 'http://nl.wikipedia.org/wiki/Antoni_Gaud%C3%AD', '00000000-0000-0000-0000-000000000043'); --2
-INSERT INTO target_source (external_id, link_uri, version) VALUES ('00000000-0000-0000-0000-000000000033', 'http://en.wikipedia.org/wiki/Art_Nouveau', '00000000-0000-0000-0000-000000000044'); --3
-INSERT INTO target_source (external_id, link_uri, version) VALUES ('00000000-0000-0000-0000-000000000034', '???', '00000000-0000-0000-0000-000000000045'); --4
-INSERT INTO target_source (external_id, link_uri, version) VALUES ('00000000-0000-0000-0000-000000000035', '???', '00000000-0000-0000-0000-000000000045'); --5
-INSERT INTO target_source (external_id, link_uri, version) VALUES ('00000000-0000-0000-0000-000000000036', '???', '00000000-0000-0000-0000-000000000047'); --6
-
--- CREATE TABLE annotations_target_sources (
---    annotation_id integer REFERENCES annotation(annotation_id), -- defining a foreign key: there must be a uniquely defined row in "annotation", that is defined by "annotation_id"
---    source_id integer REFERENCES target_source(source_id),
---    unique(annotation_id, source_id),
--- );
 
 INSERT INTO annotations_target_sources (annotation_id, source_id) VALUES (2, 1); 
-INSERT INTO annotations_target_sources (annotation_id, source_id) VALUES (2, 2); 
+INSERT INTO annotations_target_sources (annotation_id, source_id) VALUES (2, 2);
 INSERT INTO annotations_target_sources (annotation_id, source_id) VALUES (3, 2); 
 INSERT INTO annotations_target_sources (annotation_id, source_id) VALUES (4, 3); 
 INSERT INTO annotations_target_sources (annotation_id, source_id) VALUES (5, 3); -- source 3 should not be deleted when annot 5 is deleted
 INSERT INTO annotations_target_sources (annotation_id, source_id) VALUES (5, 4); -- source 4 to be deleted when annot 5 is deleted
 INSERT INTO annotations_target_sources (annotation_id, source_id) VALUES (4, 5); 
-
-----------------------------------------------------------------
-
--- CREATE TABLE sources_versions (
---     source_id integer REFERENCES target_source(source_id),
---     version_id integer REFERENCES version(version_id),
---     unique(source_id, version_id),
--- );
-
-INSERT INTO sources_versions (source_id, version_id) VALUES (1, 1);
-INSERT INTO sources_versions (source_id, version_id) VALUES (1, 2);
-INSERT INTO sources_versions (source_id, version_id) VALUES (2, 3);
-INSERT INTO sources_versions (source_id, version_id) VALUES (3, 4);
-INSERT INTO sources_versions (source_id, version_id) VALUES (4, 5);
-INSERT INTO sources_versions (source_id, version_id) VALUES (5, 7);
-
---------------------------------------------------------------
-
--- CREATE TABLE cached_representation_info (
---     cached_representation_id SERIAL UNIQUE NOT NULL,
---     external_id UUID UNIQUE NOT NULL,
---     mime_type text,
---     tool text,
---     type_ text, 
---     file_ text -- DIFFERS FROM the schema
--- );
+INSERT INTO annotations_target_sources (annotation_id, source_id) VALUES (4, 7); 
 
 INSERT INTO cached_representation (external_id, mime_type, tool, type_, file_) VALUES ('00000000-0000-0000-0000-000000000051', 'text/html', 'latex', 'text', X'1001'); --1
 INSERT INTO cached_representation (external_id, mime_type, tool, type_, file_) VALUES ('00000000-0000-0000-0000-000000000052', 'text/html', 'vi', 'text', X'1002'); -- 2
 INSERT INTO cached_representation (external_id, mime_type, tool, type_, file_) VALUES ('00000000-0000-0000-0000-000000000053', 'image/png', 'screenshooter', 'image', X'1003'); -- 3
 INSERT INTO cached_representation (external_id, mime_type, tool, type_, file_) VALUES ('00000000-0000-0000-0000-000000000054', 'text/html', 'oxygen', 'text', X'1004'); --4 
 INSERT INTO cached_representation (external_id, mime_type, tool, type_, file_) VALUES ('00000000-0000-0000-0000-000000000055', 'image/jpg', 'photomaster', 'image', X'1005'); --5 
-INSERT INTO cached_representation (external_id, mime_type, tool, type_, file_) VALUES ('00000000-0000-0000-0000-000000000056', 'text/plain', 'some tool', 'text', X'1006'); --6 
+INSERT INTO cached_representation (external_id, mime_type, tool, type_, file_) VALUES ('00000000-0000-0000-0000-000000000056', 'text/plain', 'some tool', 'text', X'1006'); --6  not used
 INSERT INTO cached_representation (external_id, mime_type, tool, type_, file_) VALUES ('00000000-0000-0000-0000-000000000057', 'text/html', 'some tool 2', 'text', X'1007'); --7 
 
---------------------------------------------------------------
 
 
 
--- CREATE TABLE versions_cached_representations (
---     version_id integer REFERENCES version(version_id),
---     cached_representation_id integer REFERENCES cached_representation_info(cached_representation_id),
---     unique(version_id, cached_representation_id),
--- );
+INSERT INTO sources_cached_representations (source_id,  cached_representation_id) VALUES (1, 1);
+INSERT INTO sources_cached_representations (source_id,  cached_representation_id) VALUES (1, 2);
+INSERT INTO sources_cached_representations (source_id,  cached_representation_id) VALUES (2, 3);
+INSERT INTO sources_cached_representations (source_id,  cached_representation_id) VALUES (3, 4);
+INSERT INTO sources_cached_representations (source_id,  cached_representation_id) VALUES (4, 5);
+INSERT INTO sources_cached_representations (source_id,  cached_representation_id) VALUES (5, 7);
 
-INSERT INTO versions_cached_representations (version_id, cached_representation_id) VALUES (1, 1);
-INSERT INTO versions_cached_representations (version_id, cached_representation_id) VALUES (2, 3);
-INSERT INTO versions_cached_representations (version_id, cached_representation_id) VALUES (3, 2);
-INSERT INTO versions_cached_representations (version_id, cached_representation_id) VALUES (4, 4);
-INSERT INTO versions_cached_representations (version_id, cached_representation_id) VALUES (1, 5);
-INSERT INTO versions_cached_representations (version_id, cached_representation_id) VALUES (5, 5);
-INSERT INTO versions_cached_representations (version_id, cached_representation_id) VALUES (6, 5);
+
+
 
 
 ---- PERMISSIONS --------------------------------------------------------------------------------------------

@@ -35,15 +35,12 @@ import org.springframework.jdbc.core.RowMapper;
  * @author olhsha
  */
 public class JdbcCachedRepresentationDao extends JdbcResourceDao implements CachedRepresentationDao {
-   
-   
+
     public JdbcCachedRepresentationDao(DataSource dataSource) {
         setDataSource(dataSource);
         internalIdName = cached_representation_id;
         resourceTableName = cachedRepresentationTableName;
     }
-
-  
 
     /////////////////////////// GETTERS  ////////////////////////////////////////
     @Override
@@ -70,7 +67,7 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
             return result;
         }
     };
-    
+
     /////////////////////////// GETTERS  ////////////////////////////////////////
     @Override
     public Blob getCachedRepresentationBlob(Number internalID) {
@@ -86,21 +83,22 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
     }
     private final RowMapper<Blob> cachedRepresentationBlobRowMapper = new RowMapper<Blob>() {
         @Override
-        public Blob mapRow(ResultSet rs, int rowNumber) throws SQLException {           
+        public Blob mapRow(ResultSet rs, int rowNumber) throws SQLException {
             return rs.getBlob(file_);
         }
     };
-    
-    //////////////////////////////////////
 
-    private boolean cachedIsInUse(Number cachedID) {      
+    //////////////////////////////////////
+    private boolean cachedIsInUse(Number cachedID) {
         StringBuilder sql = new StringBuilder("SELECT ");
-        sql.append(version_id).append(" FROM ").append(versionsCachedRepresentationsTableName).append(" WHERE ").append(cached_representation_id).append("= ? LIMIT 1");
-        List<Number> result = getSimpleJdbcTemplate().query(sql.toString(), versionIDRowMapper, cachedID);
-        return (!result.isEmpty());
+        sql.append(source_id).append(" FROM ").append(sourcesCachedRepresentationsTableName).append(" WHERE ").append(cached_representation_id).append("= ? LIMIT 1");
+        List<Number> result = getSimpleJdbcTemplate().query(sql.toString(), sourceIDRowMapper, cachedID);
+        if (result != null) {
+            return (!result.isEmpty());
+        } else {
+            return false;
+        }
     }
-    
- 
 
     //////////////////////// ADDERS ///////////////////////////////
     @Override
@@ -113,7 +111,7 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
         params.put("type", cachedInfo.getType());
         params.put("blob", cachedBlob);
         StringBuilder sql = new StringBuilder("INSERT INTO ");
-        sql.append(cachedRepresentationTableName).append("(").append(external_id).append(",").append(mime_type).append(",").append(tool).append("," ).append(type_).append("," ).append(file_).append(" ) VALUES (:externalId, :mime_type,  :tool, :type, :blob)");
+        sql.append(cachedRepresentationTableName).append("(").append(external_id).append(",").append(mime_type).append(",").append(tool).append(",").append(type_).append(",").append(file_).append(" ) VALUES (:externalId, :mime_type,  :tool, :type, :blob)");
         final int affectedRows = getSimpleJdbcTemplate().update(sql.toString(), params);
         return (affectedRows > 0 ? getInternalID(externalIdentifier) : null);
     }
@@ -121,14 +119,12 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
     /////////////////////// DELETERS  //////////////////////////////////////////////
     @Override
     public int deleteCachedRepresentation(Number internalID) {
-        if (cachedIsInUse(internalID)){
-           return 0;
+        if (cachedIsInUse(internalID)) {
+            return 0;
         }
-        
+
         StringBuilder sql = new StringBuilder("DELETE FROM ");
         sql.append(cachedRepresentationTableName).append(" WHERE ").append(cached_representation_id).append(" = ?");
-        return  getSimpleJdbcTemplate().update(sql.toString(), internalID);
+        return getSimpleJdbcTemplate().update(sql.toString(), internalID);
     }
-    
-   
 }

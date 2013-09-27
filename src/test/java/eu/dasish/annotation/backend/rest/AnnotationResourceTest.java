@@ -55,7 +55,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 @RunWith(value = SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "/spring-test-config/mockery.xml", "/spring-test-config/mockDBIntegrityService.xml", 
 "/spring-test-config/mockAnnotationDao.xml","/spring-test-config/mockUserDao.xml", "/spring-test-config/mockNotebookDao.xml",
-"/spring-test-config/mockSourceDao.xml", "/spring-test-config/mockVersionDao.xml", "/spring-test-config/mockCachedRepresentationDao.xml"})
+"/spring-test-config/mockSourceDao.xml", "/spring-test-config/mockCachedRepresentationDao.xml"})
 public class AnnotationResourceTest {
     
     @Autowired
