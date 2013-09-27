@@ -39,12 +39,6 @@ import eu.dasish.annotation.schema.SourceInfo;
 import eu.dasish.annotation.schema.SourceList;
 import eu.dasish.annotation.schema.User;
 import eu.dasish.annotation.schema.UserWithPermission;
-import eu.dasish.annotation.schema.Version;
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.sql.Blob;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -66,8 +60,6 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     @Autowired
     CachedRepresentationDao cachedRepresentationDao;
     @Autowired
-    VersionDao versionDao;
-    @Autowired
     SourceDao sourceDao;
     @Autowired
     AnnotationDao annotationDao;
@@ -79,7 +71,6 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     public void setServiceURI(String serviceURI) {
         userDao.setServiceURI(serviceURI);
         cachedRepresentationDao.setServiceURI(serviceURI);
-        versionDao.setServiceURI(serviceURI);
         sourceDao.setServiceURI(serviceURI);
         annotationDao.setServiceURI(serviceURI);
         notebookDao.setServiceURI(serviceURI);
@@ -121,6 +112,9 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     @Override
     public Annotation getAnnotation(Number annotationID) throws SQLException {
         Annotation result = annotationDao.getAnnotationWithoutSourcesAndPermissions(annotationID);
+        if (result == null) {
+            return null;
+        }
         List<Number> sourceIDs = annotationDao.retrieveSourceIDs(annotationID);
         SourceInfoList sis = new SourceInfoList();
         for (Number sourceID : sourceIDs) {
@@ -191,20 +185,20 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
 
     @Override
     public List<Number> getSourcesWithNoCachedRepresentation(Number annotationID) {
+        if (annotationID == null) {
+            return null;
+        }
         List<Number> result = new ArrayList<Number>();
         List<Number> sourceIDs = annotationDao.retrieveSourceIDs(annotationID);
         for (Number sourceID : sourceIDs) {
-            List<Number> versions = sourceDao.retrieveVersionList(sourceID);
-            for (Number versionID : versions) {
-                List<Number> cachedRepresentations = versionDao.retrieveCachedRepresentationList(versionID);
-                if (cachedRepresentations == null) {
+            List<Number> versions = sourceDao.getCachedRepresentations(sourceID);
+            if (versions == null) {
+                result.add(sourceID);
+            } else {
+                if (versions.isEmpty()) {
                     result.add(sourceID);
-                } else {
-                    if (cachedRepresentations.isEmpty()) {
-                        result.add(sourceID);
-                    }
-
                 }
+
             }
         }
         return result;
@@ -219,18 +213,7 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         return result;
     }
 
-    // TODO UNIT test
-    @Override
-    public ReferenceList retrieveVersionList(Number sourceID) {
-        ReferenceList versionList = new ReferenceList();
-        List<Number> versionIDs = sourceDao.retrieveVersionList(sourceID);
-        List<String> versionREFs = new ArrayList<String>();
-        for (Number versionID : versionIDs) {
-            versionREFs.add(versionDao.getExternalID(versionID).toString());
-        }
-        versionList.getRef().addAll(versionREFs);
-        return versionList;
-    }
+ 
 
     // TODO unit test
     @Override
@@ -243,30 +226,43 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     public Blob getCachedRepresentationBlob(Number cachedID) throws SQLException {
         return cachedRepresentationDao.getCachedRepresentationBlob(cachedID);
     }
+    
+    @Override
+    public ReferenceList getSiblingSources(Number sourceID) throws SQLException {
+        List<Number> cachedIDs = sourceDao.getCachedRepresentations(sourceID);
+        ReferenceList referenceList = new ReferenceList();
+        for (Number cachedID: cachedIDs) {
+            referenceList.getRef().add(cachedRepresentationDao.getExternalID(cachedID).toString());
+        }
+        return referenceList;
+    }
+    
+    ///// UPDATERS /////////////////
+    
+    @Override
+    public int updateSiblingSourceClassForSource(Number sourceID, Number siblingSourceID) throws SQLException {
+        
+        Integer classIDsibling = sourceDao.getSourceSiblingClass(siblingSourceID);
+        if (classIDsibling == null) {
+             return 0; 
+        }
+        return sourceDao.updateSiblingClass(sourceID, classIDsibling);
+        
+    }
 
     /////////////// ADDERS  /////////////////////////////////
     @Override
-    public Number[] addCachedForVersion(Number versionID, CachedRepresentationInfo cachedInfo, Blob cachedBlob) {
+    public Number[] addCachedForSource(Number sourceID, CachedRepresentationInfo cachedInfo, Blob cachedBlob) throws SQLException {
         Number[] result = new Number[2];
         result[1] = cachedRepresentationDao.getInternalIDFromURI(cachedInfo.getRef());
         if (result[1] == null) {
             result[1] = cachedRepresentationDao.addCachedRepresentation(cachedInfo, cachedBlob);
         }
-        result[0] = versionDao.addVersionCachedRepresentation(versionID, result[1]);
+        result[0] = sourceDao.addSourceCachedRepresentation(sourceID, result[1]);
         return result;
 
     }
 
-    @Override
-    public Number[] addSiblingVersionForSource(Number sourceID, Version version) throws SQLException {
-        Number[] result = new Number[2];
-        result[1] = versionDao.getInternalIDFromURI(version.getURI());
-        if (result[1] == null) {
-            result[1] = versionDao.addVersion(version);
-        }
-        result[0] = sourceDao.addSourceVersion(sourceID, result[1]);
-        return result;
-    }
 
     // TODo: mapping uri to external ID
     @Override
@@ -279,9 +275,7 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
                 int affectedRows = annotationDao.addAnnotationSource(annotationID, sourceIDRunner);
             } else {
                 Source newSource = createFreshSource(sourceInfo);
-                Version newVersion = createFreshVersion(sourceInfo);
                 Number sourceID = sourceDao.addSource(newSource);
-                Number[] intermediateResult = addSiblingVersionForSource(sourceID, newVersion);
                 String sourceTemporaryID = sourceDao.stringURItoExternalID(sourceInfo.getRef());
                 result.put(sourceTemporaryID, sourceDao.getExternalID(sourceID).toString());
                 int affectedRows = annotationDao.addAnnotationSource(annotationID, sourceID);
@@ -298,7 +292,7 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         return annotationID;
     }
 
-    // TODO: units test
+    // TODO: unit test
     @Override
     public Number updateUsersAnnotation(Number userID, Annotation annotation) throws SQLException {
         Number annotationID = annotationDao.updateAnnotation(annotation, userID);
@@ -323,9 +317,9 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     }
 
     @Override
-    public int[] deleteCachedOfVersion(Number versionID, Number cachedID) {
+    public int[] deleteCachedRepresentationOfSource(Number versionID, Number cachedID) throws SQLException{
         int[] result = new int[2];
-        result[0] = versionDao.deleteVersionCachedRepresentation(versionID, cachedID);
+        result[0] = sourceDao.deleteSourceCachedRepresentation(versionID, cachedID);
         if (result[0] > 0) {
             result[1] = cachedRepresentationDao.deleteCachedRepresentation(cachedID);
         } else {
@@ -335,46 +329,21 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         return result;
     }
 
+  
     @Override
-    public int[] deleteAllCachedOfVersion(Number versionID) {
-        int[] result = new int[3];
-        if (!versionDao.versionIsInUse(versionID)) {
-            List<Number> cachedRepresentations = versionDao.retrieveCachedRepresentationList(versionID);
-            result[1] = versionDao.deleteAllVersionCachedRepresentation(versionID);
-            result[0] = versionDao.deleteVersion(versionID);
-            result[2] = 0;
-            for (Number cachedID : cachedRepresentations) {
-                result[2] = result[2] + cachedRepresentationDao.deleteCachedRepresentation(cachedID);
-
-            }
-        } else {
-            result[0] = 0;
-            result[1] = 0;
-            result[2] = 0;
+    public int[] deleteAllCachedRepresentationsOfSource(Number sourceID) throws SQLException{
+        int[] result = new int[2];
+        result[0]=0;
+        result[1]=0;
+        List<Number> cachedIDs = sourceDao.getCachedRepresentations(sourceID);
+        for (Number cachedID: cachedIDs) {
+            int[] currentResult = deleteCachedRepresentationOfSource(sourceID, cachedID);
+            result[0] = result[0] + currentResult[0];
+            result[1] = result[1] + currentResult[1];
         }
         return result;
     }
 
-    @Override
-    public int[] deleteAllVersionsOfSource(Number sourceID) throws SQLException {
-        int[] result = new int[3];
-        if (!sourceDao.sourceIsInUse(sourceID)) {
-            List<Number> versions = sourceDao.retrieveVersionList(sourceID);
-            result[1] = sourceDao.deleteAllSourceVersion(sourceID);
-            result[0] = sourceDao.deleteSource(sourceID);
-            result[2] = 0;
-            for (Number versionID : versions) {
-                int[] deleteVersion = deleteAllCachedOfVersion(versionID);
-                result[2] = result[2] + deleteVersion[0];
-            }
-        } else {
-            result[0] = 0;
-            result[1] = 0;
-            result[2] = 0;
-        }
-        return result;
-
-    }
 
     @Override
     public int[] deleteAnnotation(Number annotationID) throws SQLException {
@@ -385,8 +354,8 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         result[0] = annotationDao.deleteAnnotation(annotationID);
         result[3] = 0;
         for (Number sourceID : sourceIDs) {
-            int[] deleteSource = deleteAllVersionsOfSource(sourceID);
-            result[3] = result[3] + deleteSource[1];
+            deleteAllCachedRepresentationsOfSource(sourceID);            
+            result[3] = result[3] + sourceDao.deleteSource(sourceID);
         }
         return result;
     }
@@ -399,12 +368,7 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         return source;
     }
 
-    /////////////////////////////////////////
-    private Version createFreshVersion(SourceInfo sourceInfo) {
-        Version version = new Version();
-        version.setVersion(sourceInfo.getVersion());
-        return version;
-    }
+   
 
     private int addSources(Annotation annotation, Number annotationID) throws SQLException {
         List<SourceInfo> sources = annotation.getTargetSources().getTargetSource();

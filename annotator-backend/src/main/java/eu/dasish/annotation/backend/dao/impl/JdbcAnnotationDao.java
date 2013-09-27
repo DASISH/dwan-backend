@@ -57,6 +57,9 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
   
     @Override
     public List<Number> retrieveSourceIDs(Number annotationID) {
+        if (annotationID == null ) {
+            return null;
+        }
         StringBuilder sql = new StringBuilder("SELECT DISTINCT ");
         sql.append(source_id).append(" FROM ").append(annotationsSourcesTableName).append(" WHERE ").append(annotation_id).append("= ?");
         return getSimpleJdbcTemplate().query(sql.toString(), sourceIDRowMapper, annotationID);

@@ -71,11 +71,6 @@ public class TestBackendConstants {
     
     public static final String _TEST_USER_XXX_EXT_ID = "00000000-0000-0000-0000-000000000666"; 
     
- ////////////////////////////////////////////////////////////////////////////////////////////////////////////   
-    
-//    INSERT INTO target_source (external_id, link_uri, version_id) VALUES ('00000000-0000-0000-0000-000000000031', 'http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia', 1); -- 1
-//    INSERT INTO target_source (external_id, link_uri, version_id) VALUES ('00000000-0000-0000-0000-000000000032', 'http://nl.wikipedia.org/wiki/Antoni_Gaud%C3%AD', 3); --2
-
     
     public static final String _TEST_SOURCE_1_EXT_ID = "00000000-0000-0000-0000-000000000031";
     public static final String _TEST_SOURCE_2_EXT_ID = "00000000-0000-0000-0000-000000000032";
@@ -83,23 +78,16 @@ public class TestBackendConstants {
     public static final String _TEST_SOURCE_1_LINK = "http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia";
     public static final String _TEST_SOURCE_2_LINK = "http://nl.wikipedia.org/wiki/Antoni_Gaud%C3%AD";
     
-    //public static final int _TEST_SOURCE_1_VERSION_ID = 1;
-    //public static final int _TEST_SOURCE_2_VERSION_ID = 3;
+    public static final String _TEST_SOURCE_1_VERSION = "version 1.0";
+    public static final String _TEST_SOURCE_2_VERSION = "version 1.0";
     
     public static final String _TEST_CACHED_REPRESENTATION_1_EXT_ID_ = "00000000-0000-0000-0000-000000000051";
-    // INSERT INTO cached_representation_info (external_id, mime_type, tool, type_, file_) VALUES ('00000000-0000-0000-0000-000000000051', 'text/html', 'latex', 'text', 'corpus1'); --1
     public static final String _TEST_CACHED_REPRESENTATION_1_MIME_TYPE_ =  "text/html";
     public static final String _TEST_CACHED_REPRESENTATION_1_TOOL_ =  "latex";
     public static final String _TEST_CACHED_REPRESENTATION_1_TYPE_ =  "text";
     public static final int _TEST_CACHED_REPRESENTATION_1_BLOB_BYTE_1 =  16;
     public static final int _TEST_CACHED_REPRESENTATION_1_BLOB_BYTE_2 =  1;
     
-    public static final String _TEST_VERSION_1_EXT_ID = "00000000-0000-0000-0000-000000000041";
-    public static final String _TEST_VERSION_2_EXT_ID = "00000000-0000-0000-0000-000000000042";
-    public static final String _TEST_VERSION_3_EXT_ID = "00000000-0000-0000-0000-000000000043";
-    public static final String _TEST_VERSION_NONEXIST_EXT_ID = "00000000-0000-0000-0000-000000000049";
-    
-    public static final String _TEST_VERSION_1_VERSIONSTRING = "SF-version 2013";
     
     public static final String _TEST_TEMP_SOURCE_ID = "Barcelona-1";
     public static final String _TEST_ANNOT_TO_ADD_NEW_SOURCE_BODY = "refers to "+_TEST_TEMP_SOURCE_ID;

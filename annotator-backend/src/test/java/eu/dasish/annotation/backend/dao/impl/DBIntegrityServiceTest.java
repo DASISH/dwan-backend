@@ -36,7 +36,6 @@ import eu.dasish.annotation.schema.Source;
 import eu.dasish.annotation.schema.SourceInfo;
 import eu.dasish.annotation.schema.SourceList;
 import eu.dasish.annotation.schema.User;
-import eu.dasish.annotation.schema.Version;
 import java.sql.Blob;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -64,7 +63,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration({"/spring-test-config/dataSource.xml", "/spring-test-config/mockery.xml", "/spring-test-config/mockAnnotationDao.xml",
     "/spring-test-config/mockUserDao.xml", "/spring-test-config/mockNotebookDao.xml",
-    "/spring-test-config/mockSourceDao.xml", "/spring-test-config/mockVersionDao.xml", "/spring-test-config/mockCachedRepresentationDao.xml",
+    "/spring-test-config/mockSourceDao.xml", "/spring-test-config/mockCachedRepresentationDao.xml",
     "/spring-config/dbIntegrityService.xml"})
 public class DBIntegrityServiceTest {
 
@@ -75,9 +74,7 @@ public class DBIntegrityServiceTest {
     @Autowired
     private UserDao userDao;
     @Autowired
-    private CachedRepresentationDao cachedRepresentationDao;
-    @Autowired
-    private VersionDao versionDao;
+    private CachedRepresentationDao cachedRepresentationDao;    
     @Autowired
     private SourceDao sourceDao;
     @Autowired
@@ -455,41 +452,32 @@ public class DBIntegrityServiceTest {
         System.out.println("test getSourcesWithNoCachedRepresentation");
         final Number annotationID = 4;
         final List<Number> sourceIDs = new ArrayList<Number>();
-        sourceIDs.add(3);
         sourceIDs.add(5);
+        sourceIDs.add(7);
         
-        final List<Number> versionIDs3 = new ArrayList<Number>();
-        versionIDs3.add(4);
-        final List<Number> versionIDs5 = new ArrayList<Number>();
-        versionIDs5.add(7);
+        final List<Number> cachedIDs5 = new ArrayList<Number>();
+        cachedIDs5.add(7);
+        final List<Number> cachedIDs7 = new ArrayList<Number>();
         
-        final List<Number> cachedIDs4 = new ArrayList<Number>();
-        cachedIDs4.add(4);
-        
+       
         
         mockery.checking(new Expectations() {
             {
                 oneOf(annotationDao).retrieveSourceIDs(annotationID);
                 will(returnValue(sourceIDs));
 
-                oneOf(sourceDao).retrieveVersionList(3);
-                will(returnValue(versionIDs3));
+                oneOf(sourceDao).getCachedRepresentations(5);
+                will(returnValue(cachedIDs5));
                 
-                oneOf(sourceDao).retrieveVersionList(5);
-                will(returnValue(versionIDs5));
-
-                oneOf(versionDao).retrieveCachedRepresentationList(4);
-                will(returnValue(cachedIDs4));
-
-                oneOf(versionDao).retrieveCachedRepresentationList(7);
-                will(returnValue(null)); 
+                oneOf(sourceDao).getCachedRepresentations(7);
+                will(returnValue(cachedIDs7));
                 
             }
         });
         
         List<Number> result = dbIntegrityService.getSourcesWithNoCachedRepresentation(annotationID);
         assertEquals(1, result.size());
-        assertEquals(5, result.get(0)); // source number 5 has no cached
+        assertEquals(7, result.get(0)); // source number 7 has no cached
     }
     
    
@@ -524,73 +512,43 @@ public class DBIntegrityServiceTest {
                 oneOf(cachedRepresentationDao).addCachedRepresentation(newCachedInfo, newCachedBlob);
                 will(returnValue(newCachedID));
 
-                one(versionDao).addVersionCachedRepresentation(versionID, newCachedID);
+                one(sourceDao).addSourceCachedRepresentation(versionID, newCachedID);
                 will(returnValue(1));
 
             }
         });
 
 
-        Number[] result = dbIntegrityService.addCachedForVersion(versionID, newCachedInfo, newCachedBlob);
+        Number[] result = dbIntegrityService.addCachedForSource(versionID, newCachedInfo, newCachedBlob);
         assertEquals(2, result.length);
         assertEquals(1, result[0]);
         assertEquals(newCachedID, result[1]);
     }
 
     /**
-     * Test of addSiblingVersionForSource method, of class
+     * Test of updateSiblingSourceClassForSource method, of class
      * DBIntegrityServiceImlp.
-     */
-    // TODO: teset with non-null esrive URI
+     * 
+  **/
+    
     @Test
-    public void testAddSiblingVersionForSource() throws Exception {
+    public void testUpdateSiblingSourceClassForSource() throws Exception {
         System.out.println("test addSiblingVersionForSource ");
 
-        // test adding completely new version 
-        final Version mockVersion = new Version(); // should be # 8
-        String externalID = UUID.randomUUID().toString();
-        mockVersion.setURI(TestBackendConstants._TEST_SERVLET_URI + externalID);
-        mockVersion.setVersion("version 8");
-
+       
         mockery.checking(new Expectations() {
             {
-                oneOf(versionDao).getInternalIDFromURI(mockVersion.getURI());
-                will(returnValue(null));
+                oneOf(sourceDao).getSourceSiblingClass(2);
+                will(returnValue(2));
 
-                oneOf(versionDao).addVersion(mockVersion);
-                will(returnValue(8));
-
-                oneOf(sourceDao).addSourceVersion(1, 8);
+                oneOf(sourceDao).updateSiblingClass(1, 2);
                 will(returnValue(1));
 
             }
         });
 
-        Number[] result = dbIntegrityService.addSiblingVersionForSource(1, mockVersion);
-        assertEquals(2, result.length);
-        assertEquals(1, result[0]);
-        assertEquals(8, result[1]);
-
-
-        // Another test: connecting the existing version to the source
-
-        final Version mockVersionTwo = new Version(); // should be # 3
-        mockVersionTwo.setURI(TestBackendConstants._TEST_SERVLET_URI + TestBackendConstants._TEST_VERSION_3_EXT_ID);
-        mockVersionTwo.setVersion("version 3");
-
-        mockery.checking(new Expectations() {
-            {
-                oneOf(versionDao).getInternalIDFromURI(mockVersionTwo.getURI());
-                will(returnValue(3));
-
-                oneOf(sourceDao).addSourceVersion(1, 3);
-                will(returnValue(1));
-            }
-        });
-        Number[] resultTwo = dbIntegrityService.addSiblingVersionForSource(1, mockVersionTwo);
-        assertEquals(2, resultTwo.length);
-        assertEquals(1, resultTwo[0]);
-        assertEquals(3, resultTwo[1]);
+        
+        assertEquals(1, dbIntegrityService.updateSiblingSourceClassForSource(1, 2));
     }
 
     /**
@@ -600,11 +558,30 @@ public class DBIntegrityServiceTest {
     public void testAddSourcesForAnnotation() throws Exception {
         System.out.println("test addSourcesForAnnotation");
 
+//        @Override
+//        public Map<String, String> addSourcesForAnnotation(Number annotationID, List<SourceInfo> sources) throws SQLException {
+//        Map<String, String> result = new HashMap<String, String>();
+//        Number sourceIDRunner;
+//        for (SourceInfo sourceInfo : sources) {
+//            sourceIDRunner = sourceDao.getInternalIDFromURI(sourceInfo.getRef());
+//            if (sourceIDRunner != null) {
+//                int affectedRows = annotationDao.addAnnotationSource(annotationID, sourceIDRunner);
+//            } else {
+//                Source newSource = createFreshSource(sourceInfo);
+//                Number sourceID = sourceDao.addSource(newSource);
+//                String sourceTemporaryID = sourceDao.stringURItoExternalID(sourceInfo.getRef());
+//                result.put(sourceTemporaryID, sourceDao.getExternalID(sourceID).toString());
+//                int affectedRows = annotationDao.addAnnotationSource(annotationID, sourceID);
+//            }
+//        }
+//        return result;
+//    }
+        
         // test 1: adding an existing source
         SourceInfo testSourceOne = new SourceInfo();
         testSourceOne.setLink(TestBackendConstants._TEST_SOURCE_1_LINK);
         testSourceOne.setRef(TestBackendConstants._TEST_SERVLET_URI + TestBackendConstants._TEST_SOURCE_1_EXT_ID);
-        testSourceOne.setVersion(TestBackendConstants._TEST_VERSION_1_EXT_ID);
+        testSourceOne.setVersion(TestBackendConstants._TEST_SOURCE_2_VERSION );
         final List<SourceInfo> mockSourceListOne = new ArrayList<SourceInfo>();
         mockSourceListOne.add(testSourceOne);
 
@@ -620,6 +597,26 @@ public class DBIntegrityServiceTest {
 
         Map<String, String> result = dbIntegrityService.addSourcesForAnnotation(1, mockSourceListOne);
         assertEquals(0, result.size());
+        
+        //        @Override
+//        public Map<String, String> addSourcesForAnnotation(Number annotationID, List<SourceInfo> sources) throws SQLException {
+//        Map<String, String> result = new HashMap<String, String>();
+//        Number sourceIDRunner;
+//        for (SourceInfo sourceInfo : sources) {
+//            sourceIDRunner = sourceDao.getInternalIDFromURI(sourceInfo.getRef());
+//            if (sourceIDRunner != null) {
+//                int affectedRows = annotationDao.addAnnotationSource(annotationID, sourceIDRunner);
+//            } else {
+//                Source newSource = createFreshSource(sourceInfo);
+//                Number sourceID = sourceDao.addSource(newSource);
+//                String sourceTemporaryID = sourceDao.stringURItoExternalID(sourceInfo.getRef());
+//                result.put(sourceTemporaryID, sourceDao.getExternalID(sourceID).toString());
+//                int affectedRows = annotationDao.addAnnotationSource(annotationID, sourceID);
+//            }
+//        }
+//        return result;
+//    }
+        
 
         // test 2: adding a new source
         SourceInfo testSourceTwo = new SourceInfo();
@@ -637,29 +634,16 @@ public class DBIntegrityServiceTest {
                 oneOf(sourceDao).getInternalIDFromURI(mockSourceListTwo.get(0).getRef());
                 will(returnValue(null));
 
-
                 oneOf(sourceDao).addSource(with(aNonNull(Source.class)));
-                will(returnValue(6)); //# the next new number is 6, we have already 5 sources
-
-                ////////////  mockery in the call addSiblingVersionForSource //////////////
-                oneOf(versionDao).getInternalIDFromURI(null);
-                will(returnValue(null));
-
-                oneOf(versionDao).addVersion(with(aNonNull(Version.class)));
-                will(returnValue(8)); // next free number
-
-                oneOf(sourceDao).addSourceVersion(6, 8);
-                will(returnValue(1));
-
-                //////////////////////////////////////
+                will(returnValue(8)); //# the next new number is 8, we have already 7 sources
 
                 oneOf(sourceDao).stringURItoExternalID(mockSourceListTwo.get(0).getRef());
                 will(returnValue(tempSourceID));
 
-                oneOf(sourceDao).getExternalID(6);
+                oneOf(sourceDao).getExternalID(8);
                 will(returnValue(mockNewSourceUUID));
 
-                oneOf(annotationDao).addAnnotationSource(1, 6);
+                oneOf(annotationDao).addAnnotationSource(1, 8);
                 will(returnValue(1));
 
             }
@@ -769,125 +753,59 @@ public class DBIntegrityServiceTest {
      * Test of deleteCachedForVersion method, of class DBIntegrityServiceImlp.
      */
     @Test
-    public void testDeleteCachedForVersion() {
-        System.out.println("deleteCachedForVersion");
+    public void testDeleteCachedRepresentationForSource() throws SQLException{
+        System.out.println("test deleteCachedRepresentationForSource");
         mockery.checking(new Expectations() {
             {
-                oneOf(versionDao).deleteVersionCachedRepresentation(6, 5);
+                oneOf(sourceDao).deleteSourceCachedRepresentation(5, 7);
                 will(returnValue(1));
 
-                oneOf(cachedRepresentationDao).deleteCachedRepresentation(5);
-                will(returnValue(0)); // cached is used by another version
+                oneOf(cachedRepresentationDao).deleteCachedRepresentation(7);
+                will(returnValue(1)); // cached is used by another version
 
             }
         });
 
-        int[] result = dbIntegrityService.deleteCachedOfVersion(6, 5);
+        int[] result = dbIntegrityService.deleteCachedRepresentationOfSource(5, 7);
         assertEquals(2, result.length);
         assertEquals(1, result[0]);
-        assertEquals(0, result[1]);
+        assertEquals(1, result[1]);
     }
 
     /////////////////////////////////////////////
     @Test
-    public void testDeleteAalCachedOfVersion() {
-        System.out.println("deleteVersion");
+    public void testDeleteAllCachedRepresentationsOfSource() throws SQLException{
+        System.out.println("test deleteAllCachedRepresentationsOfSource");
         final List<Number> cachedList = new ArrayList<Number>();
-        cachedList.add(5);
-
+        cachedList.add(1);
+        cachedList.add(2);
+        
         mockery.checking(new Expectations() {
             {
-                oneOf(versionDao).versionIsInUse(6);
-                will(returnValue(false));
-
-                oneOf(versionDao).retrieveCachedRepresentationList(6);
+                oneOf(sourceDao).getCachedRepresentations(1);
                 will(returnValue(cachedList));
-
-                oneOf(versionDao).deleteAllVersionCachedRepresentation(6);
+                
+                oneOf(sourceDao).deleteSourceCachedRepresentation(1, 1);
                 will(returnValue(1));
-
-                oneOf(versionDao).deleteVersion(6);
+                
+                oneOf(cachedRepresentationDao).deleteCachedRepresentation(1);
                 will(returnValue(1));
+                
+                oneOf(sourceDao).deleteSourceCachedRepresentation(1, 2);
+                will(returnValue(1));
+                
+                 oneOf(cachedRepresentationDao).deleteCachedRepresentation(2);
+                 will(returnValue(1));
 
-                oneOf(cachedRepresentationDao).deleteCachedRepresentation(5);
-                will(returnValue(0)); // cached is used by another version
             }
         });
 
-        int[] result = dbIntegrityService.deleteAllCachedOfVersion(6);
-        assertEquals(1, result[0]); //version
-        assertEquals(1, result[1]); // versions-cached
-        assertEquals(0, result[2]);//cached 5 is in use
-
-        //Another test
-
-
-        mockery.checking(new Expectations() {
-            {
-                oneOf(versionDao).versionIsInUse(5);
-                will(returnValue(true));
-            }
-        });
-
-
-        int[] resultTwo = dbIntegrityService.deleteAllCachedOfVersion(5); // version is in use by the source 4
-        assertEquals(0, resultTwo[0]);
-        assertEquals(0, resultTwo[1]);
-        assertEquals(0, resultTwo[2]);
-
+        int[] result = dbIntegrityService.deleteAllCachedRepresentationsOfSource(1);
+        assertEquals(2, result[0]); // # affected rows in sources_cacheds
+        assertEquals(2, result[1]); // # affected rows in cacheds 
     }
 
-    @Test
-    public void testDeleteAllVersionsOfSource() throws SQLException {
-        // test 1: source in use by some annotation
-        mockery.checking(new Expectations() {
-            {
-                oneOf(sourceDao).sourceIsInUse(1);
-                will(returnValue(true));
-            }
-        });
-
-        int[] result = dbIntegrityService.deleteAllVersionsOfSource(1); //the source is in use, should not be deleted
-        assertEquals(0, result[0]); // 
-        assertEquals(0, result[1]);
-
-        // test 2 : source is not used by annotations     
-        final List<Number> versionList = new ArrayList<Number>();
-        versionList.add(7);
-        mockery.checking(new Expectations() {
-            {
-                oneOf(sourceDao).sourceIsInUse(5);
-                will(returnValue(false));
-
-                oneOf(sourceDao).retrieveVersionList(5);
-                will(returnValue(versionList));
-
-                oneOf(sourceDao).deleteAllSourceVersion(5);
-                will(returnValue(1));
-
-                oneOf(sourceDao).deleteSource(5);
-                will(returnValue(1));
-
-                oneOf(versionDao).versionIsInUse(7);
-                will(returnValue(false)); //not mentioned in the table "sources_versions" after deleteing(5,7)
-
-                oneOf(versionDao).retrieveCachedRepresentationList(7);
-                will(returnValue(new ArrayList<Number>())); // no cached representations for version 7, the list is just empty
-
-                oneOf(versionDao).deleteAllVersionCachedRepresentation(7);
-
-                oneOf(versionDao).deleteVersion(7);
-                will(returnValue(1));
-            }
-        });
-
-
-        int[] resultTwo = dbIntegrityService.deleteAllVersionsOfSource(5);// the source will be deleted because it is not referred by any annotation
-        assertEquals(3, resultTwo.length);
-        assertEquals(1, resultTwo[0]); // source 7 is deleted
-        assertEquals(1, resultTwo[1]); // row (5,7) in "sorces_versions" is deleted
-        assertEquals(1, resultTwo[2]); // version 7 is deleted
-    }
+    
 
     /**
      * Test of deleteAnnotationWithSources method, of class
@@ -900,6 +818,9 @@ public class DBIntegrityServiceTest {
         // deleting annotation 3, which has its target source 2  (used by annotation # 1)
         final List<Number> mockSourceIDs = new ArrayList<Number>();
         mockSourceIDs.add(2);
+        
+        final List<Number> mockCachedIDs = new ArrayList<Number>();
+        mockCachedIDs.add(3);
 
         mockery.checking(new Expectations() {
             {
@@ -907,24 +828,35 @@ public class DBIntegrityServiceTest {
                 will(returnValue(3));
 
                 oneOf(annotationDao).retrieveSourceIDs(3);
-                will(returnValue(mockSourceIDs));
-
+                will(returnValue(mockSourceIDs));                
+              
                 oneOf(annotationDao).deleteAllAnnotationSource(3);
                 will(returnValue(1));
 
                 oneOf(annotationDao).deleteAnnotation(3);
                 will(returnValue(1));
+                
+                oneOf(sourceDao).getCachedRepresentations(2);
+                will(returnValue(mockCachedIDs));
+                
+                oneOf(sourceDao).deleteSourceCachedRepresentation(2, 3);
+                will(returnValue(1));
+                
+                oneOf(cachedRepresentationDao).deleteCachedRepresentation(3);
+                will(returnValue(1));
+                
+                oneOf(sourceDao).deleteSource(2);
+                will(returnValue(1));
 
-                oneOf(sourceDao).sourceIsInUse(2); // expectation for deleteAllVersionsOfSource
-                will(returnValue(true));
+               
             }
         });
         int[] result = dbIntegrityService.deleteAnnotation(3);// the source will be deleted because it is not referred by any annotation
         assertEquals(4, result.length);
         assertEquals(1, result[0]); // annotation 3 is deleted
-        assertEquals(3, result[1]); // 3 rows in "annotation proncipal permissions are deleted"
+        assertEquals(3, result[1]); // 3 rows in "annotation principal permissions are deleted"
         assertEquals(1, result[2]);  // row (3,2) in "annotations_sources" is deleted
-        assertEquals(0, result[3]); //the source 2 is not deleted because it is still in use by anntation 2
+        assertEquals(1, result[3]); //  source 3 is deleted 
     }
 //    @Test
 //    public void testCreateSource(){  

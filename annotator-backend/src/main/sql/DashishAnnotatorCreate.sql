@@ -36,151 +36,61 @@ SET client_encoding = 'UTF8';
 SET default_with_oids = false;
 
 
----------- BASE TABLES ----------------------------------------------
-
---<xs:complexType name="User">
---        <xs:sequence>
---            <xs:element name="additionalInfo">
---                <xs:complexType>
---                    <xs:sequence>
---                        <xs:any processContents="lax" maxOccurs="unbounded"/>
---                    </xs:sequence>
---                    <xs:anyAttribute processContents="lax"/>
---                </xs:complexType>
---            </xs:element>
---       </xs:sequence>
---        <xs:attribute name="URI" type="xs:anyURI" use="required"/>
---        <xs:attribute name="displayName" type="xs:string" use="required"/>
---        <xs:attribute name="eMail" type="xs:string" use="required"/>
---   </xs:complexType>
 
 
 CREATE TABLE principal (
     principal_id SERIAL UNIQUE NOT NULL,
-    external_id UUID UNIQUE NOT NULL,
+    external_id text UNIQUE NOT NULL,
     remote_id text,
     principal_name text,
     e_mail text
 );
 
-
-
-------------------------------------------------------------------------
--- <xs:complexType name="Annotation">
---        <xs:sequence>
---            <xs:element name="owner" type="ResourceREF" minOccurs="1"/>
---            <xs:element name="headline" type="xs:string" minOccurs="1"/>
---            <!-- schematron checks the length <== 100 -->
---            <xs:element name="body" type="AnnotationBody" minOccurs="1"/>
---            <xs:element name="targetSources" type="NewOrExistingSourceInfos" minOccurs="1"/>
---            <xs:element name="permissions" type="ResourceREF"/>
---        </xs:sequence>
---        <xs:attribute name="URI" type="xs:anyURI" use="required"/>
---        <xs:attribute name="timeStamp" type="xs:dateTime" use="required"/>
---    </xs:complexType>
+CREATE TABLE notebook (
+    notebook_id SERIAL UNIQUE NOT NULL,
+    external_id text UNIQUE NOT NULL,
+    time_stamp timestamp with time zone default now(),
+    title text,
+    owner_id integer NOT NULL
+);
 
 
 CREATE TABLE annotation (
     annotation_id SERIAL UNIQUE NOT NULL, 
-    external_id UUID UNIQUE NOT NULL,
+    external_id text UNIQUE NOT NULL,
     time_stamp timestamp with time zone default now(),
     owner_id integer REFERENCES principal(principal_id), 
-    --  there must be exactly one owner ++ 
-     -- and this owner must be in the table "permissions" as owner!!
     headline text,
     body_text text,
     body_mimetype text
 );
 
------------------------------------------------------------------------
--- <xs:complexType name="CachedRepresentationInfo">
---        <xs:attribute name="ref" type="xs:anyURI" use="required"/>
---        <xs:attribute name="mimeType" type="xs:string" use="required"/>
---        <xs:attribute name="tool" type="xs:string" use="required"/>
---        <xs:attribute name="type" type="xs:string" use="required"/>
---    </xs:complexType>
 
--- quoting the standard about BLOB:
--- For the BLOB type, the length limit can be defined in units of kilobyte (K, 1024), 
--- megabyte (M, 1024 * 1024) or gigabyte (G, 1024 * 1024 * 1024), using the <multiplier>. 
--- If BLOB is used without specifying the length, the length defaults to 1GB.
 
+CREATE TABLE target_source (
+    source_id SERIAL UNIQUE NOT NULL,
+    external_id text UNIQUE NOT NULL,
+    time_stamp timestamp with time zone default now(),
+    link_uri text,    
+    sibling_source_class int,
+    version text,
+    unique (sibling_source_class, version)
+);
 
 CREATE TABLE cached_representation (
     cached_representation_id SERIAL UNIQUE NOT NULL,
-    external_id UUID UNIQUE NOT NULL,
+    external_id text UNIQUE NOT NULL,
     mime_type text,
     tool text,
     type_ text, 
     file_ blob 
 );
 
--- soundness there must be at least one version referring to this cahced representation
-
-----------------------------------------------------------------------
--- <xs:complexType name="Version">
---        <xs:sequence>
---            <xs:element name="version" type="xs:string"/>
---            <xs:element name="cachedRepresentations" type="CachedRepresentations"/>
---        </xs:sequence>
---    </xs:complexType>
-
-CREATE TABLE version (
-    version_id SERIAL UNIQUE NOT NULL,
-    external_id UUID UNIQUE NOT NULL,
-    version text,
-    --  SOUNDNESS: there must be at least one row with this version_id in the verions_cached_representations table
-);
-
-----------------------------------------------------------------
-
- -- <xs:complexType name="Source">
- --       <xs:sequence>
- --           <xs:element name="versions-siblings" type="ResourceREF" minOccurs="1"/>
- --       </xs:sequence>
- --       <xs:attribute name="URI" type="xs:anyURI" use="required"/>
- --       <xs:attribute name="timeSatmp" type="xs:dateTime" use="required"/>
- --       <xs:attribute name="link" type="xs:anyURI" use="required"/>
- --       <xs:attribute name="version" type="xs:string" use="required"/>
- --   </xs:complexType>
-
-CREATE TABLE target_source (
-    source_id SERIAL UNIQUE NOT NULL,
-    external_id UUID UNIQUE NOT NULL,
-    time_stamp timestamp with time zone default now(),
-    link_uri text,
-    version UUID REFERENCES version(external_id), 
-    -- SOUNDNESS: there must be exactly version at the version table  ++   
-    -- soundness: there must be at least one annotation referring to this source
-);
-
-
------------------------------------------------------------------------------------
-
-CREATE TABLE notebook (
-    notebook_id SERIAL UNIQUE NOT NULL,
-    external_id UUID UNIQUE NOT NULL,
-    time_stamp timestamp with time zone default now(),
-    title text,
-    owner_id integer NOT NULL
--- soundness:  there must be at least one target source in the annotations_target_sources table
-);
-
-
---------------------------------------------------------------------------------------------
---  <xs:simpleType name="Permission">
---         <xs:restriction base="xs:string">
---             <xs:enumeration value="owner"/>
---             <xs:enumeration value="reader"/>
---             <xs:enumeration value="writer"/>
---         </xs:restriction>
---     </xs:simpleType>
-
 
 
 CREATE TABLE permission_ (
-  permission_mode text UNIQUE NOT NULL,
-)
+  permission_mode text UNIQUE NOT NULL
+);
 
 -----------------------------------------------------------------------
 --------------------- JOINT TABLES ------------------------------------
@@ -188,7 +98,7 @@ CREATE TABLE permission_ (
 CREATE TABLE annotations_target_sources (
    annotation_id integer REFERENCES annotation(annotation_id), -- defining a foreign key: there must be a uniquely defined row in "annotation", that is defined by "annotation_id"
    source_id integer REFERENCES target_source(source_id),
-   unique(annotation_id, source_id),
+   unique(annotation_id, source_id)
 );
 
 
@@ -196,39 +106,14 @@ CREATE TABLE annotations_target_sources (
 CREATE TABLE notebooks_annotations (
     notebook_id integer REFERENCES notebook(notebook_id),
     annotation_id integer REFERENCES annotation(annotation_id),
-    unique(notebook_id, annotation_id),
+    unique(notebook_id, annotation_id)
 );
 
-CREATE TABLE sources_versions (
+CREATE TABLE sources_cached_representations (
     source_id integer REFERENCES target_source(source_id),
-    version_id integer REFERENCES version(version_id),
-    unique(source_id, version_id),
-);
-
-CREATE TABLE versions_cached_representations (
-    version_id integer REFERENCES version(version_id),
     cached_representation_id integer REFERENCES cached_representation(cached_representation_id),
-    unique(version_id, cached_representation_id),
+    unique(source_id, cached_representation_id)
 );
-
--------------------------------------------------------------------------------
-
-
---     <xs:complexType name="UserWithPermission">
---         <xs:complexContent>
---             <xs:extension base="ResourceREF">
---                 <xs:attribute name="permission" type="Permission" use="required"/>
---             </xs:extension>
---         </xs:complexContent>
---     </xs:complexType>
-
-
---     <xs:complexType name="PermissionList">
---         <xs:sequence>
---             <xs:element name="user" type="UserWithPermission" minOccurs="1" maxOccurs="unbounded"/>
---         </xs:sequence>
---         <xs:attribute name="URI" type="xs:anyURI" use="required"/>
---     </xs:complexType>
 
 
 
@@ -237,10 +122,7 @@ CREATE TABLE annotations_principals_permissions (
 annotation_id integer REFERENCES annotation(annotation_id),
 principal_id integer REFERENCES principal(principal_id),
 permission_  text REFERENCES permission_(permission_mode),
-unique(annotation_id, principal_id),
--- 1 soundness: ??? owner in this table must be the same as the owner in the annotation table ---
--- 2 soundness ??? check for any pair (annotation, principal) there must be exactly one row in this table: 
--- impossible because of deleting an nnotation: first we have to remove it from this table
+unique(annotation_id, principal_id)
 );
 
 

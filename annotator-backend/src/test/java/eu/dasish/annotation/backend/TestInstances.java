@@ -51,7 +51,7 @@ public class TestInstances {
        SourceInfo sourceInfo =  new SourceInfo();
        sourceInfo.setLink(TestBackendConstants._TEST_SOURCE_1_LINK);
        sourceInfo.setRef(TestBackendConstants._TEST_SOURCE_1_EXT_ID);
-       sourceInfo.setVersion(TestBackendConstants._TEST_VERSION_1_EXT_ID); 
+       sourceInfo.setVersion(TestBackendConstants._TEST_SOURCE_1_VERSION); 
        
        SourceInfoList sourceInfos =  new SourceInfoList();
        sourceInfos.getTargetSource().add(sourceInfo);

@@ -71,14 +71,51 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
         }
     };
     
+    ///////////////////////////////////////////////////////
+    @Override
+    public Integer getSourceSiblingClass(Number sourceID) {
+         if (sourceID == null) {
+            return null;
+        }
+         
+        String sql = "SELECT " + sibling_source_class + " FROM " + sourceTableName + " WHERE " + source_id + " = ?";
+        List<Integer> classIDs =  getSimpleJdbcTemplate().query(sql, sourceClassRowMapper, sourceID);                
+        if (classIDs == null) {
+            return null;
+        } 
+        if (classIDs.isEmpty()) {
+            return null;
+        }  
+        return classIDs.get(0);
+     }
+    
     /////////////////////////////////////////
     @Override
-    public List<Number> retrieveVersionList(Number sourceID) {
-       
-        String sql = "SELECT " + version_id + " FROM " + sourcesVersionsTableName + " WHERE " + source_id + " = ?";
-        return getSimpleJdbcTemplate().query(sql, versionIDRowMapper, sourceID);
+    public List<Number> getSiblingSources(Number sourceID) {
+        Integer classID = getSourceSiblingClass(sourceID);
+        if (classID == null) {
+            return null;
+        }
+        String sqlSources = "SELECT " + source_id + " FROM " + sourceTableName + " WHERE " + sibling_source_class + " = ?"; 
+        return getSimpleJdbcTemplate().query(sqlSources, sourceIDRowMapper, classID); 
     }
 
+    private final RowMapper<Integer> sourceClassRowMapper = new RowMapper<Integer>() {
+        @Override
+        public Integer mapRow(ResultSet rs, int rowNumber) throws SQLException {
+             return Integer.valueOf(rs.getInt(sibling_source_class));
+        }
+    };
+    
+      /////////////////////////////////////////
+    @Override
+    public List<Number> getCachedRepresentations(Number sourceID) {
+       
+        String sql = "SELECT " + cached_representation_id + " FROM " + sourcesCachedRepresentationsTableName + " WHERE " + source_id + " = ?";
+        return getSimpleJdbcTemplate().query(sql, cachedIDRowMapper, sourceID); 
+    }
+
+    
     
      ///////////////////////////////////////////////////////////////////
     @Override
@@ -120,13 +157,10 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
         StringBuilder sqlAnnotations = new StringBuilder("SELECT ");
         sqlAnnotations.append(annotation_id).append(" FROM ").append(annotationsSourcesTableName).append(" WHERE ").append(source_id).append(" = ? LIMIT 1");
         List<Number> resultAnnotations = getSimpleJdbcTemplate().query(sqlAnnotations.toString(), annotationIDRowMapper, sourceID);
-        if (resultAnnotations.size() > 0) {
-            return true;
-        }        
-        StringBuilder sqlVersions = new StringBuilder("SELECT ");
-        sqlVersions.append(version_id).append(" FROM ").append(sourcesVersionsTableName).append(" WHERE ").append(source_id).append(" = ? LIMIT 1");
-        List<Number> resultVersions = getSimpleJdbcTemplate().query(sqlVersions.toString(), versionIDRowMapper, sourceID);
-        return (resultVersions.size() > 0);
+        if (resultAnnotations == null) {
+            return false;
+        }
+        return (resultAnnotations.size() > 0) ;
     }
     
   
@@ -149,12 +183,23 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
     
     ///////////////////////////////////////////////////////////////////
     @Override
-    public int addSourceVersion(Number sourceID, Number versionID) throws SQLException {
+    public int addSourceCachedRepresentation(Number sourceID, Number cachedID) throws SQLException{
         Map<String, Object> paramsJoint = new HashMap<String, Object>();
         paramsJoint.put("sourceId", sourceID);
-        paramsJoint.put("versionId", versionID);
-        StringBuilder sqlJoint = new StringBuilder("INSERT INTO ").append(sourcesVersionsTableName).append("(").append(source_id).append(",").append(version_id).append(" ) VALUES (:sourceId, :versionId)");
+        paramsJoint.put("cachedId", cachedID);
+        StringBuilder sqlJoint = new StringBuilder("INSERT INTO ").append(sourcesCachedRepresentationsTableName).append("(").append(source_id).append(",").append(cached_representation_id).append(" ) VALUES (:sourceId, :cachedId)");
         return getSimpleJdbcTemplate().update(sqlJoint.toString(), paramsJoint);
+    }
+    
+     ///////////////////////////////////////////////////////////////////
+    @Override
+    public int updateSiblingClass(Number sourceID, int classID) throws SQLException{
+        if (sourceID == null) {
+            return 0;
+        }
+        StringBuilder sql = new StringBuilder("UPDATE ");
+        sql.append(sourceTableName).append(" SET ").append(sibling_source_class).append("= '").append(classID).append("' WHERE ").append(source_id).append("= ?");
+        return getSimpleJdbcTemplate().update(sql.toString(), sourceID);
     }
    
 ////////////////////// DELETERS ////////////////////////
@@ -172,10 +217,17 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
     
     ///////////////////////////////////////////////////////////////////
     @Override
-    public int deleteAllSourceVersion(Number internalID) {
+    public int deleteSourceCachedRepresentation(Number sourceID, Number cachedID) throws SQLException {
+        if (sourceID == null || cachedID == null) {
+            return 0;
+        }
+        Map<String, Object> paramsJoint = new HashMap<String, Object>();
+        paramsJoint.put("sourceId", sourceID);
+        paramsJoint.put("cachedId", cachedID);
         StringBuilder sqlSourcesVersions = new StringBuilder("DELETE FROM ");
-        sqlSourcesVersions.append(sourcesVersionsTableName).append(" WHERE ").append(source_id).append(" = ?");
-        return getSimpleJdbcTemplate().update(sqlSourcesVersions.toString(), internalID);
+        sqlSourcesVersions.append(sourcesCachedRepresentationsTableName).append(" WHERE ").append(source_id).append(" = :sourceId").
+                append(" AND ").append(cached_representation_id).append(" = :cachedId");
+        return getSimpleJdbcTemplate().update(sqlSourcesVersions.toString(), sourceID);
 
     }
  

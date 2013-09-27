@@ -65,26 +65,26 @@ public class SourceResource {
     // TODOD both unit tests
     @GET
     @Produces(MediaType.TEXT_XML)
-    @Path("{sourceid: " + BackendConstants.regExpIdentifier + "/versions}")
-    public JAXBElement<ReferenceList> getSiblingVersions(@PathParam("sourceid") String ExternalIdentifier) throws SQLException {
+    @Path("{sourceid: " + BackendConstants.regExpIdentifier + "}/versions")
+    public JAXBElement<ReferenceList> getSiblingSources(@PathParam("sourceid") String ExternalIdentifier) throws SQLException {
         final Number sourceID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(ExternalIdentifier));
         dbIntegrityService.setServiceURI(httpServletRequest.getServletPath());
-        final ReferenceList versions = dbIntegrityService.retrieveVersionList(sourceID);
-        return new ObjectFactory().createReferenceList(versions);
+        final ReferenceList siblings = dbIntegrityService.getSiblingSources(sourceID);
+        return new ObjectFactory().createReferenceList(siblings);
     }
     
      // TODO both unit tests
     //changed path, /sourcepart is removed
     //how to overwork the input stream to make it downloadable
     // using mime type as well
-//    @DELETE
-//    @Produces(MediaType.TEXT_XML)
-//    @Path("{sourceid: "+BackendConstants.regExpIdentifier +"/cached/cachedid: "+ BackendConstants.regExpIdentifier+"}")
-//    public String deleteCached(@PathParam("cachedid") String sourceIdentifier, @PathParam("cachedid") String cachedIdentifier) throws SQLException {
-//        final Number cachedID = dbIntegrityService.getCachedRepresentationInternalIdentifier(UUID.fromString(externalIdentifier));
-//        int[] resultDelete = dbIntegrityService.deleteCachedRepresentation(cachedID);
-//        String result = Integer.toString(resultDelete[0]);
-//        return result + " cachedRepresentation(s) deleted.";
-//    }
+    @DELETE
+    @Produces(MediaType.TEXT_XML)
+    @Path("{sourceid: "+BackendConstants.regExpIdentifier +"}/cached/{cachedid: "+ BackendConstants.regExpIdentifier+"}")
+    public int deleteCached(@PathParam("sourceid") String sourceIdentifier, @PathParam("cachedid") String cachedIdentifier) throws SQLException {
+        final Number sourceID = dbIntegrityService.getCachedRepresentationInternalIdentifier(UUID.fromString(sourceIdentifier));
+        final Number cachedID = dbIntegrityService.getCachedRepresentationInternalIdentifier(UUID.fromString(cachedIdentifier));
+        int[] result = dbIntegrityService.deleteCachedRepresentationOfSource(sourceID, cachedID);
+        return result[1];
+    }
    
 }
