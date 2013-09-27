@@ -24,7 +24,6 @@ import eu.dasish.annotation.backend.dao.DBIntegrityService;
 import eu.dasish.annotation.backend.dao.NotebookDao;
 import eu.dasish.annotation.backend.dao.SourceDao;
 import eu.dasish.annotation.backend.dao.UserDao;
-import eu.dasish.annotation.backend.dao.VersionDao;
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationInfo;
 import eu.dasish.annotation.schema.AnnotationInfoList;
