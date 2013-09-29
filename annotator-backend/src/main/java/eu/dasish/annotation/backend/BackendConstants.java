@@ -24,5 +24,5 @@ package eu.dasish.annotation.backend;
 public class BackendConstants {
     
     public static final String regExpIdentifier = "[a-zA-Z0-9_-]*";
-    
+    public static final String regExpEmail = regExpIdentifier+"@"+regExpIdentifier;
 }

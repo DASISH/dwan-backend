@@ -37,6 +37,7 @@ import eu.dasish.annotation.schema.Source;
 import eu.dasish.annotation.schema.SourceInfo;
 import eu.dasish.annotation.schema.SourceList;
 import eu.dasish.annotation.schema.User;
+import eu.dasish.annotation.schema.UserInfo;
 import eu.dasish.annotation.schema.UserWithPermission;
 import java.sql.Blob;
 import java.sql.SQLException;
@@ -234,6 +235,21 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
             referenceList.getRef().add(cachedRepresentationDao.getExternalID(cachedID).toString());
         }
         return referenceList;
+    }
+    
+    @Override
+    public User getUser(Number userID){
+        return userDao.getUser(userID);
+    }
+            
+    @Override
+    public User getUserByInfo(String eMail){
+       return userDao.getUserByInfo(eMail);
+    }
+    
+    @Override
+    public UserInfo getUserInfo(Number userID){
+        return userDao.getUserInfo(userID);
     }
     
     ///// UPDATERS /////////////////
