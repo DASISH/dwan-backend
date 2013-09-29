@@ -21,6 +21,7 @@ import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationBody;
 import eu.dasish.annotation.schema.AnnotationInfo;
 import eu.dasish.annotation.schema.Permission;
+import eu.dasish.annotation.schema.PermissionList;
 import eu.dasish.annotation.schema.ResourceREF;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -104,11 +105,18 @@ public interface AnnotationDao extends ResourceDao{
    
        /**
      * 
-     * @param annotationId
+     * @param annotationID
      * @return all the pairs (user-permission) for "annotationId" from the table annotations_principals permissions.
      */
-    public List<Map<Number, String>>  retrievePermissions(Number annotationId);
+    public List<Map<Number, String>>  getPermissions(Number annotationID);
     
+    /**
+     * 
+     * @param annotationID
+     * @param userID
+     * @return permission of the userID w.r.t. annotationID, or null if the permission is not given
+     */ 
+    public Permission  getPermission(Number annotationID, Number userID);
     
     /**
      * 
@@ -181,6 +189,19 @@ public interface AnnotationDao extends ResourceDao{
      * @throws SQLException 
      */
     public Number updateAnnotation(Annotation annotation, Number ownerID) throws SQLException;
+    
+    
+     /**
+     * 
+     * @param annotationID
+     * @param userID
+     * @param permission
+     * @return # rows updated to the table "annotations_principals_permissions"
+     * Sets the "permission" for the "userID" w.r.t. the annotation with "annotationID".
+     */
+    public int updateAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission) throws SQLException;
+    
+    
     
     
    /**

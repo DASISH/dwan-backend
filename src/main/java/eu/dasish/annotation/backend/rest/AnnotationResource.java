@@ -27,6 +27,7 @@ import eu.dasish.annotation.schema.AnnotationInfoList;
 import eu.dasish.annotation.schema.AnnotationResponseBody;
 import eu.dasish.annotation.schema.AnnotationResponseContent;
 import eu.dasish.annotation.schema.ObjectFactory;
+import eu.dasish.annotation.schema.Permission;
 import eu.dasish.annotation.schema.PermissionList;
 import eu.dasish.annotation.schema.ResponseBody;
 import eu.dasish.annotation.schema.SourceList;
@@ -156,6 +157,34 @@ public class AnnotationResource {
         return new ObjectFactory().createResponseBody(addORupdateAnnotation(annotation, false));
     }
     
+    
+    @PUT
+    @Consumes(MediaType.APPLICATION_XML)
+    @Produces(MediaType.TEXT_XML)
+    @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}/permissions/{userid: " + BackendConstants.regExpIdentifier + "}")
+    public int updatePermission(@PathParam("annotationid") String annotationExternalId, @PathParam("userid") String userExternalId, Permission permission) throws SQLException, Exception { 
+        final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(annotationExternalId));
+        final Number userID = dbIntegrityService.getUserInternalIdentifier(UUID.fromString(userExternalId));
+        int result;
+        if (dbIntegrityService.getPermission(annotationID, userID) !=null) {
+           result =  dbIntegrityService.updateAnnotationPrincipalPermission(annotationID, userID, permission);
+        }
+        else {
+            result = dbIntegrityService.updateAnnotationPrincipalPermission(annotationID, userID, permission);
+        }
+        return result;
+    }
+    
+    
+    @PUT
+    @Consumes(MediaType.APPLICATION_XML)
+    @Produces(MediaType.TEXT_XML)
+    @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}/permissions/")
+    public int updatePermissions(@PathParam("annotationid") String annotationExternalId, PermissionList permissions) throws SQLException, Exception { 
+        final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(annotationExternalId));
+        dbIntegrityService.setServiceURI(httpServletRequest.getServletPath());
+        return dbIntegrityService.updatePermissions(annotationID, permissions);
+    }
     
     
     private ResponseBody makeResponseEnvelope(Number annotationID) throws SQLException{

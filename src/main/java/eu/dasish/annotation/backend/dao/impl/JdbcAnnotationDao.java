@@ -67,13 +67,13 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
     
     ///////////////////////////////////////////////////////////////////
     @Override
-    public List<Map<Number, String>> retrievePermissions(Number annotationId) {
-        if (annotationId == null) {
+    public List<Map<Number, String>> getPermissions(Number annotationID) {
+        if (annotationID == null) {
             return null;
         }
         StringBuilder sql = new StringBuilder("SELECT ");
         sql.append(principal_id).append(",").append(permission).append(" FROM ").append(permissionsTableName).append(" WHERE ").append(annotation_id).append("  = ?");
-        return getSimpleJdbcTemplate().query(sql.toString(), principalsPermissionsRowMapper, annotationId.toString());
+        return getSimpleJdbcTemplate().query(sql.toString(), principalsPermissionsRowMapper, annotationID.toString());
     }
     private final RowMapper<Map<Number, String>> principalsPermissionsRowMapper = new RowMapper<Map<Number, String>>() {
         @Override
@@ -83,6 +83,34 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
             return result;
         }
     };
+    
+    
+    @Override
+    public Permission  getPermission(Number annotationID, Number userID){
+        if (annotationID == null || userID == null) {
+            return null;
+        }
+        StringBuilder sql = new StringBuilder("SELECT ");
+        sql.append(permission).append(" FROM ").append(permissionsTableName).append(" WHERE ").
+                append(annotation_id).append("  = ").append(annotationID.toString()).
+                append(principal_id).append("  = ").append(userID.toString()).append(" LIMIT 1");
+        List<Permission> result = getSimpleJdbcTemplate().query(sql.toString(), permissionRowMapper);
+        if (result==null) {
+            return null;
+        }
+        if (result.isEmpty()){
+            return null;
+        }
+        return result.get(0);
+    }
+    private final RowMapper<Permission> permissionRowMapper = new RowMapper<Permission>() {
+        @Override
+        public Permission mapRow(ResultSet rs, int rowNumber) throws SQLException {
+            return Permission.fromValue(rs.getString(permission));
+        }
+    };
+        
+    
     
     ////////////////////////////////////////////////////////////////////////
     @Override
@@ -299,6 +327,18 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
                 append("' WHERE ").append(external_id).append("= ?");
         int affectedRows = getSimpleJdbcTemplate().update(sql.toString(), externalID);
         return ((affectedRows > 0) ? getInternalID(UUID.fromString(externalID)) : null);
+    }
+    
+    
+    @Override
+    public int updateAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission) throws SQLException{
+       
+        StringBuilder sql = new StringBuilder("UPDATE ");
+        sql.append(permissionsTableName).append(" SET ").
+                append(this.permission).append("= '").append(permission.value()).
+                append("' WHERE ").append(annotation_id).append("= ").append(annotationID).
+                append(" AND ").append(principal_id).append("= ").append(userID);
+        return getSimpleJdbcTemplate().update(sql.toString());
     }
     
     

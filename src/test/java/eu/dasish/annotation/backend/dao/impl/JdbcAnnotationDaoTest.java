@@ -375,7 +375,7 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         //VALUES (2, 4, 'writer');
         //VALUES (2, 5, 'reader');
         System.out.println("test Permissions");
-        List<Map<Number, String>> result = jdbcAnnotationDao.retrievePermissions(2);
+        List<Map<Number, String>> result = jdbcAnnotationDao.getPermissions(2);
         assertEquals(3, result.size());
         assertEquals("owner", result.get(0).get(3));
         assertEquals("writer", result.get(1).get(4));

@@ -135,7 +135,7 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     // TODO UNIT tests
     @Override
     public PermissionList getPermissionsForAnnotation(Number annotationID) throws SQLException {
-        List<Map<Number, String>> principalsPermissions = annotationDao.retrievePermissions(annotationID);
+        List<Map<Number, String>> principalsPermissions = annotationDao.getPermissions(annotationID);
         PermissionList result = new PermissionList();
         List<UserWithPermission> list = result.getUser();
         for (Map<Number, String> principalPermission : principalsPermissions) {
@@ -252,6 +252,11 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         return userDao.getUserInfo(userID);
     }
     
+    @Override
+    public Permission  getPermission(Number annotationID, Number userID){
+        return annotationDao.getPermission(annotationID, userID);
+    }
+    
     ///// UPDATERS /////////////////
     
     @Override
@@ -265,6 +270,33 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         
     }
 
+    @Override
+    public int updateAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission) throws SQLException{
+        return annotationDao.addAnnotationPrincipalPermission(annotationID, userID, permission);
+    }
+    
+    @Override
+    public int updatePermissions(Number annotationID, PermissionList permissionList) throws SQLException{
+        List<UserWithPermission> usersWithPermissions = permissionList.getUser();
+        int result = 0;
+        for (UserWithPermission userWithPermission: usersWithPermissions){
+            Number userID = userDao.getInternalID(UUID.fromString(userDao.stringURItoExternalID(userWithPermission.getRef())));
+            Permission permission = userWithPermission.getPermission();
+            int current;
+            Permission currentPermission= annotationDao.getPermission(annotationID, userID);
+            if (currentPermission != null) {
+                if (!permission.value().equals(currentPermission.value())){
+                    result = result + annotationDao.updateAnnotationPrincipalPermission(annotationID, userID, permission);
+                }
+            }
+            else {
+                result = result + annotationDao.addAnnotationPrincipalPermission(annotationID, userID, permission);
+            }
+        }
+        
+        return result;
+    }
+    
     /////////////// ADDERS  /////////////////////////////////
     @Override
     public Number[] addCachedForSource(Number sourceID, CachedRepresentationInfo cachedInfo, Blob cachedBlob) throws SQLException {

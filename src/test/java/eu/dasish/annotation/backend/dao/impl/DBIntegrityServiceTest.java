@@ -230,7 +230,7 @@ public class DBIntegrityServiceTest {
 
                 /// getPermissionsForAnnotation
 
-                oneOf(annotationDao).retrievePermissions(2);
+                oneOf(annotationDao).getPermissions(2);
                 will(returnValue(listMap));
 
                 oneOf(userDao).getExternalID(3);
