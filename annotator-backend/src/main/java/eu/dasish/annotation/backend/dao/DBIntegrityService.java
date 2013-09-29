@@ -21,6 +21,7 @@ package eu.dasish.annotation.backend.dao;
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationInfoList;
 import eu.dasish.annotation.schema.CachedRepresentationInfo;
+import eu.dasish.annotation.schema.Permission;
 import eu.dasish.annotation.schema.PermissionList;
 import eu.dasish.annotation.schema.ReferenceList;
 import eu.dasish.annotation.schema.SourceInfo;
@@ -217,23 +218,32 @@ public interface DBIntegrityService{
      * @param userID
      * @return user with "userID"
      */
-    User getUser(Number userID);
+    public User getUser(Number userID);
             
     /**
      * 
      * @param eMail
      * @return user with e-mail "eMail"
      */
-    User getUserByInfo(String eMail);
+    public User getUserByInfo(String eMail);
     
     /**
      * 
      * @param userID
      * @return userInfo of the user "userID"
      */
-    UserInfo getUserInfo(Number userID);
+    public UserInfo getUserInfo(Number userID);
     
   
+    /**
+     * 
+     * @param annotationID
+     * @param userID
+     * @return permission of the userID w.r.t. annotationID, or null if the permission is not given
+     */ 
+    public Permission  getPermission(Number annotationID, Number userID);
+    
+    
     /**
      * UPDATERS
      */
@@ -255,6 +265,24 @@ public interface DBIntegrityService{
      * @throws SQLException 
      */
      int updateSiblingSourceClassForSource(Number sourceID, Number siblingSourceID) throws SQLException;
+     
+       /**
+     * 
+     * @param annotationID
+     * @param userID
+     * @param permission
+     * @return # rows updated to the table "annotations_principals_permissions"
+     * Sets the "permission" for the "userID" w.r.t. the annotation with "annotationID".
+     */
+    public int updateAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission) throws SQLException;
+    
+   /**
+     * 
+     * @param annotationID
+     * @param permissionList
+     * @return # of rows updated or added in the table annotations_principals_permissions
+     */
+    public int updatePermissions(Number annotationID, PermissionList permissionList) throws SQLException;
    
    /**
     * ADDERS
