@@ -26,6 +26,7 @@ import eu.dasish.annotation.schema.ReferenceList;
 import eu.dasish.annotation.schema.SourceInfo;
 import eu.dasish.annotation.schema.SourceList;
 import eu.dasish.annotation.schema.User;
+import eu.dasish.annotation.schema.UserInfo;
 import java.sql.Blob;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -209,6 +210,29 @@ public interface DBIntegrityService{
      * @return BLOB of the cachedID
      */
     public Blob getCachedRepresentationBlob(Number cachedID) throws SQLException;
+    
+    
+    /**
+     * 
+     * @param userID
+     * @return user with "userID"
+     */
+    User getUser(Number userID);
+            
+    /**
+     * 
+     * @param eMail
+     * @return user with e-mail "eMail"
+     */
+    User getUserByInfo(String eMail);
+    
+    /**
+     * 
+     * @param userID
+     * @return userInfo of the user "userID"
+     */
+    UserInfo getUserInfo(Number userID);
+    
   
     /**
      * UPDATERS
