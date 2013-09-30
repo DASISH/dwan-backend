@@ -74,7 +74,7 @@ public class CachedRepresentationResource {
     //how to overwork the input stream to make it downloadable
     // using mime type as well
     @GET
-    @Produces(MediaType.TEXT_XML)
+    @Produces(MediaType.TEXT_PLAIN)
     @Path("{cachedid: "+ BackendConstants.regExpIdentifier+"}/content")
     public InputStream getCachedRepresentationContent(@PathParam("cachedid") String externalId) throws SQLException {
         path = httpServletRequest.getContextPath()+httpServletRequest.getServletPath();

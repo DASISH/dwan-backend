@@ -22,8 +22,8 @@
         <h2>DASISH REST API</h2>
         <p><a href="api/myresource">Jersey resource</a>
         <p><a href="https://trac.clarin.eu/wiki/DASISH/SpecificationDocument#RESTAPI">https://trac.clarin.eu/wiki/DASISH/SpecificationDocument#RESTAPI</a></p>
-        <b>Notebooks</b><br>
-        api/notebooks<br>
+<!--        <b>Notebooks</b><br>
+      api/notebooks<br>
         POST api/annotations and PUT /notebooks/_nid_?annotation=_aid_.<br>
         <br>
         GET <a href="api/notebooks">api/notebooks</a> Returns notebook-infos for the notebooks accessible to the current user.<br>
@@ -34,9 +34,22 @@
         GET <a href="api/notebooks/_nid_?maximumAnnotations=100&startAnnotation=5&orderby=1&orderingMode=0">api/notebooks/_nid_?maximumAnnotations=limit&startAnnotation=offset&orderby=orderby&orderingMode=1|0</a> Get the list of all annotations _aid_-s contained within a Notebook with related metadata. Parameters: _nid_, optional maximumAnnotations specifies the maximum number of annotations to retrieve (default -1, all annotations), optional startAnnotation specifies the starting point from which the annotations will be retrieved (default: -1, start from the first annotation), optional orderby, specifies the RDF property used to order the annotations (default: dc:created ), optional orderingMode specifies if the results should be sorted using a descending order desc=1 or an ascending order desc=0 (default: 0 ).<br>
         PUT <form action="api/notebooks/_nid_" method="put"><input type="submit" /></form>/notebooks/_nid_	Modify metadata of _nid_. The new notebook?s name must be sent in request?s body.<br>
         PUT /notebooks/_nid_/_aid_	Adds an annotation _aid_ to the list of annotations of _nid_.<br>        
-<!--        PUT <form action="api/notebooks/_nid_/setPrivate=true" method="put"><input type="submit" /></form>api/notebooks/_nid_/setPrivate=[true, false]	Sets the specified Notebook as private or not private.<br>-->
+--        PUT <form action="api/notebooks/_nid_/setPrivate=true" method="put"><input type="submit" /></form>api/notebooks/_nid_/setPrivate=[true, false]	Sets the specified Notebook as private or not private.<br>--
         POST api/notebooks/	Creates a new notebook. This API returns the _nid_ of the created Notebook in response?s payload and the full URL of the notebook adding a Location header into the HTTP response. The name of the new notebook can be specified sending a specific payload.<br>
         POST api/notebooks/_nid_	Creates a new annotation in _nid_. The content of an annotation is given in the request body. In fact this is a short cut of two actions:<br>
-        DELETE <form action="api/notebooks/_nid_" method="DELETE"><input type="submit" /></form>api/notebooks/_nid_	Delete _nid_. Annotations stay, they just lose connection to _nid_.<br>
-        </body>
+        DELETE <form action="api/notebooks/_nid_" method="DELETE"><input type="submit" /></form>api/notebooks/_nid_	Delete _nid_. Annotations stay, they just lose connection to _nid_.<br> 
+ -->
+        
+      <b>Test URI-s</b><br>
+     GET <a href="api/users/00000000-0000-0000-0000-000000000011">api/users/00000000-0000-0000-0000-000000000011</a>  Comment: how to ask "servlet context" if this user is current? so far all are set to "true"<br> 
+     GET <a href="api/users/info?email=twagoo@mpi.nl">api/users/info?email=twagoo@mpi.nl</a>  Comment: the dao is case sensitive for e-mail, correct<br>
+     GET <a href="api/annotations?link=sagrada">api/annotations/info?link=sagrada</a>  Comment: owner ref must be URI </br>
+     GET <a href="api/annotations/00000000-0000-0000-0000-000000000021">api/annotations/00000000-0000-0000-0000-000000000021</a> Comment: UriInfo: donno how to mock </br>
+     GET <a href="api/annotations/00000000-0000-0000-0000-000000000021/sources">api/annotations/00000000-0000-0000-0000-000000000021/sources</a>  externalId Or URI? </br>
+     GET <a href="api/annotations/00000000-0000-0000-0000-000000000021/permissions">api/annotations/00000000-0000-0000-0000-000000000021/permissions</a><br>
+     GET <a href="api/sources/00000000-0000-0000-0000-000000000041">api/sources/00000000-0000-0000-0000-000000000041</a>  <br>
+     GET <a href="api/sources/00000000-0000-0000-0000-000000000041/versions">api/sources/00000000-0000-0000-0000-000000000041/versions</a>  URI's? <br>
+     GET <a href="api/cached/00000000-0000-0000-0000-000000000051/metadata">api/cached/00000000-0000-0000-0000-000000000051/metadata</a><br>
+     GET <a href="api/cached/00000000-0000-0000-0000-000000000051/content">api/cached/00000000-0000-0000-0000-000000000051/content></a> Problem: the dao method run on Postgress returns null whereas on unit tests it work fine (HSQL)
+    </body>
         </html>

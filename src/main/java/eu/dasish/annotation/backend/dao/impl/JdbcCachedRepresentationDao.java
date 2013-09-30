@@ -78,7 +78,7 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
     public Blob getCachedRepresentationBlob(Number internalID) {
 
         StringBuilder sql = new StringBuilder("SELECT ");
-        sql.append(cachedRepresentationStar).append(" FROM ").append(cachedRepresentationTableName).append(" WHERE ").append(cached_representation_id).append("= ? LIMIT 1");
+        sql.append(file_).append(" FROM ").append(cachedRepresentationTableName).append(" WHERE ").append(cached_representation_id).append("= ? LIMIT 1");
         List<Blob> result = getSimpleJdbcTemplate().query(sql.toString(), cachedRepresentationBlobRowMapper, internalID);
 
         if (result.isEmpty()) {
