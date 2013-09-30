@@ -81,7 +81,7 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest {
     public void testGetInternalIDFRomURI() {
         System.out.println("test getInternalIDFromURI");
         jdbcCachedRepresentationDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI);
-        String uri = TestBackendConstants._TEST_SERVLET_URI + TestBackendConstants._TEST_CACHED_REPRESENTATION_1_EXT_ID_;
+        String uri = TestBackendConstants._TEST_SERVLET_URI + "/cached/"+TestBackendConstants._TEST_CACHED_REPRESENTATION_1_EXT_ID_;
         Number result = jdbcCachedRepresentationDao.getInternalIDFromURI(uri);
         assertEquals(1, result.intValue());
     }
@@ -97,11 +97,11 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest {
 
         jdbcCachedRepresentationDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI);
         CachedRepresentationInfo result = jdbcCachedRepresentationDao.getCachedRepresentationInfo(1);
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI + TestBackendConstants._TEST_CACHED_REPRESENTATION_1_EXT_ID_, result.getRef());
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI +"/cached/"+ TestBackendConstants._TEST_CACHED_REPRESENTATION_1_EXT_ID_, result.getRef());
         assertEquals(TestBackendConstants._TEST_CACHED_REPRESENTATION_1_MIME_TYPE_, result.getMimeType());
         assertEquals(TestBackendConstants._TEST_CACHED_REPRESENTATION_1_TOOL_, result.getTool());
         assertEquals(TestBackendConstants._TEST_CACHED_REPRESENTATION_1_TYPE_, result.getType());
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI + TestBackendConstants._TEST_CACHED_REPRESENTATION_1_EXT_ID_, result.getRef());
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI + "/cached/"+TestBackendConstants._TEST_CACHED_REPRESENTATION_1_EXT_ID_, result.getRef());
     }
 
     /**

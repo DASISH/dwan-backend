@@ -116,6 +116,9 @@ public class AnnotationsTest extends ResourcesTest{
         mockDelete[3]=1; // # deletd sources, 4
         mockery.checking(new Expectations() {
             {  
+                oneOf(daoDispatcher).setServiceURI(with(any(String.class)));
+                will(doAll());
+                
                 oneOf(daoDispatcher).getAnnotationInternalIdentifier(with(aNonNull(UUID.class)));              
                 will(returnValue(5));     
                 

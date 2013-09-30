@@ -73,7 +73,7 @@ public class JdbcSourceDaoTest extends JdbcResourceDaoTest {
     public void testGetInternalIDFRomURI() {
         System.out.println("test getInternalIDFromURI");
         jdbcSourceDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI);
-        String uri = TestBackendConstants._TEST_SERVLET_URI + TestBackendConstants._TEST_SOURCE_1_EXT_ID;
+        String uri = TestBackendConstants._TEST_SERVLET_URI + "/sources/"+TestBackendConstants._TEST_SOURCE_1_EXT_ID;
         Number result = jdbcSourceDao.getInternalIDFromURI(uri);
         assertEquals(1, result.intValue());
     }
@@ -88,7 +88,7 @@ public class JdbcSourceDaoTest extends JdbcResourceDaoTest {
         Number internalID = 1;
         jdbcSourceDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI);
         Source result = jdbcSourceDao.getSource(internalID);
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI+TestBackendConstants._TEST_SOURCE_1_EXT_ID, result.getURI());
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI+"/sources/"+TestBackendConstants._TEST_SOURCE_1_EXT_ID, result.getURI());
         assertEquals(TestBackendConstants._TEST_SOURCE_1_LINK, result.getLink());
         assertEquals(TestBackendConstants._TEST_SOURCE_1_VERSION, result.getVersion());
         // TODO :add time stamp test
@@ -157,8 +157,8 @@ public class JdbcSourceDaoTest extends JdbcResourceDaoTest {
         test.add(2);
         List<SourceInfo> result = jdbcSourceDao.getSourceInfos(test);
         assertEquals(2, result.size());
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI+TestBackendConstants._TEST_SOURCE_1_EXT_ID, result.get(0).getRef());
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI+TestBackendConstants._TEST_SOURCE_2_EXT_ID, result.get(1).getRef());
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI+"/sources/"+TestBackendConstants._TEST_SOURCE_1_EXT_ID, result.get(0).getRef());
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI+"/sources/"+TestBackendConstants._TEST_SOURCE_2_EXT_ID, result.get(1).getRef());
         assertEquals(TestBackendConstants._TEST_SOURCE_1_VERSION, result.get(0).getVersion());
         assertEquals(TestBackendConstants._TEST_SOURCE_2_VERSION, result.get(1).getVersion());
         assertEquals(TestBackendConstants._TEST_SOURCE_1_LINK, result.get(0).getLink());

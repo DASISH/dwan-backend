@@ -165,12 +165,12 @@ public class DBIntegrityServiceTest {
         System.out.println("test getAnnotation");
 
         final Annotation mockAnnotation = new Annotation();// corresponds to the annotation # 2
-        mockAnnotation.setURI(TestBackendConstants._TEST_ANNOT_2_EXT);
+        mockAnnotation.setURI(TestBackendConstants._TEST_SERVLET_URI +"/"+TestBackendConstants._TEST_ANNOT_2_EXT);
         mockAnnotation.setHeadline(TestBackendConstants._TEST_ANNOT_2_HEADLINE);
         XMLGregorianCalendar mockTimeStamp = Helpers.setXMLGregorianCalendar(Timestamp.valueOf("2013-08-12 11:25:00.383000"));
         mockAnnotation.setTimeStamp(mockTimeStamp);
         ResourceREF mockOwner = new ResourceREF();
-        mockOwner.setRef(Integer.toString(TestBackendConstants._TEST_ANNOT_2_OWNER));
+        mockOwner.setRef("3");
         mockAnnotation.setOwner(mockOwner);
 
         AnnotationBody mockBody = new AnnotationBody();
@@ -186,12 +186,12 @@ public class DBIntegrityServiceTest {
 
         final Source mockSourceOne = new Source();
         mockSourceOne.setLink(TestBackendConstants._TEST_SOURCE_1_LINK);
-        mockSourceOne.setURI(TestBackendConstants._TEST_SOURCE_1_EXT_ID);
+        mockSourceOne.setURI(TestBackendConstants._TEST_SERVLET_URI +"/"+TestBackendConstants._TEST_SOURCE_1_EXT_ID);
         mockSourceOne.setVersion(TestBackendConstants._TEST_SOURCE_1_EXT_ID);
 
         final Source mockSourceTwo = new Source();
         mockSourceTwo.setLink(TestBackendConstants._TEST_SOURCE_2_LINK);
-        mockSourceTwo.setURI(TestBackendConstants._TEST_SOURCE_2_EXT_ID);
+        mockSourceTwo.setURI(TestBackendConstants._TEST_SERVLET_URI +"/"+TestBackendConstants._TEST_SOURCE_2_EXT_ID);
         mockSourceTwo.setVersion(TestBackendConstants._TEST_SOURCE_2_EXT_ID);
 
         final List<Map<Number, String>> listMap = new ArrayList<Map<Number, String>>();
@@ -209,9 +209,9 @@ public class DBIntegrityServiceTest {
         final UUID externalID4 = UUID.fromString(TestBackendConstants._TEST_USER_4_EXT_ID);
         final UUID externalID5 = UUID.fromString(TestBackendConstants._TEST_USER_5_EXT_ID);
 
-        final String uri3 = TestBackendConstants._TEST_SERVLET_URI + TestBackendConstants._TEST_USER_3_EXT_ID;
-        final String uri4 = TestBackendConstants._TEST_SERVLET_URI + TestBackendConstants._TEST_USER_4_EXT_ID;
-        final String uri5 = TestBackendConstants._TEST_SERVLET_URI + TestBackendConstants._TEST_USER_5_EXT_ID;
+        final String uri3 = TestBackendConstants._TEST_SERVLET_URI + "/"+ TestBackendConstants._TEST_USER_3_EXT_ID;
+        final String uri4 = TestBackendConstants._TEST_SERVLET_URI + "/"+ TestBackendConstants._TEST_USER_4_EXT_ID;
+        final String uri5 = TestBackendConstants._TEST_SERVLET_URI + "/"+ TestBackendConstants._TEST_USER_5_EXT_ID;
 
 
         mockery.checking(new Expectations() {
@@ -219,6 +219,12 @@ public class DBIntegrityServiceTest {
                 oneOf(annotationDao).getAnnotationWithoutSourcesAndPermissions(2);
                 will(returnValue(mockAnnotation));
 
+                oneOf(userDao).getExternalID(3);
+                will(returnValue(externalID3));
+
+                oneOf(userDao).externalIDtoURI(TestBackendConstants._TEST_USER_3_EXT_ID);
+                will(returnValue(uri3));
+                
                 oneOf(annotationDao).retrieveSourceIDs(2);
                 will(returnValue(mockSourceIDs));
 
@@ -255,12 +261,12 @@ public class DBIntegrityServiceTest {
         });
 
         Annotation result = dbIntegrityService.getAnnotation(2);
-        assertEquals(TestBackendConstants._TEST_ANNOT_2_EXT, result.getURI());
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI+"/"+TestBackendConstants._TEST_ANNOT_2_EXT, result.getURI());
         assertEquals("text/plain", result.getBody().getMimeType());
         assertEquals(TestBackendConstants._TEST_ANNOT_2_BODY, result.getBody().getValue());
         assertEquals(TestBackendConstants._TEST_ANNOT_2_HEADLINE, result.getHeadline());
         assertEquals(TestBackendConstants._TEST_ANNOT_2_TIME_STAMP, result.getTimeStamp().toString());
-        assertEquals(TestBackendConstants._TEST_ANNOT_2_OWNER, Integer.parseInt(result.getOwner().getRef()));
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI+"/"+TestBackendConstants._TEST_USER_3_EXT_ID, result.getOwner().getRef());
 
         assertEquals(mockSourceOne.getLink(), result.getTargetSources().getTargetSource().get(0).getLink());
         assertEquals(mockSourceOne.getURI(), result.getTargetSources().getTargetSource().get(0).getRef());
@@ -341,10 +347,10 @@ public class DBIntegrityServiceTest {
                 oneOf(annotationDao).retrieveSourceIDs(annotationID);
                 will(returnValue(sourceIDs));
 
-                oneOf(annotationDao).getExternalID(1);
+                oneOf(sourceDao).getExternalID(1);
                 will(returnValue(UUID.fromString(TestBackendConstants._TEST_SOURCE_1_EXT_ID)));
 
-                oneOf(annotationDao).getExternalID(2);
+                oneOf(sourceDao).getExternalID(2);
                 will(returnValue(UUID.fromString(TestBackendConstants._TEST_SOURCE_2_EXT_ID)));
 
 

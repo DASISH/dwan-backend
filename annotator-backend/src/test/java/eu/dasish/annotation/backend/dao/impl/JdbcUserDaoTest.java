@@ -76,7 +76,7 @@ public class JdbcUserDaoTest extends JdbcResourceDaoTest {
         User result = jdbcUserDao.getUser(internalID);
         assertEquals("a user", result.getDisplayName());
         assertEquals("a.user@gmail.com", result.getEMail());
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI + TestBackendConstants._TEST_UID_1_, result.getURI());
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI + "/users/"+TestBackendConstants._TEST_UID_1_, result.getURI());
     }
 
     @Test

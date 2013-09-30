@@ -45,6 +45,7 @@ import org.springframework.jdbc.core.RowMapper;
 public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao {
 
    
+    
     public JdbcAnnotationDao(DataSource dataSource) {
         setDataSource(dataSource);
         internalIdName = annotation_id;
@@ -52,6 +53,10 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         
     }
     
+    @Override
+    public void setServiceURI(String serviceURI){
+        _serviceURI = serviceURI+"/annotations/";
+    }
     
     ///////////// GETTERS /////////////
   
@@ -73,7 +78,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         }
         StringBuilder sql = new StringBuilder("SELECT ");
         sql.append(principal_id).append(",").append(permission).append(" FROM ").append(permissionsTableName).append(" WHERE ").append(annotation_id).append("  = ?");
-        return getSimpleJdbcTemplate().query(sql.toString(), principalsPermissionsRowMapper, annotationID.toString());
+        return getSimpleJdbcTemplate().query(sql.toString(), principalsPermissionsRowMapper, annotationID);
     }
     private final RowMapper<Map<Number, String>> principalsPermissionsRowMapper = new RowMapper<Map<Number, String>>() {
         @Override

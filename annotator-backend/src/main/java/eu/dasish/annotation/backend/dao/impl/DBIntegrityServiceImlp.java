@@ -115,6 +115,13 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         if (result == null) {
             return null;
         }
+        
+        int userID = Integer.parseInt(result.getOwner().getRef());
+        String userURI =userDao.externalIDtoURI(userDao.getExternalID(userID).toString());
+        ResourceREF ownerRef = new ResourceREF();
+        ownerRef.setRef(userURI);
+        result.setOwner(ownerRef);
+        
         List<Number> sourceIDs = annotationDao.retrieveSourceIDs(annotationID);
         SourceInfoList sis = new SourceInfoList();
         for (Number sourceID : sourceIDs) {
@@ -177,7 +184,7 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         List<Number> sourceIDs = annotationDao.retrieveSourceIDs(annotationID);
         for (Number sourceID : sourceIDs) {
             ResourceREF ref = new ResourceREF();
-            ref.setRef(annotationDao.getExternalID(sourceID).toString());
+            ref.setRef(sourceDao.getExternalID(sourceID).toString());
             result.getTargetSource().add(ref);
         }
         return result;

@@ -42,6 +42,11 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
         resourceTableName = cachedRepresentationTableName;
     }
 
+    @Override
+    public void setServiceURI(String serviceURI){
+        _serviceURI = serviceURI+"/cached/";
+    }
+    
     /////////////////////////// GETTERS  ////////////////////////////////////////
     @Override
     public CachedRepresentationInfo getCachedRepresentationInfo(Number internalID) {

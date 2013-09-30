@@ -50,6 +50,8 @@ public class CachedRepresentationResource {
     @Context
     private HttpServletRequest httpServletRequest;
    
+    private String path;
+    
     public void setHttpRequest(HttpServletRequest request) {
         this.httpServletRequest = request;
     }
@@ -60,8 +62,9 @@ public class CachedRepresentationResource {
     @Produces(MediaType.TEXT_XML)
     @Path("{cachedid: "+ BackendConstants.regExpIdentifier+"}/metadata")
     public JAXBElement<CachedRepresentationInfo> getCachedRepresentationInfo(@PathParam("cachedid") String externalId) throws SQLException {
+        path = httpServletRequest.getContextPath()+httpServletRequest.getServletPath();
+        dbIntegrityService.setServiceURI(path);
         final Number cachedID = dbIntegrityService.getCachedRepresentationInternalIdentifier(UUID.fromString(externalId));
-        dbIntegrityService.setServiceURI(httpServletRequest.getServletPath());
         final CachedRepresentationInfo cachedInfo = dbIntegrityService.getCachedRepresentationInfo(cachedID);
         return new ObjectFactory().createCashedRepresentationInfo(cachedInfo);
     }
@@ -74,8 +77,10 @@ public class CachedRepresentationResource {
     @Produces(MediaType.TEXT_XML)
     @Path("{cachedid: "+ BackendConstants.regExpIdentifier+"}/content")
     public InputStream getCachedRepresentationContent(@PathParam("cachedid") String externalId) throws SQLException {
+        path = httpServletRequest.getContextPath()+httpServletRequest.getServletPath();
+        dbIntegrityService.setServiceURI(path);
+        
         final Number cachedID = dbIntegrityService.getCachedRepresentationInternalIdentifier(UUID.fromString(externalId));
-        dbIntegrityService.setServiceURI(httpServletRequest.getServletPath());
         final Blob blob = dbIntegrityService.getCachedRepresentationBlob(cachedID);
         return blob.getBinaryStream();
     }
