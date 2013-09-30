@@ -33,6 +33,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.JAXBElement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -50,7 +51,8 @@ public class CachedRepresentationResource {
     @Context
     private HttpServletRequest httpServletRequest;
    
-    private String path;
+    @Context
+    private UriInfo uriInfo;
     
     public void setHttpRequest(HttpServletRequest request) {
         this.httpServletRequest = request;
@@ -62,8 +64,7 @@ public class CachedRepresentationResource {
     @Produces(MediaType.TEXT_XML)
     @Path("{cachedid: "+ BackendConstants.regExpIdentifier+"}/metadata")
     public JAXBElement<CachedRepresentationInfo> getCachedRepresentationInfo(@PathParam("cachedid") String externalId) throws SQLException {
-        path = httpServletRequest.getContextPath()+httpServletRequest.getServletPath();
-        dbIntegrityService.setServiceURI(path);
+        dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final Number cachedID = dbIntegrityService.getCachedRepresentationInternalIdentifier(UUID.fromString(externalId));
         final CachedRepresentationInfo cachedInfo = dbIntegrityService.getCachedRepresentationInfo(cachedID);
         return new ObjectFactory().createCashedRepresentationInfo(cachedInfo);
@@ -77,8 +78,7 @@ public class CachedRepresentationResource {
     @Produces(MediaType.TEXT_PLAIN)
     @Path("{cachedid: "+ BackendConstants.regExpIdentifier+"}/content")
     public InputStream getCachedRepresentationContent(@PathParam("cachedid") String externalId) throws SQLException {
-        path = httpServletRequest.getContextPath()+httpServletRequest.getServletPath();
-        dbIntegrityService.setServiceURI(path);
+         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         
         final Number cachedID = dbIntegrityService.getCachedRepresentationInternalIdentifier(UUID.fromString(externalId));
         final Blob blob = dbIntegrityService.getCachedRepresentationBlob(cachedID);

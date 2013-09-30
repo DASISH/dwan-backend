@@ -32,6 +32,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.JAXBElement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -47,7 +48,8 @@ public class UserResource {
     private DBIntegrityService dbIntegrityService;
     @Context
     private HttpServletRequest httpServletRequest;
-    private String path;
+    @Context
+    private UriInfo uriInfo;
 
     public void setHttpRequest(HttpServletRequest request) {
         this.httpServletRequest = request;
@@ -60,8 +62,7 @@ public class UserResource {
     @Produces(MediaType.TEXT_XML)
     @Path("{userid: " + BackendConstants.regExpIdentifier + "}")
     public JAXBElement<UserInfo> getUserInfo(@PathParam("userid") String ExternalIdentifier) throws SQLException {
-        path = httpServletRequest.getContextPath()+httpServletRequest.getServletPath();
-        dbIntegrityService.setServiceURI(path);
+         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final Number userID = dbIntegrityService.getUserInternalIdentifier(UUID.fromString(ExternalIdentifier));
         final UserInfo userInfo = dbIntegrityService.getUserInfo(userID);
         return new ObjectFactory().createUserInfo(userInfo);
@@ -71,8 +72,7 @@ public class UserResource {
     @Produces(MediaType.TEXT_XML)
     @Path("/info")
     public JAXBElement<User> getUserByInfo(@QueryParam("email") String email) throws SQLException {
-        path = httpServletRequest.getContextPath()+httpServletRequest.getServletPath();
-        dbIntegrityService.setServiceURI(path);
+        dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final User user = dbIntegrityService.getUserByInfo(email);
         return new ObjectFactory().createUser(user);
     }

@@ -32,6 +32,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.JAXBElement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -52,7 +53,8 @@ public class SourceResource {
     private DBIntegrityService dbIntegrityService;
     @Context
     private HttpServletRequest httpServletRequest;
-    private String path;
+    @Context
+    private UriInfo uriInfo;
    
     public void setHttpRequest(HttpServletRequest request) {
         this.httpServletRequest = request;
@@ -66,9 +68,8 @@ public class SourceResource {
     @Produces(MediaType.TEXT_XML)
     @Path("{sourceid: " + BackendConstants.regExpIdentifier + "}")
     public JAXBElement<Source> getSource(@PathParam("sourceid") String ExternalIdentifier) throws SQLException {
-        path = httpServletRequest.getContextPath()+httpServletRequest.getServletPath();
-        dbIntegrityService.setServiceURI(path);
-        final Number sourceID = dbIntegrityService.getSourceInternalIdentifier(UUID.fromString(ExternalIdentifier));
+         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
+         final Number sourceID = dbIntegrityService.getSourceInternalIdentifier(UUID.fromString(ExternalIdentifier));
         final Source source = dbIntegrityService.getSource(sourceID);
         return new ObjectFactory().createSource(source);
     }
@@ -78,8 +79,7 @@ public class SourceResource {
     @Produces(MediaType.TEXT_XML)
     @Path("{sourceid: " + BackendConstants.regExpIdentifier + "}/versions")
     public JAXBElement<ReferenceList> getSiblingSources(@PathParam("sourceid") String ExternalIdentifier) throws SQLException {
-        path = httpServletRequest.getContextPath()+httpServletRequest.getServletPath();
-        dbIntegrityService.setServiceURI(path);
+        dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final Number sourceID = dbIntegrityService.getSourceInternalIdentifier(UUID.fromString(ExternalIdentifier));
         final ReferenceList siblings = dbIntegrityService.getSiblingSources(sourceID);
         return new ObjectFactory().createReferenceList(siblings);
@@ -93,8 +93,7 @@ public class SourceResource {
     @Produces(MediaType.TEXT_XML)
     @Path("{sourceid: "+BackendConstants.regExpIdentifier +"}/cached/{cachedid: "+ BackendConstants.regExpIdentifier+"}")
     public int deleteCached(@PathParam("sourceid") String sourceIdentifier, @PathParam("cachedid") String cachedIdentifier) throws SQLException {
-        path = httpServletRequest.getContextPath()+httpServletRequest.getServletPath();
-        dbIntegrityService.setServiceURI(path);
+        dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final Number sourceID = dbIntegrityService.getCachedRepresentationInternalIdentifier(UUID.fromString(sourceIdentifier));
         final Number cachedID = dbIntegrityService.getCachedRepresentationInternalIdentifier(UUID.fromString(cachedIdentifier));
         int[] result = dbIntegrityService.deleteCachedRepresentationOfSource(sourceID, cachedID);

@@ -79,8 +79,8 @@ public class AnnotationsTest extends ResourcesTest{
         mockery.checking(new Expectations() {
             {
                  
-                oneOf(uriInfo).getAbsolutePath();
-                will(returnValue("http://localhost:8080/annotator-backend/api/annotations/"));
+                oneOf(uriInfo).getBaseUri();
+                will(returnValue("http://localhost:8080/annotator-backend/api/"));
                 
                 
                 oneOf(daoDispatcher).setServiceURI(with(any(String.class)));
@@ -126,8 +126,8 @@ public class AnnotationsTest extends ResourcesTest{
         mockery.checking(new Expectations() {
             {  
                   
-                oneOf(uriInfo).getAbsolutePath();
-                will(returnValue("http://localhost:8080/annotator-backend/api/annotations/"));
+                oneOf(uriInfo).getBaseUri();
+                will(returnValue("http://localhost:8080/annotator-backend/api/"));
                 
                 
                 oneOf(daoDispatcher).setServiceURI(with(any(String.class)));
@@ -191,8 +191,8 @@ public class AnnotationsTest extends ResourcesTest{
         mockery.checking(new Expectations() {
             {
                  
-                oneOf(uriInfo).getAbsolutePath();
-                will(returnValue("http://localhost:8080/annotator-backend/api/annotations/"));
+                oneOf(uriInfo).getBaseUri();
+                will(returnValue("http://localhost:8080/annotator-backend/api/"));
                 
                 
                 oneOf(daoDispatcher).setServiceURI(with(any(String.class)));
