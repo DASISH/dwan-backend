@@ -31,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import static org.junit.Assert.*;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -97,7 +98,7 @@ public class JdbcResourceDaoTest {
         System.out.println("test stringURItoExternalID");
         jdbcResourceDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI);
         String randomUUID = UUID.randomUUID().toString();
-        String uri = TestBackendConstants._TEST_SERVLET_URI + randomUUID;
+        String uri = TestBackendConstants._TEST_SERVLET_URI + "/"+randomUUID;
         String externalID = jdbcResourceDao.stringURItoExternalID(uri);
         assertEquals(randomUUID, externalID);
     }
@@ -112,7 +113,7 @@ public class JdbcResourceDaoTest {
         JdbcResourceDao jdbcResourceDao = new JdbcResourceDao();
         jdbcResourceDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI);
         String randomUUID = UUID.randomUUID().toString();
-        String uri = TestBackendConstants._TEST_SERVLET_URI + randomUUID;
+        String uri = TestBackendConstants._TEST_SERVLET_URI + "/"+randomUUID;
         String uriResult = jdbcResourceDao.externalIDtoURI(randomUUID);
         assertEquals(uri, uriResult);
     }

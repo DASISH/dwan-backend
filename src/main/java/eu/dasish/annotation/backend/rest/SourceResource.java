@@ -54,6 +54,7 @@ public class SourceResource {
     private DBIntegrityService dbIntegrityService;
     @Context
     private HttpServletRequest httpServletRequest;
+    private String path;
    
     public void setHttpRequest(HttpServletRequest request) {
         this.httpServletRequest = request;
@@ -67,8 +68,9 @@ public class SourceResource {
     @Produces(MediaType.TEXT_XML)
     @Path("{sourceid: " + BackendConstants.regExpIdentifier + "}/versions")
     public JAXBElement<ReferenceList> getSiblingSources(@PathParam("sourceid") String ExternalIdentifier) throws SQLException {
+        path = httpServletRequest.getContextPath()+httpServletRequest.getServletPath();
+        dbIntegrityService.setServiceURI(path);
         final Number sourceID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(ExternalIdentifier));
-        dbIntegrityService.setServiceURI(httpServletRequest.getServletPath());
         final ReferenceList siblings = dbIntegrityService.getSiblingSources(sourceID);
         return new ObjectFactory().createReferenceList(siblings);
     }
@@ -81,6 +83,8 @@ public class SourceResource {
     @Produces(MediaType.TEXT_XML)
     @Path("{sourceid: "+BackendConstants.regExpIdentifier +"}/cached/{cachedid: "+ BackendConstants.regExpIdentifier+"}")
     public int deleteCached(@PathParam("sourceid") String sourceIdentifier, @PathParam("cachedid") String cachedIdentifier) throws SQLException {
+        path = httpServletRequest.getContextPath()+httpServletRequest.getServletPath();
+        dbIntegrityService.setServiceURI(path);
         final Number sourceID = dbIntegrityService.getCachedRepresentationInternalIdentifier(UUID.fromString(sourceIdentifier));
         final Number cachedID = dbIntegrityService.getCachedRepresentationInternalIdentifier(UUID.fromString(cachedIdentifier));
         int[] result = dbIntegrityService.deleteCachedRepresentationOfSource(sourceID, cachedID);

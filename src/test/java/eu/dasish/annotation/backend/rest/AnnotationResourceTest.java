@@ -47,6 +47,7 @@ import java.util.UUID;
 import javax.servlet.ServletException;
 import javax.xml.datatype.DatatypeConfigurationException;
 import org.springframework.mock.web.MockHttpServletRequest;
+
 /**
  *
  * @author olhsha
@@ -93,8 +94,11 @@ public class AnnotationResourceTest {
         });
         
         final MockHttpServletRequest httpServletRequest = new MockHttpServletRequest();
+        httpServletRequest.setContextPath("annotator-backend");
         httpServletRequest.setServletPath(TestBackendConstants._TEST_SERVLET_URI);        
         annotationResource.setHttpRequest(httpServletRequest);
+        //annotationResource.setUriInfo(UriInfo("localhost/annotator-backend/api/"+TestBackendConstants._TEST_SERVLET_URI));
+        
          
         JAXBElement<Annotation> result = annotationResource.getAnnotation(externalIDstring);
         assertEquals(expectedAnnotation, result.getValue());
@@ -116,6 +120,9 @@ public class AnnotationResourceTest {
         mockDelete[3]=1; // # deletd sources, 4
         mockery.checking(new Expectations() {
             {  
+                oneOf(daoDispatcher).setServiceURI(with(any(String.class)));
+                will(doAll());
+                
                 oneOf(daoDispatcher).getAnnotationInternalIdentifier(with(aNonNull(UUID.class)));              
                 will(returnValue(5));     
                 
@@ -163,7 +170,7 @@ public class AnnotationResourceTest {
         sources.add(6);
         
         final Annotation addedAnnotation = (new ObjectFactory()).createAnnotation(annotationToAdd).getValue();
-        addedAnnotation.setURI(TestBackendConstants._TEST_SERVLET_URI + UUID.randomUUID().toString());
+        addedAnnotation.setURI(TestBackendConstants._TEST_SERVLET_URI + "/annotations/"+UUID.randomUUID().toString());
         
         mockery.checking(new Expectations() {
             {

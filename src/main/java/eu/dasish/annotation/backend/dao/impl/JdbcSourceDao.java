@@ -45,7 +45,11 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
         internalIdName = source_id;
         resourceTableName = sourceTableName;
     }
-
+    
+   @Override
+    public void setServiceURI(String serviceURI){
+        _serviceURI = serviceURI+"/sources/";
+    }
 
     //////////////////////// GETTERS ///////////////////////////////////
     @Override

@@ -41,6 +41,10 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
         resourceTableName = principalTableName;
     }
 
+    @Override
+    public void setServiceURI(String serviceURI){
+        _serviceURI = serviceURI+"/users/";
+    }
     
     /////////// GETTERS //////////////////////
     @Override 
