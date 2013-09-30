@@ -47,9 +47,36 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
     @Autowired
     JdbcAnnotationDao jdbcAnnotationDao;    
     TestInstances testInstances = new TestInstances();
-
     
-      /**
+     /**
+     * Test of stringURItoExternalID method
+     * public String stringURItoExternalID(String uri);
+     */
+    @Test
+    public void testStringURItoExternalID() {
+        System.out.println("test stringURItoExternalID");
+        jdbcAnnotationDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_annotations);
+        String randomUUID = UUID.randomUUID().toString();
+        String uri = TestBackendConstants._TEST_SERVLET_URI_annotations + randomUUID;
+        String externalID = jdbcAnnotationDao.stringURItoExternalID(uri);
+        assertEquals(randomUUID, externalID);
+    }
+    
+    /**
+     * Test of externalIDtoURI method
+     * public String externalIDtoURI(String externalID);
+     */
+    @Test
+    public void testExternalIDtoURI() {
+        System.out.println("test stringURItoExternalID");
+        jdbcAnnotationDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_annotations);
+        String randomUUID = UUID.randomUUID().toString();
+        String uri = TestBackendConstants._TEST_SERVLET_URI_annotations+randomUUID;
+        String uriResult = jdbcAnnotationDao.externalIDtoURI(randomUUID);
+        assertEquals(uri, uriResult);
+    }
+
+     /**
      * Test of retrieveSourceIDs method, of class JdbcAnnotationDao.
      */
     @Test
@@ -104,25 +131,25 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         annotIds.add(3);
         annotIds.add(4);
 
-        jdbcAnnotationDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI);
+        jdbcAnnotationDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_annotations);
         final List<AnnotationInfo> annotationInfos = jdbcAnnotationDao.getAnnotationInfos(annotIds);
         assertEquals(3, annotationInfos.size());
 
         assertEquals(TestBackendConstants._TEST_ANNOT_2_HEADLINE, annotationInfos.get(0).getHeadline());
         assertEquals(String.valueOf(TestBackendConstants._TEST_ANNOT_2_OWNER), annotationInfos.get(0).getOwner().getRef());
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI + "/annotations/"+TestBackendConstants._TEST_ANNOT_2_EXT,
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI_annotations +TestBackendConstants._TEST_ANNOT_2_EXT,
            annotationInfos.get(0).getRef());          
         //assertEquals(TestBackendConstants._TEST_ANNOT_1_TARGETS, annotationInfos.get(0).getTargetSources());
 
         assertEquals(TestBackendConstants._TEST_ANNOT_3_HEADLINE, annotationInfos.get(1).getHeadline());
         assertEquals(String.valueOf(TestBackendConstants._TEST_ANNOT_3_OWNER), annotationInfos.get(1).getOwner().getRef());
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI + "/annotations/"+TestBackendConstants._TEST_ANNOT_3_EXT,
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI_annotations + TestBackendConstants._TEST_ANNOT_3_EXT,
            annotationInfos.get(1).getRef()); 
         //assertEquals(TestBackendConstants._TEST_ANNOT_2_TARGETS, annotationInfos.get(1).getTargetSources());
 
         assertEquals(TestBackendConstants._TEST_ANNOT_4_HEADLINE, annotationInfos.get(2).getHeadline());
         assertEquals(String.valueOf(TestBackendConstants._TEST_ANNOT_4_OWNER), annotationInfos.get(2).getOwner().getRef());
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI + "/annotations/"+TestBackendConstants._TEST_ANNOT_4_EXT,
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI_annotations + TestBackendConstants._TEST_ANNOT_4_EXT,
            annotationInfos.get(2).getRef()); 
         //assertEquals(TestBackendConstants._TEST_ANNOT_3_TARGETS, annotationInfos.get(2).getTargetSources());
 
@@ -147,12 +174,12 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         annotIds.add(3);
         annotIds.add(4);
 
-        jdbcAnnotationDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI);
+        jdbcAnnotationDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_annotations);
         final List<ResourceREF> testList = jdbcAnnotationDao.getAnnotationREFs(annotIds);
         assertEquals(3, testList.size());
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI +"/annotations/"+TestBackendConstants._TEST_ANNOT_2_EXT, testList.get(0).getRef());
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI +"/annotations/"+TestBackendConstants._TEST_ANNOT_3_EXT, testList.get(1).getRef());
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI + "/annotations/"+TestBackendConstants._TEST_ANNOT_4_EXT, testList.get(2).getRef());
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI_annotations+TestBackendConstants._TEST_ANNOT_2_EXT, testList.get(0).getRef());
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI_annotations+TestBackendConstants._TEST_ANNOT_3_EXT, testList.get(1).getRef());
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI_annotations+TestBackendConstants._TEST_ANNOT_4_EXT, testList.get(2).getRef());
 
         final List<ResourceREF> testListTwo = jdbcAnnotationDao.getAnnotationREFs(new ArrayList<Number>());
         assertEquals(0, testListTwo.size());
@@ -188,8 +215,8 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
     @Test
     public void testGetInternalIDFRomURI() {
         System.out.println("test getInternalIDFromURI");
-        jdbcAnnotationDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI);
-        String uri = TestBackendConstants._TEST_SERVLET_URI + "/annotations/"+TestBackendConstants._TEST_ANNOT_2_EXT;
+        jdbcAnnotationDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_annotations);
+        String uri = TestBackendConstants._TEST_SERVLET_URI_annotations+TestBackendConstants._TEST_ANNOT_2_EXT;
         Number result = jdbcAnnotationDao.getInternalIDFromURI(uri);
         assertEquals(2, result.intValue());
     }
@@ -209,13 +236,14 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         ////
              
         final Number testAnnotationID = 2;
-        jdbcAnnotationDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI);
+        jdbcAnnotationDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_annotations);
         final Annotation annotation = jdbcAnnotationDao.getAnnotationWithoutSourcesAndPermissions(testAnnotationID);
         assertEquals(TestBackendConstants._TEST_ANNOT_2_HEADLINE, annotation.getHeadline());
         assertEquals(String.valueOf(TestBackendConstants._TEST_ANNOT_2_OWNER), annotation.getOwner().getRef());
         assertEquals(TestBackendConstants._TEST_ANNOT_2_BODY, annotation.getBody().getValue()); 
         assertEquals(TestBackendConstants._TEST_BODY_MIMETYPE_HTML, annotation.getBody().getMimeType()); 
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI+"/annotations/"+TestBackendConstants._TEST_ANNOT_2_EXT, annotation.getURI());
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI_annotations+
+                TestBackendConstants._TEST_ANNOT_2_EXT, annotation.getURI());
         assertEquals(TestBackendConstants._TEST_ANNOT_2_TIME_STAMP, annotation.getTimeStamp().toString());
     }
 

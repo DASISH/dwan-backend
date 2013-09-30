@@ -19,6 +19,7 @@ package eu.dasish.annotation.backend.rest;
 
 import eu.dasish.annotation.backend.dao.DBIntegrityService;
 import eu.dasish.annotation.backend.Helpers;
+import eu.dasish.annotation.backend.MockObjectsFactory;
 import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.TestInstances;
 import eu.dasish.annotation.schema.Annotation;
@@ -40,11 +41,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.lang.InstantiationException;
+import java.net.URI;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import javax.servlet.ServletException;
+import javax.ws.rs.core.UriInfo;
 import javax.xml.datatype.DatatypeConfigurationException;
 import org.springframework.mock.web.MockHttpServletRequest;
 
@@ -66,7 +69,8 @@ public class AnnotationResourceTest {
     @Autowired
     private AnnotationResource annotationResource;
     
-    public AnnotationResourceTest() {
+    
+    public AnnotationResourceTest() { 
     }
     
     
@@ -80,8 +84,24 @@ public class AnnotationResourceTest {
         final int annotationID = 2;        
         final Annotation expectedAnnotation = (new TestInstances()).getAnnotationOne();
         
+       
+        Mockery newMockery = new Mockery();
+        MockObjectsFactory mockFactory = new MockObjectsFactory(newMockery);
+        final UriInfo uriInfo = mockFactory.newUriInfo();
+       
+        newMockery.checking(new Expectations() {
+            {
+                
+                oneOf(uriInfo).getAbsolutePath();
+                will(returnValue(URI.create("http://localhost:8080/annotator-backend/api/annotations")));
+              
+            }
+        });
+        
+        
         mockery.checking(new Expectations() {
             {
+                
                 oneOf(daoDispatcher).setServiceURI(with(any(String.class)));
                 will(doAll());
                 
@@ -93,13 +113,13 @@ public class AnnotationResourceTest {
             }
         });
         
-        final MockHttpServletRequest httpServletRequest = new MockHttpServletRequest();
-        httpServletRequest.setContextPath("annotator-backend");
-        httpServletRequest.setServletPath(TestBackendConstants._TEST_SERVLET_URI);        
-        annotationResource.setHttpRequest(httpServletRequest);
-        //annotationResource.setUriInfo(UriInfo("localhost/annotator-backend/api/"+TestBackendConstants._TEST_SERVLET_URI));
+//        final MockHttpServletRequest httpServletRequest = new MockHttpServletRequest();
+//        httpServletRequest.setContextPath("annotator-backend");
+//        httpServletRequest.setServletPath(TestBackendConstants._TEST_SERVLET_URI);        
+//        annotationResource.setHttpRequest(httpServletRequest);
         
-         
+        
+        annotationResource.setUriInfo(uriInfo);
         JAXBElement<Annotation> result = annotationResource.getAnnotation(externalIDstring);
         assertEquals(expectedAnnotation, result.getValue());
     }
@@ -118,8 +138,23 @@ public class AnnotationResourceTest {
         mockDelete[3]=1; // # deleted annotation_prinipal_permissions
         mockDelete[2]=2; // # deleted  annotations_target_sources, (5,3), (5,4)
         mockDelete[3]=1; // # deletd sources, 4
+        
+        Mockery newMockery = new Mockery();
+        MockObjectsFactory mockFactory = new MockObjectsFactory(newMockery);
+        final UriInfo uriInfo = mockFactory.newUriInfo();
+       
+        newMockery.checking(new Expectations() {
+            {
+                
+                oneOf(uriInfo).getAbsolutePath();
+                will(returnValue(URI.create("http://localhost:8080/annotator-backend/api/annotations")));
+              
+            }
+        });
+     
         mockery.checking(new Expectations() {
             {  
+             
                 oneOf(daoDispatcher).setServiceURI(with(any(String.class)));
                 will(doAll());
                 
@@ -131,6 +166,7 @@ public class AnnotationResourceTest {
             }
         });
         
+        annotationResource.setUriInfo(uriInfo);
         String result = annotationResource.deleteAnnotation(TestBackendConstants._TEST_ANNOT_5_EXT);
         assertEquals("1 annotation(s) deleted.", result);
     }
@@ -170,10 +206,26 @@ public class AnnotationResourceTest {
         sources.add(6);
         
         final Annotation addedAnnotation = (new ObjectFactory()).createAnnotation(annotationToAdd).getValue();
-        addedAnnotation.setURI(TestBackendConstants._TEST_SERVLET_URI + "/annotations/"+UUID.randomUUID().toString());
+        addedAnnotation.setURI("http://localhost:8080/annotator-backend/api/annotations/"+UUID.randomUUID().toString());
+        
+        Mockery newMockery = new Mockery();
+        MockObjectsFactory mockFactory = new MockObjectsFactory(newMockery);
+        final UriInfo uriInfo = mockFactory.newUriInfo();
+       
+        newMockery.checking(new Expectations() {
+            {
+                
+                oneOf(uriInfo).getAbsolutePath();
+                will(returnValue(URI.create("http://localhost:8080/annotator-backend/api/annotations")));
+              
+            }
+        });
         
         mockery.checking(new Expectations() {
             {
+                  
+                
+                
                 oneOf(daoDispatcher).setServiceURI(with(any(String.class)));
                 will(doAll());
                 
@@ -191,12 +243,12 @@ public class AnnotationResourceTest {
             }
         });
         
-        
-        
+       
+        annotationResource.setUriInfo(uriInfo);
         final MockHttpServletRequest httpServletRequest = new MockHttpServletRequest();
-        httpServletRequest.setRemoteUser(TestBackendConstants._TEST_USER_5_EXT_ID);         
-        httpServletRequest.setServletPath(TestBackendConstants._TEST_SERVLET_URI);     
+        httpServletRequest.setRemoteUser(TestBackendConstants._TEST_USER_3_EXT_ID);      
         annotationResource.setHttpRequest(httpServletRequest);
+      
         
         JAXBElement<ResponseBody> result = annotationResource.createAnnotation(annotationToAdd);
         Annotation newAnnotation = result.getValue().getAnnotationResponse().getContent().getAnnotation();

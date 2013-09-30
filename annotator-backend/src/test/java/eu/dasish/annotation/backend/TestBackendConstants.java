@@ -94,6 +94,10 @@ public class TestBackendConstants {
     public static final String _TEST_ANNOT_TO_ADD_NEW_SOURCE_HEADLINE = "SF in Catalan";
     public static final String _TEST_NEW_SOURCE_LINK = "http://www.sagradafamilia.cat/docs_instit/historia.php ";
     
-    public static final String _TEST_SERVLET_URI = "/api";
+    public static final String _TEST_SERVLET_URI_annotations = "http://localhost:8080/annotator-backend/api/annotations/";
+    public static final String _TEST_SERVLET_URI_sources = "http://localhost:8080/annotator-backend/api/sources/";
+    public static final String _TEST_SERVLET_URI_cached = "http://localhost:8080/annotator-backend/api/cached/";
+    public static final String _TEST_SERVLET_URI_users = "http://localhost:8080/annotator-backend/api/users/";
+    public static final String _TEST_SERVLET_URI_notebooks = "http://localhost:8080/annotator-backend/api/notebooks/";
 }
 

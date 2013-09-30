@@ -23,6 +23,7 @@ import eu.dasish.annotation.backend.dao.NotebookDao;
 import eu.dasish.annotation.backend.dao.SourceDao;
 import eu.dasish.annotation.backend.dao.UserDao;
 import eu.dasish.annotation.backend.dao.DBIntegrityService;
+import javax.ws.rs.core.UriInfo;
 import org.jmock.Mockery;
 
 /**
@@ -61,5 +62,9 @@ public class MockObjectsFactory {
  
     public DBIntegrityService newDBIntegrityService() {
         return context.mock(DBIntegrityService.class);
+    }
+    
+    public UriInfo newUriInfo() {
+        return context.mock(UriInfo.class);
     }
 }

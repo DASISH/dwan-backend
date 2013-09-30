@@ -41,6 +41,34 @@ public class JdbcSourceDaoTest extends JdbcResourceDaoTest {
 
     @Autowired
     JdbcSourceDao jdbcSourceDao;
+    
+     /**
+     * Test of stringURItoExternalID method
+     * public String stringURItoExternalID(String uri);
+     */
+    @Test
+    public void testStringURItoExternalID() {
+        System.out.println("test stringURItoExternalID");
+        jdbcSourceDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_sources);
+        String randomUUID = UUID.randomUUID().toString();
+        String uri = TestBackendConstants._TEST_SERVLET_URI_sources + randomUUID;
+        String externalID = jdbcSourceDao.stringURItoExternalID(uri);
+        assertEquals(randomUUID, externalID);
+    }
+    
+    /**
+     * Test of externalIDtoURI method
+     * public String externalIDtoURI(String externalID);
+     */
+    @Test
+    public void testExternalIDtoURI() {
+        System.out.println("test stringURItoExternalID");
+        jdbcSourceDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_sources);
+        String randomUUID = UUID.randomUUID().toString();
+        String uri = TestBackendConstants._TEST_SERVLET_URI_sources+randomUUID;
+        String uriResult = jdbcSourceDao.externalIDtoURI(randomUUID);
+        assertEquals(uri, uriResult);
+    }
 
     /**
      * Test of getExternalID method, of class JdbcSourceDao.
@@ -72,8 +100,8 @@ public class JdbcSourceDaoTest extends JdbcResourceDaoTest {
     @Test
     public void testGetInternalIDFRomURI() {
         System.out.println("test getInternalIDFromURI");
-        jdbcSourceDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI);
-        String uri = TestBackendConstants._TEST_SERVLET_URI + "/sources/"+TestBackendConstants._TEST_SOURCE_1_EXT_ID;
+        jdbcSourceDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_sources);
+        String uri = TestBackendConstants._TEST_SERVLET_URI_sources+TestBackendConstants._TEST_SOURCE_1_EXT_ID;
         Number result = jdbcSourceDao.getInternalIDFromURI(uri);
         assertEquals(1, result.intValue());
     }
@@ -86,9 +114,9 @@ public class JdbcSourceDaoTest extends JdbcResourceDaoTest {
     public void testGetSource() {
         System.out.println("getSource");
         Number internalID = 1;
-        jdbcSourceDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI);
+        jdbcSourceDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_sources);
         Source result = jdbcSourceDao.getSource(internalID);
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI+"/sources/"+TestBackendConstants._TEST_SOURCE_1_EXT_ID, result.getURI());
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI_sources+TestBackendConstants._TEST_SOURCE_1_EXT_ID, result.getURI());
         assertEquals(TestBackendConstants._TEST_SOURCE_1_LINK, result.getLink());
         assertEquals(TestBackendConstants._TEST_SOURCE_1_VERSION, result.getVersion());
         // TODO :add time stamp test
@@ -142,7 +170,7 @@ public class JdbcSourceDaoTest extends JdbcResourceDaoTest {
         Source addedSource = jdbcSourceDao.getSource(result);
         assertEquals(link, addedSource.getLink());
         assertEquals(TestBackendConstants._TEST_SOURCE_1_VERSION, addedSource.getVersion());
-        assertTrue(addedSource.getURI().startsWith(TestBackendConstants._TEST_SERVLET_URI));
+        assertTrue(addedSource.getURI().startsWith(TestBackendConstants._TEST_SERVLET_URI_sources));
     }
 
     /**
@@ -151,14 +179,14 @@ public class JdbcSourceDaoTest extends JdbcResourceDaoTest {
     @Test
     public void testGetSourceInfos() {
         System.out.println("getSourceInfos");        
-        jdbcSourceDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI);
+        jdbcSourceDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_sources);
         List<Number> test = new ArrayList<Number>();
         test.add(1);
         test.add(2);
         List<SourceInfo> result = jdbcSourceDao.getSourceInfos(test);
         assertEquals(2, result.size());
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI+"/sources/"+TestBackendConstants._TEST_SOURCE_1_EXT_ID, result.get(0).getRef());
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI+"/sources/"+TestBackendConstants._TEST_SOURCE_2_EXT_ID, result.get(1).getRef());
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI_sources+TestBackendConstants._TEST_SOURCE_1_EXT_ID, result.get(0).getRef());
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI_sources+TestBackendConstants._TEST_SOURCE_2_EXT_ID, result.get(1).getRef());
         assertEquals(TestBackendConstants._TEST_SOURCE_1_VERSION, result.get(0).getVersion());
         assertEquals(TestBackendConstants._TEST_SOURCE_2_VERSION, result.get(1).getVersion());
         assertEquals(TestBackendConstants._TEST_SOURCE_1_LINK, result.get(0).getLink());

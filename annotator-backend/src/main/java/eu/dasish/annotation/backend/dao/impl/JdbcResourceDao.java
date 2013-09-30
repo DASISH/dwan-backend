@@ -97,7 +97,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     /////////////////// Class field SETTERS /////////////
     @Override
     public void setServiceURI(String serviceURI){
-        _serviceURI = serviceURI+"/";
+        _serviceURI = serviceURI;
     }
        
     

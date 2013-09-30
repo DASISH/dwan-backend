@@ -39,6 +39,34 @@ public class JdbcUserDaoTest extends JdbcResourceDaoTest {
     @Autowired
     JdbcUserDao jdbcUserDao;
     TestInstances testInstances = new TestInstances();
+    
+     /**
+     * Test of stringURItoExternalID method
+     * public String stringURItoExternalID(String uri);
+     */
+    @Test
+    public void testStringURItoExternalID() {
+        System.out.println("test stringURItoExternalID");
+        jdbcUserDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_users);
+        String randomUUID = UUID.randomUUID().toString();
+        String uri = TestBackendConstants._TEST_SERVLET_URI_users + randomUUID;
+        String externalID = jdbcUserDao.stringURItoExternalID(uri);
+        assertEquals(randomUUID, externalID);
+    }
+    
+    /**
+     * Test of externalIDtoURI method
+     * public String externalIDtoURI(String externalID);
+     */
+    @Test
+    public void testExternalIDtoURI() {
+        System.out.println("test stringURItoExternalID");
+        jdbcUserDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_users);
+        String randomUUID = UUID.randomUUID().toString();
+        String uri = TestBackendConstants._TEST_SERVLET_URI_users+randomUUID;
+        String uriResult = jdbcUserDao.externalIDtoURI(randomUUID);
+        assertEquals(uri, uriResult);
+    }
 
     /**
      * Test of getInternalID method, of class JdbcUserDao. Number
@@ -71,18 +99,18 @@ public class JdbcUserDaoTest extends JdbcResourceDaoTest {
     @Test
     public void testGetUser() {
         System.out.println("test getUser");
-        jdbcUserDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI);
+        jdbcUserDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_users);
         Number internalID = 1;
         User result = jdbcUserDao.getUser(internalID);
         assertEquals("a user", result.getDisplayName());
         assertEquals("a.user@gmail.com", result.getEMail());
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI + "/users/"+TestBackendConstants._TEST_UID_1_, result.getURI());
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI_users+TestBackendConstants._TEST_UID_1_, result.getURI());
     }
 
     @Test
     public void testAddUser() {
         System.out.println("test addUser");
-        jdbcUserDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI);
+        jdbcUserDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_users);
         String freshUserName = "Guilherme";
         String freshUserEmail = "guisil@mpi.nl";
 
@@ -101,7 +129,7 @@ public class JdbcUserDaoTest extends JdbcResourceDaoTest {
     @Test
     public void testDeleteUser() {
         System.out.println("test deleteUser");
-        jdbcUserDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI);
+        jdbcUserDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_users);
 
         int result = jdbcUserDao.deleteUser(6);
         assertEquals(1, result);
@@ -120,7 +148,7 @@ public class JdbcUserDaoTest extends JdbcResourceDaoTest {
     @Test
     public void tesUserExists() {
         System.out.println("test userExists");
-        jdbcUserDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI);
+        jdbcUserDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_users);
 
         User freshUser = new User();
         freshUser.setDisplayName("Guilherme");

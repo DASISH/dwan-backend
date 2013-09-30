@@ -50,7 +50,7 @@ import org.junit.Ignore;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration({"/spring-test-config/mockery.xml", "/spring-test-config/mockAnnotationDao.xml", 
     "/spring-test-config/mockSourceDao.xml", "/spring-test-config/mockUserDao.xml",
-    "/spring-test-config/mockCachedRepresentationDao.xml", 
+    "/spring-test-config/mockCachedRepresentationDao.xml", "/spring-test-config/mockUriInfo.xml",
     "/spring-test-config/dataSource.xml", "/spring-test-config/mockDBIntegrityService.xml","/spring-config/notebookDao.xml"})
 public class JdbcNotebookDaoTest extends JdbcResourceDaoTest{
 
@@ -61,7 +61,35 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest{
     @Autowired
     private Mockery mockery;
 
-   
+    /**
+     * Test of stringURItoExternalID method
+     * public String stringURItoExternalID(String uri);
+     */
+    @Test
+    @Ignore
+    public void testStringURItoExternalID() {
+        System.out.println("test stringURItoExternalID");
+        jdbcNotebookDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_notebooks);
+        String randomUUID = UUID.randomUUID().toString();
+        String uri = TestBackendConstants._TEST_SERVLET_URI_notebooks + randomUUID;
+        String externalID = jdbcNotebookDao.stringURItoExternalID(uri);
+        assertEquals(randomUUID, externalID);
+    }
+    
+    /**
+     * Test of externalIDtoURI method
+     * public String externalIDtoURI(String externalID);
+     */
+    @Test
+    @Ignore
+    public void testExternalIDtoURI() {
+        System.out.println("test stringURItoExternalID");
+        jdbcNotebookDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_notebooks);
+        String randomUUID = UUID.randomUUID().toString();
+        String uri = TestBackendConstants._TEST_SERVLET_URI_notebooks+randomUUID;
+        String uriResult = jdbcNotebookDao.externalIDtoURI(randomUUID);
+        assertEquals(uri, uriResult);
+    }
     
     /**
      * Test of getNotebookInfos method, of class JdbcNotebookDao.
@@ -85,7 +113,7 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest{
         int day = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
         
         ResourceREF testRef = new ResourceREF();
-        testRef.setRef(TestBackendConstants._TEST_SERVLET_URI+"/"+TestBackendConstants._TEST_AID_1_);
+        testRef.setRef(TestBackendConstants._TEST_SERVLET_URI_notebooks+TestBackendConstants._TEST_AID_1_);
         final List<ResourceREF> testResult = Arrays.asList(new ResourceREF[] {testRef});
         
         mockery.checking(new Expectations() {
@@ -96,13 +124,13 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest{
             }
         });
         
-        jdbcNotebookDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI);
+        jdbcNotebookDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_notebooks);
         final List<Notebook> notebooks = jdbcNotebookDao.getUsersNotebooks(UUID.fromString(TestBackendConstants._TEST_UID_2_));
 
 
         assertEquals(2, notebooks.size());
         assertEquals("a notebook", notebooks.get(0).getTitle());
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI+"/"+TestBackendConstants._TEST_NOTEBOOK_1_EXT_ID, notebooks.get(0).getURI());
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI_notebooks+TestBackendConstants._TEST_NOTEBOOK_1_EXT_ID, notebooks.get(0).getURI());
         assertNotNull(notebooks.get(0).getTimeStamp());
         assertEquals(year, notebooks.get(0).getTimeStamp().getYear());
         assertEquals(month + 1, notebooks.get(0).getTimeStamp().getMonth());
@@ -184,20 +212,20 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest{
     public void testGetAnnotationREFsOfNotebook() {
         System.out.println("getAnnotationREFsOfNotebook");
         
-        jdbcNotebookDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI);
-        annotationDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI);
+        jdbcNotebookDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_notebooks);
+        annotationDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_annotations);
         // test One         
         setMockeryNotebookOne(); 
         List<ResourceREF> testList = jdbcNotebookDao.getAnnotationREFsOfNotebook(3);
         assertEquals(2, testList.size());        
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI+"/"+TestBackendConstants._TEST_ANNOT_2_EXT, testList.get(0).getRef());
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI+"/"+TestBackendConstants._TEST_ANNOT_3_EXT, testList.get(1).getRef());
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI_annotations+TestBackendConstants._TEST_ANNOT_2_EXT, testList.get(0).getRef());
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI_annotations+TestBackendConstants._TEST_ANNOT_3_EXT, testList.get(1).getRef());
         
         // test Two
         setMockeryNotebookTwo(); 
         List<ResourceREF> testListTwo = jdbcNotebookDao.getAnnotationREFsOfNotebook(4);
         assertEquals(1, testListTwo.size());        
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI+"/"+TestBackendConstants._TEST_ANNOT_4_EXT, testListTwo.get(0).getRef());
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI_annotations+TestBackendConstants._TEST_ANNOT_4_EXT, testListTwo.get(0).getRef());
         
         // test Three  "empty" 
         setMockeryNotebookThreeEmpty();         
@@ -219,20 +247,20 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest{
     public void testGetAnnotations() {
         System.out.println("getAnnotations");
         
-        jdbcNotebookDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI);
+        jdbcNotebookDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_notebooks);
         
          // test One
         setMockeryNotebookOne(); 
         AnnotationList annotations = jdbcNotebookDao.getAnnotations(3);
         assertEquals(2, annotations.getAnnotation().size());        
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI+"/"+TestBackendConstants._TEST_ANNOT_2_EXT, annotations.getAnnotation().get(0).getRef());
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI+"/"+TestBackendConstants._TEST_ANNOT_3_EXT, annotations.getAnnotation().get(1).getRef());
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI_annotations+TestBackendConstants._TEST_ANNOT_2_EXT, annotations.getAnnotation().get(0).getRef());
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI_annotations+TestBackendConstants._TEST_ANNOT_3_EXT, annotations.getAnnotation().get(1).getRef());
         
         // test Two
         setMockeryNotebookTwo(); 
         AnnotationList annotationsTwo = jdbcNotebookDao.getAnnotations(4);
         assertEquals(1, annotationsTwo.getAnnotation().size());        
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI+"/"+TestBackendConstants._TEST_ANNOT_4_EXT, annotationsTwo.getAnnotation().get(0).getRef());
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI_annotations+TestBackendConstants._TEST_ANNOT_4_EXT, annotationsTwo.getAnnotation().get(0).getRef());
         
         // test Three  "empty" list of annotations
         // according to dasish.xsd if an Annotation is created then its list of annotations must contain at least one element!
@@ -256,11 +284,11 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest{
     public void testGetNotebookInfo() {
         System.out.println("test getNotebookInfo");
         
-        jdbcNotebookDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI);
+        jdbcNotebookDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_notebooks);
         
          // test One        
         NotebookInfo info = jdbcNotebookDao.getNotebookInfo(3);
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI+"/"+TestBackendConstants._TEST_NOTEBOOK_3_EXT, info.getRef());
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI_notebooks+"/"+TestBackendConstants._TEST_NOTEBOOK_3_EXT, info.getRef());
         assertEquals(TestBackendConstants._TEST_NOTEBOOK_3_TITLE, info.getTitle());
         
                
@@ -323,9 +351,9 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest{
     
     private void setMockeryNotebookOne(){        
         ResourceREF testRefOne = new ResourceREF();
-        testRefOne.setRef(TestBackendConstants._TEST_SERVLET_URI+TestBackendConstants._TEST_ANNOT_2_EXT);
+        testRefOne.setRef(TestBackendConstants._TEST_SERVLET_URI_annotations+TestBackendConstants._TEST_ANNOT_2_EXT);
         ResourceREF testRefTwo = new ResourceREF();
-        testRefTwo.setRef(TestBackendConstants._TEST_SERVLET_URI+TestBackendConstants._TEST_ANNOT_3_EXT);
+        testRefTwo.setRef(TestBackendConstants._TEST_SERVLET_URI_annotations+TestBackendConstants._TEST_ANNOT_3_EXT);
         final List<ResourceREF> testResult = Arrays.asList(new ResourceREF[] {testRefOne, testRefTwo});
         
         mockery.checking(new Expectations() {
@@ -338,7 +366,7 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest{
 
      private void setMockeryNotebookTwo(){ 
         ResourceREF testRef = new ResourceREF();
-        testRef.setRef(String.valueOf(TestBackendConstants._TEST_SERVLET_URI+TestBackendConstants._TEST_ANNOT_4_EXT));
+        testRef.setRef(String.valueOf(TestBackendConstants._TEST_SERVLET_URI_annotations+TestBackendConstants._TEST_ANNOT_4_EXT));
         final List<ResourceREF> testResultTwo = Arrays.asList(new ResourceREF[] {testRef});
         
         mockery.checking(new Expectations() {

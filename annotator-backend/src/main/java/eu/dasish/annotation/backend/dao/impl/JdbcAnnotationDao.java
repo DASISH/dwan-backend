@@ -55,7 +55,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
     
     @Override
     public void setServiceURI(String serviceURI){
-        _serviceURI = serviceURI+"/annotations/";
+        _serviceURI = serviceURI;
     }
     
     ///////////// GETTERS /////////////
