@@ -92,8 +92,8 @@ public class AnnotationResourceTest {
         newMockery.checking(new Expectations() {
             {
                 
-                oneOf(uriInfo).getAbsolutePath();
-                will(returnValue(URI.create("http://localhost:8080/annotator-backend/api/annotations")));
+                oneOf(uriInfo).getBaseUri();
+                will(returnValue(URI.create("http://localhost:8080/annotator-backend/api/")));
               
             }
         });
@@ -146,8 +146,8 @@ public class AnnotationResourceTest {
         newMockery.checking(new Expectations() {
             {
                 
-                oneOf(uriInfo).getAbsolutePath();
-                will(returnValue(URI.create("http://localhost:8080/annotator-backend/api/annotations")));
+                oneOf(uriInfo).getBaseUri();
+                will(returnValue(URI.create("http://localhost:8080/annotator-backend/api/")));
               
             }
         });
@@ -215,8 +215,8 @@ public class AnnotationResourceTest {
         newMockery.checking(new Expectations() {
             {
                 
-                oneOf(uriInfo).getAbsolutePath();
-                will(returnValue(URI.create("http://localhost:8080/annotator-backend/api/annotations")));
+                oneOf(uriInfo).getBaseUri();
+                will(returnValue(URI.create("http://localhost:8080/annotator-backend/api/")));
               
             }
         });

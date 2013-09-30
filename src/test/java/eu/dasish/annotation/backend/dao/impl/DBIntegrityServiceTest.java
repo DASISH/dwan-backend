@@ -349,18 +349,23 @@ public class DBIntegrityServiceTest {
 
                 oneOf(sourceDao).getExternalID(1);
                 will(returnValue(UUID.fromString(TestBackendConstants._TEST_SOURCE_1_EXT_ID)));
+                
+                oneOf(sourceDao).externalIDtoURI(TestBackendConstants._TEST_SOURCE_1_EXT_ID);
+                will(returnValue(TestBackendConstants._TEST_SERVLET_URI_sources+TestBackendConstants._TEST_SOURCE_1_EXT_ID));
 
                 oneOf(sourceDao).getExternalID(2);
                 will(returnValue(UUID.fromString(TestBackendConstants._TEST_SOURCE_2_EXT_ID)));
-
+ 
+                oneOf(sourceDao).externalIDtoURI(TestBackendConstants._TEST_SOURCE_2_EXT_ID);
+                will(returnValue(TestBackendConstants._TEST_SERVLET_URI_sources+TestBackendConstants._TEST_SOURCE_2_EXT_ID));
 
             }
         });
        
         SourceList result = dbIntegrityService.getAnnotationSources(annotationID);
         assertEquals(2, result.getTargetSource().size());
-        assertEquals(TestBackendConstants._TEST_SOURCE_1_EXT_ID, result.getTargetSource().get(0).getRef());
-        assertEquals(TestBackendConstants._TEST_SOURCE_2_EXT_ID, result.getTargetSource().get(1).getRef());
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI_sources+TestBackendConstants._TEST_SOURCE_1_EXT_ID, result.getTargetSource().get(0).getRef());
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI_sources+TestBackendConstants._TEST_SOURCE_2_EXT_ID, result.getTargetSource().get(1).getRef());
         
     }
     
@@ -392,7 +397,7 @@ public class DBIntegrityServiceTest {
         final String text = "some html";
         final String access = null;
         final String namespace = null;
-        final UUID owner = UUID.fromString(TestBackendConstants._TEST_USER_3_EXT_ID);
+        final UUID ownerUUID = UUID.fromString(TestBackendConstants._TEST_USER_3_EXT_ID);
         final Timestamp after = new Timestamp(0);
         final Timestamp before = new Timestamp(System.currentTimeMillis());
 
@@ -405,7 +410,7 @@ public class DBIntegrityServiceTest {
         
         ResourceREF ownerAnnot = new ResourceREF();
         annotationInfo.setOwner(ownerAnnot);
-        ownerAnnot.setRef(TestBackendConstants._TEST_SERVLET_URI_users+ TestBackendConstants._TEST_USER_3_EXT_ID);
+        ownerAnnot.setRef("3");
         
         SourceList targetSources = new SourceList();
         ResourceREF targetOne  = new ResourceREF();
@@ -425,12 +430,19 @@ public class DBIntegrityServiceTest {
                 oneOf(sourceDao).getSourcesForLink(link);
                 will(returnValue(mockSourceIDs));
 
+                oneOf(userDao).getInternalID(ownerUUID);
+                will(returnValue(3));
+                
                 oneOf(annotationDao).retrieveAnnotationList(mockSourceIDs);
                 will(returnValue(mockAnnotationIDs));
-
-                oneOf(userDao).getInternalID(owner);
-                will(returnValue(3));
-
+                
+                
+                oneOf(userDao).getExternalID(3);
+                will(returnValue(ownerUUID));
+                
+                oneOf(userDao).externalIDtoURI(ownerUUID.toString());
+                will(returnValue(TestBackendConstants._TEST_SERVLET_URI_users +TestBackendConstants._TEST_USER_3_EXT_ID)); 
+                
                 oneOf(annotationDao).getFilteredAnnotationIDs(mockAnnotationIDs, text, access, namespace, 3, after, before);
                 will(returnValue(mockAnnotIDs));
                 
@@ -441,11 +453,11 @@ public class DBIntegrityServiceTest {
         });
 
 
-        AnnotationInfoList result = dbIntegrityService.getFilteredAnnotationInfos(link, text, access, namespace, owner, after, before);
+        AnnotationInfoList result = dbIntegrityService.getFilteredAnnotationInfos(link, text, access, namespace, ownerUUID, after, before);
         assertEquals(1, result.getAnnotation().size()); 
         AnnotationInfo resultAnnotInfo = result.getAnnotation().get(0);
         assertEquals(annotationInfo.getHeadline(), resultAnnotInfo.getHeadline());
-        assertEquals(annotationInfo.getOwner().getRef(), resultAnnotInfo.getOwner().getRef());
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI_users +TestBackendConstants._TEST_USER_3_EXT_ID, resultAnnotInfo.getOwner().getRef());
         assertEquals(annotationInfo.getRef(),result.getAnnotation().get(0).getRef() );
         assertEquals(annotationInfo.getTargetSources().getTargetSource().get(0).getRef(), resultAnnotInfo.getTargetSources().getTargetSource().get(0).getRef());
         assertEquals(annotationInfo.getTargetSources().getTargetSource().get(1).getRef(), resultAnnotInfo.getTargetSources().getTargetSource().get(1).getRef());
