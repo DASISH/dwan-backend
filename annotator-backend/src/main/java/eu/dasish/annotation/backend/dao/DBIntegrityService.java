@@ -24,6 +24,7 @@ import eu.dasish.annotation.schema.CachedRepresentationInfo;
 import eu.dasish.annotation.schema.Permission;
 import eu.dasish.annotation.schema.PermissionList;
 import eu.dasish.annotation.schema.ReferenceList;
+import eu.dasish.annotation.schema.Source;
 import eu.dasish.annotation.schema.SourceInfo;
 import eu.dasish.annotation.schema.SourceList;
 import eu.dasish.annotation.schema.User;
@@ -160,6 +161,11 @@ public interface DBIntegrityService{
      */
     Number getCachedRepresentationInternalIdentifier(UUID externalID);
     
+    Number getSourceInternalIdentifier(UUID externalID); 
+
+   
+     UUID getSourceExternalIdentifier(Number annotationID);
+    
     /**
      * 
      * @param internalID
@@ -212,6 +218,7 @@ public interface DBIntegrityService{
      */
     public Blob getCachedRepresentationBlob(Number cachedID) throws SQLException;
     
+    public Source getSource(Number internalID);
     
     /**
      * 

@@ -19,11 +19,9 @@ package eu.dasish.annotation.backend.rest;
 
 import eu.dasish.annotation.backend.BackendConstants;
 import eu.dasish.annotation.backend.dao.DBIntegrityService;
-import eu.dasish.annotation.schema.CachedRepresentationInfo;
 import eu.dasish.annotation.schema.ObjectFactory;
 import eu.dasish.annotation.schema.ReferenceList;
-import java.io.InputStream;
-import java.sql.Blob;
+import eu.dasish.annotation.schema.Source;
 import java.sql.SQLException;
 import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
@@ -66,11 +64,23 @@ public class SourceResource {
     // TODOD both unit tests
     @GET
     @Produces(MediaType.TEXT_XML)
+    @Path("{sourceid: " + BackendConstants.regExpIdentifier + "}")
+    public JAXBElement<Source> getSource(@PathParam("sourceid") String ExternalIdentifier) throws SQLException {
+        path = httpServletRequest.getContextPath()+httpServletRequest.getServletPath();
+        dbIntegrityService.setServiceURI(path);
+        final Number sourceID = dbIntegrityService.getSourceInternalIdentifier(UUID.fromString(ExternalIdentifier));
+        final Source source = dbIntegrityService.getSource(sourceID);
+        return new ObjectFactory().createSource(source);
+    }
+    
+    // TODOD both unit tests
+    @GET
+    @Produces(MediaType.TEXT_XML)
     @Path("{sourceid: " + BackendConstants.regExpIdentifier + "}/versions")
     public JAXBElement<ReferenceList> getSiblingSources(@PathParam("sourceid") String ExternalIdentifier) throws SQLException {
         path = httpServletRequest.getContextPath()+httpServletRequest.getServletPath();
         dbIntegrityService.setServiceURI(path);
-        final Number sourceID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(ExternalIdentifier));
+        final Number sourceID = dbIntegrityService.getSourceInternalIdentifier(UUID.fromString(ExternalIdentifier));
         final ReferenceList siblings = dbIntegrityService.getSiblingSources(sourceID);
         return new ObjectFactory().createReferenceList(siblings);
     }

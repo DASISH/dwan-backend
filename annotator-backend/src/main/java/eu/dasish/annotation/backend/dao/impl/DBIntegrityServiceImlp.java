@@ -87,6 +87,17 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         return annotationDao.getExternalID(annotationID);
     }
 
+     ///////////// GETTERS //////////////////////////
+    @Override
+    public Number getSourceInternalIdentifier(UUID externalID) {
+        return sourceDao.getInternalID(externalID);
+    }
+
+    @Override
+    public UUID getSourceExternalIdentifier(Number annotationID) {
+        return sourceDao.getExternalID(annotationID);
+    }
+    
     @Override
     public Number getUserInternalIdentifier(UUID externalID) {
         return userDao.getInternalID(externalID);
@@ -221,6 +232,11 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     }
 
  
+      // TODO unit test
+    @Override
+    public Source getSource(Number internalID) {
+        return sourceDao.getSource(internalID);
+    }
 
     // TODO unit test
     @Override
@@ -228,6 +244,7 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         return cachedRepresentationDao.getCachedRepresentationInfo(internalID);
     }
 
+    
     //TODO unit test
     @Override
     public Blob getCachedRepresentationBlob(Number cachedID) throws SQLException {
@@ -236,10 +253,10 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     
     @Override
     public ReferenceList getSiblingSources(Number sourceID) throws SQLException {
-        List<Number> cachedIDs = sourceDao.getCachedRepresentations(sourceID);
+        List<Number> sourceIDs = sourceDao.getSiblingSources(sourceID);
         ReferenceList referenceList = new ReferenceList();
-        for (Number cachedID: cachedIDs) {
-            referenceList.getRef().add(cachedRepresentationDao.getExternalID(cachedID).toString());
+        for (Number siblingID: sourceIDs) {
+            referenceList.getRef().add(sourceDao.getExternalID(siblingID).toString());
         }
         return referenceList;
     }
