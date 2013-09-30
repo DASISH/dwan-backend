@@ -48,7 +48,7 @@ public class JdbcSourceDao extends JdbcResourceDao implements SourceDao {
     
    @Override
     public void setServiceURI(String serviceURI){
-        _serviceURI = serviceURI+"/sources/";
+        _serviceURI = serviceURI;
     }
 
     //////////////////////// GETTERS ///////////////////////////////////

@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.JAXBElement;
 import javax.xml.datatype.DatatypeConfigurationException;
 import org.jmock.Expectations;
@@ -48,9 +49,12 @@ public class AnnotationsTest extends ResourcesTest{
     
     private DBIntegrityService daoDispatcher;
     
+    private UriInfo uriInfo;
+    
     public AnnotationsTest() {
         super(AnnotationResource.class.getPackage().getName());        
         daoDispatcher = webAppContext.getBean(DBIntegrityService.class);
+        uriInfo = webAppContext.getBean(UriInfo.class);
     }
     
 
@@ -74,6 +78,11 @@ public class AnnotationsTest extends ResourcesTest{
         //final Annotation annotation = daoDispatcher.getAnnotation(annotationID);
         mockery.checking(new Expectations() {
             {
+                 
+                oneOf(uriInfo).getAbsolutePath();
+                will(returnValue("http://localhost:8080/annotator-backend/api/annotations/"));
+                
+                
                 oneOf(daoDispatcher).setServiceURI(with(any(String.class)));
                 will(doAll());
                 
@@ -116,6 +125,11 @@ public class AnnotationsTest extends ResourcesTest{
         mockDelete[3]=1; // # deletd sources, 4
         mockery.checking(new Expectations() {
             {  
+                  
+                oneOf(uriInfo).getAbsolutePath();
+                will(returnValue("http://localhost:8080/annotator-backend/api/annotations/"));
+                
+                
                 oneOf(daoDispatcher).setServiceURI(with(any(String.class)));
                 will(doAll());
                 
@@ -163,7 +177,7 @@ public class AnnotationsTest extends ResourcesTest{
         SourceInfoList sourceInfoList = new SourceInfoList();
         addedAnnotation.setTargetSources(sourceInfoList);
         addedAnnotation.setOwner(owner);
-        addedAnnotation.setURI(TestBackendConstants._TEST_SERVLET_URI+UUID.randomUUID().toString());        
+        addedAnnotation.setURI(TestBackendConstants._TEST_SERVLET_URI_annotations+UUID.randomUUID().toString());        
         addedAnnotation.setTimeStamp(Helpers.setXMLGregorianCalendar(Timestamp.valueOf("2013-08-12 11:25:00.383000")));        
         SourceInfo sourceInfo = new SourceInfo();
         sourceInfo.setLink("google.nl");
@@ -176,6 +190,11 @@ public class AnnotationsTest extends ResourcesTest{
         
         mockery.checking(new Expectations() {
             {
+                 
+                oneOf(uriInfo).getAbsolutePath();
+                will(returnValue("http://localhost:8080/annotator-backend/api/annotations/"));
+                
+                
                 oneOf(daoDispatcher).setServiceURI(with(any(String.class)));
                 will(doAll());
                 

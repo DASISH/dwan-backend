@@ -44,7 +44,7 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
 
     @Override
     public void setServiceURI(String serviceURI){
-        _serviceURI = serviceURI+"/cached/";
+        _serviceURI = serviceURI;
     }
     
     /////////////////////////// GETTERS  ////////////////////////////////////////

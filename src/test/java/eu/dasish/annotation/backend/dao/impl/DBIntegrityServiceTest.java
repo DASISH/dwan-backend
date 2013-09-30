@@ -62,7 +62,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration({"/spring-test-config/dataSource.xml", "/spring-test-config/mockery.xml", "/spring-test-config/mockAnnotationDao.xml",
     "/spring-test-config/mockUserDao.xml", "/spring-test-config/mockNotebookDao.xml",
-    "/spring-test-config/mockSourceDao.xml", "/spring-test-config/mockCachedRepresentationDao.xml",
+    "/spring-test-config/mockSourceDao.xml", "/spring-test-config/mockCachedRepresentationDao.xml", "/spring-test-config/mockUriInfo.xml",
     "/spring-config/dbIntegrityService.xml"})
 public class DBIntegrityServiceTest {
 
@@ -165,7 +165,7 @@ public class DBIntegrityServiceTest {
         System.out.println("test getAnnotation");
 
         final Annotation mockAnnotation = new Annotation();// corresponds to the annotation # 2
-        mockAnnotation.setURI(TestBackendConstants._TEST_SERVLET_URI +"/"+TestBackendConstants._TEST_ANNOT_2_EXT);
+        mockAnnotation.setURI(TestBackendConstants._TEST_SERVLET_URI_annotations +TestBackendConstants._TEST_ANNOT_2_EXT);
         mockAnnotation.setHeadline(TestBackendConstants._TEST_ANNOT_2_HEADLINE);
         XMLGregorianCalendar mockTimeStamp = Helpers.setXMLGregorianCalendar(Timestamp.valueOf("2013-08-12 11:25:00.383000"));
         mockAnnotation.setTimeStamp(mockTimeStamp);
@@ -186,12 +186,12 @@ public class DBIntegrityServiceTest {
 
         final Source mockSourceOne = new Source();
         mockSourceOne.setLink(TestBackendConstants._TEST_SOURCE_1_LINK);
-        mockSourceOne.setURI(TestBackendConstants._TEST_SERVLET_URI +"/"+TestBackendConstants._TEST_SOURCE_1_EXT_ID);
+        mockSourceOne.setURI(TestBackendConstants._TEST_SERVLET_URI_sources +TestBackendConstants._TEST_SOURCE_1_EXT_ID);
         mockSourceOne.setVersion(TestBackendConstants._TEST_SOURCE_1_EXT_ID);
 
         final Source mockSourceTwo = new Source();
         mockSourceTwo.setLink(TestBackendConstants._TEST_SOURCE_2_LINK);
-        mockSourceTwo.setURI(TestBackendConstants._TEST_SERVLET_URI +"/"+TestBackendConstants._TEST_SOURCE_2_EXT_ID);
+        mockSourceTwo.setURI(TestBackendConstants._TEST_SERVLET_URI_sources +TestBackendConstants._TEST_SOURCE_2_EXT_ID);
         mockSourceTwo.setVersion(TestBackendConstants._TEST_SOURCE_2_EXT_ID);
 
         final List<Map<Number, String>> listMap = new ArrayList<Map<Number, String>>();
@@ -209,9 +209,9 @@ public class DBIntegrityServiceTest {
         final UUID externalID4 = UUID.fromString(TestBackendConstants._TEST_USER_4_EXT_ID);
         final UUID externalID5 = UUID.fromString(TestBackendConstants._TEST_USER_5_EXT_ID);
 
-        final String uri3 = TestBackendConstants._TEST_SERVLET_URI + "/"+ TestBackendConstants._TEST_USER_3_EXT_ID;
-        final String uri4 = TestBackendConstants._TEST_SERVLET_URI + "/"+ TestBackendConstants._TEST_USER_4_EXT_ID;
-        final String uri5 = TestBackendConstants._TEST_SERVLET_URI + "/"+ TestBackendConstants._TEST_USER_5_EXT_ID;
+        final String uri3 = TestBackendConstants._TEST_SERVLET_URI_users +TestBackendConstants._TEST_USER_3_EXT_ID;
+        final String uri4 = TestBackendConstants._TEST_SERVLET_URI_users +TestBackendConstants._TEST_USER_4_EXT_ID;
+        final String uri5 = TestBackendConstants._TEST_SERVLET_URI_users +TestBackendConstants._TEST_USER_5_EXT_ID;
 
 
         mockery.checking(new Expectations() {
@@ -261,12 +261,12 @@ public class DBIntegrityServiceTest {
         });
 
         Annotation result = dbIntegrityService.getAnnotation(2);
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI+"/"+TestBackendConstants._TEST_ANNOT_2_EXT, result.getURI());
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI_annotations+TestBackendConstants._TEST_ANNOT_2_EXT, result.getURI());
         assertEquals("text/plain", result.getBody().getMimeType());
         assertEquals(TestBackendConstants._TEST_ANNOT_2_BODY, result.getBody().getValue());
         assertEquals(TestBackendConstants._TEST_ANNOT_2_HEADLINE, result.getHeadline());
         assertEquals(TestBackendConstants._TEST_ANNOT_2_TIME_STAMP, result.getTimeStamp().toString());
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI+"/"+TestBackendConstants._TEST_USER_3_EXT_ID, result.getOwner().getRef());
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI_users+TestBackendConstants._TEST_USER_3_EXT_ID, result.getOwner().getRef());
 
         assertEquals(mockSourceOne.getLink(), result.getTargetSources().getTargetSource().get(0).getLink());
         assertEquals(mockSourceOne.getURI(), result.getTargetSources().getTargetSource().get(0).getRef());
@@ -405,7 +405,7 @@ public class DBIntegrityServiceTest {
         
         ResourceREF ownerAnnot = new ResourceREF();
         annotationInfo.setOwner(ownerAnnot);
-        ownerAnnot.setRef(TestBackendConstants._TEST_SERVLET_URI + TestBackendConstants._TEST_USER_3_EXT_ID);
+        ownerAnnot.setRef(TestBackendConstants._TEST_SERVLET_URI_users+ TestBackendConstants._TEST_USER_3_EXT_ID);
         
         SourceList targetSources = new SourceList();
         ResourceREF targetOne  = new ResourceREF();
@@ -413,11 +413,11 @@ public class DBIntegrityServiceTest {
         targetSources.getTargetSource().add(targetOne);
         targetSources.getTargetSource().add(targetTwo);        
         annotationInfo.setTargetSources(targetSources);
-        targetOne.setRef(TestBackendConstants._TEST_SERVLET_URI + TestBackendConstants._TEST_SOURCE_1_EXT_ID);
-        targetTwo.setRef(TestBackendConstants._TEST_SERVLET_URI + TestBackendConstants._TEST_SOURCE_2_EXT_ID);
+        targetOne.setRef(TestBackendConstants._TEST_SERVLET_URI_sources + TestBackendConstants._TEST_SOURCE_1_EXT_ID);
+        targetTwo.setRef(TestBackendConstants._TEST_SERVLET_URI_sources + TestBackendConstants._TEST_SOURCE_2_EXT_ID);
         
         annotationInfo.setHeadline(TestBackendConstants._TEST_ANNOT_2_HEADLINE);        
-        annotationInfo.setRef(TestBackendConstants._TEST_SERVLET_URI + TestBackendConstants._TEST_ANNOT_2_EXT);
+        annotationInfo.setRef(TestBackendConstants._TEST_SERVLET_URI_annotations + TestBackendConstants._TEST_ANNOT_2_EXT);
         
 
         mockery.checking(new Expectations() {
@@ -501,7 +501,7 @@ public class DBIntegrityServiceTest {
         newCachedInfo.setMimeType(mime);
         newCachedInfo.setType(type);
         newCachedInfo.setTool(tool);
-        newCachedInfo.setRef(TestBackendConstants._TEST_SERVLET_URI + externalID);
+        newCachedInfo.setRef(TestBackendConstants._TEST_SERVLET_URI_cached + externalID);
 
         String blobString = "aaa";
         byte[] blobBytes = blobString.getBytes();
@@ -585,7 +585,7 @@ public class DBIntegrityServiceTest {
         // test 1: adding an existing source
         SourceInfo testSourceOne = new SourceInfo();
         testSourceOne.setLink(TestBackendConstants._TEST_SOURCE_1_LINK);
-        testSourceOne.setRef(TestBackendConstants._TEST_SERVLET_URI + TestBackendConstants._TEST_SOURCE_1_EXT_ID);
+        testSourceOne.setRef(TestBackendConstants._TEST_SERVLET_URI_sources + TestBackendConstants._TEST_SOURCE_1_EXT_ID);
         testSourceOne.setVersion(TestBackendConstants._TEST_SOURCE_2_VERSION );
         final List<SourceInfo> mockSourceListOne = new ArrayList<SourceInfo>();
         mockSourceListOne.add(testSourceOne);
@@ -626,7 +626,7 @@ public class DBIntegrityServiceTest {
         // test 2: adding a new source
         SourceInfo testSourceTwo = new SourceInfo();
         final String tempSourceID = UUID.randomUUID().toString();
-        testSourceTwo.setRef(TestBackendConstants._TEST_SERVLET_URI + tempSourceID);
+        testSourceTwo.setRef(TestBackendConstants._TEST_SERVLET_URI_sources + tempSourceID);
         testSourceTwo.setLink(TestBackendConstants._TEST_NEW_SOURCE_LINK);
         testSourceTwo.setVersion("version 1.0");
         final List<SourceInfo> mockSourceListTwo = new ArrayList<SourceInfo>();

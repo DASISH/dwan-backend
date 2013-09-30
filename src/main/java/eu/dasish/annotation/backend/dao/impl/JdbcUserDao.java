@@ -43,7 +43,7 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
 
     @Override
     public void setServiceURI(String serviceURI){
-        _serviceURI = serviceURI+"/users/";
+        _serviceURI = serviceURI;
     }
     
     /////////// GETTERS //////////////////////
@@ -70,7 +70,7 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
     public User getUserByInfo(String eMail){
         StringBuilder sql  = new StringBuilder("SELECT ");
         sql.append(principalStar).append(" FROM ").append(principalTableName).append(" WHERE ").append(e_mail).append("= ? LIMIT 1");
-        List<User> result = getSimpleJdbcTemplate().query(sql.toString(), userRowMapper, eMail);
+        List<User> result = getSimpleJdbcTemplate().query(sql.toString(), userRowMapper, eMail.toLowerCase());
         return (!result.isEmpty() ? result.get(0) : null);
      }
     

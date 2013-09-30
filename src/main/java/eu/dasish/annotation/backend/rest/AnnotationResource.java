@@ -64,9 +64,9 @@ public class AnnotationResource {
     private DBIntegrityService dbIntegrityService;
     @Context
     private HttpServletRequest httpServletRequest;
+    
     @Context
     private UriInfo uriInfo;
-    private String path;
     
     /// used in testing
     public void setHttpRequest(HttpServletRequest request) {
@@ -84,9 +84,9 @@ public class AnnotationResource {
     @GET
     @Produces(MediaType.TEXT_XML)
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}")
-    public JAXBElement<Annotation> getAnnotation(@PathParam("annotationid") String ExternalIdentifier) throws SQLException {        
-        path = httpServletRequest.getContextPath()+httpServletRequest.getServletPath();        
-        dbIntegrityService.setServiceURI(path);
+    public JAXBElement<Annotation> getAnnotation(@PathParam("annotationid") String ExternalIdentifier) throws SQLException {     
+        
+        dbIntegrityService.setServiceURI(uriInfo.getAbsolutePath().toString()+"/");
         final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(ExternalIdentifier));
         final Annotation annotation = dbIntegrityService.getAnnotation(annotationID);
         return new ObjectFactory().createAnnotation(annotation);
@@ -97,8 +97,7 @@ public class AnnotationResource {
     @Produces(MediaType.TEXT_XML)
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}/sources")
     public JAXBElement<SourceList> getAnnotationSources(@PathParam("annotationid") String ExternalIdentifier) throws SQLException {
-        path = httpServletRequest.getContextPath()+httpServletRequest.getServletPath();        
-        dbIntegrityService.setServiceURI(path);
+        dbIntegrityService.setServiceURI(uriInfo.getAbsolutePath().toString()+"/");
         final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(ExternalIdentifier));
         final SourceList sourceList = dbIntegrityService.getAnnotationSources(annotationID);
         return new ObjectFactory().createSourceList(sourceList);
@@ -115,9 +114,7 @@ public class AnnotationResource {
     @QueryParam("after")  Timestamp after,
     @QueryParam("before") Timestamp before
     ) throws SQLException {
-        
-        path = httpServletRequest.getContextPath()+httpServletRequest.getServletPath();
-        dbIntegrityService.setServiceURI(path);
+        dbIntegrityService.setServiceURI(uriInfo.getAbsolutePath().toString()+"/");
         
         String remoteUser = httpServletRequest.getRemoteUser();
         UUID userExternalID = (remoteUser != null) ? UUID.fromString(remoteUser) : null;
@@ -131,9 +128,7 @@ public class AnnotationResource {
     @Produces(MediaType.TEXT_XML)
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}/permissions")
     public JAXBElement<PermissionList> getAnnotationPermissions(@PathParam("annotationid") String ExternalIdentifier) throws SQLException {
-        
-        path = httpServletRequest.getContextPath()+httpServletRequest.getServletPath();        
-        dbIntegrityService.setServiceURI(path);
+        dbIntegrityService.setServiceURI(uriInfo.getAbsolutePath().toString()+"/");
         
         final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(ExternalIdentifier));
         final PermissionList permissionList = dbIntegrityService.getPermissionsForAnnotation(annotationID);
@@ -145,9 +140,7 @@ public class AnnotationResource {
     @DELETE
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}")
     public String deleteAnnotation(@PathParam("annotationid") String externalIdentifier) throws SQLException {
-        
-        path = httpServletRequest.getContextPath()+httpServletRequest.getServletPath();
-        dbIntegrityService.setServiceURI(path);
+        dbIntegrityService.setServiceURI(uriInfo.getAbsolutePath().toString()+"/");
         
         final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(externalIdentifier));
         int[] resultDelete = dbIntegrityService.deleteAnnotation(annotationID);
@@ -161,8 +154,7 @@ public class AnnotationResource {
     @Produces(MediaType.APPLICATION_XML)
     @Path("")
     public JAXBElement<ResponseBody> createAnnotation(Annotation annotation) throws SQLException { 
-        path = httpServletRequest.getContextPath()+httpServletRequest.getServletPath();
-        dbIntegrityService.setServiceURI(path);
+        dbIntegrityService.setServiceURI(uriInfo.getAbsolutePath().toString()+"/");
         
         return new ObjectFactory().createResponseBody(addORupdateAnnotation(annotation, true));
     }
@@ -175,11 +167,11 @@ public class AnnotationResource {
     @Produces(MediaType.APPLICATION_XML)
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}")
     public JAXBElement<ResponseBody> updateAnnotation(@PathParam("annotationid") String externalIdentifier, Annotation annotation) throws SQLException, Exception { 
-        path = httpServletRequest.getContextPath()+httpServletRequest.getServletPath();
+        String path = uriInfo.getAbsolutePath().toString()+"/";
         dbIntegrityService.setServiceURI(path);
         
         
-        if (!(path+"/"+externalIdentifier).equals(annotation.getURI())){
+        if (!(path+externalIdentifier).equals(annotation.getURI())){
             throw new Exception("External annotation id and the annotation id from the request body do not match");
         }
         return new ObjectFactory().createResponseBody(addORupdateAnnotation(annotation, false));
@@ -191,8 +183,7 @@ public class AnnotationResource {
     @Produces(MediaType.TEXT_XML)
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}/permissions/{userid: " + BackendConstants.regExpIdentifier + "}")
     public int updatePermission(@PathParam("annotationid") String annotationExternalId, @PathParam("userid") String userExternalId, Permission permission) throws SQLException, Exception { 
-        path = httpServletRequest.getContextPath()+httpServletRequest.getServletPath();
-        dbIntegrityService.setServiceURI(path);
+        dbIntegrityService.setServiceURI(uriInfo.getAbsolutePath().toString()+"/");
         
         final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(annotationExternalId));
         final Number userID = dbIntegrityService.getUserInternalIdentifier(UUID.fromString(userExternalId));
@@ -212,8 +203,7 @@ public class AnnotationResource {
     @Produces(MediaType.TEXT_XML)
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}/permissions/")
     public int updatePermissions(@PathParam("annotationid") String annotationExternalId, PermissionList permissions) throws SQLException, Exception { 
-        path = httpServletRequest.getContextPath()+httpServletRequest.getServletPath();
-        dbIntegrityService.setServiceURI(path);      
+        dbIntegrityService.setServiceURI(uriInfo.getAbsolutePath().toString()+"/");
         
         final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(annotationExternalId));
         return dbIntegrityService.updatePermissions(annotationID, permissions);
