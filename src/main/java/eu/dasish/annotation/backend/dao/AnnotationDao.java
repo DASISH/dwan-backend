@@ -72,13 +72,21 @@ public interface AnnotationDao extends ResourceDao{
     public List<Number> getFilteredAnnotationIDs(List<Number> annotationIDs, String text, String access, String namespace, Number ownerID, Timestamp after, Timestamp before);
        
       /**
-     * 
+     * THROW away this method, ise the one below
      * @param annotationIDs
      * @return the list of annotationInfos (owner, headline, target sources, external_id) for the annotations with the internal IDs from the  input list.
      * 
      */
     public List<AnnotationInfo> getAnnotationInfos(List<Number> annotationIDs);    
      
+    
+       /**
+     * unit test is missing
+     * @param annotationIDs
+     * @return annotationInfo (owner, headline, external_id) for the annotation with the internal annotationID.
+     * 
+     */
+    public AnnotationInfo getAnnotationInfoWithoutSources(Number annotationID);    
    
     /**
      * 

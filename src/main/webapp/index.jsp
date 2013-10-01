@@ -41,15 +41,16 @@
  -->
         
       <b>Test URI-s</b><br>
-     GET <a href="api/users/00000000-0000-0000-0000-000000000011">api/users/00000000-0000-0000-0000-000000000011</a>  Comment: how to ask "servlet context" if this user is current? so far all are set to "true"<br> 
+      <b>All output xml-s are valid w.r.t. the schema modulo manually-adding the namespace-schemalocation header</b><br>
+     GET <a href="api/users/00000000-0000-0000-0000-000000000011">api/users/00000000-0000-0000-0000-000000000011</a>  !Problem: how to ask the "servlet context" if this user is current? so far all are set to "true"<br> 
      GET <a href="api/users/info?email=twagoo@mpi.nl">api/users/info?email=twagoo@mpi.nl</a>  <br>
-     GET <a href="api/annotations?link=sagrada">api/annotations/info?link=sagrada</a>   </br>
+     GET <a href="api/annotations?link=sagrada">api/annotations/info?link=sagrada</a> !Comment: more tests are necessary to test on all query parameters  </br>
      GET <a href="api/annotations/00000000-0000-0000-0000-000000000021">api/annotations/00000000-0000-0000-0000-000000000021</a>  </br>
      GET <a href="api/annotations/00000000-0000-0000-0000-000000000021/sources">api/annotations/00000000-0000-0000-0000-000000000021/sources</a>  </br>
      GET <a href="api/annotations/00000000-0000-0000-0000-000000000021/permissions">api/annotations/00000000-0000-0000-0000-000000000021/permissions</a><br>
      GET <a href="api/sources/00000000-0000-0000-0000-000000000041">api/sources/00000000-0000-0000-0000-000000000041</a>  <br>
      GET <a href="api/sources/00000000-0000-0000-0000-000000000041/versions">api/sources/00000000-0000-0000-0000-000000000041/versions</a>   <br>
      GET <a href="api/cached/00000000-0000-0000-0000-000000000051/metadata">api/cached/00000000-0000-0000-0000-000000000051/metadata</a><br>
-     GET <a href="api/cached/00000000-0000-0000-0000-000000000051/content">api/cached/00000000-0000-0000-0000-000000000051/content></a> Problem: the dao method run on Postgress returns null whereas on unit tests it work fine (HSQL)
+     GET <a href="api/cached/00000000-0000-0000-0000-000000000051/content">api/cached/00000000-0000-0000-0000-000000000051/content></a> !Problem: the dao method run on Postgress returns wrong typing whereas on unit tests it work fine (HSQL)
     </body>
         </html>

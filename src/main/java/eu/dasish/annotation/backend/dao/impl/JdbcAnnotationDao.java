@@ -203,7 +203,27 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
             return annotationInfo;
         }
     };
-
+     
+     @Override
+     public AnnotationInfo getAnnotationInfoWithoutSources(Number annotationID){
+         if (annotationID == null) {
+            return null;
+        }
+        StringBuilder sql = new StringBuilder("SELECT  ");
+        sql.append(annotationStar).append(" FROM ").append(annotationTableName ).append(" WHERE ").append(annotation_id).append("  = ? ");
+        List<AnnotationInfo> result = getSimpleJdbcTemplate().query(sql.toString(), annotationInfoRowMapper, annotationID);
+        if (result == null) {
+            return null;
+        }
+        if (result.isEmpty()) {
+            return null;
+        }
+        
+        return result.get(0);
+     }
+     
+     
+    
     /////////////////////////////////////////////////
     /**
      *
