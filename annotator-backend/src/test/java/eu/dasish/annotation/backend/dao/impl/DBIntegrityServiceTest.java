@@ -381,7 +381,7 @@ public class DBIntegrityServiceTest {
 //    }
     
     @Test
-    public void testGetFilteredAnnotationInfos(){
+    public void testGetFilteredAnnotationInfos() throws SQLException{
         System.out.println("test getetFilteredAnnotationInfos");
         
         final String link = "nl.wikipedia.org";
@@ -404,37 +404,63 @@ public class DBIntegrityServiceTest {
         final List<Number> mockAnnotIDs = new ArrayList<Number>();
         mockAnnotIDs.add(2);
         
-        final AnnotationInfoList mockRetval = new AnnotationInfoList();
-        AnnotationInfo annotationInfo = new AnnotationInfo(); 
-        mockRetval.getAnnotation().add(annotationInfo);
+        final AnnotationInfo mockAnnotInfo = new AnnotationInfo();
         
         ResourceREF ownerAnnot = new ResourceREF();
-        annotationInfo.setOwner(ownerAnnot);
+        mockAnnotInfo.setOwner(ownerAnnot);
         ownerAnnot.setRef("3");
         
-        SourceList targetSources = new SourceList();
-        ResourceREF targetOne  = new ResourceREF();
-        ResourceREF targetTwo  = new ResourceREF();
-        targetSources.getTargetSource().add(targetOne);
-        targetSources.getTargetSource().add(targetTwo);        
-        annotationInfo.setTargetSources(targetSources);
-        targetOne.setRef(TestBackendConstants._TEST_SERVLET_URI_sources + TestBackendConstants._TEST_SOURCE_1_EXT_ID);
-        targetTwo.setRef(TestBackendConstants._TEST_SERVLET_URI_sources + TestBackendConstants._TEST_SOURCE_2_EXT_ID);
+        //SourceList targetSources = new SourceList();
+        //ResourceREF targetOne  = new ResourceREF();
+        //ResourceREF targetTwo  = new ResourceREF();
+        //targetSources.getTargetSource().add(targetOne);
+        //targetSources.getTargetSource().add(targetTwo);        
+        //annotationInfo.setTargetSources(targetSources);
+        //targetOne.setRef(TestBackendConstants._TEST_SERVLET_URI_sources + TestBackendConstants._TEST_SOURCE_1_EXT_ID);
+        //targetTwo.setRef(TestBackendConstants._TEST_SERVLET_URI_sources + TestBackendConstants._TEST_SOURCE_2_EXT_ID);
         
-        annotationInfo.setHeadline(TestBackendConstants._TEST_ANNOT_2_HEADLINE);        
-        annotationInfo.setRef(TestBackendConstants._TEST_SERVLET_URI_annotations + TestBackendConstants._TEST_ANNOT_2_EXT);
+        mockAnnotInfo.setHeadline(TestBackendConstants._TEST_ANNOT_2_HEADLINE);        
+        mockAnnotInfo.setRef(TestBackendConstants._TEST_SERVLET_URI_annotations + TestBackendConstants._TEST_ANNOT_2_EXT);
         
+        final List<Number> sourceIDs = new ArrayList<Number>();
+        sourceIDs.add(1);
+        sourceIDs.add(2);
 
         mockery.checking(new Expectations() {
             {
+                // getFilteredAnnotationIds
                 oneOf(sourceDao).getSourcesForLink(link);
                 will(returnValue(mockSourceIDs));
-
-                oneOf(userDao).getInternalID(ownerUUID);
-                will(returnValue(3));
                 
                 oneOf(annotationDao).retrieveAnnotationList(mockSourceIDs);
                 will(returnValue(mockAnnotationIDs));
+                
+                oneOf(userDao).getInternalID(ownerUUID);
+                will(returnValue(3));
+                
+                oneOf(annotationDao).getFilteredAnnotationIDs(mockAnnotationIDs, text, access, namespace, 3, after, before);
+                will(returnValue(mockAnnotIDs));
+                
+                ///////////////////////////////////
+                
+                oneOf(annotationDao).getAnnotationInfoWithoutSources(2);
+                will(returnValue(mockAnnotInfo));
+                
+                oneOf(annotationDao).retrieveSourceIDs(2);
+                will(returnValue(sourceIDs));
+                
+                oneOf(sourceDao).getExternalID(1);
+                will(returnValue(UUID.fromString(TestBackendConstants._TEST_SOURCE_1_EXT_ID)));
+                
+                oneOf(sourceDao).externalIDtoURI(TestBackendConstants._TEST_SOURCE_1_EXT_ID);
+                will(returnValue(TestBackendConstants._TEST_SERVLET_URI_sources +TestBackendConstants._TEST_SOURCE_1_EXT_ID));
+                
+                
+                oneOf(sourceDao).getExternalID(2);
+                will(returnValue(UUID.fromString(TestBackendConstants._TEST_SOURCE_2_EXT_ID)));
+                
+                oneOf(sourceDao).externalIDtoURI(TestBackendConstants._TEST_SOURCE_2_EXT_ID);
+                will(returnValue(TestBackendConstants._TEST_SERVLET_URI_sources +TestBackendConstants._TEST_SOURCE_2_EXT_ID));
                 
                 
                 oneOf(userDao).getExternalID(3);
@@ -442,25 +468,21 @@ public class DBIntegrityServiceTest {
                 
                 oneOf(userDao).externalIDtoURI(ownerUUID.toString());
                 will(returnValue(TestBackendConstants._TEST_SERVLET_URI_users +TestBackendConstants._TEST_USER_3_EXT_ID)); 
-                
-                oneOf(annotationDao).getFilteredAnnotationIDs(mockAnnotationIDs, text, access, namespace, 3, after, before);
-                will(returnValue(mockAnnotIDs));
-                
-                oneOf(annotationDao).getAnnotationInfos(mockAnnotIDs);
-                will(returnValue(mockRetval.getAnnotation()));
+             
+               
 
             }
         });
 
 
         AnnotationInfoList result = dbIntegrityService.getFilteredAnnotationInfos(link, text, access, namespace, ownerUUID, after, before);
-        assertEquals(1, result.getAnnotation().size()); 
-        AnnotationInfo resultAnnotInfo = result.getAnnotation().get(0);
-        assertEquals(annotationInfo.getHeadline(), resultAnnotInfo.getHeadline());
+        assertEquals(1, result.getAnnotationInfo().size()); 
+        AnnotationInfo resultAnnotInfo = result.getAnnotationInfo().get(0);
+        assertEquals(mockAnnotInfo.getHeadline(), resultAnnotInfo.getHeadline());
         assertEquals(TestBackendConstants._TEST_SERVLET_URI_users +TestBackendConstants._TEST_USER_3_EXT_ID, resultAnnotInfo.getOwner().getRef());
-        assertEquals(annotationInfo.getRef(),result.getAnnotation().get(0).getRef() );
-        assertEquals(annotationInfo.getTargetSources().getTargetSource().get(0).getRef(), resultAnnotInfo.getTargetSources().getTargetSource().get(0).getRef());
-        assertEquals(annotationInfo.getTargetSources().getTargetSource().get(1).getRef(), resultAnnotInfo.getTargetSources().getTargetSource().get(1).getRef());
+        assertEquals(mockAnnotInfo.getRef(),result.getAnnotationInfo().get(0).getRef() );
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI_sources +TestBackendConstants._TEST_SOURCE_1_EXT_ID, resultAnnotInfo.getTargetSources().getTargetSource().get(0).getRef());
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI_sources +TestBackendConstants._TEST_SOURCE_2_EXT_ID, resultAnnotInfo.getTargetSources().getTargetSource().get(1).getRef());
           
     }
     

@@ -81,13 +81,19 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
         StringBuilder sql  = new StringBuilder("SELECT ");
         sql.append(principalStar).append(" FROM ").append(principalTableName).append(" WHERE ").append(principal_id).append("= ? LIMIT 1");
         List<UserInfo> result = getSimpleJdbcTemplate().query(sql.toString(), userInfoRowMapper, internalID);
-        return (!result.isEmpty() ? result.get(0) : null);
+        if (result.isEmpty()){
+            return null;
+        }
+        String uri = externalIDtoURI(result.get(0).getRef());
+        result.get(0).setRef(uri);
+        return result.get(0);
      }
     
     private final RowMapper<UserInfo> userInfoRowMapper = new RowMapper<UserInfo>() {
         @Override
         public UserInfo mapRow(ResultSet rs, int rowNumber) throws SQLException {
             UserInfo result = new UserInfo();
+            result.setRef(rs.getString(external_id));
             result.setCurrentUser(true);
             return result;
         }

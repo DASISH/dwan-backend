@@ -193,7 +193,7 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     public SourceList getAnnotationSources(Number annotationID) throws SQLException {
         SourceList result = new SourceList();
         List<Number> sourceIDs = annotationDao.retrieveSourceIDs(annotationID);
-        for (Number sourceID : sourceIDs) {
+        for (Number sourceID : sourceIDs) {            
             ResourceREF ref = new ResourceREF();
             ref.setRef(sourceDao.externalIDtoURI(sourceDao.getExternalID(sourceID).toString()));
             result.getTargetSource().add(ref);
@@ -223,10 +223,17 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     }
 
     @Override
-    public AnnotationInfoList getFilteredAnnotationInfos(String link, String text, String access, String namespace, UUID owner, Timestamp after, Timestamp before) {
+    public AnnotationInfoList getFilteredAnnotationInfos(String link, String text, String access, String namespace, UUID owner, Timestamp after, Timestamp before)
+    throws SQLException{
         List<Number> annotationIDs = getFilteredAnnotationIDs(link, text, access, namespace, owner, after, before);
-        List<AnnotationInfo> listAnnotationInfo = annotationDao.getAnnotationInfos(annotationIDs);
-        for (AnnotationInfo annotationInfo: listAnnotationInfo){
+        AnnotationInfoList result = new AnnotationInfoList();
+        for (Number annotationID :annotationIDs) {
+            AnnotationInfo annotationInfo = annotationDao.getAnnotationInfoWithoutSources(annotationID);
+            SourceList targetSources = getAnnotationSources(annotationID);
+            annotationInfo.setTargetSources(targetSources);
+            result.getAnnotationInfo().add(annotationInfo);
+             
+//          refactor: push the work on userID's below to DAO for user when retrieving the user-ids
             ResourceREF ownerExt = new ResourceREF();
             String internalIDstring = annotationInfo.getOwner().getRef();
             Number internalID = Integer.parseInt(internalIDstring);
@@ -235,16 +242,17 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
             ownerExt.setRef(uri);
             annotationInfo.setOwner(ownerExt);
         }
-        AnnotationInfoList result = new AnnotationInfoList();
-        result.getAnnotation().addAll(listAnnotationInfo);
+        
         return result;
     }
 
  
       // TODO unit test
     @Override
-    public Source getSource(Number internalID) {
-        return sourceDao.getSource(internalID);
+    public Source getSource(Number internalID) throws SQLException{
+        Source result = sourceDao.getSource(internalID);
+        result.setVersionsSiblings(getSiblingSources(internalID));
+        return result;
     }
 
     // TODO unit test

@@ -131,7 +131,7 @@ public interface DBIntegrityService{
     * -- created after time-samp "after and before time-stamp "before".
      */
     AnnotationInfoList getFilteredAnnotationInfos(String link, String text, String access, String namespace, UUID
-            ownerI, Timestamp after, Timestamp before);
+            ownerI, Timestamp after, Timestamp before) throws SQLException;
 
     /**
      * 
@@ -218,7 +218,7 @@ public interface DBIntegrityService{
      */
     public Blob getCachedRepresentationBlob(Number cachedID) throws SQLException;
     
-    public Source getSource(Number internalID);
+    public Source getSource(Number internalID) throws SQLException;
     
     /**
      * 
