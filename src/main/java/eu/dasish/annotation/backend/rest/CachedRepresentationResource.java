@@ -70,19 +70,17 @@ public class CachedRepresentationResource {
         return new ObjectFactory().createCashedRepresentationInfo(cachedInfo);
     }
     
-     // TODO both unit tests
-    //changed path, /sourcepart is removed
-    //how to overwork the input stream to make it downloadable
-    // using mime type as well
+     
+    // how to download blob using mime type???
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     @Path("{cachedid: "+ BackendConstants.regExpIdentifier+"}/content")
-    public InputStream getCachedRepresentationContent(@PathParam("cachedid") String externalId) throws SQLException {
-         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
-        
+    public byte[] getCachedRepresentationContent(@PathParam("cachedid") String externalId) throws SQLException {
+        dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final Number cachedID = dbIntegrityService.getCachedRepresentationInternalIdentifier(UUID.fromString(externalId));
         final Blob blob = dbIntegrityService.getCachedRepresentationBlob(cachedID);
-        return blob.getBinaryStream();
+        // for testing purposes: reads first bytes
+        return blob.getBytes(1, 8);
     }
     
 }

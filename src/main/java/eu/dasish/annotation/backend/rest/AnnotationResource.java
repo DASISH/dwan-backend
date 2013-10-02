@@ -246,8 +246,12 @@ public class AnnotationResource {
     
     
     private ResponseBody addORupdateAnnotation(Annotation annotation, boolean newAnnotation) throws SQLException {
+        // Where the map remoteUSer-->externalID is saved and how to get it?
         String remoteUser = httpServletRequest.getRemoteUser();
-        UUID userExternalID = (remoteUser != null) ? UUID.fromString(remoteUser) : null;
+        // if (remoteUser == null) { throw new Exception();}
+        //UUID externalID = getExternalIDforREmoteUSer(remoteUser);
+        //testing mode 
+        UUID userExternalID=UUID.fromString("00000000-0000-0000-0000-000000000011");
         Number userID = dbIntegrityService.getUserInternalIdentifier(userExternalID);    
         Number newAnnotationID = newAnnotation ? dbIntegrityService.addUsersAnnotation(userID, annotation) : dbIntegrityService.updateUsersAnnotation(userID, annotation);
         return makeResponseEnvelope(newAnnotationID);
