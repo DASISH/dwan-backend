@@ -81,6 +81,8 @@
                                     </dependencyResource>
                                 </schema>
                             </schemas>
+                            <catalog>src/main/resources/catalog.cat</catalog>
+			    <catalogResolver>org.jvnet.jaxb2.maven2.resolver.tools.ClasspathCatalogResolver</catalogResolver>
                         </configuration>
                     </execution>
                 </executions>
