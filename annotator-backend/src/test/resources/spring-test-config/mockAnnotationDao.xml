@@ -28,6 +28,6 @@
     <!-- Context for testing the annotations service with mock implementations -->
 	   
     <!-- Mocked annotations -->
-    <bean id="annotationDao" factory-bean="mockObjectsFactory" factory-method="newAnnotationDao" />
+    <bean id="annotationDao" factory-bean="mockObjectsFactoryDao" factory-method="newAnnotationDao" />
     
 </beans>

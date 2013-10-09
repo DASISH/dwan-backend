@@ -48,7 +48,11 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.ext.ContextResolver;
+import javax.ws.rs.ext.Providers;
 import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -68,6 +72,9 @@ public class AnnotationResource {
     @Context
     private UriInfo uriInfo;
     
+    @Context
+    protected Providers providers;
+    
     /// used in testing
     public void setHttpRequest(HttpServletRequest request) {
         this.httpServletRequest = request;
@@ -75,6 +82,10 @@ public class AnnotationResource {
     
     public void setUriInfo(UriInfo uriInfo) {
         this.uriInfo = uriInfo;
+    }
+    
+    public void setProviders(Providers providers) {
+        this.providers = providers;
     }
     ////////////////
     
@@ -84,11 +95,17 @@ public class AnnotationResource {
     @GET
     @Produces(MediaType.TEXT_XML)
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}")
-    public JAXBElement<Annotation> getAnnotation(@PathParam("annotationid") String ExternalIdentifier) throws SQLException {     
+    public  JAXBElement<Annotation> getAnnotation(@PathParam("annotationid") String ExternalIdentifier) throws SQLException, JAXBException, Exception {     
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(ExternalIdentifier));
         final Annotation annotation = dbIntegrityService.getAnnotation(annotationID);
-        return new ObjectFactory().createAnnotation(annotation);
+        
+        //ResourceJaxbMarshallerProvider contextResolver = (ResourceJaxbMarshallerProvider) providers.getContextResolver(Marshaller.class, MediaType.WILDCARD_TYPE);
+        //contextResolver.setResourceJaxbFactory(new JaxbMarshallerFactory());
+        
+        JAXBElement<Annotation> rootElement = new ObjectFactory().createAnnotation(annotation);       
+        return rootElement;
+        
     }
 
      //TODO: unit test
@@ -256,4 +273,6 @@ public class AnnotationResource {
         Number newAnnotationID = newAnnotation ? dbIntegrityService.addUsersAnnotation(userID, annotation) : dbIntegrityService.updateUsersAnnotation(userID, annotation);
         return makeResponseEnvelope(newAnnotationID);
     }
+    
+   
 }

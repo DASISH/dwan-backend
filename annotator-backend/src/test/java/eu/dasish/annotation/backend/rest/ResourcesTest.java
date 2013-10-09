@@ -30,7 +30,7 @@ import org.springframework.web.context.WebApplicationContext;
  */
 public class ResourcesTest extends JerseyTest{
     
-    protected Mockery mockery;    
+    protected Mockery mockeryRest;    
     final protected WebApplicationContext webAppContext;
     
     public ResourcesTest(String packageName) {
@@ -48,7 +48,7 @@ public class ResourcesTest extends JerseyTest{
         webAppContext = ContextLoaderListener.getCurrentWebApplicationContext();
 
         // Get the context and mock objects from the context by their type
-        mockery = webAppContext.getBean(Mockery.class);
+        mockeryRest = webAppContext.getBean(Mockery.class);
     }
 
 }

@@ -20,12 +20,19 @@
 -->
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
 
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+          http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
 ">
-<!-- Context for testing the sources service with mock implementations -->
 	   
-    <!-- Mocked sources -->
-    <bean id="sourceDao" factory-bean="mockObjectsFactoryDao" factory-method="newSourceDao" />
-    
+    	 
+    <!-- Context for mocking -->
+    <bean id="mockeryDao" class="org.jmock.integration.junit4.JUnit4Mockery" />
+	   
+    <!-- Factory that creates mock objects in this mock context -->
+    <bean id="mockObjectsFactoryDao" class="eu.dasish.annotation.backend.MockObjectsFactoryDao">
+        <constructor-arg ref="mockeryDao" />
+    </bean>
+	   
 </beans>

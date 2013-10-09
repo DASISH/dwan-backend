@@ -30,6 +30,6 @@
     <!-- Context for testing the notebooks service with mock implementations -->
 	   
     <!-- Mocked notebooks -->
-    <bean id="notebookDao" factory-bean="mockObjectsFactory" factory-method="newNotebookDao" />
+    <bean id="notebookDao" factory-bean="mockObjectsFactoryDao" factory-method="newNotebookDao" />
     
 </beans>

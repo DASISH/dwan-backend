@@ -28,6 +28,6 @@
     <!-- Context for testing the dispatcher service with mock implementations -->
 	   
     <!-- Mocked dispatcher -->
-    <bean id="dbIntegrityService" factory-bean="mockObjectsFactory" factory-method="newDBIntegrityService" />
+    <bean id="dbIntegrityService" factory-bean="mockObjectsFactoryRest" factory-method="newDBIntegrityService" />
     
 </beans>
