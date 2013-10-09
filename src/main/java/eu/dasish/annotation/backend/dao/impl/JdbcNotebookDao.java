@@ -36,7 +36,6 @@ import org.springframework.jdbc.core.RowMapper;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 
@@ -50,8 +49,8 @@ import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 
 public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
 
-    @Autowired
-    private AnnotationDao jdbcAnnotationDao;
+//    @Autowired
+//    private AnnotationDao jdbcAnnotationDao;
 
     public JdbcNotebookDao(DataSource dataSource) {
         setDataSource(dataSource);        
@@ -183,7 +182,7 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
      */
     @Override
     public List<ResourceREF> getAnnotationREFsOfNotebook(Number notebookID) {
-        return jdbcAnnotationDao.getAnnotationREFs(getAnnotationIDs(notebookID));
+        return null; //jdbcAnnotationDao.getAnnotationREFs(getAnnotationIDs(notebookID));
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -231,9 +230,9 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
             return null;
         }
         List<UUID> annotationIds = new ArrayList<UUID>();
-        for (Number internalId : internalIds) {
-            annotationIds.add(jdbcAnnotationDao.getExternalID(internalId));
-        }
+//        for (Number internalId : internalIds) {
+//            annotationIds.add(jdbcAnnotationDao.getExternalID(internalId));
+//        }
         return annotationIds;
     }
 

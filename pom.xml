@@ -69,6 +69,7 @@
                         </goals>
                         <configuration>
                             <forceRegenerate>true</forceRegenerate>
+                            <bindingDirectory>${basedir}/src/main/resources</bindingDirectory>
                             <generatePackage>eu.dasish.annotation.schema</generatePackage>                 
                             <outputDirectory>${basedir}/src/generated/jaxb</outputDirectory>
                             <schemas>

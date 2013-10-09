@@ -22,8 +22,6 @@ import eu.dasish.annotation.backend.dao.CachedRepresentationDao;
 import eu.dasish.annotation.backend.dao.NotebookDao;
 import eu.dasish.annotation.backend.dao.SourceDao;
 import eu.dasish.annotation.backend.dao.UserDao;
-import eu.dasish.annotation.backend.dao.DBIntegrityService;
-import javax.ws.rs.core.UriInfo;
 import org.jmock.Mockery;
 
 /**
@@ -31,11 +29,11 @@ import org.jmock.Mockery;
  *
  * @author Peter Withers <peter.withers@mpi.nl>
  */
-public class MockObjectsFactory {
+public class MockObjectsFactoryDao {
 
     private final Mockery context;
 
-    public MockObjectsFactory(Mockery context) {
+    public MockObjectsFactoryDao(Mockery context) {
         this.context = context;
     }
 
@@ -60,11 +58,5 @@ public class MockObjectsFactory {
         return context.mock(CachedRepresentationDao.class);
     }
  
-    public DBIntegrityService newDBIntegrityService() {
-        return context.mock(DBIntegrityService.class);
-    }
-    
-    public UriInfo newUriInfo() {
-        return context.mock(UriInfo.class);
-    }
+  
 }

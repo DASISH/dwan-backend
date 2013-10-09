@@ -33,4 +33,6 @@
         removeAbandoned="false"
         removeAbandonedTimeout="10"
         logAbandoned="true" />
+  <Parameter name="eu.dasish.annotation.backend.schemaLocation" 
+             value="http://www.dasish.eu/ns/addit https://svn.clarin.eu/DASISH/t5.6/schema/trunk/annotator-schema/src/main/resources/DASISH-schema.xsd"/>
 </Context>

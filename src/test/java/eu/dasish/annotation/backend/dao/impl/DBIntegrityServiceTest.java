@@ -60,16 +60,15 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @author olhsha
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration({"/spring-test-config/dataSource.xml", "/spring-test-config/mockery.xml", "/spring-test-config/mockAnnotationDao.xml",
-    "/spring-test-config/mockUserDao.xml", "/spring-test-config/mockNotebookDao.xml",
-    "/spring-test-config/mockSourceDao.xml", "/spring-test-config/mockCachedRepresentationDao.xml", "/spring-test-config/mockUriInfo.xml",
+@ContextConfiguration({"/spring-test-config/dataSource.xml", "/spring-test-config/mockeryDao.xml", "/spring-test-config/mockAnnotationDao.xml",
+    "/spring-test-config/mockUserDao.xml", "/spring-test-config/mockSourceDao.xml", "/spring-test-config/mockCachedRepresentationDao.xml", 
     "/spring-config/dbIntegrityService.xml"})
 public class DBIntegrityServiceTest {
 
     @Autowired
     private DBIntegrityServiceImlp dbIntegrityService;
     @Autowired
-    private Mockery mockery;
+    private Mockery mockeryDao;
     @Autowired
     private UserDao userDao;
     @Autowired
@@ -93,7 +92,7 @@ public class DBIntegrityServiceTest {
         System.out.println("getAnnotationInternalIdentifier");
         final UUID externalID = UUID.fromString(TestBackendConstants._TEST_ANNOT_2_EXT);
 
-        mockery.checking(new Expectations() {
+        mockeryDao.checking(new Expectations() {
             {
                 oneOf(annotationDao).getInternalID(externalID);
                 will(returnValue(2));
@@ -111,7 +110,7 @@ public class DBIntegrityServiceTest {
         System.out.println("getAnnotationExternalIdentifier");
         final UUID externalID = UUID.fromString(TestBackendConstants._TEST_ANNOT_2_EXT);
 
-        mockery.checking(new Expectations() {
+        mockeryDao.checking(new Expectations() {
             {
                 oneOf(annotationDao).getExternalID(2);
                 will(returnValue(externalID));
@@ -130,7 +129,7 @@ public class DBIntegrityServiceTest {
 
         final UUID externalID = UUID.fromString(TestBackendConstants._TEST_USER_5_EXT_ID);
 
-        mockery.checking(new Expectations() {
+        mockeryDao.checking(new Expectations() {
             {
                 oneOf(userDao).getInternalID(externalID);
                 will(returnValue(5));
@@ -148,7 +147,7 @@ public class DBIntegrityServiceTest {
         System.out.println("getUserExternalIdentifier");
         final UUID externalID = UUID.fromString(TestBackendConstants._TEST_USER_5_EXT_ID);
 
-        mockery.checking(new Expectations() {
+        mockeryDao.checking(new Expectations() {
             {
                 oneOf(userDao).getExternalID(5);
                 will(returnValue(externalID));
@@ -214,7 +213,7 @@ public class DBIntegrityServiceTest {
         final String uri5 = TestBackendConstants._TEST_SERVLET_URI_users +TestBackendConstants._TEST_USER_5_EXT_ID;
 
 
-        mockery.checking(new Expectations() {
+        mockeryDao.checking(new Expectations() {
             {
                 oneOf(annotationDao).getAnnotationWithoutSourcesAndPermissions(2);
                 will(returnValue(mockAnnotation));
@@ -312,7 +311,7 @@ public class DBIntegrityServiceTest {
         final List<Number> mockRetval = new ArrayList<Number>();
         mockRetval.add(2);
 
-        mockery.checking(new Expectations() {
+        mockeryDao.checking(new Expectations() {
             {
                 oneOf(sourceDao).getSourcesForLink(link);
                 will(returnValue(mockSourceIDs));
@@ -342,7 +341,7 @@ public class DBIntegrityServiceTest {
         final List<Number> sourceIDs = new ArrayList<Number>();
         sourceIDs.add(1);
         sourceIDs.add(2);
-        mockery.checking(new Expectations() {
+        mockeryDao.checking(new Expectations() {
             {
                 oneOf(annotationDao).retrieveSourceIDs(annotationID);
                 will(returnValue(sourceIDs));
@@ -426,7 +425,7 @@ public class DBIntegrityServiceTest {
         sourceIDs.add(1);
         sourceIDs.add(2);
 
-        mockery.checking(new Expectations() {
+        mockeryDao.checking(new Expectations() {
             {
                 // getFilteredAnnotationIds
                 oneOf(sourceDao).getSourcesForLink(link);
@@ -500,7 +499,7 @@ public class DBIntegrityServiceTest {
         
        
         
-        mockery.checking(new Expectations() {
+        mockeryDao.checking(new Expectations() {
             {
                 oneOf(annotationDao).retrieveSourceIDs(annotationID);
                 will(returnValue(sourceIDs));
@@ -542,7 +541,7 @@ public class DBIntegrityServiceTest {
         final Blob newCachedBlob = new SerialBlob(blobBytes);
         final Number newCachedID = 8;
         final Number versionID = 1;
-        mockery.checking(new Expectations() {
+        mockeryDao.checking(new Expectations() {
             {
 
                 oneOf(cachedRepresentationDao).getInternalIDFromURI(newCachedInfo.getRef());
@@ -575,7 +574,7 @@ public class DBIntegrityServiceTest {
         System.out.println("test addSiblingVersionForSource ");
 
        
-        mockery.checking(new Expectations() {
+        mockeryDao.checking(new Expectations() {
             {
                 oneOf(sourceDao).getSourceSiblingClass(2);
                 will(returnValue(2));
@@ -624,7 +623,7 @@ public class DBIntegrityServiceTest {
         final List<SourceInfo> mockSourceListOne = new ArrayList<SourceInfo>();
         mockSourceListOne.add(testSourceOne);
 
-        mockery.checking(new Expectations() {
+        mockeryDao.checking(new Expectations() {
             {
                 oneOf(sourceDao).getInternalIDFromURI(mockSourceListOne.get(0).getRef());
                 will(returnValue(1));
@@ -668,7 +667,7 @@ public class DBIntegrityServiceTest {
 
         final UUID mockNewSourceUUID = UUID.randomUUID();
 
-        mockery.checking(new Expectations() {
+        mockeryDao.checking(new Expectations() {
             {
                 oneOf(sourceDao).getInternalIDFromURI(mockSourceListTwo.get(0).getRef());
                 will(returnValue(null));
@@ -704,7 +703,7 @@ public class DBIntegrityServiceTest {
         // expectations for addUsersannotation itself
         final Annotation testAnnotation = testInstances.getAnnotationToAdd();
 
-        mockery.checking(new Expectations() {
+        mockeryDao.checking(new Expectations() {
             {
                 oneOf(annotationDao).addAnnotation(testAnnotation, 5);
                 will(returnValue(6)); // the next free number is 6
@@ -736,7 +735,7 @@ public class DBIntegrityServiceTest {
         final User freshUser = new User();
         freshUser.setDisplayName("Guilherme");
         freshUser.setEMail("guisil@mpi.nl");
-        mockery.checking(new Expectations() {
+        mockeryDao.checking(new Expectations() {
             {
                 oneOf(userDao).userExists(freshUser);
                 will(returnValue(false));
@@ -753,7 +752,7 @@ public class DBIntegrityServiceTest {
         final User user = new User();
         freshUser.setDisplayName("Olha");
         freshUser.setEMail("olhsha@mpi.nl");
-        mockery.checking(new Expectations() {
+        mockeryDao.checking(new Expectations() {
             {
                 oneOf(userDao).userExists(user);
                 will(returnValue(true));
@@ -769,7 +768,7 @@ public class DBIntegrityServiceTest {
     public void testDeleteUser() {
         System.out.println("test deleteUser");
 
-        mockery.checking(new Expectations() {
+        mockeryDao.checking(new Expectations() {
             {
                 oneOf(userDao).deleteUser(2);
                 will(returnValue(0));
@@ -794,7 +793,7 @@ public class DBIntegrityServiceTest {
     @Test
     public void testDeleteCachedRepresentationForSource() throws SQLException{
         System.out.println("test deleteCachedRepresentationForSource");
-        mockery.checking(new Expectations() {
+        mockeryDao.checking(new Expectations() {
             {
                 oneOf(sourceDao).deleteSourceCachedRepresentation(5, 7);
                 will(returnValue(1));
@@ -819,7 +818,7 @@ public class DBIntegrityServiceTest {
         cachedList.add(1);
         cachedList.add(2);
         
-        mockery.checking(new Expectations() {
+        mockeryDao.checking(new Expectations() {
             {
                 oneOf(sourceDao).getCachedRepresentations(1);
                 will(returnValue(cachedList));
@@ -861,7 +860,7 @@ public class DBIntegrityServiceTest {
         final List<Number> mockCachedIDs = new ArrayList<Number>();
         mockCachedIDs.add(3);
 
-        mockery.checking(new Expectations() {
+        mockeryDao.checking(new Expectations() {
             {
                 oneOf(annotationDao).deleteAnnotationPrincipalPermissions(3);
                 will(returnValue(3));

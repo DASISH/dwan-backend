@@ -19,7 +19,7 @@ package eu.dasish.annotation.backend.rest;
 
 import eu.dasish.annotation.backend.dao.DBIntegrityService;
 import eu.dasish.annotation.backend.Helpers;
-import eu.dasish.annotation.backend.MockObjectsFactory;
+import eu.dasish.annotation.backend.MockObjectsFactoryRest;
 import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.TestInstances;
 import eu.dasish.annotation.schema.Annotation;
@@ -47,8 +47,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import javax.servlet.ServletException;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.ext.ContextResolver;
+import javax.ws.rs.ext.Providers;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 import javax.xml.datatype.DatatypeConfigurationException;
+import org.junit.Ignore;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 /**
@@ -57,13 +63,11 @@ import org.springframework.mock.web.MockHttpServletRequest;
  */
 
 @RunWith(value = SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = { "/spring-test-config/mockery.xml", "/spring-test-config/mockDBIntegrityService.xml", 
-"/spring-test-config/mockAnnotationDao.xml","/spring-test-config/mockUserDao.xml", "/spring-test-config/mockNotebookDao.xml",
-"/spring-test-config/mockSourceDao.xml", "/spring-test-config/mockCachedRepresentationDao.xml"})
+@ContextConfiguration(locations = { "/spring-test-config/mockeryRest.xml", "/spring-test-config/mockDBIntegrityService.xml", "/spring-config/jaxbMarshallerFactory.xml"})
 public class AnnotationResourceTest {
     
     @Autowired
-    private Mockery mockery;
+    private Mockery mockeryRest;
     @Autowired
     private DBIntegrityService daoDispatcher;
     @Autowired
@@ -78,28 +82,31 @@ public class AnnotationResourceTest {
      * Test of getAnnotation method, of class AnnotationResource.
      */
     @Test
-    public void testGetAnnotation() throws SQLException {
+    public void testGetAnnotation() throws SQLException, JAXBException, Exception {
         System.out.println("getAnnotation");
         final String externalIDstring= TestBackendConstants._TEST_ANNOT_2_EXT;
         final int annotationID = 2;        
         final Annotation expectedAnnotation = (new TestInstances()).getAnnotationOne();
-        
+        final ResourceJaxbMarshallerProvider rmp = new ResourceJaxbMarshallerProvider();
        
         Mockery newMockery = new Mockery();
-        MockObjectsFactory mockFactory = new MockObjectsFactory(newMockery);
+        MockObjectsFactoryRest mockFactory = new MockObjectsFactoryRest(newMockery);
         final UriInfo uriInfo = mockFactory.newUriInfo();
-       
+        final Providers providers = mockFactory.newProviders();
         newMockery.checking(new Expectations() {
             {
                 
                 oneOf(uriInfo).getBaseUri();
                 will(returnValue(URI.create("http://localhost:8080/annotator-backend/api/")));
+                
+                oneOf(providers).getContextResolver(Marshaller.class, MediaType.WILDCARD_TYPE);
+                will(returnValue(rmp));
               
             }
         });
         
         
-        mockery.checking(new Expectations() {
+        mockeryRest.checking(new Expectations() {
             {
                 
                 oneOf(daoDispatcher).setServiceURI(with(any(String.class)));
@@ -120,8 +127,11 @@ public class AnnotationResourceTest {
         
         
         annotationResource.setUriInfo(uriInfo);
+        annotationResource.setProviders(providers);
         JAXBElement<Annotation> result = annotationResource.getAnnotation(externalIDstring);
         assertEquals(expectedAnnotation, result.getValue());
+        //Marshaller marsh = rmp.getContext(Annotation.class);
+        //marsh.marshal(result, System.out);
     }
     
     /**
@@ -140,7 +150,7 @@ public class AnnotationResourceTest {
         mockDelete[3]=1; // # deletd sources, 4
         
         Mockery newMockery = new Mockery();
-        MockObjectsFactory mockFactory = new MockObjectsFactory(newMockery);
+        MockObjectsFactoryRest mockFactory = new MockObjectsFactoryRest(newMockery);
         final UriInfo uriInfo = mockFactory.newUriInfo();
        
         newMockery.checking(new Expectations() {
@@ -152,7 +162,7 @@ public class AnnotationResourceTest {
             }
         });
      
-        mockery.checking(new Expectations() {
+        mockeryRest.checking(new Expectations() {
             {  
              
                 oneOf(daoDispatcher).setServiceURI(with(any(String.class)));
@@ -209,7 +219,7 @@ public class AnnotationResourceTest {
         addedAnnotation.setURI("http://localhost:8080/annotator-backend/api/annotations/"+UUID.randomUUID().toString());
         
         Mockery newMockery = new Mockery();
-        MockObjectsFactory mockFactory = new MockObjectsFactory(newMockery);
+        MockObjectsFactoryRest mockFactory = new MockObjectsFactoryRest(newMockery);
         final UriInfo uriInfo = mockFactory.newUriInfo();
        
         newMockery.checking(new Expectations() {
@@ -221,7 +231,7 @@ public class AnnotationResourceTest {
             }
         });
         
-        mockery.checking(new Expectations() {
+        mockeryRest.checking(new Expectations() {
             {
                   
                 

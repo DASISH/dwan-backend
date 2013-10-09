@@ -20,12 +20,23 @@
 -->
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
 
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+          http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
 ">
-<!-- Context for testing the sources service with mock implementations -->
-	   
-    <!-- Mocked sources -->
-    <bean id="sourceDao" factory-bean="mockObjectsFactoryDao" factory-method="newSourceDao" />
+
     
+   	   
+    <!-- This enables injection of the translator bean into the service object -->
+    <context:component-scan base-package="eu.dasish.annotation.backend.rest" />
+	 
+    <!-- Context for mocking -->
+    <bean id="mockeryRest" class="org.jmock.integration.junit4.JUnit4Mockery" />
+	   
+    <!-- Factory that creates mock objects in this mock context -->
+    <bean id="mockObjectsFactoryRest" class="eu.dasish.annotation.backend.MockObjectsFactoryRest">
+        <constructor-arg ref="mockeryRest" />
+    </bean>
+	   
 </beans>

@@ -21,7 +21,9 @@ Any value defined here will override the pom.xml file value but is only applicab
             <config-file>src/main/resources/spring-config/sourceDao.xml</config-file>
             <config-file>src/main/resources/spring-config/cachedRepresentationDao.xml</config-file>
             <config-file>src/test/resources/spring-test-config/mockUriInfo.xml</config-file>
-            <config-file>src/main/resources/spring-config/userInfo.xml</config-file>
+            <config-file>src/main/resources/spring-config/jaxbMarshallerFactory.xml</config-file>
+            <config-file>src/test/resources/spring-test-config/mockJaxbMarshallerFactory.xml</config-file>
+            <config-file>src/test/resources/spring-test-config/mockeryDao.xml</config-file>
         </config-files>
         <config-file-groups/>
     </spring-data>

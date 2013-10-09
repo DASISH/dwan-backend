@@ -63,8 +63,7 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     SourceDao sourceDao;
     @Autowired
     AnnotationDao annotationDao;
-    @Autowired
-    NotebookDao notebookDao;
+    
 
     //////////////////////////////////
     @Override
@@ -73,7 +72,7 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         cachedRepresentationDao.setServiceURI(serviceURI+"cached/");
         sourceDao.setServiceURI(serviceURI+"sources/");
         annotationDao.setServiceURI(serviceURI+"annotations/");
-        notebookDao.setServiceURI(serviceURI+"notebooks/");
+        //notebookDao.setServiceURI(serviceURI+"notebooks/");
     }
 
     ///////////// GETTERS //////////////////////////

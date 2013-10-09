@@ -26,6 +26,6 @@
     <!-- Context for testing the annotations service with mock implementations -->
 	   
     <!-- Mocked cached repreenttaions -->
-    <bean id="cachedRepresentationDao" factory-bean="mockObjectsFactory" factory-method="newCachedRepresentationDao" />
+    <bean id="cachedRepresentationDao" factory-bean="mockObjectsFactoryDao" factory-method="newCachedRepresentationDao" />
     
 </beans>
