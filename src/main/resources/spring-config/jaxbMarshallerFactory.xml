@@ -23,8 +23,14 @@
 
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
 ">
-    <bean class="eu.dasish.annotation.backend.rest.JaxbMarshallerFactory">
-    <property name="schemaLocation"
-			value="${eu.dasish.annotation.backend.schemaLocation}" />
+    
+    <!-- Load properties from context.xml via servlet container -->
+    <bean
+        class="org.springframework.web.context.support.ServletContextPropertyPlaceholderConfigurer">
+        <property name="ignoreUnresolvablePlaceholders" value="true" />
+    </bean>
+    <bean id="jaxbMarshallerFactory" class="eu.dasish.annotation.backend.rest.JaxbMarshallerFactory">
+        <property name="schemaLocation"
+                 value="${eu.dasish.annotation.backend.schemaLocation}" />
     </bean>
 </beans>

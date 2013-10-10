@@ -20,12 +20,14 @@ package eu.dasish.annotation.backend.rest;
 import eu.dasish.annotation.schema.Annotation;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
+import javax.xml.bind.PropertyException;
 
 /**
  *
  * @author olhsha
  */
 public class JaxbMarshallerFactory {
+   
     
     private JAXBContext context;
     private Marshaller marshaller;
@@ -48,8 +50,9 @@ public class JaxbMarshallerFactory {
         return schemaLocation;
     }
     
-    public void setSchemaLocation(String schemaLocation){
+    public void setSchemaLocation(String schemaLocation) throws PropertyException{
         this.schemaLocation = schemaLocation;
+        marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, schemaLocation);
     }
     
     public Marshaller getMarshaller(){
