@@ -59,7 +59,7 @@ public class CachedRepresentationResource {
     }
     
      // TODOD both unit tests
-    //changed path, /source/cached part is removed
+    //changed path, /Target/cached part is removed
     @GET
     @Produces(MediaType.TEXT_XML)
     @Path("{cachedid: "+ BackendConstants.regExpIdentifier+"}/metadata")

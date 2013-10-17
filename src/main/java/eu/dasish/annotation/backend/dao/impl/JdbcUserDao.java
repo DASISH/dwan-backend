@@ -18,8 +18,8 @@
 package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.dao.UserDao;
+import eu.dasish.annotation.schema.CurrentUserInfo;
 import eu.dasish.annotation.schema.User;
-import eu.dasish.annotation.schema.UserInfo;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -75,37 +75,13 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
      }
     
    
-     
-    @Override 
-    public UserInfo getUserInfo(Number internalID){
-        StringBuilder sql  = new StringBuilder("SELECT ");
-        sql.append(principalStar).append(" FROM ").append(principalTableName).append(" WHERE ").append(principal_id).append("= ? LIMIT 1");
-        List<UserInfo> result = getSimpleJdbcTemplate().query(sql.toString(), userInfoRowMapper, internalID);
-        if (result.isEmpty()){
-            return null;
-        }
-        String uri = externalIDtoURI(result.get(0).getRef());
-        result.get(0).setRef(uri);
-        return result.get(0);
-     }
-    
-    private final RowMapper<UserInfo> userInfoRowMapper = new RowMapper<UserInfo>() {
-        @Override
-        public UserInfo mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            UserInfo result = new UserInfo();
-            result.setRef(rs.getString(external_id));
-            result.setCurrentUser(true);
-            return result;
-        }
-    };
-    
     
     @Override
     public boolean userIsInUse(Number userID) {
         StringBuilder sqlPermissions  = new StringBuilder("SELECT ");
         sqlPermissions.append(principal_id).append(" FROM ").append(permissionsTableName).append(" WHERE ").append(principal_id).append("= ? LIMIT 1");
-        List<Number> resultSources = getSimpleJdbcTemplate().query(sqlPermissions.toString(), principalIDRowMapper, userID);
-        if (resultSources.size() > 0) {
+        List<Number> resultTargets = getSimpleJdbcTemplate().query(sqlPermissions.toString(), principalIDRowMapper, userID);
+        if (resultTargets.size() > 0) {
             return true;
         };
         
@@ -122,10 +98,10 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
     @Override 
     public boolean userExists(User user){
         String emailCriterion = user.getEMail();
-        StringBuilder sqlSources  = new StringBuilder("SELECT ");
-        sqlSources.append(principal_id).append(" FROM ").append(principalTableName).append(" WHERE ").append(e_mail).append("= ? LIMIT 1");
-        List<Number> resultSources = getSimpleJdbcTemplate().query(sqlSources.toString(), principalIDRowMapper, emailCriterion);
-        if (resultSources.size() > 0) {
+        StringBuilder sqlTargets  = new StringBuilder("SELECT ");
+        sqlTargets.append(principal_id).append(" FROM ").append(principalTableName).append(" WHERE ").append(e_mail).append("= ? LIMIT 1");
+        List<Number> resultTargets = getSimpleJdbcTemplate().query(sqlTargets.toString(), principalIDRowMapper, emailCriterion);
+        if (resultTargets.size() > 0) {
             return true;
         }
         else {

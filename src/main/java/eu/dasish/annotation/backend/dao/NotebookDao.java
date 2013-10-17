@@ -18,10 +18,9 @@
 package eu.dasish.annotation.backend.dao;
 
 
-import eu.dasish.annotation.schema.AnnotationList;
+import eu.dasish.annotation.schema.ReferenceList;
 import eu.dasish.annotation.schema.Notebook;
 import eu.dasish.annotation.schema.NotebookInfo;
-import eu.dasish.annotation.schema.ResourceREF;
 import java.util.List;
 import java.util.UUID;
 
@@ -55,10 +54,10 @@ public interface NotebookDao extends ResourceDao {
     /List<AnnotationInfo> getAnnotationInfosOfNotebook(Number notebookID); */   
     
       // Returns the list of annotations Id-s  for the notebook id.
-    public List<ResourceREF> getAnnotationREFsOfNotebook(Number notebookID);
+    public List<String> getAnnotationREFsOfNotebook(Number notebookID);
     
     // Returns the Annotations object for the notebook id.
-    public AnnotationList getAnnotations(Number notebookID);
+    public ReferenceList getAnnotations(Number notebookID);
     
     /**
      * 

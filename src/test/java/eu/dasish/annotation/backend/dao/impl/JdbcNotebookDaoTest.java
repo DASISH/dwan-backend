@@ -19,10 +19,9 @@ package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.dao.AnnotationDao;
-import eu.dasish.annotation.schema.AnnotationList;
+import eu.dasish.annotation.schema.ReferenceList;
 import eu.dasish.annotation.schema.Notebook;
 import eu.dasish.annotation.schema.NotebookInfo;
-import eu.dasish.annotation.schema.ResourceREF;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -109,9 +108,9 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest{
 //        int month = Calendar.getInstance().get(Calendar.MONTH);
 //        int day = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
 //        
-//        ResourceREF testRef = new ResourceREF();
+//        ReTargetREF testRef = new ReTargetREF();
 //        testRef.setRef(TestBackendConstants._TEST_SERVLET_URI_notebooks+TestBackendConstants._TEST_AID_1_);
-//        final List<ResourceREF> testResult = Arrays.asList(new ResourceREF[] {testRef});
+//        final List<ReTargetREF> testResult = Arrays.asList(new ReTargetREF[] {testRef});
 //        
 //        mockery.checking(new Expectations() {
 //            {
@@ -137,7 +136,7 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest{
 //        mockery.checking(new Expectations() {
 //            {
 //                oneOf(annotationDao).getAnnotationREFs(new ArrayList<Number>());
-//                will(returnValue(new ArrayList<ResourceREF>()));
+//                will(returnValue(new ArrayList<ReTargetREF>()));
 //            }
 //        });
 //        
@@ -202,7 +201,7 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest{
 //    
 //    /**
 //     * Test of getAnnotationREFsOfNotebook method, of class JdbcAnnotationDao.
-//     * List<ResourceREF> getAnnotationREFsOfNotebook(Number notebookID)
+//     * List<ReTargetREF> getAnnotationREFsOfNotebook(Number notebookID)
 //     */
 //    @Test
 //    @Ignore    
@@ -213,25 +212,25 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest{
 //        annotationDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_annotations);
 //        // test One         
 //        setMockeryNotebookOne(); 
-//        List<ResourceREF> testList = jdbcNotebookDao.getAnnotationREFsOfNotebook(3);
+//        List<ReTargetREF> testList = jdbcNotebookDao.getAnnotationREFsOfNotebook(3);
 //        assertEquals(2, testList.size());        
 //        assertEquals(TestBackendConstants._TEST_SERVLET_URI_annotations+TestBackendConstants._TEST_ANNOT_2_EXT, testList.get(0).getRef());
 //        assertEquals(TestBackendConstants._TEST_SERVLET_URI_annotations+TestBackendConstants._TEST_ANNOT_3_EXT, testList.get(1).getRef());
 //        
 //        // test Two
 //        setMockeryNotebookTwo(); 
-//        List<ResourceREF> testListTwo = jdbcNotebookDao.getAnnotationREFsOfNotebook(4);
+//        List<ReTargetREF> testListTwo = jdbcNotebookDao.getAnnotationREFsOfNotebook(4);
 //        assertEquals(1, testListTwo.size());        
 //        assertEquals(TestBackendConstants._TEST_SERVLET_URI_annotations+TestBackendConstants._TEST_ANNOT_4_EXT, testListTwo.get(0).getRef());
 //        
 //        // test Three  "empty" 
 //        setMockeryNotebookThreeEmpty();         
-//        List<ResourceREF> testListThree = jdbcNotebookDao.getAnnotationREFsOfNotebook(6);
+//        List<ReTargetREF> testListThree = jdbcNotebookDao.getAnnotationREFsOfNotebook(6);
 //        assertEquals(0, testListThree.size()); 
 //       
 //        // test Five Null-notebook
 //        setMockeryNotebookNonExisting();
-//        List<ResourceREF> testListFive = jdbcNotebookDao.getAnnotationREFsOfNotebook(null);
+//        List<ReTargetREF> testListFive = jdbcNotebookDao.getAnnotationREFsOfNotebook(null);
 //        assertEquals(0, testListFive.size()); 
 //    }
 //
@@ -347,11 +346,11 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest{
 //    ///////////////////////////////////////////////////////////////////
 //    
 //    private void setMockeryNotebookOne(){        
-//        ResourceREF testRefOne = new ResourceREF();
+//        ReTargetREF testRefOne = new ReTargetREF();
 //        testRefOne.setRef(TestBackendConstants._TEST_SERVLET_URI_annotations+TestBackendConstants._TEST_ANNOT_2_EXT);
-//        ResourceREF testRefTwo = new ResourceREF();
+//        ReTargetREF testRefTwo = new ReTargetREF();
 //        testRefTwo.setRef(TestBackendConstants._TEST_SERVLET_URI_annotations+TestBackendConstants._TEST_ANNOT_3_EXT);
-//        final List<ResourceREF> testResult = Arrays.asList(new ResourceREF[] {testRefOne, testRefTwo});
+//        final List<ReTargetREF> testResult = Arrays.asList(new ReTargetREF[] {testRefOne, testRefTwo});
 //        
 //        mockery.checking(new Expectations() {
 //            {
@@ -362,9 +361,9 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest{
 //    }
 //
 //     private void setMockeryNotebookTwo(){ 
-//        ResourceREF testRef = new ResourceREF();
+//        ReTargetREF testRef = new ReTargetREF();
 //        testRef.setRef(String.valueOf(TestBackendConstants._TEST_SERVLET_URI_annotations+TestBackendConstants._TEST_ANNOT_4_EXT));
-//        final List<ResourceREF> testResultTwo = Arrays.asList(new ResourceREF[] {testRef});
+//        final List<ReTargetREF> testResultTwo = Arrays.asList(new ReTargetREF[] {testRef});
 //        
 //        mockery.checking(new Expectations() {
 //            {
@@ -378,7 +377,7 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest{
 //         mockery.checking(new Expectations() {
 //            {
 //              oneOf(annotationDao).getAnnotationREFs(new ArrayList<Number>());
-//              will(returnValue(new ArrayList<ResourceREF>()));
+//              will(returnValue(new ArrayList<ReTargetREF>()));
 //            }
 //        });        
 //     }

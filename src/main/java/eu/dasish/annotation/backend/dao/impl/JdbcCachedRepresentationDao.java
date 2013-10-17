@@ -65,10 +65,9 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
         public CachedRepresentationInfo mapRow(ResultSet rs, int rowNumber) throws SQLException {
             CachedRepresentationInfo result = new CachedRepresentationInfo();
             result.setMimeType(rs.getString(mime_type));
-            result.setRef(externalIDtoURI(rs.getString(external_id)));
+            result.setURI(externalIDtoURI(rs.getString(external_id)));
             result.setTool(rs.getString(tool));
             result.setType(rs.getString(type_));
-            // TODO add "where is the file when the schema" is updated!!!!s
             return result;
         }
     };
@@ -96,8 +95,8 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
     //////////////////////////////////////
     private boolean cachedIsInUse(Number cachedID) {
         StringBuilder sql = new StringBuilder("SELECT ");
-        sql.append(source_id).append(" FROM ").append(sourcesCachedRepresentationsTableName).append(" WHERE ").append(cached_representation_id).append("= ? LIMIT 1");
-        List<Number> result = getSimpleJdbcTemplate().query(sql.toString(), sourceIDRowMapper, cachedID);
+        sql.append(target_id).append(" FROM ").append(TargetsCachedRepresentationsTableName).append(" WHERE ").append(cached_representation_id).append("= ? LIMIT 1");
+        List<Number> result = getSimpleJdbcTemplate().query(sql.toString(), TargetIDRowMapper, cachedID);
         if (result != null) {
             return (!result.isEmpty());
         } else {

@@ -28,9 +28,9 @@ import eu.dasish.annotation.schema.AnnotationResponseBody;
 import eu.dasish.annotation.schema.AnnotationResponseContent;
 import eu.dasish.annotation.schema.ObjectFactory;
 import eu.dasish.annotation.schema.Permission;
-import eu.dasish.annotation.schema.PermissionList;
+import eu.dasish.annotation.schema.UserWithPermissionList;
+import eu.dasish.annotation.schema.ReferenceList;
 import eu.dasish.annotation.schema.ResponseBody;
-import eu.dasish.annotation.schema.SourceList;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.List;
@@ -48,11 +48,9 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Providers;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -100,8 +98,8 @@ public class AnnotationResource {
         final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(ExternalIdentifier));
         final Annotation annotation = dbIntegrityService.getAnnotation(annotationID);
         
-        //ResourceJaxbMarshallerProvider contextResolver = (ResourceJaxbMarshallerProvider) providers.getContextResolver(Marshaller.class, MediaType.WILDCARD_TYPE);
-        //contextResolver.setResourceJaxbFactory(new JaxbMarshallerFactory());
+        //ReTargetJaxbMarshallerProvider contextResolver = (ReTargetJaxbMarshallerProvider) providers.getContextResolver(Marshaller.class, MediaType.WILDCARD_TYPE);
+        //contextResolver.setReTargetJaxbFactory(new JaxbMarshallerFactory());
         
         JAXBElement<Annotation> rootElement = new ObjectFactory().createAnnotation(annotation);       
         return rootElement;
@@ -111,12 +109,12 @@ public class AnnotationResource {
      //TODO: unit test
     @GET
     @Produces(MediaType.TEXT_XML)
-    @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}/sources")
-    public JAXBElement<SourceList> getAnnotationSources(@PathParam("annotationid") String ExternalIdentifier) throws SQLException {
+    @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}/Targets")
+    public JAXBElement<ReferenceList> getAnnotationTargets(@PathParam("annotationid") String ExternalIdentifier) throws SQLException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(ExternalIdentifier));
-        final SourceList sourceList = dbIntegrityService.getAnnotationSources(annotationID);
-        return new ObjectFactory().createSourceList(sourceList);
+        final ReferenceList TargetList = dbIntegrityService.getAnnotationTargets(annotationID);
+        return new ObjectFactory().createTargetList(TargetList);
     }
     
     // TODO Unit test 
@@ -143,11 +141,11 @@ public class AnnotationResource {
     @GET
     @Produces(MediaType.TEXT_XML)
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}/permissions")
-    public JAXBElement<PermissionList> getAnnotationPermissions(@PathParam("annotationid") String ExternalIdentifier) throws SQLException {
+    public JAXBElement<UserWithPermissionList> getAnnotationPermissions(@PathParam("annotationid") String ExternalIdentifier) throws SQLException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         
         final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(ExternalIdentifier));
-        final PermissionList permissionList = dbIntegrityService.getPermissionsForAnnotation(annotationID);
+        final UserWithPermissionList permissionList = dbIntegrityService.getPermissionsForAnnotation(annotationID);
         return new ObjectFactory().createPermissionList(permissionList);
     }
 
@@ -169,7 +167,7 @@ public class AnnotationResource {
     @Consumes(MediaType.APPLICATION_XML)
     @Produces(MediaType.APPLICATION_XML)
     @Path("")
-    public JAXBElement<ResponseBody> createAnnotation(Annotation annotation) throws SQLException { 
+    public JAXBElement<ResponseBody> createAnnotation(Annotation annotation) throws SQLException, Exception { 
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         
         return new ObjectFactory().createResponseBody(addORupdateAnnotation(annotation, true));
@@ -218,7 +216,7 @@ public class AnnotationResource {
     @Consumes(MediaType.APPLICATION_XML)
     @Produces(MediaType.TEXT_XML)
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}/permissions/")
-    public int updatePermissions(@PathParam("annotationid") String annotationExternalId, PermissionList permissions) throws SQLException, Exception { 
+    public int updatePermissions(@PathParam("annotationid") String annotationExternalId, UserWithPermissionList permissions) throws SQLException, Exception { 
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         
         final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(annotationExternalId));
@@ -241,7 +239,7 @@ public class AnnotationResource {
         if (annotationID != null) {
             Annotation annotation = dbIntegrityService.getAnnotation(annotationID);
             content.setAnnotation(annotation);
-            List<Number> cached = dbIntegrityService.getSourcesWithNoCachedRepresentation(annotationID);
+            List<Number> cached = dbIntegrityService.getTargetsWithNoCachedRepresentation(annotationID);
             if (cached == null) {
                 subresult.setActions(null);
             } else {
@@ -262,16 +260,23 @@ public class AnnotationResource {
     
     
     
-    private ResponseBody addORupdateAnnotation(Annotation annotation, boolean newAnnotation) throws SQLException {
+    private ResponseBody addORupdateAnnotation(Annotation annotation, boolean newAnnotation) throws SQLException, Exception {
         // Where the map remoteUSer-->externalID is saved and how to get it?
         String remoteUser = httpServletRequest.getRemoteUser();
         // if (remoteUser == null) { throw new Exception();}
         //UUID externalID = getExternalIDforREmoteUSer(remoteUser);
         //testing mode 
         UUID userExternalID=UUID.fromString("00000000-0000-0000-0000-000000000011");
-        Number userID = dbIntegrityService.getUserInternalIdentifier(userExternalID);    
-        Number newAnnotationID = newAnnotation ? dbIntegrityService.addUsersAnnotation(userID, annotation) : dbIntegrityService.updateUsersAnnotation(userID, annotation);
-        return makeResponseEnvelope(newAnnotationID);
+        Number userID = dbIntegrityService.getUserInternalIdentifier(userExternalID);
+        Number annotationID;
+        if (newAnnotation) {
+           annotationID =  dbIntegrityService.addUsersAnnotation(userID, annotation);
+        }
+        else{
+          dbIntegrityService.updateUsersAnnotation(userID, annotation);
+          annotationID = dbIntegrityService.getAnnotationInternalIdentifierFromURI(annotation.getURI());
+        }
+        return makeResponseEnvelope(annotationID);
     }
     
    

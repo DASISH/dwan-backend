@@ -62,19 +62,18 @@ CREATE TABLE annotation (
     owner_id integer REFERENCES principal(principal_id), 
     headline text,
     body_text text,
-    body_mimetype text
+    body_mimetype text,
+    is_xml BOOLEAN
 );
 
 
 
-CREATE TABLE target_source (
-    source_id SERIAL UNIQUE NOT NULL,
+CREATE TABLE target (
+    target_id SERIAL UNIQUE NOT NULL,
     external_id text UNIQUE NOT NULL,
     time_stamp timestamp with time zone default now(),
-    link_uri text,    
-    sibling_source_class int,
-    version text,
-    unique (sibling_source_class, version)
+    link_uri text, 
+    version text
 );
 
 CREATE TABLE cached_representation (
@@ -95,10 +94,10 @@ CREATE TABLE permission_ (
 -----------------------------------------------------------------------
 --------------------- JOINT TABLES ------------------------------------
 
-CREATE TABLE annotations_target_sources (
+CREATE TABLE annotations_targets (
    annotation_id integer REFERENCES annotation(annotation_id), -- defining a foreign key: there must be a uniquely defined row in "annotation", that is defined by "annotation_id"
-   source_id integer REFERENCES target_source(source_id),
-   unique(annotation_id, source_id)
+   target_id integer REFERENCES target(target_id),
+   unique(annotation_id, target_id)
 );
 
 
@@ -109,10 +108,10 @@ CREATE TABLE notebooks_annotations (
     unique(notebook_id, annotation_id)
 );
 
-CREATE TABLE sources_cached_representations (
-    source_id integer REFERENCES target_source(source_id),
+CREATE TABLE targets_cached_representations (
+    target_id integer REFERENCES target(target_id),
     cached_representation_id integer REFERENCES cached_representation(cached_representation_id),
-    unique(source_id, cached_representation_id)
+    unique(target_id, cached_representation_id)
 );
 
 

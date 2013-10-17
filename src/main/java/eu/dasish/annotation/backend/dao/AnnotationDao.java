@@ -21,12 +21,11 @@ import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationBody;
 import eu.dasish.annotation.schema.AnnotationInfo;
 import eu.dasish.annotation.schema.Permission;
-import eu.dasish.annotation.schema.PermissionList;
-import eu.dasish.annotation.schema.ResourceREF;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Created on : Jun 27, 2013, 10:34:13 AM
@@ -45,12 +44,12 @@ public interface AnnotationDao extends ResourceDao{
     /**
      * 
      * @param annotationID
-     * @return the Annotation object with empty list of sources.
+     * @return the Annotation object with empty list of Targets.
      * 
-     * (Constructing a complete Annotation object using  "getAnnotationWithoutSources" and "retrieveSourceIDs" is done in "DaoDispatchter".)
+     * (Constructing a complete Annotation object using  "getAnnotationWithoutTargets" and "retrieveTargetIDs" is done in "DaoDispatchter".)
      * 
      */
-    public Annotation getAnnotationWithoutSourcesAndPermissions(Number annotationID) throws SQLException;
+    public Annotation getAnnotationWithoutTargetsAndPermissions(Number annotationID) throws SQLException;
     
     
      /**
@@ -74,7 +73,7 @@ public interface AnnotationDao extends ResourceDao{
       /**
      * THROW away this method, ise the one below
      * @param annotationIDs
-     * @return the list of annotationInfos (owner, headline, target sources, external_id) for the annotations with the internal IDs from the  input list.
+     * @return the list of annotationInfos (owner, headline, target Targets, external_id) for the annotations with the internal IDs from the  input list.
      * 
      */
     public List<AnnotationInfo> getAnnotationInfos(List<Number> annotationIDs);    
@@ -86,29 +85,29 @@ public interface AnnotationDao extends ResourceDao{
      * @return annotationInfo (owner, headline, external_id) for the annotation with the internal annotationID.
      * 
      */
-    public AnnotationInfo getAnnotationInfoWithoutSources(Number annotationID);    
+    public AnnotationInfo getAnnotationInfoWithoutTargets(Number annotationID);    
    
     /**
      * 
      * @param annotationIDs
-     * @return list of resource references where an i-th reference is constructed from the external identifier of the annotation with the i-th internal identifier from the list.
+     * @return list of reTarget references where an i-th reference is constructed from the external identifier of the annotation with the i-th internal identifier from the list.
      */
-    public List<ResourceREF> getAnnotationREFs(List<Number> annotationIDs); 
+    public List<String> getAnnotationREFs(List<Number> annotationIDs); 
     
     /**
      * 
-     * @param sourceIDs
-     * @return the list of annotationdIDs of the annotations which target sources are from "sourceIDs" list.
+     * @param TargetIDs
+     * @return the list of annotationdIDs of the annotations which target Targets are from "TargetIDs" list.
      */
-    public List<Number> retrieveAnnotationList(List<Number> sourceIDs);
+    public List<Number> retrieveAnnotationList(List<Number> TargetIDs);
    
     
        /**
      * 
      * @param annotationID
-     * @return the list of the internal IDs of all the target sources of "annotationID".
+     * @return the list of the internal IDs of all the target Targets of "annotationID".
      */
-    public List<Number> retrieveSourceIDs(Number annotationID);   
+    public List<Number> retrieveTargetIDs(Number annotationID);   
     
    
        /**
@@ -128,9 +127,9 @@ public interface AnnotationDao extends ResourceDao{
     
     /**
      * 
-     * @param sourceID
+     * @param TargetID
      * @return true if "annotationID" is mentioned in at least one of the joint tables:
-     * "annotations_target_sources", "annotations_principals_permissions", "notebook_annotations".
+     * "annotations_target_Targets", "annotations_principals_permissions", "notebook_annotations".
      * Otherwise return "false".
      */
     public boolean annotationIsInUse(Number annotationID);
@@ -142,12 +141,12 @@ public interface AnnotationDao extends ResourceDao{
     /**
      * 
      * @param annotationID
-     * @param sourceID
-     * @return # updated rows in the joint table "annotations_target_sources".
+     * @param TargetID
+     * @return # updated rows in the joint table "annotations_target_Targets".
      * @throws SQLException 
-     * Connects the annotation to its target source by adding the pair (annotationID, sourceID) to the joint table.
+     * Connects the annotation to its target Target by adding the pair (annotationID, TargetID) to the joint table.
      */ 
-    public int addAnnotationSource(Number annotationID, Number sourceID) throws SQLException;
+    public int addAnnotationTarget(Number annotationID, Number TargetID) throws SQLException;
     
    
     /**
@@ -168,7 +167,7 @@ public interface AnnotationDao extends ResourceDao{
      * @return  the internal ID of the added annotation, if it is added, or null otherwise.
      **/
     
-    public Number addAnnotation(Annotation annotation, Number ownerID) throws SQLException;
+    public Number addAnnotation(Annotation annotation, Number ownerID) throws SQLException, Exception;
  
      
     /////// UPDATERS //////////////////
@@ -193,10 +192,10 @@ public interface AnnotationDao extends ResourceDao{
      * 
      * @param annotation
      * @param ownerID
-     * @return # of updated rows in "annotation" table after updating the annotation. Should return the internalID Of the annotation if update  happen
+     * @return # of updated rows in "annotation" table after updating the annotation. Should return 1 if update  happens
      * @throws SQLException 
      */
-    public Number updateAnnotation(Annotation annotation, Number ownerID) throws SQLException;
+    public int updateAnnotation(Annotation annotation, Number ownerID) throws SQLException, Exception;
     
     
      /**
@@ -229,10 +228,10 @@ public interface AnnotationDao extends ResourceDao{
     /**
      * 
      * @param annotationId
-     * @return # removed rows in the table "annotations_target_sources". 
+     * @return # removed rows in the table "annotations_target_Targets". 
      */
     
-    public int deleteAllAnnotationSource(Number annotationID) throws SQLException;
+    public int deleteAllAnnotationTarget(Number annotationID) throws SQLException;
     
    
    /**
@@ -243,9 +242,4 @@ public interface AnnotationDao extends ResourceDao{
     */
     public int deleteAnnotationPrincipalPermissions(Number annotationID) throws SQLException ;
 
-  
-   public String[] splitBody(AnnotationBody body);
-  
-   public AnnotationBody makeBody(String text, String mimeType);
-    
 }

@@ -20,7 +20,7 @@ package eu.dasish.annotation.backend;
 import eu.dasish.annotation.backend.dao.AnnotationDao;
 import eu.dasish.annotation.backend.dao.CachedRepresentationDao;
 import eu.dasish.annotation.backend.dao.NotebookDao;
-import eu.dasish.annotation.backend.dao.SourceDao;
+import eu.dasish.annotation.backend.dao.TargetDao;
 import eu.dasish.annotation.backend.dao.UserDao;
 import org.jmock.Mockery;
 
@@ -50,8 +50,8 @@ public class MockObjectsFactoryDao {
     }
     
    
-    public SourceDao newSourceDao() {
-        return context.mock(SourceDao.class);
+    public TargetDao newTargetDao() {
+        return context.mock(TargetDao.class);
     }
     
     public CachedRepresentationDao newCachedRepresentationDao() {

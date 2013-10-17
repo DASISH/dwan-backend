@@ -21,7 +21,6 @@ import eu.dasish.annotation.backend.BackendConstants;
 import eu.dasish.annotation.backend.dao.DBIntegrityService;
 import eu.dasish.annotation.schema.ObjectFactory;
 import eu.dasish.annotation.schema.User;
-import eu.dasish.annotation.schema.UserInfo;
 import java.sql.SQLException;
 import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
@@ -61,11 +60,11 @@ public class UserResource {
     @GET
     @Produces(MediaType.TEXT_XML)
     @Path("{userid: " + BackendConstants.regExpIdentifier + "}")
-    public JAXBElement<UserInfo> getUserInfo(@PathParam("userid") String ExternalIdentifier) throws SQLException {
+    public JAXBElement<User> getUser(@PathParam("userid") String ExternalIdentifier) throws SQLException {
          dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final Number userID = dbIntegrityService.getUserInternalIdentifier(UUID.fromString(ExternalIdentifier));
-        final UserInfo userInfo = dbIntegrityService.getUserInfo(userID);
-        return new ObjectFactory().createUserInfo(userInfo);
+        final User user = dbIntegrityService.getUser(userID);
+        return new ObjectFactory().createUser(user);
     }
     
     @GET

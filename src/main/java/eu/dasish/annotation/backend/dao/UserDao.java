@@ -17,8 +17,8 @@
  */
 package eu.dasish.annotation.backend.dao;
 
+import eu.dasish.annotation.schema.CurrentUserInfo;
 import eu.dasish.annotation.schema.User;
-import eu.dasish.annotation.schema.UserInfo;
 
 
 /**
@@ -30,9 +30,7 @@ public interface UserDao extends ResourceDao{
      public User getUser(Number internalID);
      
      public User getUserByInfo(String  eMail);
-     
-     UserInfo getUserInfo(Number internalID);
-     
+    
      public Number addUser(User user, String remoteID);
      
      public int deleteUser(Number intenralID);
