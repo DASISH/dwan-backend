@@ -73,7 +73,8 @@ CREATE TABLE target (
     external_id text UNIQUE NOT NULL,
     time_stamp timestamp with time zone default now(),
     link_uri text, 
-    version text
+    version text,
+    fragment_descriptor text
 );
 
 CREATE TABLE cached_representation (
@@ -111,6 +112,7 @@ CREATE TABLE notebooks_annotations (
 CREATE TABLE targets_cached_representations (
     target_id integer REFERENCES target(target_id),
     cached_representation_id integer REFERENCES cached_representation(cached_representation_id),
+    fragment_descriptor_in_cached text,
     unique(target_id, cached_representation_id)
 );
 
@@ -130,20 +132,21 @@ ALTER TABLE ONLY annotation
     ADD CONSTRAINT annotation_primary_key PRIMARY KEY (annotation_id);
 
 ALTER TABLE ONLY notebooks_annotations
-    ADD CONSTRAINT pk_notebooks_annotations PRIMARY KEY (notebook_id, annotation_id);
+   ADD CONSTRAINT pk_notebooks_annotations PRIMARY KEY (notebook_id, annotation_id);
+
 
 CREATE INDEX fki_annotation_owner_principal_id ON annotation USING btree (owner_id);
 
 CREATE INDEX fki_owner_id_principal_id ON notebook USING btree (owner_id);
 
 ALTER TABLE ONLY annotation
-    ADD CONSTRAINT fk_annotation_owner_principal_id FOREIGN KEY (owner_id) REFERENCES principal(principal_id);
+ ADD CONSTRAINT fk_annotation_owner_principal_id FOREIGN KEY (owner_id) REFERENCES principal(principal_id);
 
 ALTER TABLE ONLY notebook
-    ADD CONSTRAINT fk_notebook_owner_id_principal_id FOREIGN KEY (owner_id) REFERENCES principal(principal_id);
+   ADD CONSTRAINT fk_notebook_owner_id_principal_id FOREIGN KEY (owner_id) REFERENCES principal(principal_id);
 
--- ALTER TABLE ONLY notebooks_annotations
---     ADD CONSTRAINT fk_notebooks_annotations_annotation_id FOREIGN KEY (annotation_id) REFERENCES annotation(annotation_id);
+ --ALTER TABLE ONLY notebooks_annotations
+ --   ADD CONSTRAINT fk_notebooks_annotations_annotation_id FOREIGN KEY (annotation_id) REFERENCES annotation(annotation_id);
 
 -- ALTER TABLE ONLY notebooks_annotations
 --     ADD CONSTRAINT fk_notebooks_annotations_notebook_id FOREIGN KEY (notebook_id) REFERENCES notebook(notebook_id);

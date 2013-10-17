@@ -60,13 +60,13 @@ INSERT INTO notebooks_annotations (notebook_id,annotation_id) VALUES (4,4);
 INSERT INTO notebooks_annotations (notebook_id,annotation_id) VALUES (5,4);
 
 
-INSERT INTO target (external_id, link_uri, version) VALUES ('00000000-0000-0000-0000-000000000031', 'http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia', 'version 1.0'); -- 1
-INSERT INTO target (external_id, link_uri, version) VALUES ('00000000-0000-0000-0000-000000000032', 'http://nl.wikipedia.org/wiki/Antoni_Gaud%C3%AD', 'version 1.0'); --2
-INSERT INTO target (external_id, link_uri, version) VALUES ('00000000-0000-0000-0000-000000000033', 'http://en.wikipedia.org/wiki/Art_Nouveau', 'june 1013'); --3
-INSERT INTO target (external_id, link_uri, version) VALUES ('00000000-0000-0000-0000-000000000034', '???', 'back up'); --4
-INSERT INTO target (external_id, link_uri, version) VALUES ('00000000-0000-0000-0000-000000000035', '???', 'back up'); --5
-INSERT INTO target (external_id, link_uri, version) VALUES ('00000000-0000-0000-0000-000000000036', '???', 'version 2.0'); --6 not used by any annotation
-INSERT INTO target (external_id, link_uri, version) VALUES ('00000000-0000-0000-0000-000000000037', '???', 'version 2.0')
+INSERT INTO target (external_id, link_uri, version, fragment_descriptor) VALUES ('00000000-0000-0000-0000-000000000031', 'http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia', 'version 1.0', '#1'); -- 1
+INSERT INTO target (external_id, link_uri, version, fragment_descriptor) VALUES ('00000000-0000-0000-0000-000000000032', 'http://nl.wikipedia.org/wiki/Antoni_Gaud%C3%AD', 'version 1.0', '#11'); --2
+INSERT INTO target (external_id, link_uri, version, fragment_descriptor) VALUES ('00000000-0000-0000-0000-000000000033', 'http://en.wikipedia.org/wiki/Art_Nouveau', 'june 1013', '#111'); --3
+INSERT INTO target (external_id, link_uri, version, fragment_descriptor) VALUES ('00000000-0000-0000-0000-000000000034', '???', 'back up', '#1111'); --4
+INSERT INTO target (external_id, link_uri, version, fragment_descriptor) VALUES ('00000000-0000-0000-0000-000000000035', '???', 'back up', '#111111'); --5
+INSERT INTO target (external_id, link_uri, version, fragment_descriptor) VALUES ('00000000-0000-0000-0000-000000000036', '???', 'version 2.0', '#1111111'); --6 not used by any annotation
+INSERT INTO target (external_id, link_uri, version, fragment_descriptor) VALUES ('00000000-0000-0000-0000-000000000037', '???', 'version 2.0', '#11111111')
 
 
 
@@ -90,12 +90,12 @@ INSERT INTO cached_representation (external_id, mime_type, tool, type_, file_) V
 
 
 
-INSERT INTO Targets_cached_representations (target_id,  cached_representation_id) VALUES (1, 1);
-INSERT INTO Targets_cached_representations (target_id,  cached_representation_id) VALUES (1, 2);
-INSERT INTO Targets_cached_representations (target_id,  cached_representation_id) VALUES (2, 3);
-INSERT INTO Targets_cached_representations (target_id,  cached_representation_id) VALUES (3, 4);
-INSERT INTO Targets_cached_representations (target_id,  cached_representation_id) VALUES (4, 5);
-INSERT INTO Targets_cached_representations (target_id,  cached_representation_id) VALUES (5, 7);
+INSERT INTO targets_cached_representations (target_id,  cached_representation_id, fragment_descriptor_in_cached) VALUES (1, 1, '#1');
+INSERT INTO targets_cached_representations (target_id,  cached_representation_id, fragment_descriptor_in_cached) VALUES (1, 2, '#2');
+INSERT INTO targets_cached_representations (target_id,  cached_representation_id, fragment_descriptor_in_cached) VALUES (2, 3, '#11');
+INSERT INTO targets_cached_representations (target_id,  cached_representation_id, fragment_descriptor_in_cached) VALUES (3, 4, '#12');
+INSERT INTO targets_cached_representations (target_id,  cached_representation_id, fragment_descriptor_in_cached) VALUES (4, 5, '#01');
+INSERT INTO targets_cached_representations (target_id,  cached_representation_id, fragment_descriptor_in_cached) VALUES (5, 7, '#02');
 
 
 
