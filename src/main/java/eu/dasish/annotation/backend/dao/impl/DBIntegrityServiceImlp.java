@@ -66,7 +66,7 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     public void setServiceURI(String serviceURI) {
         userDao.setServiceURI(serviceURI + "users/");
         cachedRepresentationDao.setServiceURI(serviceURI + "cached/");
-        targetDao.setServiceURI(serviceURI + "Targets/");
+        targetDao.setServiceURI(serviceURI + "targets/");
         annotationDao.setServiceURI(serviceURI + "annotations/");
         //notebookDao.setServiceURI(serviceURI+"notebooks/");
     }

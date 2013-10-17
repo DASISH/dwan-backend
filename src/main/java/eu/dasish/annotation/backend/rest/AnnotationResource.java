@@ -109,7 +109,7 @@ public class AnnotationResource {
      //TODO: unit test
     @GET
     @Produces(MediaType.TEXT_XML)
-    @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}/Targets")
+    @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}/targets")
     public JAXBElement<ReferenceList> getAnnotationTargets(@PathParam("annotationid") String ExternalIdentifier) throws SQLException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(ExternalIdentifier));
