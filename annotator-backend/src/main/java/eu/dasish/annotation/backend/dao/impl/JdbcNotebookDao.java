@@ -19,10 +19,9 @@ package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.dao.AnnotationDao;
 import eu.dasish.annotation.backend.dao.NotebookDao;
-import eu.dasish.annotation.schema.AnnotationList;
+import eu.dasish.annotation.schema.ReferenceList;
 import eu.dasish.annotation.schema.Notebook;
 import eu.dasish.annotation.schema.NotebookInfo;
-import eu.dasish.annotation.schema.ResourceREF;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -181,7 +180,7 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
      * null if notebookID == null or it does not exists in the DB
      */
     @Override
-    public List<ResourceREF> getAnnotationREFsOfNotebook(Number notebookID) {
+    public List<String> getAnnotationREFsOfNotebook(Number notebookID) {
         return null; //jdbcAnnotationDao.getAnnotationREFs(getAnnotationIDs(notebookID));
     }
 
@@ -198,14 +197,13 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
      *
      */
     @Override
-    public AnnotationList getAnnotations(Number notebookID) {
+    public ReferenceList getAnnotations(Number notebookID) {
         if (notebookID == null) {
             return null;
         }
-        AnnotationList result = new AnnotationList();
-        List<ResourceREF> annotREFs = result.getAnnotation();
-        boolean test = annotREFs.addAll(getAnnotationREFsOfNotebook(notebookID));
-        return (test ? result : null);
+        ReferenceList result = new ReferenceList();
+        result.getRef().addAll(getAnnotationREFsOfNotebook(notebookID));
+        return result;
 
     }
 

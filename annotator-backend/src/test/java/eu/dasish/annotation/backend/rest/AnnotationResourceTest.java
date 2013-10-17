@@ -25,11 +25,11 @@ import eu.dasish.annotation.backend.TestInstances;
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationActionName;
 import eu.dasish.annotation.schema.AnnotationBody;
+import eu.dasish.annotation.schema.AnnotationBody.TextBody;
 import eu.dasish.annotation.schema.ObjectFactory;
-import eu.dasish.annotation.schema.ResourceREF;
 import eu.dasish.annotation.schema.ResponseBody;
-import eu.dasish.annotation.schema.SourceInfo;
-import eu.dasish.annotation.schema.SourceInfoList;
+import eu.dasish.annotation.schema.TargetInfo;
+import eu.dasish.annotation.schema.TargetInfoList;
 import java.sql.SQLException;
 import javax.xml.bind.JAXBElement;
 import org.jmock.Expectations;
@@ -49,12 +49,10 @@ import java.util.UUID;
 import javax.servlet.ServletException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Providers;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.datatype.DatatypeConfigurationException;
-import org.junit.Ignore;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 /**
@@ -146,8 +144,8 @@ public class AnnotationResourceTest {
         final int[] mockDelete = new int[4];
         mockDelete[0]=1; // # deleted annotations
         mockDelete[3]=1; // # deleted annotation_prinipal_permissions
-        mockDelete[2]=2; // # deleted  annotations_target_sources, (5,3), (5,4)
-        mockDelete[3]=1; // # deletd sources, 4
+        mockDelete[2]=2; // # deleted  annotations_target_Targets, (5,3), (5,4)
+        mockDelete[3]=1; // # deletd Targets, 4
         
         Mockery newMockery = new Mockery();
         MockObjectsFactoryRest mockFactory = new MockObjectsFactoryRest(newMockery);
@@ -185,35 +183,36 @@ public class AnnotationResourceTest {
      * Test of createAnnotation method, of class AnnotationResource.
      */
     @Test
-    public void testCreateAnnotation() throws SQLException, InstantiationException, IllegalAccessException, ServletException, DatatypeConfigurationException {
+    public void testCreateAnnotation() throws SQLException, InstantiationException, IllegalAccessException, ServletException, DatatypeConfigurationException, Exception {
         System.out.println("test createAnnotation");
         
         final Annotation annotationToAdd = new Annotation();
         final String ownerString = "5";
         final Number ownerID =  5;
         final Number newAnnotationID = 6;
-        String bodyMimeType = "text/plain";
-        String bodyText = "blah";
-        String headline = "headline";         
-        ResourceREF owner = new ResourceREF();
-        AnnotationBody body   = new AnnotationBody();
-        SourceInfoList sourceInfoList = new SourceInfoList();
-        annotationToAdd.setTargetSources(sourceInfoList);
-        annotationToAdd.setBody(body);
-        annotationToAdd.setOwner(owner);      
-        annotationToAdd.setTimeStamp(Helpers.setXMLGregorianCalendar(Timestamp.valueOf("2013-08-12 11:25:00.383000")));
-        annotationToAdd.setHeadline(headline);
-        annotationToAdd.setTargetSources(sourceInfoList);
-        owner.setRef(ownerString);
-        body.setMimeType(bodyMimeType);
-        body.setValue(bodyText);
-        SourceInfo sourceInfo = new SourceInfo();
-        sourceInfo.setLink("google.nl");
-        sourceInfo.setRef(UUID.randomUUID().toString());
-        sourceInfo.setVersion("vandaag");
         
-        final List<Number> sources = new ArrayList<Number>();
-        sources.add(6);
+        TargetInfoList TargetInfoList = new TargetInfoList();
+        annotationToAdd.setTargets(TargetInfoList);
+        annotationToAdd.setOwnerRef(ownerString);      
+        annotationToAdd.setTimeStamp(Helpers.setXMLGregorianCalendar(Timestamp.valueOf("2013-08-12 11:25:00.383000")));
+        annotationToAdd.setHeadline("headline");
+        annotationToAdd.setTargets(TargetInfoList);
+        
+       
+        AnnotationBody body   = new AnnotationBody();        
+        annotationToAdd.setBody(body);
+        TextBody textBody = new TextBody();
+        body.setTextBody(textBody);
+        textBody.setMimeType("text/plain");
+        textBody.setValue("blah");
+        
+        TargetInfo TargetInfo = new TargetInfo();
+        TargetInfo.setLink("google.nl");
+        TargetInfo.setRef(UUID.randomUUID().toString());
+        TargetInfo.setVersion("vandaag");
+        
+        final List<Number> Targets = new ArrayList<Number>();
+        Targets.add(6);
         
         final Annotation addedAnnotation = (new ObjectFactory()).createAnnotation(annotationToAdd).getValue();
         addedAnnotation.setURI("http://localhost:8080/annotator-backend/api/annotations/"+UUID.randomUUID().toString());
@@ -233,8 +232,6 @@ public class AnnotationResourceTest {
         
         mockeryRest.checking(new Expectations() {
             {
-                  
-                
                 
                 oneOf(daoDispatcher).setServiceURI(with(any(String.class)));
                 will(doAll());
@@ -248,8 +245,8 @@ public class AnnotationResourceTest {
                 oneOf(daoDispatcher).getAnnotation(newAnnotationID);
                 will(returnValue(addedAnnotation));
                 
-                oneOf(daoDispatcher).getSourcesWithNoCachedRepresentation(newAnnotationID);
-                will(returnValue(sources));
+                oneOf(daoDispatcher).getTargetsWithNoCachedRepresentation(newAnnotationID);
+                will(returnValue(Targets));
             }
         });
         
@@ -263,10 +260,10 @@ public class AnnotationResourceTest {
         JAXBElement<ResponseBody> result = annotationResource.createAnnotation(annotationToAdd);
         Annotation newAnnotation = result.getValue().getAnnotationResponse().getContent().getAnnotation();
         AnnotationActionName actionName = result.getValue().getAnnotationResponse().getActions().getAction().getAction();
-        assertEquals(addedAnnotation.getOwner().getRef(), newAnnotation.getOwner().getRef());
+        assertEquals(addedAnnotation.getOwnerRef(), newAnnotation.getOwnerRef());
         assertEquals(addedAnnotation.getURI(), newAnnotation.getURI());
         assertEquals(addedAnnotation.getHeadline(), newAnnotation.getHeadline());
-        assertEquals(addedAnnotation.getTargetSources(), newAnnotation.getTargetSources()); 
+        assertEquals(addedAnnotation.getTargets(), newAnnotation.getTargets()); 
         assertEquals(addedAnnotation.getTimeStamp(), newAnnotation.getTimeStamp());
         assertEquals(addedAnnotation.getBody(), newAnnotation.getBody());
         assertEquals(AnnotationActionName.CREATE_CACHED_REPRESENTATION, actionName);

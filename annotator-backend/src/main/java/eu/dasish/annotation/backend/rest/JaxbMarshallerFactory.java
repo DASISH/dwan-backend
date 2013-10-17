@@ -33,7 +33,7 @@ public class JaxbMarshallerFactory {
     private Marshaller marshaller;
     
     // overwritten by the bean's property 
-    private String schemaLocation = "http://www.dasish.eu/ns/addit file:/Users/olhsha/repositories/DASISH/t5.6/schema/trunk/annotator-schema/src/main/resources/DASISH-schema.xsd";
+    private String schemaLocation = "http://www.dasish.eu/ns/addit file:/Users/olhsha/repositories/DASISH/t5.6/schema/trunk/annotator-schema/src/main/reTargets/DASISH-schema.xsd";
 
     
     public JaxbMarshallerFactory() throws Exception {

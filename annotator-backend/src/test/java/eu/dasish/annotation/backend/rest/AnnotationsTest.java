@@ -25,10 +25,9 @@ import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationResponseBody;
 import eu.dasish.annotation.schema.AnnotationResponseContent;
 import eu.dasish.annotation.schema.ObjectFactory;
-import eu.dasish.annotation.schema.ResourceREF;
 import eu.dasish.annotation.schema.ResponseBody;
-import eu.dasish.annotation.schema.SourceInfo;
-import eu.dasish.annotation.schema.SourceInfoList;
+import eu.dasish.annotation.schema.TargetInfo;
+import eu.dasish.annotation.schema.TargetInfoList;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -70,9 +69,7 @@ public class AnnotationsTest extends ResourcesTest{
         final String externalIDstring= TestBackendConstants._TEST_ANNOT_2_EXT;
         final int annotationID = 2;
         final Annotation testAnnotation = new Annotation();
-        ResourceREF owner = new ResourceREF();
-        owner.setRef("5");
-        testAnnotation.setOwner(owner);
+        testAnnotation.setOwnerRef("5");
         testAnnotation.setURI(externalIDstring);
         testAnnotation.setTimeStamp(Helpers.setXMLGregorianCalendar(Timestamp.valueOf("2013-08-12 11:25:00.383000")));
         
@@ -103,9 +100,9 @@ public class AnnotationsTest extends ResourcesTest{
         Annotation entity = response.getEntity(Annotation.class);
         assertEquals(testAnnotation.getBody(), entity.getBody());
         assertEquals(testAnnotation.getHeadline(), entity.getHeadline());
-        assertEquals(testAnnotation.getOwner().getRef(), entity.getOwner().getRef());
+        assertEquals(testAnnotation.getOwnerRef(), entity.getOwnerRef());
         assertEquals(testAnnotation.getPermissions(), entity.getPermissions());
-        assertEquals(testAnnotation.getTargetSources(), entity.getTargetSources());
+        assertEquals(testAnnotation.getTargets(), entity.getTargets());
         assertEquals(testAnnotation.getTimeStamp(), entity.getTimeStamp());
         assertEquals(testAnnotation.getURI(), entity.getURI());
     }  
@@ -124,8 +121,8 @@ public class AnnotationsTest extends ResourcesTest{
         final int[] mockDelete = new int[4];
         mockDelete[0]=1; // # deleted annotations
         mockDelete[3]=1; // # deleted annotation_prinipal_permissions
-        mockDelete[2]=2; // # deleted  annotations_target_sources, (5,3), (5,4)
-        mockDelete[3]=1; // # deletd sources, 4
+        mockDelete[2]=2; // # deleted  annotations_target_Targets, (5,3), (5,4)
+        mockDelete[3]=1; // # deletd Targets, 4
         mockeryRest.checking(new Expectations() {
             {  
                   
@@ -157,7 +154,7 @@ public class AnnotationsTest extends ResourcesTest{
      */
     @Test
     @Ignore
-    public void testCreateAnnotation() throws SQLException, InstantiationException, IllegalAccessException, DatatypeConfigurationException{
+    public void testCreateAnnotation() throws SQLException, InstantiationException, IllegalAccessException, DatatypeConfigurationException, Exception{
         System.out.println("test createAnnotation");
         // Peter's workaround on absence of "ObjectFactory.create... for annotations        
         //final JAXBElement<Annotation> jaxbElement = new JAXBElement<Annotation>(new QName("http://www.dasish.eu/ns/addit", "annotation"), Annotation.class, null, annotationToAdd);
@@ -175,22 +172,19 @@ public class AnnotationsTest extends ResourcesTest{
         AnnotationResponseContent content = new AnnotationResponseContent();
         arb.setContent(content);        
         final Annotation addedAnnotation = new Annotation();
-        content.setAnnotation(addedAnnotation);
-        ResourceREF owner = new ResourceREF();
-        owner.setRef(ownerString);        
-        SourceInfoList sourceInfoList = new SourceInfoList();
-        addedAnnotation.setTargetSources(sourceInfoList);
-        addedAnnotation.setOwner(owner);
+        TargetInfoList TargetInfoList = new TargetInfoList();
+        addedAnnotation.setTargets(TargetInfoList);
+        addedAnnotation.setOwnerRef(ownerString);
         addedAnnotation.setURI(TestBackendConstants._TEST_SERVLET_URI_annotations+UUID.randomUUID().toString());        
         addedAnnotation.setTimeStamp(Helpers.setXMLGregorianCalendar(Timestamp.valueOf("2013-08-12 11:25:00.383000")));        
-        SourceInfo sourceInfo = new SourceInfo();
-        sourceInfo.setLink("google.nl");
-        sourceInfo.setRef(UUID.randomUUID().toString());
-        sourceInfo.setVersion("vandaag");
-        sourceInfoList.getTargetSource().add(sourceInfo); 
+        TargetInfo TargetInfo = new TargetInfo();
+        TargetInfo.setLink("google.nl");
+        TargetInfo.setRef(UUID.randomUUID().toString());
+        TargetInfo.setVersion("vandaag");
+        TargetInfoList.getTargetInfo().add(TargetInfo); 
         
-        final List<Number> sources = new ArrayList<Number>();
-        sources.add(6);
+        final List<Number> Targets = new ArrayList<Number>();
+        Targets.add(6);
         
         mockeryRest.checking(new Expectations() {
             {
@@ -212,8 +206,8 @@ public class AnnotationsTest extends ResourcesTest{
                 oneOf(daoDispatcher).getAnnotation(newAnnotationID);
                 will(returnValue(addedAnnotation));
                 
-                oneOf(daoDispatcher).getSourcesWithNoCachedRepresentation(newAnnotationID);
-                will(returnValue(sources));
+                oneOf(daoDispatcher).getTargetsWithNoCachedRepresentation(newAnnotationID);
+                will(returnValue(Targets));
             }
         });
         
@@ -229,10 +223,10 @@ public class AnnotationsTest extends ResourcesTest{
         assertEquals(addedAnnotation.getBody(), entityA.getBody());
         assertEquals(addedAnnotation.getHeadline(), entityA.getHeadline());
         assertEquals(addedAnnotation.getPermissions(), entityA.getPermissions());
-        assertEquals(addedAnnotation.getTargetSources().getTargetSource().get(0).getLink(), entityA.getTargetSources().getTargetSource().get(0).getLink());
-        assertEquals(addedAnnotation.getTargetSources().getTargetSource().get(0).getRef(), entityA.getTargetSources().getTargetSource().get(0).getRef());
-        assertEquals(addedAnnotation.getTargetSources().getTargetSource().get(0).getVersion(), entityA.getTargetSources().getTargetSource().get(0).getVersion());
+        assertEquals(addedAnnotation.getTargets().getTargetInfo().get(0).getLink(), entityA.getTargets().getTargetInfo().get(0).getLink());
+        assertEquals(addedAnnotation.getTargets().getTargetInfo().get(0).getRef(), entityA.getTargets().getTargetInfo().get(0).getRef());
+        assertEquals(addedAnnotation.getTargets().getTargetInfo().get(0).getVersion(), entityA.getTargets().getTargetInfo().get(0).getVersion());
         assertEquals(addedAnnotation.getTimeStamp(), entityA.getTimeStamp());
-        assertEquals(addedAnnotation.getOwner().getRef(), entityA.getOwner().getRef());
+        assertEquals(addedAnnotation.getOwnerRef(), entityA.getOwnerRef());
     }
 }

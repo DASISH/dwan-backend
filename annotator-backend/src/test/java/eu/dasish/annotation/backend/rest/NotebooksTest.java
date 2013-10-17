@@ -53,7 +53,7 @@ public class NotebooksTest extends ResourcesTest {
 //            }
 //        });
 //        client().addFilter(new HTTPBasicAuthFilter("userid", "userpass"));
-//        ClientResponse response = resource().path("notebooks").accept(MediaType.TEXT_XML).get(ClientResponse.class);
+//        ClientResponse response = Resource().path("notebooks").accept(MediaType.TEXT_XML).get(ClientResponse.class);
 //        assertEquals(200, response.getStatus());
 //        assertEquals(0, response.getEntity(new GenericType<NotebookInfoList>() {
 //        }).getNotebook().size());
@@ -74,7 +74,7 @@ public class NotebooksTest extends ResourcesTest {
 //            }
 //        });
 //        client().addFilter(new HTTPBasicAuthFilter("userid", "userpass"));
-//        ClientResponse response = resource().path("notebooks/owned").accept(MediaType.TEXT_XML).get(ClientResponse.class);
+//        ClientResponse response = Resource().path("notebooks/owned").accept(MediaType.TEXT_XML).get(ClientResponse.class);
 //        assertEquals(200, response.getStatus());
 //        assertEquals(0, response.getEntity(new GenericType<List<Notebook>>() {
 //        }).size());
@@ -89,7 +89,7 @@ public class NotebooksTest extends ResourcesTest {
 //    @Test
 //    public void testGetReaders() {
 //        System.out.println("testGetReaders");
-//        ClientResponse response = resource().path("notebooks/_nid_/readers").get(ClientResponse.class);
+//        ClientResponse response = Resource().path("notebooks/_nid_/readers").get(ClientResponse.class);
 //        assertEquals(200, response.getStatus());
 //        assertEquals("readers for _nid_", response.getEntity(String.class));
 //    }
@@ -102,7 +102,7 @@ public class NotebooksTest extends ResourcesTest {
 //    @Test
 //    public void testGetWriters() {
 //        System.out.println("testGetWriters");
-//        ClientResponse response = resource().path("notebooks/_nid_/writers").get(ClientResponse.class);
+//        ClientResponse response = Resource().path("notebooks/_nid_/writers").get(ClientResponse.class);
 //        assertEquals(200, response.getStatus());
 //        assertEquals("writers for _nid_", response.getEntity(String.class));
 //    }
@@ -132,7 +132,7 @@ public class NotebooksTest extends ResourcesTest {
 //        
 //        final String requestUrl = "notebooks/" + externalIDstring+"/metadata";
 //        System.out.println("requestUrl: " + requestUrl);
-//        ClientResponse response = resource().path(requestUrl).type(MediaType.TEXT_XML).get(ClientResponse.class);
+//        ClientResponse response = Resource().path(requestUrl).type(MediaType.TEXT_XML).get(ClientResponse.class);
 //        assertEquals(200, response.getStatus());
 //        NotebookInfo entity = response.getEntity(NotebookInfo.class);
 //        assertEquals(testInfo.getRef(), entity.getRef());
@@ -171,7 +171,7 @@ public class NotebooksTest extends ResourcesTest {
 //        });
 //        
 //        final String requestUrl = "notebooks/"+externalIDstring;
-//        ClientResponse response = resource().path(requestUrl)
+//        ClientResponse response = Resource().path(requestUrl)
 //                .queryParam("maximumAnnotations", "123")
 //                .queryParam("startAnnotation", "456")
 //                .queryParam("orderby", "dc:789")
@@ -204,7 +204,7 @@ public class NotebooksTest extends ResourcesTest {
 //        */
 //        
 //        final JAXBElement<Notebook> notebookJAXB = (new ObjectFactory()).createNotebook(notebook);
-//        ClientResponse response = resource().path("notebooks/_nid_").type(MediaType.APPLICATION_XML).accept(MediaType.APPLICATION_XML).put(ClientResponse.class, notebookJAXB);
+//        ClientResponse response = Resource().path("notebooks/_nid_").type(MediaType.APPLICATION_XML).accept(MediaType.APPLICATION_XML).put(ClientResponse.class, notebookJAXB);
 //        assertEquals(200, response.getStatus());
 //        assertEquals("modifyNotebook _nid_a title", response.getEntity(String.class));
 //    }
@@ -217,7 +217,7 @@ public class NotebooksTest extends ResourcesTest {
 //    @Test
 //    public void testAddAnnotation_String_String() {
 //        System.out.println("testAddAnnotation_String_String");
-//        ClientResponse response = resource().path("notebooks/_nid_/_aid_").put(ClientResponse.class);
+//        ClientResponse response = Resource().path("notebooks/_nid_/_aid_").put(ClientResponse.class);
 //        assertEquals(200, response.getStatus());
 //        assertEquals("addAnnotation _nid_ : _aid_", response.getEntity(String.class));
 //    }
@@ -238,7 +238,7 @@ public class NotebooksTest extends ResourcesTest {
 //                will(returnValue(UUID.fromString(TestBackendConstants._TEST_NOTEBOOK_1_EXT_ID)));
 //            }
 //        });
-//        ClientResponse response = resource().path("notebooks").post(ClientResponse.class);
+//        ClientResponse response = Resource().path("notebooks").post(ClientResponse.class);
 //        assertEquals(200, response.getStatus());
 //        assertEquals("/api/notebooks/00000000-0000-0000-0000-000000000001", new URI(response.getEntity(String.class)).getPath());
 //    }
@@ -252,7 +252,7 @@ public class NotebooksTest extends ResourcesTest {
 //    @Test
 //    public void testCreateAnnotation() {
 //        System.out.println("testCreateAnnotation");
-//        ClientResponse response = resource().path("notebooks/_nid_").post(ClientResponse.class);
+//        ClientResponse response = Resource().path("notebooks/_nid_").post(ClientResponse.class);
 //        assertEquals(200, response.getStatus());
 //        assertEquals("annotation _nid_ : api/notebooks/_nid_", response.getEntity(String.class));
 //    }
@@ -273,7 +273,7 @@ public class NotebooksTest extends ResourcesTest {
 //        });
 //        final String requestUrl = "notebooks/" + TestBackendConstants._TEST_NOTEBOOK_2_EXT_ID;
 //        System.out.println("requestUrl: " + requestUrl);
-//        ClientResponse response = resource().path(requestUrl).delete(ClientResponse.class);
+//        ClientResponse response = Resource().path(requestUrl).delete(ClientResponse.class);
 //        assertEquals(200, response.getStatus());
 //        assertEquals("1", response.getEntity(String.class));
 //    }

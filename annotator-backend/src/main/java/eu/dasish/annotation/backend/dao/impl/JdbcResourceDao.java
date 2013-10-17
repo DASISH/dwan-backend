@@ -34,23 +34,25 @@ import org.springframework.jdbc.core.simple.SimpleJdbcDaoSupport;
  * @author olhsha
  */
 public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao {
-
-    // base string constants: resource table Names
+    
+    
+    
+    // base string constants: reTarget table Names
     final static protected String notebookTableName = "notebook";
     final static protected String annotationTableName = "annotation";
-    final static protected String sourceTableName = "target_source";
+    final static protected String TargetTableName = "target";
     final static protected String cachedRepresentationTableName = "cached_representation";
     final static protected String versionTableName = "version";
     final static protected String principalTableName = "principal";
     // joint tablenames
     final static protected String notebooksAnnotationsTableName = "notebooks_annotations";
     final static protected String permissionsTableName = "annotations_principals_permissions";
-    final static protected String annotationsSourcesTableName = "annotations_target_sources";
-    final static protected String sourcesCachedRepresentationsTableName = "sources_cached_representations";
+    final static protected String annotationsTargetsTableName = "annotations_targets";
+    final static protected String TargetsCachedRepresentationsTableName = "targets_cached_representations";
     // base string constants: field Names
     final static protected String annotation_id = "annotation_id";
     final static protected String notebook_id = "notebook_id";
-    final static protected String source_id = "source_id";
+    final static protected String target_id = "target_id";
     final static protected String external_id = "external_id";
     final static protected String owner_id = "owner_id";
     final static protected String headline = "headline";
@@ -63,7 +65,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     final static protected String permission = "permission_";
     final static protected String link_uri = "link_uri";
     final static protected String cached_representation_id = "cached_representation_id";
-    final static protected String sibling_source_class = "sibling_source_class";
+    final static protected String sibling_Target_class = "sibling_Target_class";
     final static protected String mime_type = "mime_type";
     final static protected String tool = "tool";
     final static protected String type_ = "type_";
@@ -71,6 +73,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     final static protected String principal_name = "principal_name";
     final static protected String e_mail = "e_mail";
     final static protected String remote_id = "remote_id";
+    final static protected String is_xml = "is_xml";
     
     // derived string constants: table+field names 
     final static protected String annotationStar = annotationTableName + ".*";
@@ -85,12 +88,13 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     final static protected String principalPrincipal_id = principalTableName + "." + principal_id;
     final static protected String principalExternal_id = principalTableName + "." + external_id;
     final static protected String cachedRepresentationStar = cachedRepresentationTableName + ".*";
-    final static protected String sourceStar = sourceTableName + ".*";
+    final static protected String TargetStar = TargetTableName + ".*";
     final static protected String principalStar = principalTableName + ".*";
     ///////////////////////////////////////////////////
     protected String internalIdName = null;
     protected String resourceTableName = null;
     protected String _serviceURI;
+    ////////
     
   
     
@@ -174,10 +178,10 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
             return rs.getInt(cached_representation_id);
         }
     };
-    protected final RowMapper<Number> sourceIDRowMapper = new RowMapper<Number>() {
+    protected final RowMapper<Number> TargetIDRowMapper = new RowMapper<Number>() {
         @Override
         public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            return rs.getInt(source_id);
+            return rs.getInt(target_id);
         }
     };
    

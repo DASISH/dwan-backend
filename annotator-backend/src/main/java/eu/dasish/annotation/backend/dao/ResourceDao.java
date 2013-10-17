@@ -31,7 +31,7 @@ public interface ResourceDao {
      /**
      * 
      * @param externalID
-     * @return internal identifier of the resource with externalID, or null if there is no resource with this identifier
+     * @return internal identifier of the reTarget with externalID, or null if there is no reTarget with this identifier
      */
     public Number getInternalID(UUID externalId);
     
@@ -39,14 +39,14 @@ public interface ResourceDao {
      /**
      * 
      * @param uri
-     * @return internal identifier of the resource with uri, or null if there is no resource with this uri
+     * @return internal identifier of the reTarget with uri, or null if there is no reTarget with this uri
      */
     public Number getInternalIDFromURI(String uri);
     
     /**
      * 
      * @param internalId
-     * @return the UUID (external ID) of the resource with the "internalID".
+     * @return the UUID (external ID) of the reTarget with the "internalID".
      */
     public UUID getExternalID(Number internalId);
     

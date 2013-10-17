@@ -19,11 +19,9 @@ package eu.dasish.annotation.backend;
 
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationBody;
-import eu.dasish.annotation.schema.SourceInfo;
-import eu.dasish.annotation.schema.SourceInfoList;
-import eu.dasish.annotation.schema.ResourceREF;
-import eu.dasish.annotation.schema.SourceInfo;
-import java.util.List;
+import eu.dasish.annotation.schema.AnnotationBody.TextBody;
+import eu.dasish.annotation.schema.TargetInfo;
+import eu.dasish.annotation.schema.TargetInfoList;
 
 /**
  *
@@ -48,14 +46,14 @@ public class TestInstances {
     private Annotation makeAnnotationToAdd(){
        Annotation result = makeAnnotation(TestBackendConstants._TEST_ANNOT_TO_ADD_BODY, TestBackendConstants._TEST_BODY_MIMETYPE_TEXT, TestBackendConstants._TEST_ANNOT_TO_ADD_HEADLINE, 5);
        
-       SourceInfo sourceInfo =  new SourceInfo();
-       sourceInfo.setLink(TestBackendConstants._TEST_SOURCE_1_LINK);
-       sourceInfo.setRef(TestBackendConstants._TEST_SOURCE_1_EXT_ID);
-       sourceInfo.setVersion(TestBackendConstants._TEST_SOURCE_1_VERSION); 
+       TargetInfo TargetInfo =  new TargetInfo();
+       TargetInfo.setLink(TestBackendConstants._TEST_Target_1_LINK);
+       TargetInfo.setRef(TestBackendConstants._TEST_Target_1_EXT_ID);
+       TargetInfo.setVersion(TestBackendConstants._TEST_Target_1_VERSION); 
        
-       SourceInfoList sourceInfos =  new SourceInfoList();
-       sourceInfos.getTargetSource().add(sourceInfo);
-       result.setTargetSources(sourceInfos);
+       TargetInfoList targetInfos =  new TargetInfoList();
+       targetInfos.getTargetInfo().add(TargetInfo);
+       result.setTargets(targetInfos);
        
        return result;
     }
@@ -64,17 +62,18 @@ public class TestInstances {
     private Annotation makeAnnotation(String bodyTxt, String bodyMimeType, String headline, int ownerId){
         Annotation result = new Annotation();
         AnnotationBody body = new AnnotationBody();
-        body.setMimeType(bodyMimeType);
-        body.setValue(bodyTxt);       
         result.setBody(body);
+        TextBody textBody = new TextBody();
+        body.setTextBody(textBody);
+        textBody.setMimeType(bodyMimeType);
+        textBody.setValue(bodyTxt);
+       
         result.setHeadline(headline);
-        ResourceREF owner = new ResourceREF();
-        owner.setRef(String.valueOf(ownerId));
-        result.setOwner(owner); 
+        result.setOwnerRef(String.valueOf(ownerId)); 
         
         result.setTimeStamp(null); 
         result.setURI(null);
-        result.setTargetSources(null);
+        result.setTargets(null);
         result.setURI(null);
         
        return result;

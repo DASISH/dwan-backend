@@ -26,6 +26,6 @@
 <!-- Context for testing the sources service with mock implementations -->
 	   
     <!-- Mocked sources -->
-    <bean id="sourceDao" factory-bean="mockObjectsFactoryDao" factory-method="newSourceDao" />
+    <bean id="targetDao" factory-bean="mockObjectsFactoryDao" factory-method="newTargetDao" />
     
 </beans>

@@ -17,27 +17,13 @@
  */
 package eu.dasish.annotation.backend.rest;
 
-import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.dao.DBIntegrityService;
-import eu.dasish.annotation.backend.dao.NotebookDao;
-import eu.dasish.annotation.schema.Notebook;
-import eu.dasish.annotation.schema.NotebookInfo;
-import eu.dasish.annotation.schema.NotebookInfoList;
-import eu.dasish.annotation.schema.ObjectFactory;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import javax.xml.bind.JAXBElement;
-import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import static org.junit.Assert.*;
-import org.junit.Ignore;
 
 /**
  *

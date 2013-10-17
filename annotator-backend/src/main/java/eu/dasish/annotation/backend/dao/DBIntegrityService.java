@@ -22,13 +22,11 @@ import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationInfoList;
 import eu.dasish.annotation.schema.CachedRepresentationInfo;
 import eu.dasish.annotation.schema.Permission;
-import eu.dasish.annotation.schema.PermissionList;
+import eu.dasish.annotation.schema.UserWithPermissionList;
 import eu.dasish.annotation.schema.ReferenceList;
-import eu.dasish.annotation.schema.Source;
-import eu.dasish.annotation.schema.SourceInfo;
-import eu.dasish.annotation.schema.SourceList;
+import eu.dasish.annotation.schema.Target;
+import eu.dasish.annotation.schema.TargetInfo;
 import eu.dasish.annotation.schema.User;
-import eu.dasish.annotation.schema.UserInfo;
 import java.sql.Blob;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -43,24 +41,24 @@ import java.util.UUID;
 
 /**
  * 
- * Resource  and the corresponding Dao's are, so to say, "lavelled".  Notebook has level 5, Annotation has level 4, Source has level 3, Version has level 2 and CachedRepresentation has level 1. Users are not subject to this hierarchy.
- * The hierarchy is based on the way the schemas  for the resources are designed: to describe resource of the level X we need resource X-1.
+ * ReTarget  and the corresponding Dao's are, so to say, "lavelled".  Notebook has level 5, Annotation has level 4, Target has level 3, Version has level 2 and CachedRepresentation has level 1. Users are not subject to this hierarchy.
+ * The hierarchy is based on the way the schemas  for the reTargets are designed: to describe reTarget of the level X we need reTarget X-1.
  * 
  * DaoDispathcer class contains "getters", "adders" and "deleters".
  * 
- * An <adder> has two parameters: <resource<X>ID> and <resource<X-1>Object>. It return numbers of updated rows.
+ * An <adder> has two parameters: <reTarget<X>ID> and <reTarget<X-1>Object>. It return numbers of updated rows.
  * 
- * A <deleter> has one parameter: <resource<X>ID>. First, it checks if <resource<X>ID> is in use by calling <X>isInUse of the corresponding Dao.. 
+ * A <deleter> has one parameter: <reTarget<X>ID>. First, it checks if <reTarget<X>ID> is in use by calling <X>isInUse of the corresponding Dao.. 
  * If "yes" the nothing happens. Otherwise  the deletion proceeds.
  * Second, delete<X> is called from the corresponding Dao.
- * Third, delete<X-1> are recursively called for all the related sub-resources of the level X-1. E.g., after deleting an annotation itself all the sources (which are not used by other annotations) must be deleted as well.
+ * Third, delete<X-1> are recursively called for all the related sub-reTargets of the level X-1. E.g., after deleting an annotation itself all the Targets (which are not used by other annotations) must be deleted as well.
  
  * 
  * Comments on Dao-classes.
  * 
- * Each Dao-class contains "isInUse(internalID") method. It return "true" if the resource  with ID occurs at least in one of the joint tables. Used in "delete(internalID)" methods.
+ * Each Dao-class contains "isInUse(internalID") method. It return "true" if the reTarget  with ID occurs at least in one of the joint tables. Used in "delete(internalID)" methods.
  * 
- * If the resource with "internalID" is asked to be deleted, the deletion methods will first call "isInUse(internalID)". If it returns 'true" nothing will happen. Otherwise deletion is happen. 
+ * If the reTarget with "internalID" is asked to be deleted, the deletion methods will first call "isInUse(internalID)". If it returns 'true" nothing will happen. Otherwise deletion is happen. 
  * 
  * Each "add(object)" method returns the added-object's new internalID or null if the DB has not been updated for some reason.
  * 
@@ -89,7 +87,10 @@ public interface DBIntegrityService{
      * @return the externalID of the annotation with "internalID" or null if there is no such annotation.
      */
     UUID getAnnotationExternalIdentifier(Number annotationID);
+    
 
+    Number getAnnotationInternalIdentifierFromURI(String uri);
+    
 
    /**
     * 
@@ -101,7 +102,7 @@ public interface DBIntegrityService{
     * @param after
     * @param before
     * @return the list of internal id-s of the annotations such that:
-    * -- sources' links of which contain "link" (as a substring),
+    * -- Targets' links of which contain "link" (as a substring),
     * -- serialized bodies of which contain "text",
     * -- current user has "access" (owner, reader, writer)  to them,
     * -- namespace ???,
@@ -123,7 +124,7 @@ public interface DBIntegrityService{
     * @param after
     * @param before
      * @return the list of the annotationInfos of the annotations such that:
-    * -- sources' links of which contain "link" (as a substring),
+    * -- Targets' links of which contain "link" (as a substring),
     * -- serialized bodies of which contain "text",
     * -- current user has "access" (owner, reader, writer)  to them,
     * -- namespace ???,
@@ -161,10 +162,10 @@ public interface DBIntegrityService{
      */
     Number getCachedRepresentationInternalIdentifier(UUID externalID);
     
-    Number getSourceInternalIdentifier(UUID externalID); 
+    Number getTargetInternalIdentifier(UUID externalID); 
 
    
-     UUID getSourceExternalIdentifier(Number annotationID);
+     UUID getTargetExternalIdentifier(Number annotationID);
     
     /**
      * 
@@ -176,7 +177,7 @@ public interface DBIntegrityService{
     /**
      * 
      * @param annotationID
-     * @return the object Annotation generated from the tables "annotation", "annotations_target_sources", "source", "annotations_principals_permissions".
+     * @return the object Annotation generated from the tables "annotation", "annotations_target_Targets", "Target", "annotations_principals_permissions".
      * @throws SQLException 
      */
     Annotation getAnnotation(Number annotationID) throws SQLException;
@@ -184,32 +185,32 @@ public interface DBIntegrityService{
      /**
      * 
      * @param annotationID
-     * @return the object SourceList containing all target sources of the annotationID
+     * @return the object TargetList containing all target Targets of the annotationID
      * @throws SQLException 
      */
-    SourceList getAnnotationSources(Number annotationID) throws SQLException;
+    ReferenceList getAnnotationTargets(Number annotationID) throws SQLException;
     
     
     /**
      * 
      * @param annotationID
-     * @return the list of sourceID's for which there is no cached representation
+     * @return the list of TargetID's for which there is no cached representation
      */
-    List<Number> getSourcesWithNoCachedRepresentation(Number annotationID);
+    List<Number> getTargetsWithNoCachedRepresentation(Number annotationID);
     
     /**
      * 
      * @param annotationID
-     * @return the list of sourceID's for which there is no cached representation
+     * @return the list of TargetID's for which there is no cached representation
      */
-    public PermissionList getPermissionsForAnnotation(Number annotationID) throws SQLException;
+    public UserWithPermissionList getPermissionsForAnnotation(Number annotationID) throws SQLException;
     
      /**
      * 
-     * @param sourceID
-     * @return the list of the external version ID-s ("siblings") for the target source with the internal ID "sourceID". 
+     * @param TargetID
+     * @return the list of the external version ID-s ("siblings") for the target Target with the internal ID "TargetID". 
      */
-    public ReferenceList getSiblingSources(Number sourceID) throws SQLException;
+    public ReferenceList getSiblingTargets(Number TargetID) throws SQLException;
     
     /**
      * 
@@ -218,7 +219,7 @@ public interface DBIntegrityService{
      */
     public Blob getCachedRepresentationBlob(Number cachedID) throws SQLException;
     
-    public Source getSource(Number internalID) throws SQLException;
+    public Target getTarget(Number internalID) throws SQLException;
     
     /**
      * 
@@ -233,13 +234,6 @@ public interface DBIntegrityService{
      * @return user with e-mail "eMail"
      */
     public User getUserByInfo(String eMail);
-    
-    /**
-     * 
-     * @param userID
-     * @return userInfo of the user "userID"
-     */
-    public UserInfo getUserInfo(Number userID);
     
   
     /**
@@ -259,20 +253,12 @@ public interface DBIntegrityService{
      * 
      * @param userID
      * @param annotation
-     * @return the internalId of the annotation if it is updated
+     * @return 1 of the annotation if it is updated
      * @throws SQLException 
      */
-    Number updateUsersAnnotation(Number userID, Annotation annotation) throws SQLException;
+    int updateUsersAnnotation(Number userID, Annotation annotation) throws SQLException, Exception;
     
-       /**
-     * 
-     * @param sourceID
-     * @param siblingSourceID
-     * @return # of updated rows when row of sourceID is updated with siblingSourceID (should be 1 if it happens, and 0 if not because siblingSourceID's class is set to 0);
-     * @throws SQLException 
-     */
-     int updateSiblingSourceClassForSource(Number sourceID, Number siblingSourceID) throws SQLException;
-     
+    
        /**
      * 
      * @param annotationID
@@ -289,40 +275,40 @@ public interface DBIntegrityService{
      * @param permissionList
      * @return # of rows updated or added in the table annotations_principals_permissions
      */
-    public int updatePermissions(Number annotationID, PermissionList permissionList) throws SQLException;
+    public int updatePermissions(Number annotationID, UserWithPermissionList permissionList) throws SQLException;
    
    /**
     * ADDERS
     */
     /**
      * 
-     * @param sourceID
+     * @param targetID
      * @param cachedInfo
      * @param cachedBlob
-     * @return result[0] = # updated rows in the table "sources_cached_representations" (must be 1 or 0).
+     * @return result[0] = # updated rows in the table "Targets_cached_representations" (must be 1 or 0).
      * result[1] = the internal ID of the added cached (a new one if "cached" was new for the Data Base).
      */
-    Number[] addCachedForSource(Number sourceID, CachedRepresentationInfo cachedInfo, Blob cachedBlob) throws SQLException;
+    Number[] addCachedForTarget(Number targetID, CachedRepresentationInfo cachedInfo, Blob cachedBlob) throws SQLException;
     
  
     /**
      * 
      * @param annotationID
-     * @param sources
-     * @return map temporarySourceID |--> sourceExternalID. Its domain is the temporary IDs of all the new sources. While adding a new source a new external ID is generated for it and it becomes the value of the map. The sourceIDs which are already present in the DB are not in the domain. If all sources are old, then the map is empty. 
+     * @param targets
+     * @return map temporaryTargetID |--> TargetExternalID. Its domain is the temporary IDs of all the new Targets. While adding a new Target a new external ID is generated for it and it becomes the value of the map. The TargetIDs which are already present in the DB are not in the domain. If all Targets are old, then the map is empty. 
      * @throws SQLException 
      */
-    Map<String, String> addSourcesForAnnotation(Number annotationID, List<SourceInfo> sources) throws SQLException;
+    Map<String, String> addTargetsForAnnotation(Number annotationID, List<TargetInfo> targets) throws SQLException;
 
     /**
      * 
      * @param userID
      * @param annotation
      * @return the internalId of the just added "annotation" (or null if it is not added) by the owner "userID". 
-     * calls "addSourcesForAnnotation" 
+     * calls "addTargetsForAnnotation" 
      * @throws SQLException 
      */
-    Number addUsersAnnotation(Number userID, Annotation annotation) throws SQLException;
+    Number addUsersAnnotation(Number userID, Annotation annotation) throws SQLException, Exception;
     
     /**
      * 
@@ -348,12 +334,12 @@ public interface DBIntegrityService{
     
     /**
      * 
-     * @param sourceID
+     * @param TargetID
      * @param cachedID
-     * @return result[0] = # deleted rows in the table "sources_cached_representations" (1, or 0).
-     * result[1] = # deleted rows in the table "cached_representation" (should be 0 if the cached representation is in use by some other source???).
+     * @return result[0] = # deleted rows in the table "Targets_cached_representations" (1, or 0).
+     * result[1] = # deleted rows in the table "cached_representation" (should be 0 if the cached representation is in use by some other Target???).
      */
-    int[] deleteCachedRepresentationOfSource(Number sourceID, Number cachedID) throws SQLException;
+    int[] deleteCachedRepresentationOfTarget(Number TargetID, Number cachedID) throws SQLException;
 
     
     
@@ -361,13 +347,13 @@ public interface DBIntegrityService{
     
     /**
      * 
-     * @param sourceID
+     * @param targetID
      * @return 
-     * result[0] =  # deleted rows in the table "sources_cached_representations".
+     * result[0] =  # deleted rows in the table "targets_cached_representations".
      * result[1] = # deleted rows in the table "cached_representation".
      **/
     
-    int[] deleteAllCachedRepresentationsOfSource(Number versionID) throws SQLException;
+    int[] deleteAllCachedRepresentationsOfTarget(Number versionID) throws SQLException;
 
       
     
@@ -376,8 +362,8 @@ public interface DBIntegrityService{
      * @param annotationID
      * @return result[0] = # deleted rows in the table "annotation" (1 or 0).
      * result[1] = # deleted rows in the table "annotations_principals_permissions".
-     * result[2] = # deleted rows in the table "annotations_target_sources".
-     * result[3] = # deleted rows in the table "source".
+     * result[2] = # deleted rows in the table "annotations_target_Targets".
+     * result[3] = # deleted rows in the table "Target".
      * @throws SQLException 
      */
     int[] deleteAnnotation(Number annotationID) throws SQLException;

@@ -72,14 +72,14 @@ public class TestBackendConstants {
     public static final String _TEST_USER_XXX_EXT_ID = "00000000-0000-0000-0000-000000000666"; 
     
     
-    public static final String _TEST_SOURCE_1_EXT_ID = "00000000-0000-0000-0000-000000000031";
-    public static final String _TEST_SOURCE_2_EXT_ID = "00000000-0000-0000-0000-000000000032";
+    public static final String _TEST_Target_1_EXT_ID = "00000000-0000-0000-0000-000000000031";
+    public static final String _TEST_Target_2_EXT_ID = "00000000-0000-0000-0000-000000000032";
     
-    public static final String _TEST_SOURCE_1_LINK = "http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia";
-    public static final String _TEST_SOURCE_2_LINK = "http://nl.wikipedia.org/wiki/Antoni_Gaud%C3%AD";
+    public static final String _TEST_Target_1_LINK = "http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia";
+    public static final String _TEST_Target_2_LINK = "http://nl.wikipedia.org/wiki/Antoni_Gaud%C3%AD";
     
-    public static final String _TEST_SOURCE_1_VERSION = "version 1.0";
-    public static final String _TEST_SOURCE_2_VERSION = "version 1.0";
+    public static final String _TEST_Target_1_VERSION = "version 1.0";
+    public static final String _TEST_Target_2_VERSION = "version 1.0";
     
     public static final String _TEST_CACHED_REPRESENTATION_1_EXT_ID_ = "00000000-0000-0000-0000-000000000051";
     public static final String _TEST_CACHED_REPRESENTATION_1_MIME_TYPE_ =  "text/html";
@@ -89,13 +89,13 @@ public class TestBackendConstants {
     public static final int _TEST_CACHED_REPRESENTATION_1_BLOB_BYTE_2 =  1;
     
     
-    public static final String _TEST_TEMP_SOURCE_ID = "Barcelona-1";
-    public static final String _TEST_ANNOT_TO_ADD_NEW_SOURCE_BODY = "refers to "+_TEST_TEMP_SOURCE_ID;
-    public static final String _TEST_ANNOT_TO_ADD_NEW_SOURCE_HEADLINE = "SF in Catalan";
-    public static final String _TEST_NEW_SOURCE_LINK = "http://www.sagradafamilia.cat/docs_instit/historia.php ";
+    public static final String _TEST_TEMP_Target_ID = "Barcelona-1";
+    public static final String _TEST_ANNOT_TO_ADD_NEW_Target_BODY = "refers to "+_TEST_TEMP_Target_ID;
+    public static final String _TEST_ANNOT_TO_ADD_NEW_Target_HEADLINE = "SF in Catalan";
+    public static final String _TEST_NEW_Target_LINK = "http://www.sagradafamilia.cat/docs_instit/historia.php ";
     
     public static final String _TEST_SERVLET_URI_annotations = "http://localhost:8080/annotator-backend/api/annotations/";
-    public static final String _TEST_SERVLET_URI_sources = "http://localhost:8080/annotator-backend/api/sources/";
+    public static final String _TEST_SERVLET_URI_Targets = "http://localhost:8080/annotator-backend/api/Targets/";
     public static final String _TEST_SERVLET_URI_cached = "http://localhost:8080/annotator-backend/api/cached/";
     public static final String _TEST_SERVLET_URI_users = "http://localhost:8080/annotator-backend/api/users/";
     public static final String _TEST_SERVLET_URI_notebooks = "http://localhost:8080/annotator-backend/api/notebooks/";

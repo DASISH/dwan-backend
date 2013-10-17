@@ -18,18 +18,31 @@
 package eu.dasish.annotation.backend;
 
 import eu.dasish.annotation.schema.AnnotationBody;
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.GregorianCalendar;
 import java.util.Map;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.LSSerializer;
+import org.xml.sax.SAXException;
 
 /**
  *
  * @author olhsha
  */
 public class Helpers {
+    
+    //exception messages
+    final static public String INVALID_BODY_EXCEPTION = "Invalide annotation body: both, text and xml options, are null.";
+    
 
     public static XMLGregorianCalendar setXMLGregorianCalendar(Timestamp timeStamp) throws DatatypeConfigurationException {
             GregorianCalendar gc = new GregorianCalendar();
@@ -44,11 +57,39 @@ public class Helpers {
      
     public static String replace(String text, Map<String, String> pairs) {
         String result = (new StringBuilder(text)).toString();
-        for (String tempSource : pairs.keySet()) {
-            result = result.replaceAll(tempSource, pairs.get(tempSource));
+        for (String tempTarget : pairs.keySet()) {
+            result = result.replaceAll(tempTarget, pairs.get(tempTarget));
         }
         return result;
     }
     
-   
+    
+    
+   public static Element stringToElement(String string) {
+        try {
+            DocumentBuilder dbf = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            try {
+                try {
+                    Document doc = dbf.parse(string);
+                    return doc.getDocumentElement();
+                } catch (SAXException saxException) {
+                    System.out.println(saxException);
+                }
+            } catch (IOException ioe) {
+                System.out.println(ioe);
+            }
+        } catch (ParserConfigurationException parserException) {
+            System.out.println(parserException);
+        }
+        return null;
+    }
+
+    public static String elementToString(Element element) {
+        Document document = element.getOwnerDocument();
+        DOMImplementationLS domImplLS = (DOMImplementationLS) document
+                .getImplementation();
+        LSSerializer serializer = domImplLS.createLSSerializer();
+        String result = serializer.writeToString(element);
+        return result;
+    }
 }

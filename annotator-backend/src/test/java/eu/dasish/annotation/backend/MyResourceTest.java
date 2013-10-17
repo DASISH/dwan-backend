@@ -44,7 +44,7 @@ public class MyResourceTest extends JerseyTest {
     }
 
     /**
-     * Test of getIt method, of class MyResource.
+     * Test of getIt method, of class MyReTarget.
      */
     @Test
     public void testGetIt() {

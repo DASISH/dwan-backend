@@ -126,11 +126,11 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest {
 
         jdbcCachedRepresentationDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_cached);
         CachedRepresentationInfo result = jdbcCachedRepresentationDao.getCachedRepresentationInfo(1);
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI_cached + TestBackendConstants._TEST_CACHED_REPRESENTATION_1_EXT_ID_, result.getRef());
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI_cached + TestBackendConstants._TEST_CACHED_REPRESENTATION_1_EXT_ID_, result.getURI());
         assertEquals(TestBackendConstants._TEST_CACHED_REPRESENTATION_1_MIME_TYPE_, result.getMimeType());
         assertEquals(TestBackendConstants._TEST_CACHED_REPRESENTATION_1_TOOL_, result.getTool());
         assertEquals(TestBackendConstants._TEST_CACHED_REPRESENTATION_1_TYPE_, result.getType());
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI_cached +TestBackendConstants._TEST_CACHED_REPRESENTATION_1_EXT_ID_, result.getRef());
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI_cached +TestBackendConstants._TEST_CACHED_REPRESENTATION_1_EXT_ID_, result.getURI());
     }
 
     /**
@@ -181,7 +181,7 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest {
         cachedInfo.setMimeType("text/plain");
         cachedInfo.setTool("vi");
         cachedInfo.setType("text");
-        cachedInfo.setRef(null);
+        cachedInfo.setURI(null);
 
         String blobString = "111";
         byte[] blobBytes = blobString.getBytes();
@@ -194,7 +194,7 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest {
         assertEquals("text/plain", addedCachedInfo.getMimeType());
         assertEquals("vi", addedCachedInfo.getTool());
         assertEquals("text", addedCachedInfo.getType());
-        assertFalse(addedCachedInfo.getRef() == null); // new non-null external identifier should be assigned
+        assertFalse(addedCachedInfo.getURI() == null); // new non-null external identifier should be assigned
 
         Blob addedBlob = jdbcCachedRepresentationDao.getCachedRepresentationBlob(result);
         int lengthBlob = 3;
