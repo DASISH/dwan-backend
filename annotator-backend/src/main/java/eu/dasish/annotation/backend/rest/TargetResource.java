@@ -66,8 +66,8 @@ public class TargetResource {
     // TODOD both unit tests
     @GET
     @Produces(MediaType.TEXT_XML)
-    @Path("{Targetid: " + BackendConstants.regExpIdentifier + "}")
-    public JAXBElement<Target> getTarget(@PathParam("Targetid") String ExternalIdentifier) throws SQLException {
+    @Path("{targetid: " + BackendConstants.regExpIdentifier + "}")
+    public JAXBElement<Target> getTarget(@PathParam("targetid") String ExternalIdentifier) throws SQLException {
          dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
          final Number TargetID = dbIntegrityService.getTargetInternalIdentifier(UUID.fromString(ExternalIdentifier));
         final Target Target = dbIntegrityService.getTarget(TargetID);
@@ -77,8 +77,8 @@ public class TargetResource {
     // TODOD both unit tests
     @GET
     @Produces(MediaType.TEXT_XML)
-    @Path("{Targetid: " + BackendConstants.regExpIdentifier + "}/versions")
-    public JAXBElement<ReferenceList> getSiblingTargets(@PathParam("Targetid") String ExternalIdentifier) throws SQLException {
+    @Path("{targetid: " + BackendConstants.regExpIdentifier + "}/versions")
+    public JAXBElement<ReferenceList> getSiblingTargets(@PathParam("targetid") String ExternalIdentifier) throws SQLException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final Number TargetID = dbIntegrityService.getTargetInternalIdentifier(UUID.fromString(ExternalIdentifier));
         final ReferenceList siblings = dbIntegrityService.getSiblingTargets(TargetID);
@@ -91,8 +91,8 @@ public class TargetResource {
     // using mime type as well
     @DELETE
     @Produces(MediaType.TEXT_XML)
-    @Path("{Targetid: "+BackendConstants.regExpIdentifier +"}/cached/{cachedid: "+ BackendConstants.regExpIdentifier+"}")
-    public int deleteCached(@PathParam("Targetid") String TargetIdentifier, @PathParam("cachedid") String cachedIdentifier) throws SQLException {
+    @Path("{targetid: "+BackendConstants.regExpIdentifier +"}/cached/{cachedid: "+ BackendConstants.regExpIdentifier+"}")
+    public int deleteCached(@PathParam("targetid") String TargetIdentifier, @PathParam("cachedid") String cachedIdentifier) throws SQLException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final Number TargetID = dbIntegrityService.getCachedRepresentationInternalIdentifier(UUID.fromString(TargetIdentifier));
         final Number cachedID = dbIntegrityService.getCachedRepresentationInternalIdentifier(UUID.fromString(cachedIdentifier));

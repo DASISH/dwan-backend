@@ -66,7 +66,7 @@ INSERT INTO target (external_id, link_uri, version, fragment_descriptor) VALUES 
 INSERT INTO target (external_id, link_uri, version, fragment_descriptor) VALUES ('00000000-0000-0000-0000-000000000034', '???', 'back up', '#1111'); --4
 INSERT INTO target (external_id, link_uri, version, fragment_descriptor) VALUES ('00000000-0000-0000-0000-000000000035', '???', 'back up', '#111111'); --5
 INSERT INTO target (external_id, link_uri, version, fragment_descriptor) VALUES ('00000000-0000-0000-0000-000000000036', '???', 'version 2.0', '#1111111'); --6 not used by any annotation
-INSERT INTO target (external_id, link_uri, version, fragment_descriptor) VALUES ('00000000-0000-0000-0000-000000000037', '???', 'version 2.0', '#11111111')
+INSERT INTO target (external_id, link_uri, version, fragment_descriptor) VALUES ('00000000-0000-0000-0000-000000000037', '???', 'version 2.0', '#11111111');
 
 
 
