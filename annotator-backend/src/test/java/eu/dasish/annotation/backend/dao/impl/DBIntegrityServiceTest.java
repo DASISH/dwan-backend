@@ -291,7 +291,7 @@ public class DBIntegrityServiceTest {
     public void testGetFilteredAnnotationIDs() {
         System.out.println("test getFilteredAnnotationIDs");
 
-        final String link = "nl.wikipedia.org";
+        final String word = "nl.wikipedia.org";
 
         final List<Number> mockTargetIDs = new ArrayList<Number>();
         mockTargetIDs.add(1);
@@ -313,7 +313,7 @@ public class DBIntegrityServiceTest {
 
         mockeryDao.checking(new Expectations() {
             {
-                oneOf(TargetDao).getTargetsForLink(link);
+                oneOf(TargetDao).getTargetsReferringTo(word);
                 will(returnValue(mockTargetIDs));
 
                 oneOf(annotationDao).retrieveAnnotationList(mockTargetIDs);
@@ -329,7 +329,7 @@ public class DBIntegrityServiceTest {
         });
 
 
-        List result = dbIntegrityService.getFilteredAnnotationIDs(link, text, access, namespace, owner, after, before);
+        List result = dbIntegrityService.getFilteredAnnotationIDs(word, text, access, namespace, owner, after, before);
         assertEquals(1, result.size());
         assertEquals(2, result.get(0));
     }
@@ -383,7 +383,7 @@ public class DBIntegrityServiceTest {
     public void testGetFilteredAnnotationInfos() throws SQLException{
         System.out.println("test getetFilteredAnnotationInfos");
         
-        final String link = "nl.wikipedia.org";
+        final String word = "nl.wikipedia.org";
 
         final List<Number> mockTargetIDs = new ArrayList<Number>();
         mockTargetIDs.add(1);
@@ -425,7 +425,7 @@ public class DBIntegrityServiceTest {
         mockeryDao.checking(new Expectations() {
             {
                 // getFilteredAnnotationIds
-                oneOf(TargetDao).getTargetsForLink(link);
+                oneOf(TargetDao).getTargetsReferringTo(word);
                 will(returnValue(mockTargetIDs));
                 
                 oneOf(annotationDao).retrieveAnnotationList(mockTargetIDs);
@@ -471,7 +471,7 @@ public class DBIntegrityServiceTest {
         });
 
 
-        AnnotationInfoList result = dbIntegrityService.getFilteredAnnotationInfos(link, text, access, namespace, ownerUUID, after, before);
+        AnnotationInfoList result = dbIntegrityService.getFilteredAnnotationInfos(word, text, access, namespace, ownerUUID, after, before);
         assertEquals(1, result.getAnnotationInfo().size()); 
         AnnotationInfo resultAnnotInfo = result.getAnnotationInfo().get(0);
         assertEquals(mockAnnotInfo.getHeadline(), resultAnnotInfo.getHeadline());

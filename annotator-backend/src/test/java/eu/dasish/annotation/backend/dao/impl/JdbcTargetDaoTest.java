@@ -200,11 +200,11 @@ public class JdbcTargetDaoTest extends JdbcResourceDaoTest {
      *
      */
     @Test
-    public void tesGetTargetsForLink() {
-        System.out.println(" test getTargetsForLink");
+    public void tesGetTargetsReferringTo() {
+        System.out.println(" test getTargetsReferringTo");
 
         String substring = "http://nl.wikipedia.org";
-        List<Number> result = jdbcTargetDao.getTargetsForLink(substring);
+        List<Number> result = jdbcTargetDao.getTargetsReferringTo(substring);
         assertEquals(2, result.size());
         assertEquals(1, result.get(0));
         assertEquals(2, result.get(1));

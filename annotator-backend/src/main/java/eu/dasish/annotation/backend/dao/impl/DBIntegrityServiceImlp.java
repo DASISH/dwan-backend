@@ -170,12 +170,12 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
 
     ////////////////////////////////////////////////////////////////////////
     @Override
-    public List<Number> getFilteredAnnotationIDs(String link, String text, String access, String namespace, UUID owner, Timestamp after, Timestamp before) {
+    public List<Number> getFilteredAnnotationIDs(String word, String text, String access, String namespace, UUID owner, Timestamp after, Timestamp before) {
 
         List<Number> annotationIDs = null;
 
-        if (link != null) {
-            List<Number> targetIDs = targetDao.getTargetsForLink(link);
+        if (word != null) {
+            List<Number> targetIDs = targetDao.getTargetsReferringTo(word);
             annotationIDs = annotationDao.retrieveAnnotationList(targetIDs);
         }
 
@@ -219,9 +219,9 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     }
 
     @Override
-    public AnnotationInfoList getFilteredAnnotationInfos(String link, String text, String access, String namespace, UUID owner, Timestamp after, Timestamp before)
+    public AnnotationInfoList getFilteredAnnotationInfos(String word, String text, String access, String namespace, UUID owner, Timestamp after, Timestamp before)
             throws SQLException {
-        List<Number> annotationIDs = getFilteredAnnotationIDs(link, text, access, namespace, owner, after, before);
+        List<Number> annotationIDs = getFilteredAnnotationIDs(word, text, access, namespace, owner, after, before);
         AnnotationInfoList result = new AnnotationInfoList();
         for (Number annotationID : annotationIDs) {
             AnnotationInfo annotationInfo = annotationDao.getAnnotationInfoWithoutTargets(annotationID);
@@ -243,7 +243,7 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     @Override
     public Target getTarget(Number internalID) throws SQLException {
         Target result = targetDao.getTarget(internalID);
-        result.setSiblingTargets(getSiblingTargets(internalID));
+        result.setSiblingTargets(getTargetsForTheSameLinkAs(internalID));
         return result;
     }
 
@@ -260,8 +260,8 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     }
 
     @Override
-    public ReferenceList getSiblingTargets(Number TargetID) throws SQLException {
-        List<Number> targetIDs = targetDao.getSiblingTargets(TargetID);
+    public ReferenceList getTargetsForTheSameLinkAs(Number targetID) throws SQLException {
+        List<Number> targetIDs = targetDao.getTargetsForLink(targetDao.getLink(targetID));
         ReferenceList referenceList = new ReferenceList();
         for (Number siblingID : targetIDs) {
             referenceList.getRef().add(targetDao.externalIDtoURI(targetDao.getExternalID(siblingID).toString()));

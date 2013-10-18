@@ -45,6 +45,7 @@
      GET <a href="api/users/00000000-0000-0000-0000-0000000000112">api/users/00000000-0000-0000-0000-0000000000112</a>  !Problem: how to ask the "servlet context" if this user is current? so far all are set to "true"<br> 
      GET <a href="api/users/info?email=twagoo@mpi.nl">api/users/info?email=twagoo@mpi.nl</a>  <br>
      GET <a href="api/annotations?link=Sagrada">api/annotations/info?link=Sagrada</a> !Comment: more tests are necessary to test on all query parameters  </br>
+     GET <a href="api/annotations?link=Gaud">api/annotations/info?link=Gaud</a> !Comment: more tests are necessary to test on all query parameters  </br>
      GET <a href="api/annotations/00000000-0000-0000-0000-000000000021">api/annotations/00000000-0000-0000-0000-000000000021</a>  </br>
      GET <a href="api/annotations/00000000-0000-0000-0000-000000000021/targets">api/annotations/00000000-0000-0000-0000-000000000021/targets</a>  </br>
      GET <a href="api/annotations/00000000-0000-0000-0000-000000000021/permissions">api/annotations/00000000-0000-0000-0000-000000000021/permissions</a><br>

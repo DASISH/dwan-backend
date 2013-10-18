@@ -40,7 +40,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     // base string constants: reTarget table Names
     final static protected String notebookTableName = "notebook";
     final static protected String annotationTableName = "annotation";
-    final static protected String TargetTableName = "target";
+    final static protected String targetTableName = "target";
     final static protected String cachedRepresentationTableName = "cached_representation";
     final static protected String versionTableName = "version";
     final static protected String principalTableName = "principal";
@@ -88,7 +88,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     final static protected String principalPrincipal_id = principalTableName + "." + principal_id;
     final static protected String principalExternal_id = principalTableName + "." + external_id;
     final static protected String cachedRepresentationStar = cachedRepresentationTableName + ".*";
-    final static protected String TargetStar = TargetTableName + ".*";
+    final static protected String TargetStar = targetTableName + ".*";
     final static protected String principalStar = principalTableName + ".*";
     ///////////////////////////////////////////////////
     protected String internalIdName = null;

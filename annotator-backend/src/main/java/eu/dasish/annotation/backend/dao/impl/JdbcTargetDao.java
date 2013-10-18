@@ -43,7 +43,7 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
     public JdbcTargetDao(DataSource dataTarget) {
         setDataSource(dataTarget);
         internalIdName = target_id;
-        resourceTableName = TargetTableName;
+        resourceTableName = targetTableName;
     }
     
    @Override
@@ -55,7 +55,7 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
     @Override
     public Target getTarget(Number internalID) {
         StringBuilder sql = new StringBuilder("SELECT ");
-        sql.append(TargetStar).append(" FROM ").append(TargetTableName).append(" WHERE ").append(target_id).append("= ? LIMIT 1");
+        sql.append(TargetStar).append(" FROM ").append(targetTableName).append(" WHERE ").append(target_id).append("= ? LIMIT 1");
         List<Target> result = getSimpleJdbcTemplate().query(sql.toString(), TargetRowMapper, internalID);
         return (!result.isEmpty() ? result.get(0) : null);
     }
@@ -75,48 +75,28 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
         }
     };
     
-    ///////////////////////////////////////////////////////
-    @Override
-    public Integer getTargetSiblingClass(Number TargetID) {
-         if (TargetID == null) {
-            return null;
-        }
-         
-        String sql = "SELECT " + sibling_Target_class + " FROM " + TargetTableName + " WHERE " + target_id + " = ?";
-        List<Integer> classIDs =  getSimpleJdbcTemplate().query(sql, TargetClassRowMapper, TargetID);                
-        if (classIDs == null) {
-            return null;
-        } 
-        if (classIDs.isEmpty()) {
-            return null;
-        }  
-        return classIDs.get(0);
-     }
     
-    /////////////////////////////////////////
-    @Override
-    public List<Number> getSiblingTargets(Number TargetID) {
-        Integer classID = getTargetSiblingClass(TargetID);
-        if (classID == null) {
-            return null;
-        }
-        String sqlTargets = "SELECT " + target_id + " FROM " + TargetTableName + " WHERE " + sibling_Target_class + " = ?"; 
-        return getSimpleJdbcTemplate().query(sqlTargets, TargetIDRowMapper, classID); 
+   @Override
+    public String getLink(Number internalID) {
+        StringBuilder sql = new StringBuilder("SELECT ");
+        sql.append(TargetStar).append(" FROM ").append(targetTableName).append(" WHERE ").append(target_id).append("= ? LIMIT 1");
+        List<String> result = getSimpleJdbcTemplate().query(sql.toString(), linkRowMapper, internalID);
+        return (!result.isEmpty() ? result.get(0) : null);
     }
-
-    private final RowMapper<Integer> TargetClassRowMapper = new RowMapper<Integer>() {
+    private final RowMapper<String> linkRowMapper = new RowMapper<String>() {
         @Override
-        public Integer mapRow(ResultSet rs, int rowNumber) throws SQLException {
-             return Integer.valueOf(rs.getInt(sibling_Target_class));
+        public String mapRow(ResultSet rs, int rowNumber) throws SQLException {
+            return rs.getString(link_uri);
         }
     };
     
+   
       /////////////////////////////////////////
     @Override
-    public List<Number> getCachedRepresentations(Number TargetID) {
+    public List<Number> getCachedRepresentations(Number targetID) {
        
         String sql = "SELECT " + cached_representation_id + " FROM " + TargetsCachedRepresentationsTableName + " WHERE " + target_id + " = ?";
-        return getSimpleJdbcTemplate().query(sql, cachedIDRowMapper, TargetID); 
+        return getSimpleJdbcTemplate().query(sql, cachedIDRowMapper, targetID); 
     }
 
     
@@ -135,10 +115,10 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
         
         StringBuilder sql = new StringBuilder("SELECT ");
         sql.append(external_id).append(",").append(link_uri).append(",").append(version).
-                append(" FROM ").append(TargetTableName).append(" WHERE ").append(target_id).append(" IN ").append(TargetIDs);
-        return getSimpleJdbcTemplate().query(sql.toString(), TargetInfoRowMapper);
+                append(" FROM ").append(targetTableName).append(" WHERE ").append(target_id).append(" IN ").append(TargetIDs);
+        return getSimpleJdbcTemplate().query(sql.toString(), targetInfoRowMapper);
     }
-    private final RowMapper<TargetInfo> TargetInfoRowMapper = new RowMapper<TargetInfo>() {
+    private final RowMapper<TargetInfo> targetInfoRowMapper = new RowMapper<TargetInfo>() {
         @Override
         public TargetInfo mapRow(ResultSet rs, int rowNumber) throws SQLException {
             return constructTargetInfo(rs.getString(external_id), rs.getString(link_uri), rs.getString(version));
@@ -148,19 +128,30 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
  
     /////////////////////////////////////////////////////
     @Override
-    public List<Number> getTargetsForLink(String link) {
+    public List<Number> getTargetsReferringTo(String word) {
         StringBuilder sql = new StringBuilder("SELECT ");
-        sql.append(target_id).append(" FROM ").append(TargetTableName).append(" WHERE ").append(link_uri).append(" LIKE '%").append(link).append("%'");
+        sql.append(target_id).append(" FROM ").append(targetTableName).append(" WHERE ").append(link_uri).append(" LIKE '%").append(word).append("%'");
         return getSimpleJdbcTemplate().query(sql.toString(), internalIDRowMapper);
     }
 
+      /////////////////////////////////////////////////////
+    @Override
+    public List<Number> getTargetsForLink(String link) {
+        StringBuilder sql = new StringBuilder("SELECT ");
+        sql.append(target_id).append(" FROM ").append(targetTableName).append(" WHERE ").append(link_uri).append(" =  ? ");
+        return getSimpleJdbcTemplate().query(sql.toString(), internalIDRowMapper, link);
+    }
+
+    
+    
+    
     
     /////////////////////////////////////////////////
     @Override
-    public boolean TargetIsInUse(Number TargetID) {
+    public boolean targetIsInUse(Number targetID) {
         StringBuilder sqlAnnotations = new StringBuilder("SELECT ");
         sqlAnnotations.append(annotation_id).append(" FROM ").append(annotationsTargetsTableName).append(" WHERE ").append(target_id).append(" = ? LIMIT 1");
-        List<Number> resultAnnotations = getSimpleJdbcTemplate().query(sqlAnnotations.toString(), annotationIDRowMapper, TargetID);
+        List<Number> resultAnnotations = getSimpleJdbcTemplate().query(sqlAnnotations.toString(), annotationIDRowMapper, targetID);
         if (resultAnnotations == null) {
             return false;
         }
@@ -179,7 +170,7 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
         params.put("linkUri", Target.getLink());
         params.put("version", Target.getVersion());
         StringBuilder sql = new StringBuilder("INSERT INTO ");
-        sql.append(TargetTableName).append("(").append(external_id).append(",").append(link_uri).append(",").append(version).append(" ) VALUES (:externalId, :linkUri,  :version)");
+        sql.append(targetTableName).append("(").append(external_id).append(",").append(link_uri).append(",").append(version).append(" ) VALUES (:externalId, :linkUri,  :version)");
         final int affectedRows = getSimpleJdbcTemplate().update(sql.toString(), params);  
         return (affectedRows>0 ? getInternalID(UUID.fromString(externalID.toString())) : null);
     }
@@ -202,18 +193,18 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
             return 0;
         }
         StringBuilder sql = new StringBuilder("UPDATE ");
-        sql.append(TargetTableName).append(" SET ").append(sibling_Target_class).append("= '").append(classID).append("' WHERE ").append(target_id).append("= ?");
+        sql.append(targetTableName).append(" SET ").append(sibling_Target_class).append("= '").append(classID).append("' WHERE ").append(target_id).append("= ?");
         return getSimpleJdbcTemplate().update(sql.toString(), TargetID);
     }
    
 ////////////////////// DELETERS ////////////////////////
     @Override
     public int deleteTarget(Number internalID) {
-        if (TargetIsInUse(internalID)){
+        if (targetIsInUse(internalID)){
             return 0;
         }
         StringBuilder sqlTargetsVersions = new StringBuilder("DELETE FROM ");
-        sqlTargetsVersions.append(TargetTableName).append(" WHERE ").append(target_id).append(" = ? ");
+        sqlTargetsVersions.append(targetTableName).append(" WHERE ").append(target_id).append(" = ? ");
         return getSimpleJdbcTemplate().update(sqlTargetsVersions.toString(), internalID);
 
     }
