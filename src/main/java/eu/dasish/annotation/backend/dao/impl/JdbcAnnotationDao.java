@@ -25,7 +25,6 @@ import eu.dasish.annotation.schema.AnnotationBody.TextBody;
 import eu.dasish.annotation.schema.AnnotationBody.XmlBody;
 import eu.dasish.annotation.schema.AnnotationInfo;
 import eu.dasish.annotation.schema.Permission;
-import java.io.IOException;
 import java.lang.String;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -37,15 +36,7 @@ import java.util.Map;
 import java.util.UUID;
 import javax.sql.DataSource;
 import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import org.springframework.jdbc.core.RowMapper;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.ls.DOMImplementationLS;
-import org.w3c.dom.ls.LSSerializer;
-import org.xml.sax.SAXException;
 
 /**
  * Created on : Jun 27, 2013, 10:30:52 AM

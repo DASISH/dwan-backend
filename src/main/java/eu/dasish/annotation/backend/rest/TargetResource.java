@@ -80,8 +80,8 @@ public class TargetResource {
     @Path("{targetid: " + BackendConstants.regExpIdentifier + "}/versions")
     public JAXBElement<ReferenceList> getSiblingTargets(@PathParam("targetid") String ExternalIdentifier) throws SQLException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
-        final Number TargetID = dbIntegrityService.getTargetInternalIdentifier(UUID.fromString(ExternalIdentifier));
-        final ReferenceList siblings = dbIntegrityService.getSiblingTargets(TargetID);
+        final Number targetID = dbIntegrityService.getTargetInternalIdentifier(UUID.fromString(ExternalIdentifier));
+        final ReferenceList siblings = dbIntegrityService.getTargetsForTheSameLinkAs(targetID);
         return new ObjectFactory().createReferenceList(siblings);
     }
     

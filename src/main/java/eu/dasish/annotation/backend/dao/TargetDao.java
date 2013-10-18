@@ -47,21 +47,8 @@ public interface TargetDao extends ResourceDao{
      */
     public List<TargetInfo> getTargetInfos(List<Number> Targets);
     
-    /**
-     * 
-     * @param TargetID
-     * @return id of the sibling-Target class of TargetID if defined, or null otherwise
-     */
-    public Integer getTargetSiblingClass(Number targetID);
-      
-     /**
-     * 
-     * @param TargetID
-     * @return the list of the internal Target ID-s ("siblings") for the target Target with the internal ID "TargetID". 
-     */
-    public List<Number> getSiblingTargets(Number targetID);
     
-     /**
+    /**
      * 
      * @param TargetID
      * @return the list of the cached representation's ID-s for the target Target with the internal ID "TargetID". 
@@ -70,18 +57,31 @@ public interface TargetDao extends ResourceDao{
     
     /**
      * 
+     * @param subword
+     * @return the list of Target ID's which link-fields contain "subword" as a substring.
+     */ 
+    public List<Number> getTargetsReferringTo(String subword);
+    
+   /**
+    * 
+    * @param targetID
+    * @return The link (uri) to the source to which the target refers
+    */
+    public String getLink(Number targetID);
+    
+   /**
+     * 
      * @param link
-     * @return the list of Target ID's which link-fields contain "link" as a substring.
+     * @return the list of Target ID's which link-fields is exactly "link"
      */ 
     public List<Number> getTargetsForLink(String link);
-  
     
     /**
      * 
-     * @param TargetID
+     * @param targetID
      * @return true if "TargetID" occurs in at least one of the joint tables "annotations_target_Targets" and "Targets_versions".
      */
-    public boolean TargetIsInUse(Number targetID);
+    public boolean targetIsInUse(Number targetID);
   
     /** 
      * ADDERS

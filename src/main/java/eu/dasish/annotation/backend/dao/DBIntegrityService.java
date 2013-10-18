@@ -39,30 +39,7 @@ import java.util.UUID;
  * @author olhsha
  **/
 
-/**
- * 
- * ReTarget  and the corresponding Dao's are, so to say, "lavelled".  Notebook has level 5, Annotation has level 4, Target has level 3, Version has level 2 and CachedRepresentation has level 1. Users are not subject to this hierarchy.
- * The hierarchy is based on the way the schemas  for the reTargets are designed: to describe reTarget of the level X we need reTarget X-1.
- * 
- * DaoDispathcer class contains "getters", "adders" and "deleters".
- * 
- * An <adder> has two parameters: <reTarget<X>ID> and <reTarget<X-1>Object>. It return numbers of updated rows.
- * 
- * A <deleter> has one parameter: <reTarget<X>ID>. First, it checks if <reTarget<X>ID> is in use by calling <X>isInUse of the corresponding Dao.. 
- * If "yes" the nothing happens. Otherwise  the deletion proceeds.
- * Second, delete<X> is called from the corresponding Dao.
- * Third, delete<X-1> are recursively called for all the related sub-reTargets of the level X-1. E.g., after deleting an annotation itself all the Targets (which are not used by other annotations) must be deleted as well.
- 
- * 
- * Comments on Dao-classes.
- * 
- * Each Dao-class contains "isInUse(internalID") method. It return "true" if the reTarget  with ID occurs at least in one of the joint tables. Used in "delete(internalID)" methods.
- * 
- * If the reTarget with "internalID" is asked to be deleted, the deletion methods will first call "isInUse(internalID)". If it returns 'true" nothing will happen. Otherwise deletion is happen. 
- * 
- * Each "add(object)" method returns the added-object's new internalID or null if the DB has not been updated for some reason.
- * 
- **/
+
 
 
 public interface DBIntegrityService{
@@ -94,7 +71,7 @@ public interface DBIntegrityService{
 
    /**
     * 
-    * @param link
+    * @param word
     * @param text
     * @param access
     * @param namespace
@@ -109,14 +86,14 @@ public interface DBIntegrityService{
     * -- owned by "owner",
     * -- created after time-samp "after and before time-stamp "before".
     */
-    List<Number> getFilteredAnnotationIDs(String link, String text, String access, String namespace, UUID
+    List<Number> getFilteredAnnotationIDs(String word, String text, String access, String namespace, UUID
             owner, Timestamp after, Timestamp before);
     
     
     
     /**
      * 
-     @param link
+     @param word
     * @param text
     * @param access
     * @param namespace
@@ -131,7 +108,7 @@ public interface DBIntegrityService{
     * -- owned by "owner",
     * -- created after time-samp "after and before time-stamp "before".
      */
-    AnnotationInfoList getFilteredAnnotationInfos(String link, String text, String access, String namespace, UUID
+    AnnotationInfoList getFilteredAnnotationInfos(String word, String text, String access, String namespace, UUID
             ownerI, Timestamp after, Timestamp before) throws SQLException;
 
     /**
@@ -208,9 +185,9 @@ public interface DBIntegrityService{
      /**
      * 
      * @param TargetID
-     * @return the list of the external version ID-s ("siblings") for the target Target with the internal ID "TargetID". 
+     * @return the list of the external version ID-s that refers to the same source (link) as targetID 
      */
-    public ReferenceList getSiblingTargets(Number TargetID) throws SQLException;
+    public ReferenceList getTargetsForTheSameLinkAs(Number targetID) throws SQLException;
     
     /**
      * 
