@@ -27,6 +27,7 @@ import eu.dasish.annotation.schema.ReferenceList;
 import eu.dasish.annotation.schema.Target;
 import eu.dasish.annotation.schema.TargetInfo;
 import eu.dasish.annotation.schema.User;
+import java.io.InputStream;
 import java.sql.Blob;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -194,7 +195,7 @@ public interface DBIntegrityService{
      * @param cachedID
      * @return BLOB of the cachedID
      */
-    public Blob getCachedRepresentationBlob(Number cachedID) throws SQLException;
+    public InputStream getCachedRepresentationBlob(Number cachedID) throws SQLException;
     
     public Target getTarget(Number internalID) throws SQLException;
     

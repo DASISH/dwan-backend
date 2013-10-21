@@ -18,6 +18,7 @@
 package eu.dasish.annotation.backend.dao;
 
 import eu.dasish.annotation.schema.CachedRepresentationInfo;
+import java.io.InputStream;
 import java.sql.Blob;
 
 /**
@@ -44,7 +45,7 @@ public interface CachedRepresentationDao extends ResourceDao{
      * @param internalID
      * @return the Blob of the cached representation  with the internal id "internalID".
      */
-    public Blob getCachedRepresentationBlob(Number internalID);
+    public InputStream getCachedRepresentationBlob(Number internalID);
   
     /**
      * ADDERS

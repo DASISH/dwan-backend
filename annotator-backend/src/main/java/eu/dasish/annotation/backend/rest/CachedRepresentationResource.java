@@ -21,12 +21,14 @@ import eu.dasish.annotation.backend.BackendConstants;
 import eu.dasish.annotation.backend.dao.DBIntegrityService;
 import eu.dasish.annotation.schema.CachedRepresentationInfo;
 import eu.dasish.annotation.schema.ObjectFactory;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Blob;
 import java.sql.SQLException;
 import java.util.UUID;
+import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -45,42 +47,39 @@ import org.springframework.stereotype.Component;
 @Component
 @Path("/cached")
 public class CachedRepresentationResource {
-    
+
     @Autowired
     private DBIntegrityService dbIntegrityService;
     @Context
     private HttpServletRequest httpServletRequest;
-   
     @Context
     private UriInfo uriInfo;
-    
+
     public void setHttpRequest(HttpServletRequest request) {
         this.httpServletRequest = request;
     }
-    
-     // TODOD both unit tests
+
+    // TODOD both unit tests
     //changed path, /Target/cached part is removed
     @GET
     @Produces(MediaType.TEXT_XML)
-    @Path("{cachedid: "+ BackendConstants.regExpIdentifier+"}/metadata")
+    @Path("{cachedid: " + BackendConstants.regExpIdentifier + "}/metadata")
     public JAXBElement<CachedRepresentationInfo> getCachedRepresentationInfo(@PathParam("cachedid") String externalId) throws SQLException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final Number cachedID = dbIntegrityService.getCachedRepresentationInternalIdentifier(UUID.fromString(externalId));
         final CachedRepresentationInfo cachedInfo = dbIntegrityService.getCachedRepresentationInfo(cachedID);
         return new ObjectFactory().createCashedRepresentationInfo(cachedInfo);
     }
-    
-     
-    // how to download blob using mime type???
+
     @GET
-    @Produces(MediaType.TEXT_PLAIN)
-    @Path("{cachedid: "+ BackendConstants.regExpIdentifier+"}/content")
-    public byte[] getCachedRepresentationContent(@PathParam("cachedid") String externalId) throws SQLException {
+    @Produces({"image/jpeg", "image/png"})
+    @Path("{cachedid: " + BackendConstants.regExpIdentifier + "}/content")
+    public BufferedImage getCachedRepresentationContent(@PathParam("cachedid") String externalId) throws SQLException, IOException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final Number cachedID = dbIntegrityService.getCachedRepresentationInternalIdentifier(UUID.fromString(externalId));
-        final Blob blob = dbIntegrityService.getCachedRepresentationBlob(cachedID);
-        // for testing purposes: reads first bytes
-        return blob.getBytes(1, 8);
+        InputStream dbRespond = dbIntegrityService.getCachedRepresentationBlob(cachedID);
+        ImageIO.setUseCache(false);
+        BufferedImage result = ImageIO.read(dbRespond);
+        return result;
     }
-    
 }
