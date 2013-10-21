@@ -21,7 +21,6 @@ import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.dao.AnnotationDao;
 import eu.dasish.annotation.backend.dao.CachedRepresentationDao;
 import eu.dasish.annotation.backend.dao.DBIntegrityService;
-import eu.dasish.annotation.backend.dao.NotebookDao;
 import eu.dasish.annotation.backend.dao.TargetDao;
 import eu.dasish.annotation.backend.dao.UserDao;
 import eu.dasish.annotation.schema.Annotation;
@@ -36,6 +35,7 @@ import eu.dasish.annotation.schema.Target;
 import eu.dasish.annotation.schema.TargetInfo;
 import eu.dasish.annotation.schema.User;
 import eu.dasish.annotation.schema.UserWithPermission;
+import java.io.InputStream;
 import java.sql.Blob;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -255,7 +255,7 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
 
     //TODO unit test
     @Override
-    public Blob getCachedRepresentationBlob(Number cachedID) throws SQLException {
+    public InputStream getCachedRepresentationBlob(Number cachedID) throws SQLException {
         return cachedRepresentationDao.getCachedRepresentationBlob(cachedID);
     }
 

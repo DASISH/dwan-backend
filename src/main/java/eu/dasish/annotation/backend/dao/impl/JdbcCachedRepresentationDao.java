@@ -19,6 +19,7 @@ package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.dao.CachedRepresentationDao;
 import eu.dasish.annotation.schema.CachedRepresentationInfo;
+import java.io.InputStream;
 import java.lang.String;
 import java.sql.Blob;
 import java.sql.ResultSet;
@@ -74,21 +75,22 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
 
     /////////////////////////// GETTERS  ////////////////////////////////////////
     @Override
-    public Blob getCachedRepresentationBlob(Number internalID) {
+    public InputStream getCachedRepresentationBlob(Number internalID) {
 
         StringBuilder sql = new StringBuilder("SELECT ");
         sql.append(file_).append(" FROM ").append(cachedRepresentationTableName).append(" WHERE ").append(cached_representation_id).append("= ? LIMIT 1");
-        List<Blob> result = getSimpleJdbcTemplate().query(sql.toString(), cachedRepresentationBlobRowMapper, internalID);
+        List<InputStream> result = getSimpleJdbcTemplate().query(sql.toString(), cachedRepresentationBlobRowMapper, internalID);
 
         if (result.isEmpty()) {
             return null;
         }
+        
         return result.get(0);
     }
-    private final RowMapper<Blob> cachedRepresentationBlobRowMapper = new RowMapper<Blob>() {
+    private final RowMapper<InputStream> cachedRepresentationBlobRowMapper = new RowMapper<InputStream>() {
         @Override
-        public Blob mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            return rs.getBlob(file_);
+        public InputStream mapRow(ResultSet rs, int rowNumber) throws SQLException {
+            return rs.getBinaryStream(file_);
         }
     };
 

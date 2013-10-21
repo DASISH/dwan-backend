@@ -130,10 +130,8 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
     @Override
     public List<Number> getTargetsReferringTo(String word) {
         String searchTerm = "%"+word+"%";
-        StringBuilder sql = new StringBuilder("SELECT ");        
-        //sql.append(target_id).append(" FROM ").append(targetTableName).append(" WHERE ").append(link_uri).append(" LIKE '%").append(word).append("%'");
+        StringBuilder sql = new StringBuilder("SELECT "); 
         sql.append(target_id).append(" FROM ").append(targetTableName).append(" WHERE ").append(link_uri).append(" LIKE ? ");
-        
         return getSimpleJdbcTemplate().query(sql.toString(), internalIDRowMapper, searchTerm);
     }
 
