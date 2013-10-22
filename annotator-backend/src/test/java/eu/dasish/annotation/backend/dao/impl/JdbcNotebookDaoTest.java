@@ -17,28 +17,11 @@
  */
 package eu.dasish.annotation.backend.dao.impl;
 
-import eu.dasish.annotation.backend.TestBackendConstants;
-import eu.dasish.annotation.backend.dao.AnnotationDao;
-import eu.dasish.annotation.schema.ReferenceList;
-import eu.dasish.annotation.schema.Notebook;
-import eu.dasish.annotation.schema.NotebookInfo;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.List;
-import java.util.UUID;
-import org.jmock.Expectations;
-import static org.jmock.Expectations.returnValue;
-import org.jmock.Mockery;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import org.junit.Ignore;
 
 /**
  *

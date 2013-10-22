@@ -17,8 +17,9 @@
  */
 package eu.dasish.annotation.backend.rest;
 
-import eu.dasish.annotation.schema.Annotation;
+import java.lang.Class;
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.PropertyException;
 
@@ -27,35 +28,30 @@ import javax.xml.bind.PropertyException;
  * @author olhsha
  */
 public class JaxbMarshallerFactory {
-   
     
     private JAXBContext context;
     private Marshaller marshaller;
-    
-    // overwritten by the bean's property 
+    // overwritten by the context.xml's 
     private String schemaLocation = "http://www.dasish.eu/ns/addit file:/Users/olhsha/repositories/DASISH/t5.6/schema/trunk/annotator-schema/src/main/reTargets/DASISH-schema.xsd";
-
     
     public JaxbMarshallerFactory() throws Exception {
-    context = JAXBContext.newInstance(Annotation.class);
-
-    // Setup the marshaller
-    marshaller = context.createMarshaller(); 
-    marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, schemaLocation);
-    marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-    marshaller.setProperty(Marshaller.JAXB_FRAGMENT, false);
+        
     }
     
-    public String getSchemaLocation(){
+    public String getSchemaLocation() {
         return schemaLocation;
     }
     
-    public void setSchemaLocation(String schemaLocation) throws PropertyException{
+    public void setSchemaLocation(String schemaLocation) throws PropertyException {
         this.schemaLocation = schemaLocation;
-        marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, schemaLocation);
     }
     
-    public Marshaller getMarshaller(){
+    public Marshaller createMarshaller(Class<?> type) throws JAXBException{
+        context = JAXBContext.newInstance(type);
+        marshaller = context.createMarshaller();        
+        marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, schemaLocation);
+        marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+        marshaller.setProperty(Marshaller.JAXB_FRAGMENT, false);
         return marshaller;
     }
 }

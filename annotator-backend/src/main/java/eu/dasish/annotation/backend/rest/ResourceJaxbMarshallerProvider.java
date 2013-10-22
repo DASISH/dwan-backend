@@ -17,9 +17,9 @@
  */
 package eu.dasish.annotation.backend.rest;
 
-import eu.dasish.annotation.schema.Annotation;
 import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Provider;
+import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -32,21 +32,21 @@ import org.springframework.stereotype.Component;
 @Component
 public class ResourceJaxbMarshallerProvider implements ContextResolver<Marshaller> {
 
-@Autowired    
-private JaxbMarshallerFactory jaxbMarshallerFactory;
+    @Autowired
+    private JaxbMarshallerFactory jaxbMarshallerFactory;
 
-
-
-/*
- * ------------------------
- * Interface Implementation
- * ------------------------
- */
-@Override
-public Marshaller getContext(Class<?> type) {
-    if (type == Annotation.class)
-        return jaxbMarshallerFactory.getMarshaller();
-    else
-        return null;
-}       
+    /*
+     * ------------------------
+     * Interface Implementation
+     * ------------------------
+     */
+    @Override
+    public Marshaller getContext(Class<?> type) {
+        try{
+           return jaxbMarshallerFactory.createMarshaller(type);
+        } catch (JAXBException e) {
+            System.out.println("Cannot create a marshaller for type "+type.getCanonicalName());
+            return null;
+        }
+    }
 }
