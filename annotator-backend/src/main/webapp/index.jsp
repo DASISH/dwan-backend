@@ -41,7 +41,7 @@
  -->
         
       <b>Test URI-s</b><br>
-      <b>All output xml-s are valid w.r.t. the schema modulo manually-adding the namespace-schemalocation header</b><br>
+      <b>All output xml-s are valid w.r.t. the schema</b><br>
      GET <a href="api/users/00000000-0000-0000-0000-0000000000112">api/users/00000000-0000-0000-0000-0000000000112</a>  !Problem: how to ask the "servlet context" if this user is current? so far all are set to "true"<br> 
      GET <a href="api/users/info?email=twagoo@mpi.nl">api/users/info?email=twagoo@mpi.nl</a>  <br>
      GET <a href="api/annotations?link=Sagrada">api/annotations/info?link=Sagrada</a> !Comment: more tests are necessary to test on all query parameters  </br>
