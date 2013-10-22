@@ -477,8 +477,8 @@ public class DBIntegrityServiceTest {
         assertEquals(mockAnnotInfo.getHeadline(), resultAnnotInfo.getHeadline());
         assertEquals(TestBackendConstants._TEST_SERVLET_URI_users +TestBackendConstants._TEST_USER_3_EXT_ID, resultAnnotInfo.getOwnerRef());
         assertEquals(mockAnnotInfo.getRef(),result.getAnnotationInfo().get(0).getRef() );
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI_Targets +TestBackendConstants._TEST_Target_1_EXT_ID, resultAnnotInfo.getTargetSources().getRef().get(0));
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI_Targets +TestBackendConstants._TEST_Target_2_EXT_ID, resultAnnotInfo.getTargetSources().getRef().get(1));
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI_Targets +TestBackendConstants._TEST_Target_1_EXT_ID, resultAnnotInfo.getTargets().getRef().get(0));
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI_Targets +TestBackendConstants._TEST_Target_2_EXT_ID, resultAnnotInfo.getTargets().getRef().get(1));
           
     }
     

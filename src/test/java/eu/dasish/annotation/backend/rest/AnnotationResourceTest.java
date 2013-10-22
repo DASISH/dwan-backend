@@ -247,6 +247,9 @@ public class AnnotationResourceTest {
                 
                 oneOf(daoDispatcher).getTargetsWithNoCachedRepresentation(newAnnotationID);
                 will(returnValue(Targets));
+                
+                oneOf(daoDispatcher).getTargetExternalIdentifier(6);
+                will(returnValue(UUID.fromString("00000000-0000-0000-0000-000000000036")));
             }
         });
         
@@ -259,7 +262,7 @@ public class AnnotationResourceTest {
         
         JAXBElement<ResponseBody> result = annotationResource.createAnnotation(annotationToAdd);
         Annotation newAnnotation = result.getValue().getAnnotationResponse().getContent().getAnnotation();
-        AnnotationActionName actionName = result.getValue().getAnnotationResponse().getActions().getAction().getAction();
+        AnnotationActionName actionName = result.getValue().getAnnotationResponse().getActions().getAction().get(0).getAction();
         assertEquals(addedAnnotation.getOwnerRef(), newAnnotation.getOwnerRef());
         assertEquals(addedAnnotation.getURI(), newAnnotation.getURI());
         assertEquals(addedAnnotation.getHeadline(), newAnnotation.getHeadline());

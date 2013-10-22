@@ -226,7 +226,7 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         for (Number annotationID : annotationIDs) {
             AnnotationInfo annotationInfo = annotationDao.getAnnotationInfoWithoutTargets(annotationID);
             ReferenceList targets = getAnnotationTargets(annotationID);
-            annotationInfo.setTargetSources(targets);
+            annotationInfo.setTargets(targets);
             result.getAnnotationInfo().add(annotationInfo);
 
 //          refactor: push the work on userID's below to DAO for user when retrieving the user-ids
