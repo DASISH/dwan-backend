@@ -19,6 +19,8 @@ package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.dao.TargetDao;
+import eu.dasish.annotation.schema.CachedRepresentationFragment;
+import eu.dasish.annotation.schema.CachedRepresentationFragmentList;
 import eu.dasish.annotation.schema.Target;
 import eu.dasish.annotation.schema.TargetInfo;
 import java.sql.ResultSet;
@@ -65,7 +67,7 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
             try {
                 XMLGregorianCalendar xmlDate = Helpers.setXMLGregorianCalendar(rs.getTimestamp(time_stamp));
                 Target result = 
-                        constructTarget(rs.getString(external_id), rs.getString(link_uri), rs.getString(version), xmlDate);
+                        constructTarget(rs.getString(external_id), rs.getString(link_uri), rs.getString(version), xmlDate, rs.getString(fragment_descriptor));
                 return result;
             } catch (DatatypeConfigurationException e) {
                 // TODO: which logger are we going to use?
@@ -99,23 +101,41 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
         return getSimpleJdbcTemplate().query(sql, cachedIDRowMapper, targetID); 
     }
 
+     @Override
+     public Map<Number, String> getCachedRepresentationFragmentPairs(Number targetID){        
+        Map<Number, String> result  = new HashMap<Number, String>(); 
+        String sql = "SELECT " + cached_representation_id + ","+ fragment_descriptor_in_cached+ " FROM " + TargetsCachedRepresentationsTableName + " WHERE " + target_id + " = ?";
+        List<Map<Number, String>> respond = getSimpleJdbcTemplate().query(sql, cachedFragmentRowMapper, targetID); 
+        for (Map<Number, String> pair : respond){
+            result.putAll(pair);
+        }
+        return result;
+     }
     
-    
+     private final RowMapper<Map<Number, String>> cachedFragmentRowMapper = new RowMapper<Map<Number, String>>() {
+        @Override
+        public Map<Number, String> mapRow(ResultSet rs, int rowNumber) throws SQLException {
+            Map<Number, String> result  = new HashMap<Number, String>();
+            result.put(rs.getInt(cached_representation_id), rs.getString(fragment_descriptor_in_cached));
+            return result;
+        }
+    };
+     
      ///////////////////////////////////////////////////////////////////
     @Override
-    public List<TargetInfo> getTargetInfos(List<Number> Targets) {
-        if (Targets == null) {
+    public List<TargetInfo> getTargetInfos(List<Number> targets) {
+        if (targets == null) {
             return null;
         }
-        if (Targets.isEmpty()) {
+        if (targets.isEmpty()) {
             return new ArrayList<TargetInfo>();
         }
 
-        String TargetIDs = makeListOfValues(Targets);
+        String targetIDs = makeListOfValues(targets);
         
         StringBuilder sql = new StringBuilder("SELECT ");
         sql.append(external_id).append(",").append(link_uri).append(",").append(version).
-                append(" FROM ").append(targetTableName).append(" WHERE ").append(target_id).append(" IN ").append(TargetIDs);
+                append(" FROM ").append(targetTableName).append(" WHERE ").append(target_id).append(" IN ").append(targetIDs);
         return getSimpleJdbcTemplate().query(sql.toString(), targetInfoRowMapper);
     }
     private final RowMapper<TargetInfo> targetInfoRowMapper = new RowMapper<TargetInfo>() {
@@ -239,13 +259,13 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
         return TargetInfo;
     }
 
-    private Target constructTarget(String externalID, String link, String version, XMLGregorianCalendar xmlTimeStamp) {
+    private Target constructTarget(String externalID, String link, String version, XMLGregorianCalendar xmlTimeStamp, String fragment) {
         Target Target = new Target();
         Target.setURI(externalIDtoURI(externalID));
         Target.setTimeStamp(xmlTimeStamp);
         Target.setLink(link);
         Target.setVersion(version);
-
+        Target.setFragmentDescriptor(fragment);
         return Target;
     }
 }

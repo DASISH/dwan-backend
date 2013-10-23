@@ -63,4 +63,11 @@ public interface ResourceDao {
      * @return returns the extranlID which is a suffix of stringURI
      */
     public String stringURItoExternalID(String stringURI);
+    
+    /**
+     * 
+     * @param internalID
+     * @return URI string of the resource )of the type set in resourceTableName) with internalID
+     */
+    public String getURIFromInternalID(Number internalID);
 }

@@ -26,6 +26,8 @@ import eu.dasish.annotation.backend.dao.UserDao;
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationInfo;
 import eu.dasish.annotation.schema.AnnotationInfoList;
+import eu.dasish.annotation.schema.CachedRepresentationFragment;
+import eu.dasish.annotation.schema.CachedRepresentationFragmentList;
 import eu.dasish.annotation.schema.CachedRepresentationInfo;
 import eu.dasish.annotation.schema.TargetInfoList;
 import eu.dasish.annotation.schema.Permission;
@@ -244,8 +246,19 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     public Target getTarget(Number internalID) throws SQLException {
         Target result = targetDao.getTarget(internalID);
         result.setSiblingTargets(getTargetsForTheSameLinkAs(internalID));
+        Map<Number, String> cachedIDsFragments = targetDao.getCachedRepresentationFragmentPairs(internalID);
+        CachedRepresentationFragmentList cachedRepresentationFragmentList = new CachedRepresentationFragmentList();
+        for (Number key: cachedIDsFragments.keySet()) {
+            CachedRepresentationFragment cachedRepresentationFragment = new CachedRepresentationFragment();
+            cachedRepresentationFragment.setRef(cachedRepresentationDao.getURIFromInternalID(key));
+            cachedRepresentationFragment.setFragmentString(cachedIDsFragments.get(key));
+            cachedRepresentationFragmentList.getCached().add(cachedRepresentationFragment);
+        }
+        result.setCachedRepresentatinons(cachedRepresentationFragmentList);
         return result;
     }
+    
+    
 
     // TODO unit test
     @Override

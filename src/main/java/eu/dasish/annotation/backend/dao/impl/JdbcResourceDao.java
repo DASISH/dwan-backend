@@ -74,7 +74,9 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     final static protected String e_mail = "e_mail";
     final static protected String remote_id = "remote_id";
     final static protected String is_xml = "is_xml";
-    
+    final static protected String fragment_descriptor = "fragment_descriptor";
+    final static protected String fragment_descriptor_in_cached = "fragment_descriptor_in_cached";
+            
     // derived string constants: table+field names 
     final static protected String annotationStar = annotationTableName + ".*";
     final static protected String annotationAnnotation_id = annotationTableName + "." + annotation_id;
@@ -133,6 +135,12 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     public Number getInternalIDFromURI(String uri) {
         String externalID = stringURItoExternalID(uri);
         return getInternalID(UUID.fromString(externalID));
+    }
+    
+    //////////////////////////////////////////////
+    @Override
+    public String getURIFromInternalID(Number internalID) {
+        return externalIDtoURI(getExternalID(internalID).toString());
     }
     
     /////////////////////////////////////////////////////
