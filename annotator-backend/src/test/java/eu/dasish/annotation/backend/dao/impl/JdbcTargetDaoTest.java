@@ -113,12 +113,12 @@ public class JdbcTargetDaoTest extends JdbcResourceDaoTest {
     @Test
     public void testGetTarget() {
         System.out.println("getTarget");
-        Number internalID = 1;
         jdbcTargetDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_Targets);
-        Target result = jdbcTargetDao.getTarget(internalID);
+        Target result = jdbcTargetDao.getTarget(1);
         assertEquals(TestBackendConstants._TEST_SERVLET_URI_Targets+TestBackendConstants._TEST_Target_1_EXT_ID, result.getURI());
         assertEquals(TestBackendConstants._TEST_Target_1_LINK, result.getLink());
         assertEquals(TestBackendConstants._TEST_Target_1_VERSION, result.getVersion());
+        assertEquals("#de_Opdracht", result.getFragmentDescriptor());
         // TODO :add time stamp test
         
     }

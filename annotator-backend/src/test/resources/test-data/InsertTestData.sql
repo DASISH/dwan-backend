@@ -60,9 +60,9 @@ INSERT INTO notebooks_annotations (notebook_id,annotation_id) VALUES (4,4);
 INSERT INTO notebooks_annotations (notebook_id,annotation_id) VALUES (5,4);
 
 
-INSERT INTO target (external_id, link_uri, version, fragment_descriptor) VALUES ('00000000-0000-0000-0000-000000000031', 'http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia', 'version 1.0', '#1'); -- 1
-INSERT INTO target (external_id, link_uri, version, fragment_descriptor) VALUES ('00000000-0000-0000-0000-000000000032', 'http://nl.wikipedia.org/wiki/Antoni_Gaud%C3%AD', 'version 1.0', '#11'); --2
-INSERT INTO target (external_id, link_uri, version, fragment_descriptor) VALUES ('00000000-0000-0000-0000-000000000033', 'http://en.wikipedia.org/wiki/Art_Nouveau', 'june 1013', '#111'); --3
+INSERT INTO target (external_id, link_uri, version, fragment_descriptor) VALUES ('00000000-0000-0000-0000-000000000031', 'http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia', 'version 1.0', '#de_Opdracht'); -- 1
+INSERT INTO target (external_id, link_uri, version, fragment_descriptor) VALUES ('00000000-0000-0000-0000-000000000032', 'http://nl.wikipedia.org/wiki/Antoni_Gaud%C3%AD', 'version 1.0', '##Vroege_werk'); --2
+INSERT INTO target (external_id, link_uri, version, fragment_descriptor) VALUES ('00000000-0000-0000-0000-000000000033', 'http://en.wikipedia.org/wiki/Art_Nouveau', 'june 1013', '##Spain'); --3
 INSERT INTO target (external_id, link_uri, version, fragment_descriptor) VALUES ('00000000-0000-0000-0000-000000000034', '???', 'back up', '#1111'); --4
 INSERT INTO target (external_id, link_uri, version, fragment_descriptor) VALUES ('00000000-0000-0000-0000-000000000035', '???', 'back up', '#111111'); --5
 INSERT INTO target (external_id, link_uri, version, fragment_descriptor) VALUES ('00000000-0000-0000-0000-000000000036', '???', 'version 2.0', '#1111111'); --6 not used by any annotation

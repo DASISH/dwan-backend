@@ -17,10 +17,12 @@
  */
 package eu.dasish.annotation.backend.dao;
 
+import eu.dasish.annotation.schema.CachedRepresentationFragmentList;
 import eu.dasish.annotation.schema.Target;
 import eu.dasish.annotation.schema.TargetInfo;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -42,18 +44,25 @@ public interface TargetDao extends ResourceDao{
     
     /**
      * 
-     * @param Targets
-     * @return the list of SoirceInfo objects corresponding to the Targets with the internalIds from the list "Targets".
+     * @param targets
+     * @return the list of TargetInfo objects corresponding to the Targets with the internalIds from the list "Targets".
      */
-    public List<TargetInfo> getTargetInfos(List<Number> Targets);
+    public List<TargetInfo> getTargetInfos(List<Number> targets);
     
     
     /**
      * 
-     * @param TargetID
+     * @param targetID
      * @return the list of the cached representation's ID-s for the target Target with the internal ID "TargetID". 
      */
     public List<Number> getCachedRepresentations(Number targetID);
+    
+    /**
+     * 
+     * @param targetID
+     * @return the list of pairs (cached_representation_id, fragment_descriptor) for the target with the internal ID "targetID". 
+     */
+    public Map<Number, String> getCachedRepresentationFragmentPairs(Number targetID);
     
     /**
      * 
