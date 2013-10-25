@@ -240,25 +240,26 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
 
     //////////////////////////////////////////////////////////////////////////
     @Override
-    public Annotation getAnnotationWithoutTargetsAndPermissions(Number annotationID) throws SQLException {
+    public Map<Annotation, Number> getAnnotationWithoutTargetsAndPermissions(Number annotationID) throws SQLException {
         if (annotationID == null) {
             return null;
         }
         StringBuilder sql = new StringBuilder("SELECT ");
         sql.append(annotationStar).append(" FROM ").append(annotationTableName).append(" WHERE ").append(annotationAnnotation_id).append("= ? LIMIT  1");
-        List<Annotation> respond = getSimpleJdbcTemplate().query(sql.toString(), annotationRowMapper, annotationID);
+        List<Map<Annotation, Number>> respond = getSimpleJdbcTemplate().query(sql.toString(), annotationRowMapper, annotationID);
         return (respond.isEmpty() ? null : respond.get(0));
     }
-    private final RowMapper<Annotation> annotationRowMapper = new RowMapper<Annotation>() {
+    private final RowMapper<Map<Annotation, Number>> annotationRowMapper = new RowMapper<Map<Annotation, Number>>() {
         @Override
-        public Annotation mapRow(ResultSet rs, int rowNumber) throws SQLException {
+        public Map<Annotation, Number> mapRow(ResultSet rs, int rowNumber) throws SQLException {
+            Map<Annotation, Number> result = new HashMap<Annotation, Number>();
+            
             Annotation annotation = new Annotation();
-
-            annotation.setOwnerRef(String.valueOf(rs.getInt(owner_id)));
+            result.put(annotation, rs.getInt(owner_id));
 
             annotation.setHeadline(rs.getString(headline));
+            
             AnnotationBody body = new AnnotationBody();
-
             if (rs.getBoolean(is_xml)) {
                 body.setTextBody(null);
                 XmlBody xmlBody = new XmlBody();
@@ -272,22 +273,18 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
                 textBody.setValue(rs.getString(body_text));
                 body.setTextBody(textBody);
             }
-
-
-
             annotation.setBody(body);
-
+            
             annotation.setTargets(null);
-
             annotation.setURI(externalIDtoURI(rs.getString(external_id)));
 
             try {
                 annotation.setTimeStamp(Helpers.setXMLGregorianCalendar(rs.getTimestamp(time_stamp)));
-                return annotation;
+                return result;
             } catch (DatatypeConfigurationException e) {
                 System.out.println(e);
-                return annotation; // no date-time is set 
             }
+            return result;
         }
     };
 

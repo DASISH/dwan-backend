@@ -124,14 +124,12 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     // TODO: refactor, Target grabbing should be made a separate private method
     @Override
     public Annotation getAnnotation(Number annotationID) throws SQLException {
-        Annotation result = annotationDao.getAnnotationWithoutTargetsAndPermissions(annotationID);
-        if (result == null) {
-            return null;
-        }
-
-        int userID = Integer.parseInt(result.getOwnerRef());
-        String userURI = userDao.externalIDtoURI(userDao.getExternalID(userID).toString());
-        result.setOwnerRef(userURI);
+        Map<Annotation, Number> annotationOwner = annotationDao.getAnnotationWithoutTargetsAndPermissions(annotationID);
+        
+        Annotation[] annotations = new Annotation[1];
+        annotationOwner.keySet().toArray(annotations);
+        Annotation result = annotations[0]; 
+        result.setOwnerRef(userDao.getURIFromInternalID(annotationOwner.get(result)));
 
         List<Number> targetIDs = annotationDao.retrieveTargetIDs(annotationID);
         TargetInfoList sis = new TargetInfoList();
@@ -162,7 +160,7 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
             principalPermission.keySet().toArray(principal);
 
             UserWithPermission userWithPermission = new UserWithPermission();
-            userWithPermission.setRef(userDao.externalIDtoURI(userDao.getExternalID(principal[0]).toString()));
+            userWithPermission.setRef(userDao.getURIFromInternalID(principal[0]));
             userWithPermission.setPermission(Permission.fromValue(principalPermission.get(principal[0])));
 
             list.add(userWithPermission);
