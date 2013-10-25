@@ -194,7 +194,7 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         ReferenceList result = new ReferenceList();
         List<Number> targetIDs = annotationDao.retrieveTargetIDs(annotationID);
         for (Number targetID : targetIDs) {
-            result.getRef().add(targetDao.externalIDtoURI(targetDao.getExternalID(targetID).toString()));
+            result.getRef().add(targetDao.getURIFromInternalID(targetID));
         }
         return result;
     }
@@ -226,16 +226,14 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         List<Number> annotationIDs = getFilteredAnnotationIDs(word, text, access, namespace, owner, after, before);
         AnnotationInfoList result = new AnnotationInfoList();
         for (Number annotationID : annotationIDs) {
-            AnnotationInfo annotationInfo = annotationDao.getAnnotationInfoWithoutTargets(annotationID);
+            Map<AnnotationInfo, Number> annotationInfoOwnerId = annotationDao.getAnnotationInfoWithoutTargets(annotationID);
             ReferenceList targets = getAnnotationTargets(annotationID);
+            AnnotationInfo[] annotationInfos = new AnnotationInfo[1];
+            annotationInfoOwnerId.keySet().toArray(annotationInfos);
+            AnnotationInfo annotationInfo = annotationInfos[0];
             annotationInfo.setTargets(targets);
+            annotationInfo.setOwnerRef(userDao.getURIFromInternalID(annotationInfoOwnerId.get(annotationInfo)));
             result.getAnnotationInfo().add(annotationInfo);
-
-//          refactor: push the work on userID's below to DAO for user when retrieving the user-ids
-            String internalIDstring = annotationInfo.getOwnerRef();
-            Number internalID = Integer.parseInt(internalIDstring);
-            String externaID = userDao.getExternalID(internalID).toString();
-            annotationInfo.setOwnerRef(userDao.externalIDtoURI(externaID));
         }
 
         return result;
