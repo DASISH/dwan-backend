@@ -170,42 +170,17 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         return getSimpleJdbcTemplate().query(query.toString(), internalIDRowMapper);
     }
 
-    //////////////////////////////////////////////////////////////////////////
-    @Override
-    public List<AnnotationInfo> getAnnotationInfos(List<Number> annotationIDs) {
-
-        if (annotationIDs == null) {
-            return null;
-        }
-
-        if (annotationIDs.isEmpty()) {
-            return (new ArrayList<AnnotationInfo>());
-        }
-
-        String values = makeListOfValues(annotationIDs);
-        StringBuilder sql = new StringBuilder("SELECT DISTINCT ");
-        sql.append(annotationStar).append(" FROM ").append(annotationTableName).append(" WHERE ").append(annotationAnnotation_id).append("  IN ").append(values);
-        return getSimpleJdbcTemplate().query(sql.toString(), annotationInfoRowMapper);
-    }
-    private final RowMapper<AnnotationInfo> annotationInfoRowMapper = new RowMapper<AnnotationInfo>() {
-        @Override
-        public AnnotationInfo mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            AnnotationInfo annotationInfo = new AnnotationInfo();
-            annotationInfo.setRef(externalIDtoURI(rs.getString(external_id)));
-            annotationInfo.setOwnerRef(Integer.toString(rs.getInt(owner_id)));
-            annotationInfo.setHeadline(rs.getString(headline));
-            return annotationInfo;
-        }
-    };
+   
+   
 
     @Override
-    public AnnotationInfo getAnnotationInfoWithoutTargets(Number annotationID) {
+    public Map<AnnotationInfo, Number>  getAnnotationInfoWithoutTargets(Number annotationID) {
         if (annotationID == null) {
             return null;
         }
         StringBuilder sql = new StringBuilder("SELECT  ");
         sql.append(annotationStar).append(" FROM ").append(annotationTableName).append(" WHERE ").append(annotation_id).append("  = ? ");
-        List<AnnotationInfo> result = getSimpleJdbcTemplate().query(sql.toString(), annotationInfoRowMapper, annotationID);
+        List<Map<AnnotationInfo, Number>> result = getSimpleJdbcTemplate().query(sql.toString(), annotationInfoRowMapper, annotationID);
         if (result == null) {
             return null;
         }
@@ -215,6 +190,23 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
 
         return result.get(0);
     }
+    
+     private final RowMapper<Map<AnnotationInfo, Number>> annotationInfoRowMapper = new RowMapper<Map<AnnotationInfo, Number>>() {
+        @Override
+        public Map<AnnotationInfo, Number> mapRow(ResultSet rs, int rowNumber) throws SQLException {
+            Map<AnnotationInfo, Number> result = new HashMap<AnnotationInfo, Number>();
+            AnnotationInfo annotationInfo = new AnnotationInfo();
+            annotationInfo.setRef(externalIDtoURI(rs.getString(external_id)));
+            annotationInfo.setHeadline(rs.getString(headline));
+            try {
+                annotationInfo.setTimeStamp(Helpers.setXMLGregorianCalendar(rs.getTimestamp(time_stamp)));
+            } catch (DatatypeConfigurationException e) {
+                System.out.println(e);
+            }
+            result.put(annotationInfo, rs.getInt(owner_id));
+            return result;
+        }
+    };
 
     /////////////////////////////////////////////////
     /**
