@@ -44,12 +44,12 @@ public interface AnnotationDao extends ResourceDao{
     /**
      * 
      * @param annotationID
-     * @return the Annotation object with empty list of Targets.
+     * @return the pair (annotation, owner_id) with empty list of Targets.
      * 
      * (Constructing a complete Annotation object using  "getAnnotationWithoutTargets" and "retrieveTargetIDs" is done in "DaoDispatchter".)
      * 
      */
-    public Annotation getAnnotationWithoutTargetsAndPermissions(Number annotationID) throws SQLException;
+    public Map<Annotation, Number> getAnnotationWithoutTargetsAndPermissions(Number annotationID) throws SQLException;
     
     
      /**

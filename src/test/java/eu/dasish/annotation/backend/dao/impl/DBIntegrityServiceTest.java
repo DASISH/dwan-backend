@@ -218,16 +218,15 @@ public class DBIntegrityServiceTest {
         final String uri4 = TestBackendConstants._TEST_SERVLET_URI_users +TestBackendConstants._TEST_USER_4_EXT_ID;
         final String uri5 = TestBackendConstants._TEST_SERVLET_URI_users +TestBackendConstants._TEST_USER_5_EXT_ID;
 
-
+        final Map<Annotation, Number> mockAnnotationOwnerID = new HashMap<Annotation, Number>();
+        mockAnnotationOwnerID.put(mockAnnotation, 3);
+        
         mockeryDao.checking(new Expectations() {
             {
                 oneOf(annotationDao).getAnnotationWithoutTargetsAndPermissions(2);
-                will(returnValue(mockAnnotation));
+                will(returnValue(mockAnnotationOwnerID));
 
-                oneOf(userDao).getExternalID(3);
-                will(returnValue(externalID3));
-
-                oneOf(userDao).externalIDtoURI(TestBackendConstants._TEST_USER_3_EXT_ID);
+                oneOf(userDao).getURIFromInternalID(3);
                 will(returnValue(uri3));
                 
                 oneOf(annotationDao).retrieveTargetIDs(2);
@@ -244,23 +243,13 @@ public class DBIntegrityServiceTest {
                 oneOf(annotationDao).getPermissions(2);
                 will(returnValue(listMap));
 
-                oneOf(userDao).getExternalID(3);
-                will(returnValue(externalID3));
-
-                oneOf(userDao).externalIDtoURI(TestBackendConstants._TEST_USER_3_EXT_ID);
+                oneOf(userDao).getURIFromInternalID(3);
                 will(returnValue(uri3));
 
-
-                oneOf(userDao).getExternalID(4);
-                will(returnValue(externalID4));
-
-                oneOf(userDao).externalIDtoURI(TestBackendConstants._TEST_USER_4_EXT_ID);
+                oneOf(userDao).getURIFromInternalID(4);
                 will(returnValue(uri4));
 
-                oneOf(userDao).getExternalID(5);
-                will(returnValue(externalID5));
-
-                oneOf(userDao).externalIDtoURI(TestBackendConstants._TEST_USER_5_EXT_ID);
+                 oneOf(userDao).getURIFromInternalID(5);
                 will(returnValue(uri5));
             }
         });
