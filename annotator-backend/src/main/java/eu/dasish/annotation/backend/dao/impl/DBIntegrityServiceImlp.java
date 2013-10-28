@@ -78,7 +78,7 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     public Number getAnnotationInternalIdentifier(UUID externalID) {
         return annotationDao.getInternalID(externalID);
     }
-    
+
     @Override
     public Number getAnnotationInternalIdentifierFromURI(String uri) {
         return annotationDao.getInternalIDFromURI(uri);
@@ -98,6 +98,11 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     @Override
     public UUID getTargetExternalIdentifier(Number annotationID) {
         return targetDao.getExternalID(annotationID);
+    }
+
+    @Override
+    public String getTargetURI(Number annotationID) {
+        return targetDao.getURIFromInternalID(annotationID);
     }
 
     @Override
@@ -125,10 +130,10 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     @Override
     public Annotation getAnnotation(Number annotationID) throws SQLException {
         Map<Annotation, Number> annotationOwner = annotationDao.getAnnotationWithoutTargetsAndPermissions(annotationID);
-        
+
         Annotation[] annotations = new Annotation[1];
         annotationOwner.keySet().toArray(annotations);
-        Annotation result = annotations[0]; 
+        Annotation result = annotations[0];
         result.setOwnerRef(userDao.getURIFromInternalID(annotationOwner.get(result)));
 
         List<Number> targetIDs = annotationDao.retrieveTargetIDs(annotationID);
@@ -244,7 +249,7 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         result.setSiblingTargets(getTargetsForTheSameLinkAs(internalID));
         Map<Number, String> cachedIDsFragments = targetDao.getCachedRepresentationFragmentPairs(internalID);
         CachedRepresentationFragmentList cachedRepresentationFragmentList = new CachedRepresentationFragmentList();
-        for (Number key: cachedIDsFragments.keySet()) {
+        for (Number key : cachedIDsFragments.keySet()) {
             CachedRepresentationFragment cachedRepresentationFragment = new CachedRepresentationFragment();
             cachedRepresentationFragment.setRef(cachedRepresentationDao.getURIFromInternalID(key));
             cachedRepresentationFragment.setFragmentString(cachedIDsFragments.get(key));
@@ -253,8 +258,6 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         result.setCachedRepresentatinons(cachedRepresentationFragmentList);
         return result;
     }
-    
-    
 
     // TODO unit test
     @Override
@@ -420,13 +423,16 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     public int[] deleteAnnotation(Number annotationID) throws SQLException {
         int[] result = new int[4];
         result[1] = annotationDao.deleteAnnotationPrincipalPermissions(annotationID);
-        List<Number> TargetIDs = annotationDao.retrieveTargetIDs(annotationID);
+        List<Number> targetIDs = annotationDao.retrieveTargetIDs(annotationID);
         result[2] = annotationDao.deleteAllAnnotationTarget(annotationID);
         result[0] = annotationDao.deleteAnnotation(annotationID);
         result[3] = 0;
-        for (Number TargetID : TargetIDs) {
-            deleteAllCachedRepresentationsOfTarget(TargetID);
-            result[3] = result[3] + targetDao.deleteTarget(TargetID);
+        if (targetIDs != null)  {
+            for (Number targetID : targetIDs) {
+                deleteAllCachedRepresentationsOfTarget(targetID);
+                result[3] = result[3] + targetDao.deleteTarget(targetID);
+
+            }
         }
         return result;
     }
@@ -445,26 +451,25 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         String bodyText;
         String newBody;
         if (annotation.getBody().getXmlBody() != null) {
-            bodyText = Helpers.elementToString(annotation.getBody().getXmlBody().getAny());            
+            bodyText = Helpers.elementToString(annotation.getBody().getXmlBody().getAny());
         } else {
             if (annotation.getBody().getTextBody() != null) {
                 bodyText = annotation.getBody().getTextBody().getValue();
-                
-            }
-            else {
+
+            } else {
                 throw new Exception(Helpers.INVALID_BODY_EXCEPTION);
             }
         }
-         newBody = Helpers.replace(bodyText, targetIdPairs);
+        newBody = Helpers.replace(bodyText, targetIdPairs);
         return annotationDao.updateBodyText(annotationID, newBody);
     }
 
     private int addPrincipalsPermissions(Annotation annotation, Number annotationID) throws SQLException {
         List<UserWithPermission> permissions = annotation.getPermissions().getUserWithPermission();
-        int addedPermissions =0;
-        for (UserWithPermission permission:permissions) {
+        int addedPermissions = 0;
+        for (UserWithPermission permission : permissions) {
             addedPermissions = addedPermissions + annotationDao.addAnnotationPrincipalPermission(annotationID, userDao.getInternalIDFromURI(permission.getRef()), permission.getPermission());
-        
+
         }
         return addedPermissions;
     }

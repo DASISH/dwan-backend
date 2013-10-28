@@ -60,12 +60,14 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
     ///////////// GETTERS /////////////
     @Override
     public List<Number> retrieveTargetIDs(Number annotationID) {
-        if (annotationID == null) {
-            return null;
-        }
+        if (annotationID != null) {
         StringBuilder sql = new StringBuilder("SELECT DISTINCT ");
         sql.append(target_id).append(" FROM ").append(annotationsTargetsTableName).append(" WHERE ").append(annotation_id).append("= ?");
         return getSimpleJdbcTemplate().query(sql.toString(), TargetIDRowMapper, annotationID);
+        }
+        else {
+            return null;
+        }
     }
 
     ///////////////////////////////////////////////////////////////////
@@ -170,11 +172,8 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         return getSimpleJdbcTemplate().query(query.toString(), internalIDRowMapper);
     }
 
-   
-   
-
     @Override
-    public Map<AnnotationInfo, Number>  getAnnotationInfoWithoutTargets(Number annotationID) {
+    public Map<AnnotationInfo, Number> getAnnotationInfoWithoutTargets(Number annotationID) {
         if (annotationID == null) {
             return null;
         }
@@ -190,8 +189,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
 
         return result.get(0);
     }
-    
-     private final RowMapper<Map<AnnotationInfo, Number>> annotationInfoRowMapper = new RowMapper<Map<AnnotationInfo, Number>>() {
+    private final RowMapper<Map<AnnotationInfo, Number>> annotationInfoRowMapper = new RowMapper<Map<AnnotationInfo, Number>>() {
         @Override
         public Map<AnnotationInfo, Number> mapRow(ResultSet rs, int rowNumber) throws SQLException {
             Map<AnnotationInfo, Number> result = new HashMap<AnnotationInfo, Number>();
@@ -253,12 +251,12 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         @Override
         public Map<Annotation, Number> mapRow(ResultSet rs, int rowNumber) throws SQLException {
             Map<Annotation, Number> result = new HashMap<Annotation, Number>();
-            
+
             Annotation annotation = new Annotation();
             result.put(annotation, rs.getInt(owner_id));
 
             annotation.setHeadline(rs.getString(headline));
-            
+
             AnnotationBody body = new AnnotationBody();
             if (rs.getBoolean(is_xml)) {
                 body.setTextBody(null);
@@ -274,7 +272,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
                 body.setTextBody(textBody);
             }
             annotation.setBody(body);
-            
+
             annotation.setTargets(null);
             annotation.setURI(externalIDtoURI(rs.getString(external_id)));
 
@@ -330,7 +328,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
     @Override
     public int updateAnnotation(Annotation annotation, Number ownerID) throws SQLException, Exception {
 
-        String[] body= retrieveBodyComponents(annotation);
+        String[] body = retrieveBodyComponents(annotation);
 
         String externalID = stringURItoExternalID(annotation.getURI());
         StringBuilder sql = new StringBuilder("UPDATE ");
@@ -360,9 +358,9 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
     //////////// ADDERS ////////////////////////
     @Override
     public Number addAnnotation(Annotation annotation, Number ownerID) throws SQLException, Exception {
-        
-        String[] body= retrieveBodyComponents(annotation);
-        
+
+        String[] body = retrieveBodyComponents(annotation);
+
         // generate a new annotation ID 
         UUID externalID = UUID.randomUUID();
         Map<String, Object> params = new HashMap<String, Object>();
@@ -371,7 +369,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         params.put("headline", annotation.getHeadline());
         params.put("bodyText", body[0]);
         params.put("bodyMimeType", body[1]);
-        params.put("isXml", annotation.getBody().getXmlBody()!=null);
+        params.put("isXml", annotation.getBody().getXmlBody() != null);
 
         StringBuilder sql = new StringBuilder("INSERT INTO ");
         sql.append(annotationTableName).append("(").append(external_id).append(",").append(owner_id);
@@ -408,48 +406,55 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
     /////////////////// DELETERS //////////////////////////
     @Override
     public int deleteAnnotation(Number annotationID) throws SQLException {
-        if (annotationIsInUse(annotationID)) {
+        if (annotationID != null) {
+            if (annotationIsInUse(annotationID)) {
+                return 0;
+            }
+            StringBuilder sqlAnnotation = new StringBuilder("DELETE FROM ");
+            sqlAnnotation.append(annotationTableName).append(" where ").append(annotation_id).append(" = ?");
+            return (getSimpleJdbcTemplate().update(sqlAnnotation.toString(), annotationID));
+        } else {
             return 0;
         }
-        StringBuilder sqlAnnotation = new StringBuilder("DELETE FROM ");
-        sqlAnnotation.append(annotationTableName).append(" where ").append(annotation_id).append(" = ?");
-        return (getSimpleJdbcTemplate().update(sqlAnnotation.toString(), annotationID));
     }
 
     @Override
     public int deleteAllAnnotationTarget(Number annotationID) throws SQLException {
-        StringBuilder sqlTargetTargets = new StringBuilder("DELETE FROM ");
-        sqlTargetTargets.append(annotationsTargetsTableName).append(" WHERE ").append(annotation_id).append(" = ?");
-        return getSimpleJdbcTemplate().update(sqlTargetTargets.toString(), annotationID); // # removed "annotations_target_Targets" rows
-
+        if (annotationID != null) {
+            StringBuilder sqlTargetTargets = new StringBuilder("DELETE FROM ");
+            sqlTargetTargets.append(annotationsTargetsTableName).append(" WHERE ").append(annotation_id).append(" = ?");
+            return getSimpleJdbcTemplate().update(sqlTargetTargets.toString(), annotationID); // # removed "annotations_target_Targets" rows
+        } else {
+            return 0;
+        }
     }
 
     //////////////////////////////////////////////////////
     @Override
     public int deleteAnnotationPrincipalPermissions(Number annotationID) throws SQLException {
-        StringBuilder sqlPermissions = new StringBuilder("DELETE FROM ");
-        sqlPermissions.append(permissionsTableName).append(" WHERE ").append(annotation_id).append(" = ?");
-        return getSimpleJdbcTemplate().update(sqlPermissions.toString(), annotationID); // removed "permission" rows 
+        if (annotationID != null) {
+            StringBuilder sqlPermissions = new StringBuilder("DELETE FROM ");
+            sqlPermissions.append(permissionsTableName).append(" WHERE ").append(annotation_id).append(" = ?");
+            return getSimpleJdbcTemplate().update(sqlPermissions.toString(), annotationID); // removed "permission" rows 
+        } else {
+            return 0;
+        }
 
     }
 
     /////////////// helpers //////////////////
-    
-    
-    private String[] retrieveBodyComponents(Annotation annotation) throws Exception{
+    private String[] retrieveBodyComponents(Annotation annotation) throws Exception {
         boolean body_is_xml = annotation.getBody().getXmlBody() != null;
         String[] result = new String[2];
         if (body_is_xml) {
             result[0] = Helpers.elementToString(annotation.getBody().getXmlBody().getAny());
             result[1] = annotation.getBody().getXmlBody().getMimeType();
-        }
-        else{
+        } else {
             TextBody textBody = annotation.getBody().getTextBody();
-            if (textBody != null){
+            if (textBody != null) {
                 result[0] = textBody.getValue();
                 result[1] = textBody.getMimeType();
-            }
-            else{
+            } else {
                 throw (new Exception());
             }
         }
