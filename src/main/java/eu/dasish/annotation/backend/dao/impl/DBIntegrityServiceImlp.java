@@ -368,7 +368,10 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     // TODO: unit test
     @Override
     public int updateUsersAnnotation(Number userID, Annotation annotation) throws SQLException, Exception {
-        int updatedAnnotations = annotationDao.updateAnnotation(annotation, userID);
+        if (userID != userDao.getInternalIDFromURI(annotation.getOwnerRef())) {
+            throw new Exception("The current user is not allowed to update this annptation, because (s)he is not its owner");
+        }
+        int updatedAnnotations = annotationDao.updateAnnotation(annotation, userID);        
         Number annotationID = annotationDao.getInternalIDFromURI(annotation.getURI());
         int deletedTargets = annotationDao.deleteAllAnnotationTarget(annotationID);
         int deletedPrinsipalsPermissions = annotationDao.deleteAnnotationPrincipalPermissions(annotationID);
