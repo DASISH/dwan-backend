@@ -336,8 +336,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
                 append(body_text).append("= '").append(body[0]).append("',").
                 append(body_mimetype).append("= '").append(body[1]).append("',").
                 append(headline).append("= '").append(annotation.getHeadline()).append("',").
-                append(owner_id).append("= '").append(annotation.getOwnerRef()).append("',").
-                append(time_stamp).append("= '").append(annotation.getTimeStamp().toString()).
+                append(time_stamp).append("= '").append(annotation.getTimeStamp().toString()).append("',").
                 append(is_xml).append("= '").append(annotation.getBody().getXmlBody() != null).
                 append("' WHERE ").append(external_id).append("= ?");
         int affectedRows = getSimpleJdbcTemplate().update(sql.toString(), externalID);

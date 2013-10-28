@@ -153,7 +153,6 @@ public class AnnotationResource {
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}")
     public String deleteAnnotation(@PathParam("annotationid") String externalIdentifier) throws SQLException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
-
         final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(externalIdentifier));
         int[] resultDelete = dbIntegrityService.deleteAnnotation(annotationID);
         String result = Integer.toString(resultDelete[0]);
@@ -167,8 +166,7 @@ public class AnnotationResource {
     @Path("")
     public JAXBElement<ResponseBody> createAnnotation(Annotation annotation) throws SQLException, Exception {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
-
-        return new ObjectFactory().createResponseBody(addORupdateAnnotation(annotation, true));
+        return new ObjectFactory().createResponseBody(addAnnotation(annotation));
     }
 
     ///////////////////////////////////////////////////////
@@ -180,12 +178,11 @@ public class AnnotationResource {
     public JAXBElement<ResponseBody> updateAnnotation(@PathParam("annotationid") String externalIdentifier, Annotation annotation) throws SQLException, Exception {
         String path = uriInfo.getBaseUri().toString();
         dbIntegrityService.setServiceURI(path);
-
-
-        if (!(path + externalIdentifier).equals(annotation.getURI())) {
+        
+        if (!(path+"annotations/"+externalIdentifier).equals(annotation.getURI())) {
             throw new Exception("External annotation id and the annotation id from the request body do not match");
         }
-        return new ObjectFactory().createResponseBody(addORupdateAnnotation(annotation, false));
+        return new ObjectFactory().createResponseBody(updateAnnotation(annotation));
     }
 
     @PUT
@@ -194,7 +191,6 @@ public class AnnotationResource {
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}/permissions/{userid: " + BackendConstants.regExpIdentifier + "}")
     public int updatePermission(@PathParam("annotationid") String annotationExternalId, @PathParam("userid") String userExternalId, Permission permission) throws SQLException, Exception {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
-
         final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(annotationExternalId));
         final Number userID = dbIntegrityService.getUserInternalIdentifier(UUID.fromString(userExternalId));
         int result;
@@ -253,7 +249,7 @@ public class AnnotationResource {
         return result;
     }
 
-    private ResponseBody addORupdateAnnotation(Annotation annotation, boolean newAnnotation) throws SQLException, Exception {
+    private ResponseBody addAnnotation(Annotation annotation) throws SQLException, Exception {
         // Where the map remoteUSer-->externalID is saved and how to get it?
         String remoteUser = httpServletRequest.getRemoteUser();
         // if (remoteUser == null) { throw new Exception();}
@@ -261,13 +257,21 @@ public class AnnotationResource {
         //testing mode 
         UUID userExternalID = UUID.fromString("00000000-0000-0000-0000-0000000000111");
         Number userID = dbIntegrityService.getUserInternalIdentifier(userExternalID);
-        Number annotationID;
-        if (newAnnotation) {
-            annotationID = dbIntegrityService.addUsersAnnotation(userID, annotation);
-        } else {
-            dbIntegrityService.updateUsersAnnotation(userID, annotation);
-            annotationID = dbIntegrityService.getAnnotationInternalIdentifierFromURI(annotation.getURI());
-        }
+        Number annotationID= dbIntegrityService.addUsersAnnotation(userID, annotation);
+        return makeResponseEnvelope(annotationID);
+    }
+    
+    
+    private ResponseBody updateAnnotation(Annotation annotation) throws SQLException, Exception {
+        // Where the map remoteUSer-->externalID is saved and how to get it?
+        String remoteUser = httpServletRequest.getRemoteUser();
+        // if (remoteUser == null) { throw new Exception();}
+        //UUID externalID = getExternalIDforREmoteUSer(remoteUser);
+        //testing mode 
+        UUID userExternalID = UUID.fromString("00000000-0000-0000-0000-0000000000111");
+        Number userID = dbIntegrityService.getUserInternalIdentifier(userExternalID);
+        dbIntegrityService.updateUsersAnnotation(userID, annotation);
+        Number annotationID = dbIntegrityService.getAnnotationInternalIdentifierFromURI(annotation.getURI());
         return makeResponseEnvelope(annotationID);
     }
 }
