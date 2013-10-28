@@ -142,6 +142,7 @@ public interface DBIntegrityService{
     
     Number getTargetInternalIdentifier(UUID externalID); 
 
+    String getTargetURI(Number annotationID);
    
      UUID getTargetExternalIdentifier(Number annotationID);
     

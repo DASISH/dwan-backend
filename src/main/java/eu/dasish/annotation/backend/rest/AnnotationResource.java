@@ -242,7 +242,7 @@ public class AnnotationResource {
                         AnnotationAction action = new AnnotationAction();
                         actions.getAction().add(action);
                         action.setAction(AnnotationActionName.CREATE_CACHED_REPRESENTATION);
-                        action.setObject(dbIntegrityService.getTargetExternalIdentifier(target).toString());
+                        action.setObject(dbIntegrityService.getTargetURI(target));
                     }
                 }
             }

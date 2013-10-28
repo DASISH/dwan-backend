@@ -248,8 +248,8 @@ public class AnnotationResourceTest {
                 oneOf(daoDispatcher).getTargetsWithNoCachedRepresentation(newAnnotationID);
                 will(returnValue(Targets));
                 
-                oneOf(daoDispatcher).getTargetExternalIdentifier(6);
-                will(returnValue(UUID.fromString("00000000-0000-0000-0000-000000000036")));
+                oneOf(daoDispatcher).getTargetURI(6);
+                will(returnValue("http://localhost:8080/annotator-backend/api/targets/00000000-0000-0000-0000-000000000036"));
             }
         });
         
