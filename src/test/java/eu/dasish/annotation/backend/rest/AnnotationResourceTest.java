@@ -211,8 +211,8 @@ public class AnnotationResourceTest {
         TargetInfo.setRef(UUID.randomUUID().toString());
         TargetInfo.setVersion("vandaag");
         
-        final List<Number> Targets = new ArrayList<Number>();
-        Targets.add(6);
+        final List<String> targets = new ArrayList<String>();
+        targets.add("http://localhost:8080/annotator-backend/api/targets/00000000-0000-0000-0000-000000000036");
         
         final Annotation addedAnnotation = (new ObjectFactory()).createAnnotation(annotationToAdd).getValue();
         addedAnnotation.setURI("http://localhost:8080/annotator-backend/api/annotations/"+UUID.randomUUID().toString());
@@ -246,11 +246,9 @@ public class AnnotationResourceTest {
                 will(returnValue(addedAnnotation));
                 
                 oneOf(daoDispatcher).getTargetsWithNoCachedRepresentation(newAnnotationID);
-                will(returnValue(Targets));
+                will(returnValue(targets));
                 
-                oneOf(daoDispatcher).getTargetURI(6);
-                will(returnValue("http://localhost:8080/annotator-backend/api/targets/00000000-0000-0000-0000-000000000036"));
-            }
+          }
         });
         
        
@@ -261,14 +259,14 @@ public class AnnotationResourceTest {
       
         
         JAXBElement<ResponseBody> result = annotationResource.createAnnotation(annotationToAdd);
-        Annotation newAnnotation = result.getValue().getAnnotationResponse().getContent().getAnnotation();
-        AnnotationActionName actionName = result.getValue().getAnnotationResponse().getActions().getAction().get(0).getAction();
+        Annotation newAnnotation = result.getValue().getAnnotation();
+        String actionName = result.getValue().getActionList().getAction().get(0).getMessage();
         assertEquals(addedAnnotation.getOwnerRef(), newAnnotation.getOwnerRef());
         assertEquals(addedAnnotation.getURI(), newAnnotation.getURI());
         assertEquals(addedAnnotation.getHeadline(), newAnnotation.getHeadline());
         assertEquals(addedAnnotation.getTargets(), newAnnotation.getTargets()); 
         assertEquals(addedAnnotation.getTimeStamp(), newAnnotation.getTimeStamp());
         assertEquals(addedAnnotation.getBody(), newAnnotation.getBody());
-        assertEquals(AnnotationActionName.CREATE_CACHED_REPRESENTATION, actionName);
+        assertEquals(AnnotationActionName.CREATE_CACHED_REPRESENTATION.value(), actionName);
     }
 }

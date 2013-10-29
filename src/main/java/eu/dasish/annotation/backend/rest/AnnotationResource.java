@@ -20,20 +20,19 @@ package eu.dasish.annotation.backend.rest;
 import eu.dasish.annotation.backend.BackendConstants;
 import eu.dasish.annotation.backend.dao.DBIntegrityService;
 import eu.dasish.annotation.schema.Annotation;
-import eu.dasish.annotation.schema.AnnotationAction;
-import eu.dasish.annotation.schema.AnnotationActionList;
 import eu.dasish.annotation.schema.AnnotationActionName;
 import eu.dasish.annotation.schema.AnnotationInfoList;
-import eu.dasish.annotation.schema.AnnotationResponseBody;
-import eu.dasish.annotation.schema.AnnotationResponseContent;
+import eu.dasish.annotation.schema.Action;
+import eu.dasish.annotation.schema.ActionList;
 import eu.dasish.annotation.schema.ObjectFactory;
 import eu.dasish.annotation.schema.Permission;
+import eu.dasish.annotation.schema.PermissionActionName;
 import eu.dasish.annotation.schema.UserWithPermissionList;
 import eu.dasish.annotation.schema.ReferenceList;
 import eu.dasish.annotation.schema.ResponseBody;
-import eu.dasish.annotation.schema.Target;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
@@ -166,7 +165,16 @@ public class AnnotationResource {
     @Path("")
     public JAXBElement<ResponseBody> createAnnotation(Annotation annotation) throws SQLException, Exception {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
-        return new ObjectFactory().createResponseBody(addAnnotation(annotation));
+
+        //testing mode 
+        //String remoteUser = httpServletRequest.getRemoteUser();
+        // if (remoteUser == null) { throw new Exception();}
+        //UUID externalID = getExternalIDforREmoteUSer(remoteUser);
+        UUID userExternalID = UUID.fromString("00000000-0000-0000-0000-0000000000111");
+
+        Number userID = dbIntegrityService.getUserInternalIdentifier(userExternalID);
+        Number annotationID = dbIntegrityService.addUsersAnnotation(userID, annotation);
+        return new ObjectFactory().createResponseBody(makeAnnotationResponseEnvelope(annotationID));
     }
 
     ///////////////////////////////////////////////////////
@@ -178,100 +186,104 @@ public class AnnotationResource {
     public JAXBElement<ResponseBody> updateAnnotation(@PathParam("annotationid") String externalIdentifier, Annotation annotation) throws SQLException, Exception {
         String path = uriInfo.getBaseUri().toString();
         dbIntegrityService.setServiceURI(path);
-        
-        if (!(path+"annotations/"+externalIdentifier).equals(annotation.getURI())) {
+
+        if (!(path + "annotations/" + externalIdentifier).equals(annotation.getURI())) {
             throw new Exception("External annotation id and the annotation id from the request body do not match");
         }
-        return new ObjectFactory().createResponseBody(updateAnnotation(annotation));
+
+        //testing mode 
+        //String remoteUser = httpServletRequest.getRemoteUser();
+        // if (remoteUser == null) { throw new Exception();}
+        //UUID externalID = getExternalIDforREmoteUSer(remoteUser);
+        UUID userExternalID = UUID.fromString("00000000-0000-0000-0000-0000000000111");
+
+        Number userID = dbIntegrityService.getUserInternalIdentifier(userExternalID);
+        Number annotationID = dbIntegrityService.updateUsersAnnotation(userID, annotation);
+        return new ObjectFactory().createResponseBody(makeAnnotationResponseEnvelope(annotationID));
     }
 
     @PUT
     @Consumes(MediaType.APPLICATION_XML)
-    @Produces(MediaType.TEXT_XML)
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}/permissions/{userid: " + BackendConstants.regExpIdentifier + "}")
-    public int updatePermission(@PathParam("annotationid") String annotationExternalId, @PathParam("userid") String userExternalId, Permission permission) throws SQLException, Exception {
+    public String updatePermission(@PathParam("annotationid") String annotationExternalId, @PathParam("userid") String userExternalId, Permission permission) throws SQLException, Exception {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
+        //String remoteUser = httpServletRequest.getRemoteUser();
+        //UUID externalID = getExternalIDforREmoteUSer(remoteUser);
+        //testing mode 
+        UUID remoteUserExternalID = UUID.fromString("00000000-0000-0000-0000-0000000000111");
+        Number remoteUserID = dbIntegrityService.getUserInternalIdentifier(remoteUserExternalID);
         final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(annotationExternalId));
         final Number userID = dbIntegrityService.getUserInternalIdentifier(UUID.fromString(userExternalId));
         int result;
         if (dbIntegrityService.getPermission(annotationID, userID) != null) {
-            result = dbIntegrityService.updateAnnotationPrincipalPermission(annotationID, userID, permission);
+            result = dbIntegrityService.updateAnnotationPrincipalPermission(annotationID, userID, permission, remoteUserID);
         } else {
-            result = dbIntegrityService.updateAnnotationPrincipalPermission(annotationID, userID, permission);
+            result = dbIntegrityService.addAnnotationPrincipalPermission(annotationID, userID, permission, remoteUserID);
         }
-        return result;
+
+        return (result + " rows are updated");
     }
 
     @PUT
     @Consumes(MediaType.APPLICATION_XML)
-    @Produces(MediaType.TEXT_XML)
+    @Produces(MediaType.APPLICATION_XML)
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}/permissions/")
-    public int updatePermissions(@PathParam("annotationid") String annotationExternalId, UserWithPermissionList permissions) throws SQLException, Exception {
+    public JAXBElement<ResponseBody> updatePermissions(@PathParam("annotationid") String annotationExternalId, UserWithPermissionList permissions) throws SQLException, Exception {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
-
+        //String remoteUser = httpServletRequest.getRemoteUser();
+        //UUID externalID = getExternalIDforREmoteUSer(remoteUser);
+        //testing mode 
+        UUID remoteUserExternalID = UUID.fromString("00000000-0000-0000-0000-0000000000111");
+        Number remoteUserID = dbIntegrityService.getUserInternalIdentifier(remoteUserExternalID);
         final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(annotationExternalId));
-        return dbIntegrityService.updatePermissions(annotationID, permissions);
+        int updatedRows = dbIntegrityService.updatePermissions(annotationID, permissions, remoteUserID);
+        return new ObjectFactory().createResponseBody(makePermissionResponseEnvelope(annotationID));
     }
 
-    private ResponseBody makeResponseEnvelope(Number annotationID) throws SQLException {
+    /////////////////////////////////////////
+   
+    private ResponseBody makeAnnotationResponseEnvelope(Number annotationID) throws SQLException {
         ResponseBody result = new ResponseBody();
-        result.setPermissionResponse(null);
-        AnnotationResponseBody subresult = new AnnotationResponseBody();
-        result.setAnnotationResponse(subresult);
-        AnnotationResponseContent content = new AnnotationResponseContent();
-        subresult.setContent(content);
-
-        if (annotationID != null) {
-            Annotation annotation = dbIntegrityService.getAnnotation(annotationID);
-            content.setAnnotation(annotation);
-            List<Number> targetsNoCached = dbIntegrityService.getTargetsWithNoCachedRepresentation(annotationID);
-            if (targetsNoCached == null) {
-                subresult.setActions(null);
-            } else {
-                if (targetsNoCached.isEmpty()) {
-                    subresult.setActions(new AnnotationActionList());
-                } else {
-
-                    AnnotationActionList actions = new AnnotationActionList();
-                    subresult.setActions(actions);
-                    for (Number target : targetsNoCached) {
-                        AnnotationAction action = new AnnotationAction();
-                        actions.getAction().add(action);
-                        action.setAction(AnnotationActionName.CREATE_CACHED_REPRESENTATION);
-                        action.setObject(dbIntegrityService.getTargetURI(target));
-                    }
-                }
-            }
-
-        } else {
-            content.setAnnotation(null);
-        }
+        result.setPermissions(null);        
+        Annotation annotation = dbIntegrityService.getAnnotation(annotationID);
+        result.setAnnotation(annotation);
+        List<String> targetsNoCached = dbIntegrityService.getTargetsWithNoCachedRepresentation(annotationID);
+        ActionList actionList = new ActionList();
+        result.setActionList(actionList);
+        actionList.getAction().addAll(makeActionList(targetsNoCached,  AnnotationActionName.CREATE_CACHED_REPRESENTATION.value()));        
         return result;
     }
 
-    private ResponseBody addAnnotation(Annotation annotation) throws SQLException, Exception {
-        // Where the map remoteUSer-->externalID is saved and how to get it?
-        String remoteUser = httpServletRequest.getRemoteUser();
-        // if (remoteUser == null) { throw new Exception();}
-        //UUID externalID = getExternalIDforREmoteUSer(remoteUser);
-        //testing mode 
-        UUID userExternalID = UUID.fromString("00000000-0000-0000-0000-0000000000111");
-        Number userID = dbIntegrityService.getUserInternalIdentifier(userExternalID);
-        Number annotationID= dbIntegrityService.addUsersAnnotation(userID, annotation);
-        return makeResponseEnvelope(annotationID);
+    /////////////////////////////////////////
+    private ResponseBody makePermissionResponseEnvelope(Number annotationID) throws SQLException {
+        ResponseBody result = new ResponseBody();
+        result.setAnnotation(null);        
+        UserWithPermissionList permissions = dbIntegrityService.getPermissionsForAnnotation(annotationID);
+        result.setPermissions(permissions);
+        List<String> usersWithNoInfo = dbIntegrityService.getUsersWithNoInfo(annotationID);
+        ActionList actionList = new ActionList();
+        result.setActionList(actionList);
+        actionList.getAction().addAll(makeActionList(usersWithNoInfo, PermissionActionName.PROVIDE_USER_INFO.value()));
+        return result;
     }
     
-    
-    private ResponseBody updateAnnotation(Annotation annotation) throws SQLException, Exception {
-        // Where the map remoteUSer-->externalID is saved and how to get it?
-        String remoteUser = httpServletRequest.getRemoteUser();
-        // if (remoteUser == null) { throw new Exception();}
-        //UUID externalID = getExternalIDforREmoteUSer(remoteUser);
-        //testing mode 
-        UUID userExternalID = UUID.fromString("00000000-0000-0000-0000-0000000000111");
-        Number userID = dbIntegrityService.getUserInternalIdentifier(userExternalID);
-        dbIntegrityService.updateUsersAnnotation(userID, annotation);
-        Number annotationID = dbIntegrityService.getAnnotationInternalIdentifierFromURI(annotation.getURI());
-        return makeResponseEnvelope(annotationID);
+    private List<Action>  makeActionList(List<String> resourceURIs, String message){
+        if (resourceURIs!=null){
+          if (resourceURIs.isEmpty()) {
+                return (new ArrayList<Action>());
+            } else {
+                List<Action> result = new ArrayList<Action>();                
+                for (String resourceURI : resourceURIs) {
+                    Action action = new Action();
+                    result.add(action);
+                    action.setMessage(message);
+                    action.setObject(resourceURI);
+                }
+                return result;
+            }  
+        }
+        else {
+            return null;
+        }
     }
 }

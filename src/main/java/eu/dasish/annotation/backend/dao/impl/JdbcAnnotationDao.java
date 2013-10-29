@@ -96,7 +96,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         }
         StringBuilder sql = new StringBuilder("SELECT ");
         sql.append(permission).append(" FROM ").append(permissionsTableName).append(" WHERE ").
-                append(annotation_id).append("  = ").append(annotationID.toString()).
+                append(annotation_id).append("  = ").append(annotationID.toString()).append(" AND ").
                 append(principal_id).append("  = ").append(userID.toString()).append(" LIMIT 1");
         List<Permission> result = getSimpleJdbcTemplate().query(sql.toString(), permissionRowMapper);
         if (result == null) {

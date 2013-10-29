@@ -75,7 +75,7 @@ public class DBIntegrityServiceTest {
     @Autowired
     private CachedRepresentationDao cachedRepresentationDao;    
     @Autowired
-    private TargetDao TargetDao;
+    private TargetDao targetDao;
     @Autowired
     private AnnotationDao annotationDao;
     TestInstances testInstances = new TestInstances();
@@ -232,10 +232,10 @@ public class DBIntegrityServiceTest {
                 oneOf(annotationDao).retrieveTargetIDs(2);
                 will(returnValue(mockTargetIDs));
 
-                oneOf(TargetDao).getTarget(1);
+                oneOf(targetDao).getTarget(1);
                 will(returnValue(mockTargetOne));
 
-                oneOf(TargetDao).getTarget(2);
+                oneOf(targetDao).getTarget(2);
                 will(returnValue(mockTargetTwo));
 
                 /// getPermissionsForAnnotation
@@ -309,7 +309,7 @@ public class DBIntegrityServiceTest {
 
         mockeryDao.checking(new Expectations() {
             {
-                oneOf(TargetDao).getTargetsReferringTo(word);
+                oneOf(targetDao).getTargetsReferringTo(word);
                 will(returnValue(mockTargetIDs));
 
                 oneOf(annotationDao).retrieveAnnotationList(mockTargetIDs);
@@ -343,10 +343,10 @@ public class DBIntegrityServiceTest {
                 oneOf(annotationDao).retrieveTargetIDs(annotationID);
                 will(returnValue(TargetIDs));
 
-                oneOf(TargetDao).getURIFromInternalID(1);
+                oneOf(targetDao).getURIFromInternalID(1);
                 will(returnValue(TestBackendConstants._TEST_SERVLET_URI_Targets+TestBackendConstants._TEST_Target_1_EXT_ID));
 
-                oneOf(TargetDao).getURIFromInternalID(2);
+                oneOf(targetDao).getURIFromInternalID(2);
                 will(returnValue(TestBackendConstants._TEST_SERVLET_URI_Targets+TestBackendConstants._TEST_Target_2_EXT_ID));
 
             }
@@ -409,7 +409,7 @@ public class DBIntegrityServiceTest {
         mockeryDao.checking(new Expectations() {
             {
                 // getFilteredAnnotationIds
-                oneOf(TargetDao).getTargetsReferringTo(word);
+                oneOf(targetDao).getTargetsReferringTo(word);
                 will(returnValue(mockTargetIDs));
                 
                 oneOf(annotationDao).retrieveAnnotationList(mockTargetIDs);
@@ -431,10 +431,10 @@ public class DBIntegrityServiceTest {
                 oneOf(annotationDao).retrieveTargetIDs(2);
                 will(returnValue(TargetIDs));
                 
-                oneOf(TargetDao).getURIFromInternalID(1);
+                oneOf(targetDao).getURIFromInternalID(1);
                 will(returnValue(TestBackendConstants._TEST_SERVLET_URI_Targets +TestBackendConstants._TEST_Target_1_EXT_ID));
                 
-                oneOf(TargetDao).getURIFromInternalID(2);
+                oneOf(targetDao).getURIFromInternalID(2);
                 will(returnValue(TestBackendConstants._TEST_SERVLET_URI_Targets +TestBackendConstants._TEST_Target_2_EXT_ID));
                 ////
                 
@@ -457,8 +457,7 @@ public class DBIntegrityServiceTest {
           
     }
     
-    @Test
-    
+    @Test    
     public void testGetTargetsWithNoCachedRepresentation(){
         System.out.println("test getTargetsWithNoCachedRepresentation");
         final Number annotationID = 4;
@@ -477,18 +476,21 @@ public class DBIntegrityServiceTest {
                 oneOf(annotationDao).retrieveTargetIDs(annotationID);
                 will(returnValue(TargetIDs));
 
-                oneOf(TargetDao).getCachedRepresentations(5);
+                oneOf(targetDao).getCachedRepresentations(5);
                 will(returnValue(cachedIDs5));
                 
-                oneOf(TargetDao).getCachedRepresentations(7);
+                oneOf(targetDao).getCachedRepresentations(7);
                 will(returnValue(cachedIDs7));
+                
+                oneOf(targetDao).getURIFromInternalID(7);
+                will(returnValue("00000000-0000-0000-0000-000000000037"));
                 
             }
         });
         
-        List<Number> result = dbIntegrityService.getTargetsWithNoCachedRepresentation(annotationID);
+        List<String> result = dbIntegrityService.getTargetsWithNoCachedRepresentation(annotationID);
         assertEquals(1, result.size());
-        assertEquals(7, result.get(0)); // Target number 7 has no cached
+        assertEquals("00000000-0000-0000-0000-000000000037", result.get(0)); // Target number 7 has no cached
     }
     
    
@@ -496,8 +498,7 @@ public class DBIntegrityServiceTest {
     /**
      * Test of addCachedForVersion method, of class DBIntegrityServiceImlp.
      */
-    @Test
-    
+    @Test    
     public void testAddCachedForVersion() throws SerialException, SQLException {
         System.out.println("addCachedForVersion");
         String mime = "text/html";
@@ -524,7 +525,7 @@ public class DBIntegrityServiceTest {
                 oneOf(cachedRepresentationDao).addCachedRepresentation(newCachedInfo, newCachedBlob);
                 will(returnValue(newCachedID));
 
-                one(TargetDao).addTargetCachedRepresentation(versionID, newCachedID);
+                one(targetDao).addTargetCachedRepresentation(versionID, newCachedID);
                 will(returnValue(1));
 
             }
@@ -581,7 +582,7 @@ public class DBIntegrityServiceTest {
 
         mockeryDao.checking(new Expectations() {
             {
-                oneOf(TargetDao).getInternalIDFromURI(mockTargetListOne.get(0).getRef());
+                oneOf(targetDao).getInternalIDFromURI(mockTargetListOne.get(0).getRef());
                 will(returnValue(1));
 
                 oneOf(annotationDao).addAnnotationTarget(1, 1);
@@ -625,16 +626,16 @@ public class DBIntegrityServiceTest {
 
         mockeryDao.checking(new Expectations() {
             {
-                oneOf(TargetDao).getInternalIDFromURI(mockTargetListTwo.get(0).getRef());
+                oneOf(targetDao).getInternalIDFromURI(mockTargetListTwo.get(0).getRef());
                 will(returnValue(null));
 
-                oneOf(TargetDao).addTarget(with(aNonNull(Target.class)));
+                oneOf(targetDao).addTarget(with(aNonNull(Target.class)));
                 will(returnValue(8)); //# the next new number is 8, we have already 7 Targets
 
-                oneOf(TargetDao).stringURItoExternalID(mockTargetListTwo.get(0).getRef());
+                oneOf(targetDao).stringURItoExternalID(mockTargetListTwo.get(0).getRef());
                 will(returnValue(tempTargetID));
 
-                oneOf(TargetDao).getExternalID(8);
+                oneOf(targetDao).getExternalID(8);
                 will(returnValue(mockNewTargetUUID));
 
                 oneOf(annotationDao).addAnnotationTarget(1, 8);
@@ -666,7 +667,7 @@ public class DBIntegrityServiceTest {
                 will(returnValue(6)); // the next free number is 6
 
                 //  expectations for addTargetsForannotation
-                oneOf(TargetDao).getInternalIDFromURI(with(aNonNull(String.class)));
+                oneOf(targetDao).getInternalIDFromURI(with(aNonNull(String.class)));
                 will(returnValue(1));
 
                 oneOf(annotationDao).addAnnotationTarget(6, 1);
@@ -755,7 +756,7 @@ public class DBIntegrityServiceTest {
         System.out.println("test deleteCachedRepresentationForTarget");
         mockeryDao.checking(new Expectations() {
             {
-                oneOf(TargetDao).deleteTargetCachedRepresentation(5, 7);
+                oneOf(targetDao).deleteTargetCachedRepresentation(5, 7);
                 will(returnValue(1));
 
                 oneOf(cachedRepresentationDao).deleteCachedRepresentation(7);
@@ -781,16 +782,16 @@ public class DBIntegrityServiceTest {
         
         mockeryDao.checking(new Expectations() {
             {
-                oneOf(TargetDao).getCachedRepresentations(1);
+                oneOf(targetDao).getCachedRepresentations(1);
                 will(returnValue(cachedList));
                 
-                oneOf(TargetDao).deleteTargetCachedRepresentation(1, 1);
+                oneOf(targetDao).deleteTargetCachedRepresentation(1, 1);
                 will(returnValue(1));
                 
                 oneOf(cachedRepresentationDao).deleteCachedRepresentation(1);
                 will(returnValue(1));
                 
-                oneOf(TargetDao).deleteTargetCachedRepresentation(1, 2);
+                oneOf(targetDao).deleteTargetCachedRepresentation(1, 2);
                 will(returnValue(1));
                 
                  oneOf(cachedRepresentationDao).deleteCachedRepresentation(2);
@@ -836,16 +837,16 @@ public class DBIntegrityServiceTest {
                 oneOf(annotationDao).deleteAnnotation(3);
                 will(returnValue(1));
                 
-                oneOf(TargetDao).getCachedRepresentations(2);
+                oneOf(targetDao).getCachedRepresentations(2);
                 will(returnValue(mockCachedIDs));
                 
-                oneOf(TargetDao).deleteTargetCachedRepresentation(2, 3);
+                oneOf(targetDao).deleteTargetCachedRepresentation(2, 3);
                 will(returnValue(1));
                 
                 oneOf(cachedRepresentationDao).deleteCachedRepresentation(3);
                 will(returnValue(1));
                 
-                oneOf(TargetDao).deleteTarget(2);
+                oneOf(targetDao).deleteTarget(2);
                 will(returnValue(1));
 
                

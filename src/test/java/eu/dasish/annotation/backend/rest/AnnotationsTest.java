@@ -22,8 +22,6 @@ import com.sun.jersey.api.client.ClientResponse;
 import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.schema.Annotation;
-import eu.dasish.annotation.schema.AnnotationResponseBody;
-import eu.dasish.annotation.schema.AnnotationResponseContent;
 import eu.dasish.annotation.schema.ObjectFactory;
 import eu.dasish.annotation.schema.ResponseBody;
 import eu.dasish.annotation.schema.TargetInfo;
@@ -165,13 +163,11 @@ public class AnnotationsTest extends ResourcesTest{
         
         ResponseBody responseBody = new ResponseBody();
         final JAXBElement<ResponseBody> jaxbElement = (new ObjectFactory()).createResponseBody(responseBody);
-        responseBody.setPermissionResponse(null);
-        AnnotationResponseBody arb =new AnnotationResponseBody();
-        responseBody.setAnnotationResponse(arb);
-        arb.setActions(null);
-        AnnotationResponseContent content = new AnnotationResponseContent();
-        arb.setContent(content);        
+        responseBody.setPermissions(null);
         final Annotation addedAnnotation = new Annotation();
+        responseBody.setAnnotation(addedAnnotation);
+        responseBody.setActionList(null);
+        
         TargetInfoList TargetInfoList = new TargetInfoList();
         addedAnnotation.setTargets(TargetInfoList);
         addedAnnotation.setOwnerRef(ownerString);
@@ -219,7 +215,7 @@ public class AnnotationsTest extends ResourcesTest{
         assertEquals(200, response.getStatus());
         
         ResponseBody entity = response.getEntity(ResponseBody.class); 
-        Annotation entityA = entity.getAnnotationResponse().getContent().getAnnotation();
+        Annotation entityA = entity.getAnnotation();
         assertEquals(addedAnnotation.getBody(), entityA.getBody());
         assertEquals(addedAnnotation.getHeadline(), entityA.getHeadline());
         assertEquals(addedAnnotation.getPermissions(), entityA.getPermissions());
