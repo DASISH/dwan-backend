@@ -250,7 +250,7 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
             userWithPermission.keySet().toArray(userID);
             User user = userDao.getUser(userID[0]);
 
-            if (user.getDisplayName() == null || user.getEMail() == null) {
+            if (user.getDisplayName() == null || user.getDisplayName().trim().isEmpty() || user.getEMail() == null || user.getEMail().trim().isEmpty()) {
                 result.add(userDao.getURIFromInternalID(userID[0]));
 
             }
@@ -352,7 +352,6 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         for (UserWithPermission userWithPermission : usersWithPermissions) {
             Number userID = userDao.getInternalID(UUID.fromString(userDao.stringURItoExternalID(userWithPermission.getRef())));
             Permission permission = userWithPermission.getPermission();
-            int current;
             Permission currentPermission = annotationDao.getPermission(annotationID, userID);
             if (currentPermission != null) {
                 if (!permission.value().equals(currentPermission.value())) {

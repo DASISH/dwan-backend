@@ -203,7 +203,8 @@ public class AnnotationResource {
     }
 
     @PUT
-    @Consumes(MediaType.APPLICATION_XML)
+    @Consumes(MediaType.APPLICATION_XML)    
+    @Produces(MediaType.APPLICATION_XML)
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}/permissions/{userid: " + BackendConstants.regExpIdentifier + "}")
     public String updatePermission(@PathParam("annotationid") String annotationExternalId, @PathParam("userid") String userExternalId, Permission permission) throws SQLException, Exception {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
@@ -221,7 +222,7 @@ public class AnnotationResource {
             result = dbIntegrityService.addAnnotationPrincipalPermission(annotationID, userID, permission, remoteUserID);
         }
 
-        return (result + " rows are updated");
+        return (result + " rows are updated/added");
     }
 
     @PUT
