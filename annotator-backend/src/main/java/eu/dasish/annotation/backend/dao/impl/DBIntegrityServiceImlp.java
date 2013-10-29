@@ -38,6 +38,7 @@ import eu.dasish.annotation.schema.TargetInfo;
 import eu.dasish.annotation.schema.User;
 import eu.dasish.annotation.schema.UserWithPermission;
 import java.io.InputStream;
+import java.lang.Number;
 import java.sql.Blob;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -96,13 +97,18 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     }
 
     @Override
-    public UUID getTargetExternalIdentifier(Number annotationID) {
-        return targetDao.getExternalID(annotationID);
+    public UUID getTargetExternalIdentifier(Number targetID) {
+        return targetDao.getExternalID(targetID);
     }
 
     @Override
-    public String getTargetURI(Number annotationID) {
-        return targetDao.getURIFromInternalID(annotationID);
+    public String getTargetURI(Number targetID) {
+        return targetDao.getURIFromInternalID(targetID);
+    }
+    
+    @Override
+    public String getUserURI(Number userID) {
+        return userDao.getURIFromInternalID(userID);
     }
 
     @Override
@@ -129,48 +135,57 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     // TODO: refactor, Target grabbing should be made a separate private method
     @Override
     public Annotation getAnnotation(Number annotationID) throws SQLException {
-        Map<Annotation, Number> annotationOwner = annotationDao.getAnnotationWithoutTargetsAndPermissions(annotationID);
+        if (annotationID != null) {
+            Map<Annotation, Number> annotationOwner = annotationDao.getAnnotationWithoutTargetsAndPermissions(annotationID);
 
-        Annotation[] annotations = new Annotation[1];
-        annotationOwner.keySet().toArray(annotations);
-        Annotation result = annotations[0];
-        result.setOwnerRef(userDao.getURIFromInternalID(annotationOwner.get(result)));
+            Annotation[] annotations = new Annotation[1];
+            annotationOwner.keySet().toArray(annotations);
+            Annotation result = annotations[0];
+            result.setOwnerRef(userDao.getURIFromInternalID(annotationOwner.get(result)));
 
-        List<Number> targetIDs = annotationDao.retrieveTargetIDs(annotationID);
-        TargetInfoList sis = new TargetInfoList();
-        for (Number targetID : targetIDs) {
-            Target target = targetDao.getTarget(targetID);
-            TargetInfo targetInfo = new TargetInfo();
-            targetInfo.setLink(target.getLink());
-            targetInfo.setRef(target.getURI());
-            targetInfo.setVersion(target.getVersion());
-            sis.getTargetInfo().add(targetInfo);
+            List<Number> targetIDs = annotationDao.retrieveTargetIDs(annotationID);
+            TargetInfoList sis = new TargetInfoList();
+            for (Number targetID : targetIDs) {
+                Target target = targetDao.getTarget(targetID);
+                TargetInfo targetInfo = new TargetInfo();
+                targetInfo.setLink(target.getLink());
+                targetInfo.setRef(target.getURI());
+                targetInfo.setVersion(target.getVersion());
+                sis.getTargetInfo().add(targetInfo);
+            }
+            result.setTargets(sis);
+
+            result.setPermissions(getPermissionsForAnnotation(annotationID));
+            return result;
+        } else {
+            return null;
         }
-        result.setTargets(sis);
-
-        result.setPermissions(getPermissionsForAnnotation(annotationID));
-        return result;
     }
 
     ///////////////////////////////////////////////////
     // TODO UNIT tests
     @Override
     public UserWithPermissionList getPermissionsForAnnotation(Number annotationID) throws SQLException {
-        List<Map<Number, String>> principalsPermissions = annotationDao.getPermissions(annotationID);
-        UserWithPermissionList result = new UserWithPermissionList();
-        List<UserWithPermission> list = result.getUserWithPermission();
-        for (Map<Number, String> principalPermission : principalsPermissions) {
+        if (annotationID != null) {
+            List<Map<Number, String>> principalsPermissions = annotationDao.getPermissions(annotationID);
+            UserWithPermissionList result = new UserWithPermissionList();
+            List<UserWithPermission> list = result.getUserWithPermission();
+            for (Map<Number, String> principalPermission : principalsPermissions) {
 
-            Number[] principal = new Number[1];
-            principalPermission.keySet().toArray(principal);
+                Number[] principal = new Number[1];
+                principalPermission.keySet().toArray(principal);
 
-            UserWithPermission userWithPermission = new UserWithPermission();
-            userWithPermission.setRef(userDao.getURIFromInternalID(principal[0]));
-            userWithPermission.setPermission(Permission.fromValue(principalPermission.get(principal[0])));
+                UserWithPermission userWithPermission = new UserWithPermission();
+                userWithPermission.setRef(userDao.getURIFromInternalID(principal[0]));
+                userWithPermission.setPermission(Permission.fromValue(principalPermission.get(principal[0])));
 
-            list.add(userWithPermission);
+                list.add(userWithPermission);
+            }
+            return result;
+        } else {
+            return null;
         }
-        return result;
+
     }
 
     ////////////////////////////////////////////////////////////////////////
@@ -203,20 +218,40 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     }
 
     @Override
-    public List<Number> getTargetsWithNoCachedRepresentation(Number annotationID) {
+    public List<String> getTargetsWithNoCachedRepresentation(Number annotationID) {
         if (annotationID == null) {
             return null;
         }
-        List<Number> result = new ArrayList<Number>();
+        List<String> result = new ArrayList<String>();
         List<Number> targetIDs = annotationDao.retrieveTargetIDs(annotationID);
         for (Number targetID : targetIDs) {
             List<Number> versions = targetDao.getCachedRepresentations(targetID);
             if (versions == null) {
-                result.add(targetID);
+                result.add(targetDao.getURIFromInternalID(targetID));
             } else {
                 if (versions.isEmpty()) {
-                    result.add(targetID);
+                    result.add(targetDao.getURIFromInternalID(targetID));
                 }
+
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public List<String> getUsersWithNoInfo(Number annotationID) {
+        if (annotationID == null) {
+            return null;
+        }
+        List<String> result = new ArrayList<String>();
+        List<Map<Number, String>> usersWithPermissions = annotationDao.getPermissions(annotationID);
+        for (Map<Number, String> userWithPermission : usersWithPermissions) {
+            Number[] userID = new Number[1];
+            userWithPermission.keySet().toArray(userID);
+            User user = userDao.getUser(userID[0]);
+
+            if (user.getDisplayName() == null || user.getEMail() == null) {
+                result.add(userDao.getURIFromInternalID(userID[0]));
 
             }
         }
@@ -298,12 +333,20 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
 
     ///// UPDATERS /////////////////
     @Override
-    public int updateAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission) throws SQLException {
-        return annotationDao.addAnnotationPrincipalPermission(annotationID, userID, permission);
+    public int updateAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission, Number remoteUser) throws SQLException, Exception {
+        if (annotationDao.getPermission(annotationID, remoteUser) != Permission.OWNER) {
+            throw new Exception("The curent user cannot update the annotation because (s)he is not its owner");
+        }
+        return annotationDao.updateAnnotationPrincipalPermission(annotationID, userID, permission);
     }
 
     @Override
-    public int updatePermissions(Number annotationID, UserWithPermissionList permissionList) throws SQLException {
+    public int updatePermissions(Number annotationID, UserWithPermissionList permissionList, Number remoteUser) throws SQLException, Exception {
+
+        if (annotationDao.getPermission(annotationID, remoteUser) != Permission.OWNER) {
+            throw new Exception("The curent user cannot update the annotation because (s)he is not its owner");
+        }
+
         List<UserWithPermission> usersWithPermissions = permissionList.getUserWithPermission();
         int result = 0;
         for (UserWithPermission userWithPermission : usersWithPermissions) {
@@ -371,7 +414,7 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         if (userID != userDao.getInternalIDFromURI(annotation.getOwnerRef())) {
             throw new Exception("The current user is not allowed to update this annptation, because (s)he is not its owner");
         }
-        int updatedAnnotations = annotationDao.updateAnnotation(annotation, userID);        
+        int updatedAnnotations = annotationDao.updateAnnotation(annotation, userID);
         Number annotationID = annotationDao.getInternalIDFromURI(annotation.getURI());
         int deletedTargets = annotationDao.deleteAllAnnotationTarget(annotationID);
         int deletedPrinsipalsPermissions = annotationDao.deleteAnnotationPrincipalPermissions(annotationID);
@@ -387,6 +430,14 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         } else {
             return userDao.addUser(user, remoteID);
         }
+    }
+
+    @Override
+    public int addAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission, Number remoteUser) throws SQLException, Exception {
+        if (annotationDao.getPermission(annotationID, remoteUser) != Permission.OWNER) {
+            throw new Exception("The curent user cannot update the annotation because (s)he is not its owner");
+        }
+        return annotationDao.addAnnotationPrincipalPermission(annotationID, userID, permission);
     }
 
     ////////////// DELETERS //////////////////
@@ -430,7 +481,7 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         result[2] = annotationDao.deleteAllAnnotationTarget(annotationID);
         result[0] = annotationDao.deleteAnnotation(annotationID);
         result[3] = 0;
-        if (targetIDs != null)  {
+        if (targetIDs != null) {
             for (Number targetID : targetIDs) {
                 deleteAllCachedRepresentationsOfTarget(targetID);
                 result[3] = result[3] + targetDao.deleteTarget(targetID);

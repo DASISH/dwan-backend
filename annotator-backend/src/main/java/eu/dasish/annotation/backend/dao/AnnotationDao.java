@@ -132,12 +132,12 @@ public interface AnnotationDao extends ResourceDao{
     /**
      * 
      * @param annotationID
-     * @param TargetID
+     * @param targetID
      * @return # updated rows in the joint table "annotations_target_Targets".
      * @throws SQLException 
      * Connects the annotation to its target Target by adding the pair (annotationID, TargetID) to the joint table.
      */ 
-    public int addAnnotationTarget(Number annotationID, Number TargetID) throws SQLException;
+    public int addAnnotationTarget(Number annotationID, Number targetID) throws SQLException;
     
    
     /**

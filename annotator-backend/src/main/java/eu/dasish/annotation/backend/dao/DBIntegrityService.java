@@ -142,9 +142,11 @@ public interface DBIntegrityService{
     
     Number getTargetInternalIdentifier(UUID externalID); 
 
-    String getTargetURI(Number annotationID);
+    String getTargetURI(Number targetID);
    
-     UUID getTargetExternalIdentifier(Number annotationID);
+     UUID getTargetExternalIdentifier(Number targetID);
+     
+    String getUserURI(Number userID); 
     
     /**
      * 
@@ -173,9 +175,11 @@ public interface DBIntegrityService{
     /**
      * 
      * @param annotationID
-     * @return the list of TargetID's for which there is no cached representation
+     * @return the list of targetURI's for which there is no cached representation
      */
-    List<Number> getTargetsWithNoCachedRepresentation(Number annotationID);
+    List<String> getTargetsWithNoCachedRepresentation(Number annotationID);
+    
+    List<String> getUsersWithNoInfo(Number annotationID);
     
     /**
      * 
@@ -246,7 +250,7 @@ public interface DBIntegrityService{
      * @return # rows updated to the table "annotations_principals_permissions"
      * Sets the "permission" for the "userID" w.r.t. the annotation with "annotationID".
      */
-    public int updateAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission) throws SQLException;
+    public int updateAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission, Number remoteUser) throws SQLException, Exception;
     
    /**
      * 
@@ -254,7 +258,7 @@ public interface DBIntegrityService{
      * @param permissionList
      * @return # of rows updated or added in the table annotations_principals_permissions
      */
-    public int updatePermissions(Number annotationID, UserWithPermissionList permissionList) throws SQLException;
+    public int updatePermissions(Number annotationID, UserWithPermissionList permissionList, Number remoteUser) throws SQLException, Exception;
    
    /**
     * ADDERS
@@ -298,6 +302,8 @@ public interface DBIntegrityService{
      */
     Number addUser(User user, String remoteID) throws SQLException;
 
+    int addAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission, Number remoteUser) throws SQLException, Exception;
+    
     /**
      * DELETERS
      */
