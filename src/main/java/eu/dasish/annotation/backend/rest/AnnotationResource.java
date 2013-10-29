@@ -186,8 +186,8 @@ public class AnnotationResource {
     public JAXBElement<ResponseBody> updateAnnotation(@PathParam("annotationid") String externalIdentifier, Annotation annotation) throws SQLException, Exception {
         String path = uriInfo.getBaseUri().toString();
         dbIntegrityService.setServiceURI(path);
-
-        if (!(path + "annotations/" + externalIdentifier).equals(annotation.getURI())) {
+        String annotationURI = annotation.getURI();
+        if (!(path + "annotations/" + externalIdentifier).equals(annotationURI)) {
             throw new Exception("External annotation id and the annotation id from the request body do not match");
         }
 
@@ -198,7 +198,8 @@ public class AnnotationResource {
         UUID userExternalID = UUID.fromString("00000000-0000-0000-0000-0000000000111");
 
         Number userID = dbIntegrityService.getUserInternalIdentifier(userExternalID);
-        Number annotationID = dbIntegrityService.updateUsersAnnotation(userID, annotation);
+        int updatedRows = dbIntegrityService.updateUsersAnnotation(userID, annotation);
+        Number annotationID=dbIntegrityService.getAnnotationInternalIdentifierFromURI(annotationURI); 
         return new ObjectFactory().createResponseBody(makeAnnotationResponseEnvelope(annotationID));
     }
 
