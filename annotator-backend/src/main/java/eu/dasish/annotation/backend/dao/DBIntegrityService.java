@@ -202,6 +202,8 @@ public interface DBIntegrityService{
      */
     public InputStream getCachedRepresentationBlob(Number cachedID) throws SQLException;
     
+    
+    
     public Target getTarget(Number internalID) throws SQLException;
     
     /**
@@ -271,7 +273,7 @@ public interface DBIntegrityService{
      * @return result[0] = # updated rows in the table "Targets_cached_representations" (must be 1 or 0).
      * result[1] = the internal ID of the added cached (a new one if "cached" was new for the Data Base).
      */
-    Number[] addCachedForTarget(Number targetID, CachedRepresentationInfo cachedInfo, Blob cachedBlob) throws SQLException;
+    Number[] addCachedForTarget(Number targetID, CachedRepresentationInfo cachedInfo, InputStream cachedBlob) throws SQLException;
     
  
     /**
