@@ -19,14 +19,18 @@ package eu.dasish.annotation.backend.rest;
 
 import eu.dasish.annotation.backend.BackendConstants;
 import eu.dasish.annotation.backend.dao.DBIntegrityService;
+import eu.dasish.annotation.schema.CachedRepresentationInfo;
 import eu.dasish.annotation.schema.ObjectFactory;
 import eu.dasish.annotation.schema.ReferenceList;
 import eu.dasish.annotation.schema.Target;
+import java.io.ByteArrayInputStream;
 import java.sql.SQLException;
 import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -98,6 +102,19 @@ public class TargetResource {
         final Number cachedID = dbIntegrityService.getCachedRepresentationInternalIdentifier(UUID.fromString(cachedIdentifier));
         int[] result = dbIntegrityService.deleteCachedRepresentationOfTarget(TargetID, cachedID);
         return result[1];
+    }
+    
+    @POST
+    //@Consumes("multipart/mixed")
+    @Consumes(MediaType.APPLICATION_XML)
+    @Produces(MediaType.APPLICATION_XML)
+    @Path("{targetid: "+BackendConstants.regExpIdentifier +"}/cached")
+    public JAXBElement<CachedRepresentationInfo> postCached(@PathParam("targetid") String targetIdentifier, CachedRepresentationInfo metadata) throws SQLException {
+        dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
+        final Number targetID = dbIntegrityService.getTargetInternalIdentifier(UUID.fromString(targetIdentifier));
+        final Number[] respondDB = dbIntegrityService.addCachedForTarget(targetID, metadata, new ByteArrayInputStream("aaa".getBytes()));
+        final CachedRepresentationInfo cachedInfo = dbIntegrityService.getCachedRepresentationInfo(respondDB[1]);
+        return new ObjectFactory().createCashedRepresentationInfo(cachedInfo);
     }
    
 }

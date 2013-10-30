@@ -19,9 +19,12 @@ package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.dao.CachedRepresentationDao;
 import eu.dasish.annotation.schema.CachedRepresentationInfo;
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.String;
 import java.sql.Blob;
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -44,10 +47,10 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
     }
 
     @Override
-    public void setServiceURI(String serviceURI){
+    public void setServiceURI(String serviceURI) {
         _serviceURI = serviceURI;
     }
-    
+
     /////////////////////////// GETTERS  ////////////////////////////////////////
     @Override
     public CachedRepresentationInfo getCachedRepresentationInfo(Number internalID) {
@@ -84,7 +87,7 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
         if (result.isEmpty()) {
             return null;
         }
-        
+
         return result.get(0);
     }
     private final RowMapper<InputStream> cachedRepresentationBlobRowMapper = new RowMapper<InputStream>() {
@@ -108,18 +111,28 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
 
     //////////////////////// ADDERS ///////////////////////////////
     @Override
-    public Number addCachedRepresentation(CachedRepresentationInfo cachedInfo, Blob cachedBlob) {
-        UUID externalIdentifier = UUID.randomUUID();
-        Map<String, Object> params = new HashMap<String, Object>();
-        params.put("externalId", externalIdentifier.toString());
-        params.put("mime_type", cachedInfo.getMimeType());
-        params.put("tool", cachedInfo.getTool());
-        params.put("type", cachedInfo.getType());
-        params.put("blob", cachedBlob);
-        StringBuilder sql = new StringBuilder("INSERT INTO ");
-        sql.append(cachedRepresentationTableName).append("(").append(external_id).append(",").append(mime_type).append(",").append(tool).append(",").append(type_).append(",").append(file_).append(" ) VALUES (:externalId, :mime_type,  :tool, :type, :blob)");
-        final int affectedRows = getSimpleJdbcTemplate().update(sql.toString(), params);
-        return (affectedRows > 0 ? getInternalID(externalIdentifier) : null);
+    public Number addCachedRepresentation(CachedRepresentationInfo cachedInfo, InputStream streamCached) {
+        try {
+            try {
+                Blob blob = writeInputStreamToBlob(streamCached);
+                UUID externalIdentifier = UUID.randomUUID();
+                Map<String, Object> params = new HashMap<String, Object>();
+                params.put("externalId", externalIdentifier.toString());
+                params.put("mime_type", cachedInfo.getMimeType());
+                params.put("tool", cachedInfo.getTool());
+                params.put("type", cachedInfo.getType());
+                params.put("blob", blob);
+                StringBuilder sql = new StringBuilder("INSERT INTO ");
+                sql.append(cachedRepresentationTableName).append("(").append(external_id).append(",").append(mime_type).append(",").append(tool).append(",").append(type_).append(",").append(file_).append(" ) VALUES (:externalId, :mime_type,  :tool, :type, :blob)");
+                final int affectedRows = getSimpleJdbcTemplate().update(sql.toString(), params);
+                return (affectedRows > 0 ? getInternalID(externalIdentifier) : null);
+            } catch (SQLException sqle) {
+                return null;
+            }
+        } catch (IOException ioe) {
+            return null;
+        }
+
     }
 
     /////////////////////// DELETERS  //////////////////////////////////////////////
@@ -132,5 +145,20 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
         StringBuilder sql = new StringBuilder("DELETE FROM ");
         sql.append(cachedRepresentationTableName).append(" WHERE ").append(cached_representation_id).append(" = ?");
         return getSimpleJdbcTemplate().update(sql.toString(), internalID);
+    }
+
+    // HELPERS
+    private Blob writeInputStreamToBlob(InputStream in) throws IOException, SQLException {
+        Connection con = getConnection();
+        //Connection con = DriverManager.getConnection("jdbc:postgresql:annotator", "dasish", "dasish");
+        Blob blob = con.createBlob();
+        byte[] buffer = new byte[8192];
+        long pos = 0;
+        int bytesRead = 0;
+        while ((bytesRead = in.read(buffer, 0, 8192)) != -1) {
+            int bytesWritten = blob.setBytes(pos, buffer, 0, bytesRead);
+            pos = pos + bytesWritten;
+        }
+        return blob;
     }
 }

@@ -367,7 +367,7 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
 
     /////////////// ADDERS  /////////////////////////////////
     @Override
-    public Number[] addCachedForTarget(Number targetID, CachedRepresentationInfo cachedInfo, Blob cachedBlob) throws SQLException {
+    public Number[] addCachedForTarget(Number targetID, CachedRepresentationInfo cachedInfo, InputStream cachedBlob) throws SQLException {
         Number[] result = new Number[2];
         result[1] = cachedRepresentationDao.getInternalIDFromURI(cachedInfo.getURI());
         if (result[1] == null) {

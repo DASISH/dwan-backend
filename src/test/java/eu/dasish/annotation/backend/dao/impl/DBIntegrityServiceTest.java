@@ -35,7 +35,7 @@ import eu.dasish.annotation.schema.ReferenceList;
 import eu.dasish.annotation.schema.Target;
 import eu.dasish.annotation.schema.TargetInfo;
 import eu.dasish.annotation.schema.User;
-import java.sql.Blob;
+import java.io.ByteArrayInputStream;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -50,7 +50,6 @@ import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -513,7 +512,7 @@ public class DBIntegrityServiceTest {
 
         String blobString = "aaa";
         byte[] blobBytes = blobString.getBytes();
-        final Blob newCachedBlob = new SerialBlob(blobBytes);
+        final ByteArrayInputStream newCachedBlob = new ByteArrayInputStream(blobBytes);
         final Number newCachedID = 8;
         final Number versionID = 1;
         mockeryDao.checking(new Expectations() {
