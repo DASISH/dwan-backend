@@ -23,7 +23,10 @@ import eu.dasish.annotation.schema.CachedRepresentationInfo;
 import eu.dasish.annotation.schema.ObjectFactory;
 import eu.dasish.annotation.schema.ReferenceList;
 import eu.dasish.annotation.schema.Target;
-import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
@@ -40,6 +43,8 @@ import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.JAXBElement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import com.sun.jersey.multipart.FormDataParam;
 
 /**
  *
@@ -104,17 +109,20 @@ public class TargetResource {
         return result[1];
     }
     
+ 
     @POST
-    //@Consumes("multipart/mixed")
-    @Consumes(MediaType.APPLICATION_XML)
+    @Consumes("multipart/mixed")
     @Produces(MediaType.APPLICATION_XML)
     @Path("{targetid: "+BackendConstants.regExpIdentifier +"}/cached")
-    public JAXBElement<CachedRepresentationInfo> postCached(@PathParam("targetid") String targetIdentifier, CachedRepresentationInfo metadata) throws SQLException {
+    public JAXBElement<CachedRepresentationInfo> postCached(@PathParam("targetid") String targetIdentifier, InputStream inputStream, CachedRepresentationInfo metadata) throws SQLException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final Number targetID = dbIntegrityService.getTargetInternalIdentifier(UUID.fromString(targetIdentifier));
-        final Number[] respondDB = dbIntegrityService.addCachedForTarget(targetID, metadata, new ByteArrayInputStream("aaa".getBytes()));
+     
+        final Number[] respondDB = dbIntegrityService.addCachedForTarget(targetID, metadata, inputStream);
         final CachedRepresentationInfo cachedInfo = dbIntegrityService.getCachedRepresentationInfo(respondDB[1]);
         return new ObjectFactory().createCashedRepresentationInfo(cachedInfo);
+      
     }
+  
    
 }
