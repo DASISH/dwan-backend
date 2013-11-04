@@ -24,14 +24,13 @@ import java.io.InputStream;
 import java.lang.String;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import javax.sql.DataSource;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.support.SqlLobValue;
+import org.apache.commons.io.IOUtils;
 
 /**
  *
@@ -118,7 +117,7 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
             params.put("mime_type", cachedInfo.getMimeType());
             params.put("tool", cachedInfo.getTool());
             params.put("type", cachedInfo.getType());
-            params.put("blob", getBytesForBlob(streamCached));
+            params.put("blob", IOUtils.toByteArray(streamCached));
             StringBuilder sql = new StringBuilder("INSERT INTO ");
             sql.append(cachedRepresentationTableName).append("(").append(external_id).append(",").append(mime_type).append(",").append(tool).append(",").append(type_).append(",").append(file_).append(" ) VALUES (:externalId, :mime_type,  :tool, :type, :blob)");
             final int affectedRows = getSimpleJdbcTemplate().update(sql.toString(), params);
@@ -140,17 +139,5 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
         StringBuilder sql = new StringBuilder("DELETE FROM ");
         sql.append(cachedRepresentationTableName).append(" WHERE ").append(cached_representation_id).append(" = ?");
         return getSimpleJdbcTemplate().update(sql.toString(), internalID);
-    }
-
-    /////////// HELPERS ///////////////
-    private byte[] getBytesForBlob(InputStream iStream) throws IOException {
-        int max_buffer_size = 1024 * 1024 * 3;
-        byte[] buffer = new byte[max_buffer_size];
-        int bytesRead = iStream.read(buffer);
-        byte[] result = new byte[bytesRead];
-        for (int i = 0; i < bytesRead; i++) {
-            result[i] = buffer[i];
-        }
-        return result;
     }
 }

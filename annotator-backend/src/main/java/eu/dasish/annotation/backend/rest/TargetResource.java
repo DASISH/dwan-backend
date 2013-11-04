@@ -17,18 +17,21 @@
  */
 package eu.dasish.annotation.backend.rest;
 
+import com.sun.jersey.multipart.BodyPartEntity;
+import com.sun.jersey.multipart.MultiPart;
 import eu.dasish.annotation.backend.BackendConstants;
 import eu.dasish.annotation.backend.dao.DBIntegrityService;
 import eu.dasish.annotation.schema.CachedRepresentationInfo;
 import eu.dasish.annotation.schema.ObjectFactory;
 import eu.dasish.annotation.schema.ReferenceList;
 import eu.dasish.annotation.schema.Target;
+import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.UUID;
+import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -43,8 +46,6 @@ import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.JAXBElement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import com.sun.jersey.multipart.FormDataParam;
 
 /**
  *
@@ -64,25 +65,25 @@ public class TargetResource {
     private HttpServletRequest httpServletRequest;
     @Context
     private UriInfo uriInfo;
-   
+
     public void setHttpRequest(HttpServletRequest request) {
         this.httpServletRequest = request;
     }
 
     public TargetResource() {
     }
-    
+
     // TODOD both unit tests
     @GET
     @Produces(MediaType.TEXT_XML)
     @Path("{targetid: " + BackendConstants.regExpIdentifier + "}")
     public JAXBElement<Target> getTarget(@PathParam("targetid") String ExternalIdentifier) throws SQLException {
-         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
-         final Number TargetID = dbIntegrityService.getTargetInternalIdentifier(UUID.fromString(ExternalIdentifier));
+        dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
+        final Number TargetID = dbIntegrityService.getTargetInternalIdentifier(UUID.fromString(ExternalIdentifier));
         final Target Target = dbIntegrityService.getTarget(TargetID);
         return new ObjectFactory().createTarget(Target);
     }
-    
+
     // TODOD both unit tests
     @GET
     @Produces(MediaType.TEXT_XML)
@@ -93,14 +94,14 @@ public class TargetResource {
         final ReferenceList siblings = dbIntegrityService.getTargetsForTheSameLinkAs(targetID);
         return new ObjectFactory().createReferenceList(siblings);
     }
-    
-     // TODO both unit tests
+
+    // TODO both unit tests
     //changed path, /Targetpart is removed
     //how to overwork the input stream to make it downloadable
     // using mime type as well
     @DELETE
     @Produces(MediaType.TEXT_XML)
-    @Path("{targetid: "+BackendConstants.regExpIdentifier +"}/cached/{cachedid: "+ BackendConstants.regExpIdentifier+"}")
+    @Path("{targetid: " + BackendConstants.regExpIdentifier + "}/cached/{cachedid: " + BackendConstants.regExpIdentifier + "}")
     public int deleteCached(@PathParam("targetid") String TargetIdentifier, @PathParam("cachedid") String cachedIdentifier) throws SQLException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final Number TargetID = dbIntegrityService.getCachedRepresentationInternalIdentifier(UUID.fromString(TargetIdentifier));
@@ -108,21 +109,22 @@ public class TargetResource {
         int[] result = dbIntegrityService.deleteCachedRepresentationOfTarget(TargetID, cachedID);
         return result[1];
     }
-    
- 
+
     @POST
     @Consumes("multipart/mixed")
     @Produces(MediaType.APPLICATION_XML)
-    @Path("{targetid: "+BackendConstants.regExpIdentifier +"}/cached")
-    public JAXBElement<CachedRepresentationInfo> postCached(@PathParam("targetid") String targetIdentifier, InputStream inputStream, CachedRepresentationInfo metadata) throws SQLException {
+    @Path("{targetid: " + BackendConstants.regExpIdentifier + "}/cached")
+    public JAXBElement<CachedRepresentationInfo> postCached(@PathParam("targetid") String targetIdentifier,
+            MultiPart multiPart) throws SQLException {
+
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final Number targetID = dbIntegrityService.getTargetInternalIdentifier(UUID.fromString(targetIdentifier));
-     
-        final Number[] respondDB = dbIntegrityService.addCachedForTarget(targetID, metadata, inputStream);
+        CachedRepresentationInfo metadata = multiPart.getBodyParts().get(0).getEntityAs(CachedRepresentationInfo.class);
+        BodyPartEntity bpe = (BodyPartEntity) multiPart.getBodyParts().get(1).getEntity();
+        InputStream cachedSource = bpe.getInputStream();
+        final Number[] respondDB = dbIntegrityService.addCachedForTarget(targetID, metadata, cachedSource);
         final CachedRepresentationInfo cachedInfo = dbIntegrityService.getCachedRepresentationInfo(respondDB[1]);
         return new ObjectFactory().createCashedRepresentationInfo(cachedInfo);
-      
+
     }
-  
-   
 }
