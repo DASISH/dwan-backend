@@ -19,8 +19,6 @@ package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.dao.TargetDao;
-import eu.dasish.annotation.schema.CachedRepresentationFragment;
-import eu.dasish.annotation.schema.CachedRepresentationFragmentList;
 import eu.dasish.annotation.schema.Target;
 import eu.dasish.annotation.schema.TargetInfo;
 import java.sql.ResultSet;
@@ -243,7 +241,7 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
         StringBuilder sqlTargetsVersions = new StringBuilder("DELETE FROM ");
         sqlTargetsVersions.append(TargetsCachedRepresentationsTableName).append(" WHERE ").append(target_id).append(" = :targetId").
                 append(" AND ").append(cached_representation_id).append(" = :cachedId");
-        return getSimpleJdbcTemplate().update(sqlTargetsVersions.toString(), targetID);
+        return getSimpleJdbcTemplate().update(sqlTargetsVersions.toString(), paramsJoint);
 
     }
  
