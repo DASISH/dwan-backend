@@ -127,4 +127,19 @@ public class TargetResource {
         return new ObjectFactory().createCashedRepresentationInfo(cachedInfo);
 
     }
+    
+    
+    @DELETE
+    @Path("{targetid: " + BackendConstants.regExpIdentifier + "}/cached/{cachedid: " + BackendConstants.regExpIdentifier + "}")
+    public String deleteCachedForTarget(@PathParam("targetid") String targetExternalIdentifier, 
+    @PathParam("cachedid") String cachedExternalIdentifier) throws SQLException {
+        dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
+        final Number targetID = dbIntegrityService.getTargetInternalIdentifier(UUID.fromString(targetExternalIdentifier));
+        final Number cachedID = dbIntegrityService.getCachedRepresentationInternalIdentifier(UUID.fromString(cachedExternalIdentifier));
+        int[] resultDelete = dbIntegrityService.deleteCachedRepresentationOfTarget(targetID, cachedID);
+        String result = Integer.toString(resultDelete[0]);
+        return result + " pair(s) target-cached deleted.";
+    }
+
+    
 }
