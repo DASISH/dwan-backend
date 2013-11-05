@@ -524,14 +524,14 @@ public class DBIntegrityServiceTest {
                 oneOf(cachedRepresentationDao).addCachedRepresentation(newCachedInfo, newCachedBlob);
                 will(returnValue(newCachedID));
 
-                one(targetDao).addTargetCachedRepresentation(versionID, newCachedID);
+                one(targetDao).addTargetCachedRepresentation(versionID, newCachedID, "#(1,2)");
                 will(returnValue(1));
 
             }
         });
 
 
-        Number[] result = dbIntegrityService.addCachedForTarget(versionID, newCachedInfo, newCachedBlob);
+        Number[] result = dbIntegrityService.addCachedForTarget(versionID, "#(1,2)", newCachedInfo, newCachedBlob);
         assertEquals(2, result.length);
         assertEquals(1, result[0]);
         assertEquals(newCachedID, result[1]);

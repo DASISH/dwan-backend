@@ -110,7 +110,7 @@ public interface TargetDao extends ResourceDao{
      * @return # added rows to the table "Targets_cached_representations". Should be "1" if the pair (TargetID, cachedID) has been added.
      * @throws SQLException 
      */
-    public int addTargetCachedRepresentation(Number TargetID, Number cachedID) throws SQLException; 
+    public int addTargetCachedRepresentation(Number TargetID, Number cachedID, String fragmentDescription) throws SQLException; 
     
     /**
      * 

@@ -367,13 +367,13 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
 
     /////////////// ADDERS  /////////////////////////////////
     @Override
-    public Number[] addCachedForTarget(Number targetID, CachedRepresentationInfo cachedInfo, InputStream cachedBlob) throws SQLException {
+    public Number[] addCachedForTarget(Number targetID, String fragmentDescriptor, CachedRepresentationInfo cachedInfo, InputStream cachedBlob) throws SQLException {
         Number[] result = new Number[2];
         result[1] = cachedRepresentationDao.getInternalIDFromURI(cachedInfo.getURI());
         if (result[1] == null) {
             result[1] = cachedRepresentationDao.addCachedRepresentation(cachedInfo, cachedBlob);
         }
-        result[0] = targetDao.addTargetCachedRepresentation(targetID, result[1]);
+        result[0] = targetDao.addTargetCachedRepresentation(targetID, result[1], fragmentDescriptor);
         return result;
 
     }

@@ -28,7 +28,6 @@ import eu.dasish.annotation.schema.Target;
 import eu.dasish.annotation.schema.TargetInfo;
 import eu.dasish.annotation.schema.User;
 import java.io.InputStream;
-import java.sql.Blob;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.List;
@@ -273,7 +272,7 @@ public interface DBIntegrityService{
      * @return result[0] = # updated rows in the table "Targets_cached_representations" (must be 1 or 0).
      * result[1] = the internal ID of the added cached (a new one if "cached" was new for the Data Base).
      */
-    Number[] addCachedForTarget(Number targetID, CachedRepresentationInfo cachedInfo, InputStream cachedBlob) throws SQLException;
+    Number[] addCachedForTarget(Number targetID, String fragmentDescriptor, CachedRepresentationInfo cachedInfo, InputStream cachedBlob) throws SQLException;
     
  
     /**

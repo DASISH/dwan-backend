@@ -98,7 +98,7 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
     //////////////////////////////////////
     private boolean cachedIsInUse(Number cachedID) {
         StringBuilder sql = new StringBuilder("SELECT ");
-        sql.append(target_id).append(" FROM ").append(TargetsCachedRepresentationsTableName).append(" WHERE ").append(cached_representation_id).append("= ? LIMIT 1");
+        sql.append(target_id).append(" FROM ").append(targetsCachedRepresentationsTableName).append(" WHERE ").append(cached_representation_id).append("= ? LIMIT 1");
         List<Number> result = getSimpleJdbcTemplate().query(sql.toString(), TargetIDRowMapper, cachedID);
         if (result != null) {
             return (!result.isEmpty());

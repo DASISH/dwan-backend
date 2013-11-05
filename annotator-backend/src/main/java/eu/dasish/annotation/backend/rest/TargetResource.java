@@ -113,8 +113,9 @@ public class TargetResource {
     @POST
     @Consumes("multipart/mixed")
     @Produces(MediaType.APPLICATION_XML)
-    @Path("{targetid: " + BackendConstants.regExpIdentifier + "}/cached")
+    @Path("{targetid: " + BackendConstants.regExpIdentifier + "}/fragment/{fragmentDescriptor}/cached")
     public JAXBElement<CachedRepresentationInfo> postCached(@PathParam("targetid") String targetIdentifier,
+            @PathParam("fragmentDescriptor") String fragmentDescriptor, 
             MultiPart multiPart) throws SQLException {
 
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
@@ -122,7 +123,7 @@ public class TargetResource {
         CachedRepresentationInfo metadata = multiPart.getBodyParts().get(0).getEntityAs(CachedRepresentationInfo.class);
         BodyPartEntity bpe = (BodyPartEntity) multiPart.getBodyParts().get(1).getEntity();
         InputStream cachedSource = bpe.getInputStream();
-        final Number[] respondDB = dbIntegrityService.addCachedForTarget(targetID, metadata, cachedSource);
+        final Number[] respondDB = dbIntegrityService.addCachedForTarget(targetID, fragmentDescriptor, metadata, cachedSource);
         final CachedRepresentationInfo cachedInfo = dbIntegrityService.getCachedRepresentationInfo(respondDB[1]);
         return new ObjectFactory().createCashedRepresentationInfo(cachedInfo);
 

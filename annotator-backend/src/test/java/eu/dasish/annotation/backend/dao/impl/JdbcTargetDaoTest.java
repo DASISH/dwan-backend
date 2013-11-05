@@ -23,6 +23,7 @@ import eu.dasish.annotation.schema.TargetInfo;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -147,8 +148,11 @@ public class JdbcTargetDaoTest extends JdbcResourceDaoTest {
     @Test
     public void testAddTargetCachedRepresentation() throws SQLException{
        System.out.println("test addTargetCachedRepresentation");
-       assertEquals(1, jdbcTargetDao.addTargetCachedRepresentation(6, 7));
-
+       assertEquals(1, jdbcTargetDao.addTargetCachedRepresentation(6, 7, "#firstrow"));
+       // content test
+       Map<Number, String> pairs = jdbcTargetDao.getCachedRepresentationFragmentPairs(6) ;
+       assertEquals(1, pairs.size());
+       assertEquals("#firstrow", pairs.get(7));
     }
     
     /**
