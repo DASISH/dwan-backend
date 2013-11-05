@@ -95,14 +95,14 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
     @Override
     public List<Number> getCachedRepresentations(Number targetID) {
        
-        String sql = "SELECT " + cached_representation_id + " FROM " + TargetsCachedRepresentationsTableName + " WHERE " + target_id + " = ?";
+        String sql = "SELECT " + cached_representation_id + " FROM " + targetsCachedRepresentationsTableName + " WHERE " + target_id + " = ?";
         return getSimpleJdbcTemplate().query(sql, cachedIDRowMapper, targetID); 
     }
 
      @Override
      public Map<Number, String> getCachedRepresentationFragmentPairs(Number targetID){        
         Map<Number, String> result  = new HashMap<Number, String>(); 
-        String sql = "SELECT " + cached_representation_id + ","+ fragment_descriptor_in_cached+ " FROM " + TargetsCachedRepresentationsTableName + " WHERE " + target_id + " = ?";
+        String sql = "SELECT " + cached_representation_id + ","+ fragment_descriptor_in_cached+ " FROM " + targetsCachedRepresentationsTableName + " WHERE " + target_id + " = ?";
         List<Map<Number, String>> respond = getSimpleJdbcTemplate().query(sql, cachedFragmentRowMapper, targetID); 
         for (Map<Number, String> pair : respond){
             result.putAll(pair);
@@ -197,11 +197,12 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
     
     ///////////////////////////////////////////////////////////////////
     @Override
-    public int addTargetCachedRepresentation(Number TargetID, Number cachedID) throws SQLException{
+    public int addTargetCachedRepresentation(Number targetID, Number cachedID, String fragmentDescriptor) throws SQLException{
         Map<String, Object> paramsJoint = new HashMap<String, Object>();
-        paramsJoint.put("TargetId", TargetID);
+        paramsJoint.put("targetId", targetID);
         paramsJoint.put("cachedId", cachedID);
-        StringBuilder sqlJoint = new StringBuilder("INSERT INTO ").append(TargetsCachedRepresentationsTableName).append("(").append(target_id).append(",").append(cached_representation_id).append(" ) VALUES (:TargetId, :cachedId)");
+        paramsJoint.put("fragmentDescriptor", fragmentDescriptor);
+        StringBuilder sqlJoint = new StringBuilder("INSERT INTO ").append(targetsCachedRepresentationsTableName).append("(").append(target_id).append(",").append(cached_representation_id).append(",").append(fragment_descriptor_in_cached).append(" ) VALUES (:targetId, :cachedId, :fragmentDescriptor)");
         return getSimpleJdbcTemplate().update(sqlJoint.toString(), paramsJoint);
     }
     
@@ -239,7 +240,7 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
         paramsJoint.put("targetId", targetID);
         paramsJoint.put("cachedId", cachedID);
         StringBuilder sqlTargetsVersions = new StringBuilder("DELETE FROM ");
-        sqlTargetsVersions.append(TargetsCachedRepresentationsTableName).append(" WHERE ").append(target_id).append(" = :targetId").
+        sqlTargetsVersions.append(targetsCachedRepresentationsTableName).append(" WHERE ").append(target_id).append(" = :targetId").
                 append(" AND ").append(cached_representation_id).append(" = :cachedId");
         return getSimpleJdbcTemplate().update(sqlTargetsVersions.toString(), paramsJoint);
 
