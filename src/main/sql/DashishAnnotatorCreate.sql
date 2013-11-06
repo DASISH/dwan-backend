@@ -41,7 +41,7 @@ SET default_with_oids = false;
 CREATE TABLE principal (
     principal_id SERIAL UNIQUE NOT NULL,
     external_id text UNIQUE NOT NULL,
-    remote_id text,
+    remote_id text UNIQUE NOT NULL,
     principal_name text,
     e_mail text
 );

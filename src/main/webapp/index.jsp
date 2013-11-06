@@ -39,10 +39,15 @@
         POST api/notebooks/_nid_	Creates a new annotation in _nid_. The content of an annotation is given in the request body. In fact this is a short cut of two actions:<br>
         DELETE <form action="api/notebooks/_nid_" method="DELETE"><input type="submit" /></form>api/notebooks/_nid_	Delete _nid_. Annotations stay, they just lose connection to _nid_.<br> 
  -->
-        
+     <br> 
+     <a href="spring_security_login"> Login</a> <br> 
+     <br> 
+     <a href="j_spring_security_logout"> Logout</a> <br> 
+     <br> 
       <b>Test URI-s</b><br>
       <b>All output xml-s are valid w.r.t. the schema</b><br>
-     GET <a href="api/users/00000000-0000-0000-0000-0000000000112">api/users/00000000-0000-0000-0000-0000000000112</a>  !Problem: how to ask the "servlet context" if this user is current? so far all are set to "true"<br> 
+     GET <a href="api/users/00000000-0000-0000-0000-0000000000112">api/users/00000000-0000-0000-0000-0000000000112</a> <br> 
+     GET <a href="api/users/00000000-0000-0000-0000-0000000000112/current">api/users/00000000-0000-0000-0000-0000000000112/current</a>  !Problem: how to ask the servlet if the given user is logged in, may be by some other running somewhere client<br> 
      GET <a href="api/users/info?email=twagoo@mpi.nl">api/users/info?email=twagoo@mpi.nl</a>  <br>
      GET <a href="api/annotations?link=Sagrada">api/annotations/info?link=Sagrada</a> !Comment: more tests are necessary to test on all query parameters  </br>
      GET <a href="api/annotations?link=Gaud">api/annotations/info?link=Gaud</a> !Comment: more tests are necessary to test on all query parameters  </br>

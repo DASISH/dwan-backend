@@ -219,6 +219,8 @@ public interface DBIntegrityService{
      */
     public User getUserByInfo(String eMail);
     
+    
+    public String getUserRemoteID(Number internalID);
   
     /**
      * 
@@ -232,6 +234,8 @@ public interface DBIntegrityService{
     /**
      * UPDATERS
      */
+    
+   
     
     /**
      * 
