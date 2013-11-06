@@ -52,6 +52,7 @@ import javax.ws.rs.ext.Providers;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Component;
 
 /**
@@ -91,6 +92,7 @@ public class AnnotationResource {
     @GET
     @Produces(MediaType.TEXT_XML)
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}")
+    @Secured("ROLE_USER")
     public JAXBElement<Annotation> getAnnotation(@PathParam("annotationid") String ExternalIdentifier) throws SQLException, JAXBException, Exception {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(ExternalIdentifier));
@@ -108,6 +110,7 @@ public class AnnotationResource {
     @GET
     @Produces(MediaType.TEXT_XML)
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}/targets")
+    @Secured("ROLE_USER")
     public JAXBElement<ReferenceList> getAnnotationTargets(@PathParam("annotationid") String ExternalIdentifier) throws SQLException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(ExternalIdentifier));
@@ -119,6 +122,7 @@ public class AnnotationResource {
     @GET
     @Produces(MediaType.TEXT_XML)
     @Path("")
+    @Secured("ROLE_USER")
     public JAXBElement<AnnotationInfoList> getFilteredAnnotations(@QueryParam("link") String link,
             @QueryParam("text") String text,
             @QueryParam("access") String permission,
@@ -138,6 +142,7 @@ public class AnnotationResource {
     @GET
     @Produces(MediaType.TEXT_XML)
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}/permissions")
+    @Secured("ROLE_USER")
     public JAXBElement<UserWithPermissionList> getAnnotationPermissions(@PathParam("annotationid") String ExternalIdentifier) throws SQLException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
 
@@ -150,6 +155,7 @@ public class AnnotationResource {
     // TODO: how to return the status code? 
     @DELETE
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}")
+    @Secured("ROLE_USER")
     public String deleteAnnotation(@PathParam("annotationid") String externalIdentifier) throws SQLException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(externalIdentifier));
@@ -163,6 +169,7 @@ public class AnnotationResource {
     @Consumes(MediaType.APPLICATION_XML)
     @Produces(MediaType.APPLICATION_XML)
     @Path("")
+    @Secured("ROLE_USER")
     public JAXBElement<ResponseBody> createAnnotation(Annotation annotation) throws SQLException, Exception {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
 
@@ -183,6 +190,7 @@ public class AnnotationResource {
     @Consumes(MediaType.APPLICATION_XML)
     @Produces(MediaType.APPLICATION_XML)
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}")
+    @Secured("ROLE_USER")
     public JAXBElement<ResponseBody> updateAnnotation(@PathParam("annotationid") String externalIdentifier, Annotation annotation) throws SQLException, Exception {
         String path = uriInfo.getBaseUri().toString();
         dbIntegrityService.setServiceURI(path);
@@ -207,6 +215,7 @@ public class AnnotationResource {
     @Consumes(MediaType.APPLICATION_XML)    
     @Produces(MediaType.APPLICATION_XML)
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}/permissions/{userid: " + BackendConstants.regExpIdentifier + "}")
+    @Secured("ROLE_USER")
     public String updatePermission(@PathParam("annotationid") String annotationExternalId, @PathParam("userid") String userExternalId, Permission permission) throws SQLException, Exception {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         //String remoteUser = httpServletRequest.getRemoteUser();
@@ -230,6 +239,7 @@ public class AnnotationResource {
     @Consumes(MediaType.APPLICATION_XML)
     @Produces(MediaType.APPLICATION_XML)
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}/permissions/")
+    @Secured("ROLE_USER")
     public JAXBElement<ResponseBody> updatePermissions(@PathParam("annotationid") String annotationExternalId, UserWithPermissionList permissions) throws SQLException, Exception {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         //String remoteUser = httpServletRequest.getRemoteUser();

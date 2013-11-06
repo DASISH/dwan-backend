@@ -24,15 +24,11 @@ import eu.dasish.annotation.schema.ObjectFactory;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.Blob;
 import java.sql.SQLException;
 import java.util.UUID;
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
-import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -41,6 +37,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.JAXBElement;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Component;
 
 /**
@@ -67,6 +64,7 @@ public class CachedRepresentationResource {
     @GET
     @Produces(MediaType.TEXT_XML)
     @Path("{cachedid: " + BackendConstants.regExpIdentifier + "}/metadata")
+    @Secured("ROLE_USER")
     public JAXBElement<CachedRepresentationInfo> getCachedRepresentationInfo(@PathParam("cachedid") String externalId) throws SQLException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final Number cachedID = dbIntegrityService.getCachedRepresentationInternalIdentifier(UUID.fromString(externalId));
@@ -77,6 +75,7 @@ public class CachedRepresentationResource {
     @GET
     @Produces({"image/jpeg", "image/png"})
     @Path("{cachedid: " + BackendConstants.regExpIdentifier + "}/content")
+    @Secured("ROLE_USER")
     public BufferedImage getCachedRepresentationContent(@PathParam("cachedid") String externalId) throws SQLException, IOException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final Number cachedID = dbIntegrityService.getCachedRepresentationInternalIdentifier(UUID.fromString(externalId));

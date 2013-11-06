@@ -325,6 +325,11 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     public User getUserByInfo(String eMail) {
         return userDao.getUserByInfo(eMail);
     }
+    
+    @Override
+    public String getUserRemoteID(Number internalID){
+        return userDao.getRemoteID(internalID);
+    }
 
     @Override
     public Permission getPermission(Number annotationID, Number userID) {

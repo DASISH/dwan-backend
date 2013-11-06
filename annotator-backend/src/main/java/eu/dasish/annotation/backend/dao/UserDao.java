@@ -38,6 +38,8 @@ public interface UserDao extends ResourceDao{
      public boolean userIsInUse(Number userID);
      
      public boolean userExists(User user);
+     
+     public String getRemoteID(Number internalID);
 }
 
 

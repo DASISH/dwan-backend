@@ -25,13 +25,9 @@ import eu.dasish.annotation.schema.CachedRepresentationInfo;
 import eu.dasish.annotation.schema.ObjectFactory;
 import eu.dasish.annotation.schema.ReferenceList;
 import eu.dasish.annotation.schema.Target;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.UUID;
-import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -45,6 +41,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.JAXBElement;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Component;
 
 /**
@@ -77,6 +74,7 @@ public class TargetResource {
     @GET
     @Produces(MediaType.TEXT_XML)
     @Path("{targetid: " + BackendConstants.regExpIdentifier + "}")
+    @Secured("ROLE_USER")
     public JAXBElement<Target> getTarget(@PathParam("targetid") String ExternalIdentifier) throws SQLException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final Number TargetID = dbIntegrityService.getTargetInternalIdentifier(UUID.fromString(ExternalIdentifier));
@@ -88,6 +86,7 @@ public class TargetResource {
     @GET
     @Produces(MediaType.TEXT_XML)
     @Path("{targetid: " + BackendConstants.regExpIdentifier + "}/versions")
+    @Secured("ROLE_USER")
     public JAXBElement<ReferenceList> getSiblingTargets(@PathParam("targetid") String ExternalIdentifier) throws SQLException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final Number targetID = dbIntegrityService.getTargetInternalIdentifier(UUID.fromString(ExternalIdentifier));
@@ -102,6 +101,7 @@ public class TargetResource {
     @DELETE
     @Produces(MediaType.TEXT_XML)
     @Path("{targetid: " + BackendConstants.regExpIdentifier + "}/cached/{cachedid: " + BackendConstants.regExpIdentifier + "}")
+    @Secured("ROLE_USER")
     public int deleteCached(@PathParam("targetid") String TargetIdentifier, @PathParam("cachedid") String cachedIdentifier) throws SQLException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final Number TargetID = dbIntegrityService.getCachedRepresentationInternalIdentifier(UUID.fromString(TargetIdentifier));
@@ -114,6 +114,7 @@ public class TargetResource {
     @Consumes("multipart/mixed")
     @Produces(MediaType.APPLICATION_XML)
     @Path("{targetid: " + BackendConstants.regExpIdentifier + "}/fragment/{fragmentDescriptor}/cached")
+    @Secured("ROLE_USER")
     public JAXBElement<CachedRepresentationInfo> postCached(@PathParam("targetid") String targetIdentifier,
             @PathParam("fragmentDescriptor") String fragmentDescriptor, 
             MultiPart multiPart) throws SQLException {
@@ -132,6 +133,7 @@ public class TargetResource {
     
     @DELETE
     @Path("{targetid: " + BackendConstants.regExpIdentifier + "}/cached/{cachedid: " + BackendConstants.regExpIdentifier + "}")
+    @Secured("ROLE_USER")
     public String deleteCachedForTarget(@PathParam("targetid") String targetExternalIdentifier, 
     @PathParam("cachedid") String cachedExternalIdentifier) throws SQLException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());

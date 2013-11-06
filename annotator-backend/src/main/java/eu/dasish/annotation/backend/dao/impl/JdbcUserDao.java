@@ -109,7 +109,22 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
         }
     }
 
-     ////////////////////////////////////////////////////////////
+    @Override 
+    public String getRemoteID(Number internalID){
+        StringBuilder requestDB  = new StringBuilder("SELECT ");
+        requestDB.append(remote_id).append(" FROM ").append(principalTableName).append(" WHERE ").append(principal_id).append("= ? LIMIT 1");
+        List<String> result = getSimpleJdbcTemplate().query(requestDB.toString(), remoteIDRowMapper, internalID);
+       return  (result.size() > 0) ? result.get(0) :null;
+    }
+    private final RowMapper<String> remoteIDRowMapper = new RowMapper<String>() {
+        @Override
+        public String mapRow(ResultSet rs, int rowNumber) throws SQLException {
+            return rs.getString(remote_id);
+        }
+    };
+    
+    
+     ///////////////////// ADDERS ////////////////////////////
      public Number addUser(User user, String remoteID){
         UUID externalIdentifier = UUID.randomUUID();
         String newExternalIdentifier = externalIdentifier.toString();
@@ -125,6 +140,7 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
      }
      
      
+     ////// DELETERS ////////////
      public int deleteUser(Number internalID){
           if (userIsInUse(internalID)) {
             return 0;

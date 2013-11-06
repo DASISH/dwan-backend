@@ -19,6 +19,7 @@ package eu.dasish.annotation.backend.rest;
 
 import eu.dasish.annotation.backend.BackendConstants;
 import eu.dasish.annotation.backend.dao.DBIntegrityService;
+import eu.dasish.annotation.schema.CurrentUserInfo;
 import eu.dasish.annotation.schema.ObjectFactory;
 import eu.dasish.annotation.schema.User;
 import java.sql.SQLException;
@@ -34,6 +35,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.JAXBElement;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 
 /**
@@ -60,6 +63,7 @@ public class UserResource {
     @GET
     @Produces(MediaType.TEXT_XML)
     @Path("{userid: " + BackendConstants.regExpIdentifier + "}")
+    @Secured("ROLE_USER")
     public JAXBElement<User> getUser(@PathParam("userid") String ExternalIdentifier) throws SQLException {
          dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final Number userID = dbIntegrityService.getUserInternalIdentifier(UUID.fromString(ExternalIdentifier));
@@ -70,9 +74,27 @@ public class UserResource {
     @GET
     @Produces(MediaType.TEXT_XML)
     @Path("/info")
+    @Secured("ROLE_USER")
     public JAXBElement<User> getUserByInfo(@QueryParam("email") String email) throws SQLException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final User user = dbIntegrityService.getUserByInfo(email);
         return new ObjectFactory().createUser(user);
+    }
+    
+    @GET
+    @Produces(MediaType.TEXT_XML)
+    @Path("{userid: " + BackendConstants.regExpIdentifier + "}/current")
+    @Secured("ROLE_USER")
+    public JAXBElement<CurrentUserInfo> getCurrentUserInfo(@PathParam("userid") String ExternalIdentifier) throws SQLException {
+        dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
+        final Number userID = dbIntegrityService.getUserInternalIdentifier(UUID.fromString(ExternalIdentifier));
+        final CurrentUserInfo userInfo = new CurrentUserInfo();
+        userInfo.setRef(dbIntegrityService.getUserURI(userID));
+        userInfo.setCurrentUser(ifLoggedIn(userID));
+        return new ObjectFactory().createCurrentUserInfo(userInfo);
+    }
+    
+    private boolean ifLoggedIn(Number userID){
+        return httpServletRequest.getRemoteUser().equals(dbIntegrityService.getUserRemoteID(userID));
     }
 }
