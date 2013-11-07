@@ -20,7 +20,6 @@ package eu.dasish.annotation.backend.dao.impl;
 import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.TestInstances;
 import eu.dasish.annotation.schema.Annotation;
-import eu.dasish.annotation.schema.AnnotationInfo;
 import eu.dasish.annotation.schema.Permission;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -339,33 +338,33 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         annotationIDs.add(2);
         annotationIDs.add(3);
         
-        List<Number> result_1 = jdbcAnnotationDao.getFilteredAnnotationIDs(annotationIDs, null, null, null, null, null, null);        
+        List<Number> result_1 = jdbcAnnotationDao.getFilteredAnnotationIDs(annotationIDs, null, null, null, null, null);        
         assertEquals(2, result_1.size());
         assertEquals(2, result_1.get(0));
         assertEquals(3, result_1.get(1));
         
        
-        List<Number> result_2 = jdbcAnnotationDao.getFilteredAnnotationIDs(annotationIDs, "some html", null, null, null, null, null);        
+        List<Number> result_2 = jdbcAnnotationDao.getFilteredAnnotationIDs(annotationIDs, "some html", null, null, null, null);        
         assertEquals(2, result_2.size());
         assertEquals(2, result_2.get(0));
         assertEquals(3, result_2.get(1));
         
         
        
-        List<Number> result_3 = jdbcAnnotationDao.getFilteredAnnotationIDs(annotationIDs, "some html", null, null, 3, null, null);        
+        List<Number> result_3 = jdbcAnnotationDao.getFilteredAnnotationIDs(annotationIDs, "some html", null, 3, null, null);        
         assertEquals(1, result_3.size());
         assertEquals(2, result_3.get(0));
         
        
         Timestamp after = new Timestamp(0); 
         Timestamp before = new Timestamp(System.currentTimeMillis());  
-        List<Number> result_4 = jdbcAnnotationDao.getFilteredAnnotationIDs(annotationIDs, "some html", null, null, 3, after, before);        
+        List<Number> result_4 = jdbcAnnotationDao.getFilteredAnnotationIDs(annotationIDs, "some html", null, 3, after, before);        
         assertEquals(1, result_4.size());
         assertEquals(2, result_4.get(0));
         
         
         Timestamp after_1 = new Timestamp(System.currentTimeMillis()); // no annotations added after "now"       
-        List<Number> result_5 = jdbcAnnotationDao.getFilteredAnnotationIDs(annotationIDs, "some html", null, null, 3, after_1, null);        
+        List<Number> result_5 = jdbcAnnotationDao.getFilteredAnnotationIDs(annotationIDs, "some html", null, 3, after_1, null);        
         assertEquals(0, result_5.size());
         
         

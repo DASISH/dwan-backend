@@ -18,7 +18,7 @@
 package eu.dasish.annotation.backend;
 
 import eu.dasish.annotation.backend.dao.DBIntegrityService;
-import eu.dasish.annotation.backend.rest.JaxbMarshallerFactory;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Providers;
 import org.jmock.Mockery;
@@ -47,6 +47,10 @@ public class MockObjectsFactoryRest {
     
      public Providers newProviders() {
         return context.mock(Providers.class);
+    }
+   
+    public HttpServletRequest newHttpServletRequest() {
+        return context.mock(HttpServletRequest.class);
     }
    
 }

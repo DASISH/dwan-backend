@@ -18,14 +18,12 @@
 package eu.dasish.annotation.backend.dao;
 
 import eu.dasish.annotation.schema.Annotation;
-import eu.dasish.annotation.schema.AnnotationBody;
 import eu.dasish.annotation.schema.AnnotationInfo;
 import eu.dasish.annotation.schema.Permission;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * Created on : Jun 27, 2013, 10:34:13 AM
@@ -55,9 +53,7 @@ public interface AnnotationDao extends ResourceDao{
      /**
      * 
      * @param annotationIDs: the list of annotationID-s from which the resulting annotations are to be selected.
-     * @param text: the text which the resulting annotations' bodies must contain.
-     * @param access: the resulting annotations must have permission "access" (owner, or writer, or reader) for the currently inlogged user.
-     * @param namespace TODO: do not know what to do with it 
+     * @param text: the text which the resulting annotations' bodies must contain.* @param namespace TODO: do not know what to do with it 
      * @param ownerID: the resulting annotations are owned by the owner "ownerID".
      * @param after: the resulting annotations must have timestamp later than "after".
      * @param before: the resulting annotations must have timestamp earlier than "before".
@@ -68,7 +64,7 @@ public interface AnnotationDao extends ResourceDao{
      * -- added to the database between "before" and "after" time-dates.
      * 
      */
-    public List<Number> getFilteredAnnotationIDs(List<Number> annotationIDs, String text, String access, String namespace, Number ownerID, Timestamp after, Timestamp before);
+    public List<Number> getFilteredAnnotationIDs(List<Number> annotationIDs, String text, String namespace, Number ownerID, Timestamp after, Timestamp before);
      
        /**
      * unit test is missing
@@ -115,6 +111,9 @@ public interface AnnotationDao extends ResourceDao{
      * @return permission of the userID w.r.t. annotationID, or null if the permission is not given
      */ 
     public Permission  getPermission(Number annotationID, Number userID);
+    
+    public List<Number> getAnnotationIDsForUserWithPermission(Number userID, String permissionString);
+    
     
     /**
      * 

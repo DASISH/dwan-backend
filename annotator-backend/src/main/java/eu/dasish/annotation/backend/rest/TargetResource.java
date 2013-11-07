@@ -77,9 +77,9 @@ public class TargetResource {
     @Secured("ROLE_USER")
     public JAXBElement<Target> getTarget(@PathParam("targetid") String ExternalIdentifier) throws SQLException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
-        final Number TargetID = dbIntegrityService.getTargetInternalIdentifier(UUID.fromString(ExternalIdentifier));
-        final Target Target = dbIntegrityService.getTarget(TargetID);
-        return new ObjectFactory().createTarget(Target);
+        final Number targetID = dbIntegrityService.getTargetInternalIdentifier(UUID.fromString(ExternalIdentifier));
+        final Target target = dbIntegrityService.getTarget(targetID);
+        return new ObjectFactory().createTarget(target);
     }
 
     // TODOD both unit tests
@@ -101,12 +101,12 @@ public class TargetResource {
     @DELETE
     @Produces(MediaType.TEXT_XML)
     @Path("{targetid: " + BackendConstants.regExpIdentifier + "}/cached/{cachedid: " + BackendConstants.regExpIdentifier + "}")
-    @Secured("ROLE_USER")
-    public int deleteCached(@PathParam("targetid") String TargetIdentifier, @PathParam("cachedid") String cachedIdentifier) throws SQLException {
+    @Secured("ROLE_ADMIN")
+    public int deleteCached(@PathParam("targetid") String targetIdentifier, @PathParam("cachedid") String cachedIdentifier) throws SQLException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
-        final Number TargetID = dbIntegrityService.getCachedRepresentationInternalIdentifier(UUID.fromString(TargetIdentifier));
+        final Number targetID = dbIntegrityService.getCachedRepresentationInternalIdentifier(UUID.fromString(targetIdentifier));
         final Number cachedID = dbIntegrityService.getCachedRepresentationInternalIdentifier(UUID.fromString(cachedIdentifier));
-        int[] result = dbIntegrityService.deleteCachedRepresentationOfTarget(TargetID, cachedID);
+        int[] result = dbIntegrityService.deleteCachedRepresentationOfTarget(targetID, cachedID);
         return result[1];
     }
 
@@ -133,7 +133,7 @@ public class TargetResource {
     
     @DELETE
     @Path("{targetid: " + BackendConstants.regExpIdentifier + "}/cached/{cachedid: " + BackendConstants.regExpIdentifier + "}")
-    @Secured("ROLE_USER")
+    @Secured("ROLE_ADMIN")
     public String deleteCachedForTarget(@PathParam("targetid") String targetExternalIdentifier, 
     @PathParam("cachedid") String cachedExternalIdentifier) throws SQLException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());

@@ -86,7 +86,7 @@ public interface DBIntegrityService{
     * -- owned by "owner",
     * -- created after time-samp "after and before time-stamp "before".
     */
-    List<Number> getFilteredAnnotationIDs(String word, String text, String access, String namespace, UUID
+    List<Number> getFilteredAnnotationIDs(String link, String text, Number inloggedUserID, String access, String namespace, UUID
             owner, Timestamp after, Timestamp before);
     
     
@@ -108,8 +108,8 @@ public interface DBIntegrityService{
     * -- owned by "owner",
     * -- created after time-samp "after and before time-stamp "before".
      */
-    AnnotationInfoList getFilteredAnnotationInfos(String word, String text, String access, String namespace, UUID
-            ownerI, Timestamp after, Timestamp before) throws SQLException;
+    AnnotationInfoList getFilteredAnnotationInfos(String word, String text, Number inloggedUserID, String access, String namespace, UUID
+            ownerID, Timestamp after, Timestamp before) throws SQLException;
 
     /**
      * 
@@ -221,6 +221,8 @@ public interface DBIntegrityService{
     
     
     public String getUserRemoteID(Number internalID);
+    
+    public Number getUserInternalIDFromRemoteID(String remoteID);
   
     /**
      * 
@@ -229,6 +231,8 @@ public interface DBIntegrityService{
      * @return permission of the userID w.r.t. annotationID, or null if the permission is not given
      */ 
     public Permission  getPermission(Number annotationID, Number userID);
+    
+    
     
     
     /**
@@ -255,7 +259,7 @@ public interface DBIntegrityService{
      * @return # rows updated to the table "annotations_principals_permissions"
      * Sets the "permission" for the "userID" w.r.t. the annotation with "annotationID".
      */
-    public int updateAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission, Number remoteUser) throws SQLException, Exception;
+    public int updateAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission) throws SQLException;
     
    /**
      * 
@@ -263,7 +267,9 @@ public interface DBIntegrityService{
      * @param permissionList
      * @return # of rows updated or added in the table annotations_principals_permissions
      */
-    public int updatePermissions(Number annotationID, UserWithPermissionList permissionList, Number remoteUser) throws SQLException, Exception;
+    public int updatePermissions(Number annotationID, UserWithPermissionList permissionList) throws SQLException;
+    
+    public Number updateUser(User user);
    
    /**
     * ADDERS
@@ -307,7 +313,7 @@ public interface DBIntegrityService{
      */
     Number addUser(User user, String remoteID) throws SQLException;
 
-    int addAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission, Number remoteUser) throws SQLException, Exception;
+    int addAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission) throws SQLException;
     
     /**
      * DELETERS

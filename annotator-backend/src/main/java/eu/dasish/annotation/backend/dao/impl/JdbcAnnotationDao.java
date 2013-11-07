@@ -113,10 +113,24 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
             return Permission.fromValue(rs.getString(permission));
         }
     };
+    
+    
+    @Override
+    public List<Number> getAnnotationIDsForUserWithPermission(Number userID, String permissionString){
+        if (userID == null || permissionString == null) {
+            return null;
+        }
+        StringBuilder sql = new StringBuilder("SELECT ");
+        sql.append(annotation_id).append(" FROM ").append(permissionsTableName).append(" WHERE ").
+                append(principal_id).append("  = ").append(userID.toString()).append(" AND ").
+                append(permission).append("  = ?");                ;
+        return getSimpleJdbcTemplate().query(sql.toString(), internalIDRowMapper, permissionString);
+    }
+    
 
     ////////////////////////////////////////////////////////////////////////
     @Override
-    public List<Number> getFilteredAnnotationIDs(List<Number> annotationIDs, String text, String access, String namespace, Number ownerID, Timestamp after, Timestamp before) {
+    public List<Number> getFilteredAnnotationIDs(List<Number> annotationIDs, String text, String namespace, Number ownerID, Timestamp after, Timestamp before) {
 
         StringBuilder sql = new StringBuilder("SELECT DISTINCT ");
         sql.append(annotation_id).append(" FROM ").append(annotationTableName).append(" WHERE TRUE ");
