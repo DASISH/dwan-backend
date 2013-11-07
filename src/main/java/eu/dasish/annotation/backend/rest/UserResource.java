@@ -25,7 +25,10 @@ import eu.dasish.annotation.schema.User;
 import java.sql.SQLException;
 import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -36,7 +39,6 @@ import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.JAXBElement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 
 /**
@@ -93,6 +95,32 @@ public class UserResource {
         userInfo.setCurrentUser(ifLoggedIn(userID));
         return new ObjectFactory().createCurrentUserInfo(userInfo);
     }
+    
+    @POST
+    @Consumes(MediaType.TEXT_XML)
+    @Produces(MediaType.TEXT_XML)
+    @Path("{remoteId: " + BackendConstants.regExpIdentifier + "}")
+    @Secured("ROLE_ADMIN")
+    public JAXBElement<User> addUser(@PathParam("userid") String remoteId, User user) throws SQLException {
+        dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());        
+        final Number userID = dbIntegrityService.addUser(user, remoteId);
+        final User addedUser = dbIntegrityService.getUser(userID);
+        return new ObjectFactory().createUser(addedUser);
+    }
+    
+    @PUT
+    @Consumes(MediaType.TEXT_XML)
+    @Produces(MediaType.TEXT_XML)
+    @Path("")
+    @Secured("ROLE_ADMIN")
+    public JAXBElement<User> updateUser(User user) throws SQLException {
+        dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());        
+        final Number userID = dbIntegrityService.updateUser(user);
+        final User addedUser = dbIntegrityService.getUser(userID);
+        return new ObjectFactory().createUser(addedUser);
+    }
+    
+    
     
     private boolean ifLoggedIn(Number userID){
         return httpServletRequest.getRemoteUser().equals(dbIntegrityService.getUserRemoteID(userID));

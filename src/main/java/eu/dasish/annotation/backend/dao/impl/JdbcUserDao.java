@@ -123,6 +123,13 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
         }
     };
     
+    @Override
+    public Number getUserInternalIDFromRemoteID(String remoteID){
+       StringBuilder requestDB  = new StringBuilder("SELECT ");
+       requestDB.append(principal_id).append(" FROM ").append(principalTableName).append(" WHERE ").append(remote_id).append("= ? LIMIT 1");
+       List<Number> result = getSimpleJdbcTemplate().query(requestDB.toString(), internalIDRowMapper, remoteID);
+       return  (result.size() > 0) ? result.get(0) :null; 
+    }
     
      ///////////////////// ADDERS ////////////////////////////
      public Number addUser(User user, String remoteID){
@@ -138,6 +145,19 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
         final int affectedRows = getSimpleJdbcTemplate().update(sql.toString(), params);
         return (affectedRows>0 ? getInternalID(externalIdentifier) : null);
      }
+     
+     ////////// UPDATERS ///////////////////////
+     
+      public Number updateUser(User user){
+        Number principalID = this.getInternalIDFromURI(user.getURI());
+        StringBuilder sql = new StringBuilder("UPDATE ");
+        sql.append(principalTableName).append(" SET ").
+                append(e_mail).append("= '").append(user.getEMail()).append("',").
+                append(principal_name).append("= '").append(user.getDisplayName()).append("',").
+                append("' WHERE ").append(principal_id).append("= ?");
+        int affectedRows = getSimpleJdbcTemplate().update(sql.toString(), principalID);
+        return principalID;
+      }
      
      
      ////// DELETERS ////////////

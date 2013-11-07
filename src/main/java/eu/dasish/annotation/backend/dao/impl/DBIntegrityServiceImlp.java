@@ -105,7 +105,7 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     public String getTargetURI(Number targetID) {
         return targetDao.getURIFromInternalID(targetID);
     }
-    
+
     @Override
     public String getUserURI(Number userID) {
         return userDao.getURIFromInternalID(userID);
@@ -190,21 +190,21 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
 
     ////////////////////////////////////////////////////////////////////////
     @Override
-    public List<Number> getFilteredAnnotationIDs(String word, String text, String access, String namespace, UUID owner, Timestamp after, Timestamp before) {
-
-        List<Number> annotationIDs = null;
-
-        if (word != null) {
-            List<Number> targetIDs = targetDao.getTargetsReferringTo(word);
-            annotationIDs = annotationDao.retrieveAnnotationList(targetIDs);
+    public List<Number> getFilteredAnnotationIDs(String link, String text, Number inloggedUserID, String access, String namespace, UUID owner, Timestamp after, Timestamp before) {
+   
+        if (access == null) {
+            return null;
         }
 
-        Number ownerID = null;
-        if (owner != null) {
-            ownerID = userDao.getInternalID(owner);
+        List<Number> annotationIDs = annotationDao.getAnnotationIDsForUserWithPermission(inloggedUserID, access);
+
+        if (link != null) {
+            List<Number> targetIDs = targetDao.getTargetsReferringTo(link);
+            List<Number> annotationIDsForTargets = annotationDao.retrieveAnnotationList(targetIDs);
+            annotationIDs.retainAll(annotationIDsForTargets);
         }
 
-        return annotationDao.getFilteredAnnotationIDs(annotationIDs, text, access, namespace, ownerID, after, before);
+        return annotationDao.getFilteredAnnotationIDs(annotationIDs, text, namespace, userDao.getInternalID(owner), after, before);
     }
 
     @Override
@@ -259,22 +259,27 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     }
 
     @Override
-    public AnnotationInfoList getFilteredAnnotationInfos(String word, String text, String access, String namespace, UUID owner, Timestamp after, Timestamp before)
+    public AnnotationInfoList getFilteredAnnotationInfos(String word, String text, Number inloggedUserID, String access, String namespace, UUID owner, Timestamp after, Timestamp before)
             throws SQLException {
-        List<Number> annotationIDs = getFilteredAnnotationIDs(word, text, access, namespace, owner, after, before);
-        AnnotationInfoList result = new AnnotationInfoList();
-        for (Number annotationID : annotationIDs) {
-            Map<AnnotationInfo, Number> annotationInfoOwnerId = annotationDao.getAnnotationInfoWithoutTargets(annotationID);
-            ReferenceList targets = getAnnotationTargets(annotationID);
-            AnnotationInfo[] annotationInfos = new AnnotationInfo[1];
-            annotationInfoOwnerId.keySet().toArray(annotationInfos);
-            AnnotationInfo annotationInfo = annotationInfos[0];
-            annotationInfo.setTargets(targets);
-            annotationInfo.setOwnerRef(userDao.getURIFromInternalID(annotationInfoOwnerId.get(annotationInfo)));
-            result.getAnnotationInfo().add(annotationInfo);
+        List<Number> annotationIDs = getFilteredAnnotationIDs(word, text, inloggedUserID, access, namespace, owner, after, before);
+        if (annotationIDs != null) {
+            AnnotationInfoList result = new AnnotationInfoList();
+            for (Number annotationID : annotationIDs) {
+                Map<AnnotationInfo, Number> annotationInfoOwnerId = annotationDao.getAnnotationInfoWithoutTargets(annotationID);
+                ReferenceList targets = getAnnotationTargets(annotationID);
+                AnnotationInfo[] annotationInfos = new AnnotationInfo[1];
+                annotationInfoOwnerId.keySet().toArray(annotationInfos);
+                AnnotationInfo annotationInfo = annotationInfos[0];
+                annotationInfo.setTargets(targets);
+                annotationInfo.setOwnerRef(userDao.getURIFromInternalID(annotationInfoOwnerId.get(annotationInfo)));
+                result.getAnnotationInfo().add(annotationInfo);
+            }
+
+            return result;
+        } else {
+            return null;
         }
 
-        return result;
     }
 
     // TODO unit test
@@ -325,9 +330,9 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     public User getUserByInfo(String eMail) {
         return userDao.getUserByInfo(eMail);
     }
-    
+
     @Override
-    public String getUserRemoteID(Number internalID){
+    public String getUserRemoteID(Number internalID) {
         return userDao.getRemoteID(internalID);
     }
 
@@ -336,21 +341,19 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         return annotationDao.getPermission(annotationID, userID);
     }
 
+    @Override
+    public Number getUserInternalIDFromRemoteID(String remoteID) {
+        return userDao.getUserInternalIDFromRemoteID(remoteID);
+    }
+
     ///// UPDATERS /////////////////
     @Override
-    public int updateAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission, Number remoteUser) throws SQLException, Exception {
-        if (annotationDao.getPermission(annotationID, remoteUser) != Permission.OWNER) {
-            throw new Exception("The curent user cannot update the annotation because (s)he is not its owner");
-        }
+    public int updateAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission) throws SQLException {
         return annotationDao.updateAnnotationPrincipalPermission(annotationID, userID, permission);
     }
 
     @Override
-    public int updatePermissions(Number annotationID, UserWithPermissionList permissionList, Number remoteUser) throws SQLException, Exception {
-
-        if (annotationDao.getPermission(annotationID, remoteUser) != Permission.OWNER) {
-            throw new Exception("The curent user cannot update the annotation because (s)he is not its owner");
-        }
+    public int updatePermissions(Number annotationID, UserWithPermissionList permissionList) throws SQLException {
 
         List<UserWithPermission> usersWithPermissions = permissionList.getUserWithPermission();
         int result = 0;
@@ -423,8 +426,13 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         int deletedTargets = annotationDao.deleteAllAnnotationTarget(annotationID);
         int deletedPrinsipalsPermissions = annotationDao.deleteAnnotationPrincipalPermissions(annotationID);
         int addedTargets = addTargets(annotation, annotationID);
-        int addedPrincipalsPErmissions = addPrincipalsPermissions(annotation, annotationID);
+        int addedPrincipalsPermissions = addPrincipalsPermissions(annotation, annotationID);
         return updatedAnnotations;
+    }
+
+    @Override
+    public Number updateUser(User user) {
+        return userDao.updateUser(user);
     }
 
     @Override
@@ -437,10 +445,7 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     }
 
     @Override
-    public int addAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission, Number remoteUser) throws SQLException, Exception {
-        if (annotationDao.getPermission(annotationID, remoteUser) != Permission.OWNER) {
-            throw new Exception("The curent user cannot update the annotation because (s)he is not its owner");
-        }
+    public int addAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission) throws SQLException {
         return annotationDao.addAnnotationPrincipalPermission(annotationID, userID, permission);
     }
 

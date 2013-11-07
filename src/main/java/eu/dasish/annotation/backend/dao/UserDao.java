@@ -30,16 +30,22 @@ public interface UserDao extends ResourceDao{
      public User getUser(Number internalID);
      
      public User getUserByInfo(String  eMail);
-    
-     public Number addUser(User user, String remoteID);
      
-     public int deleteUser(Number intenralID);
-  
      public boolean userIsInUse(Number userID);
      
      public boolean userExists(User user);
      
      public String getRemoteID(Number internalID);
+     
+     public Number getUserInternalIDFromRemoteID(String remoteID);
+     
+     public Number updateUser(User user);
+    
+     public Number addUser(User user, String remoteID);
+     
+     public int deleteUser(Number intenralID);
+  
+     
 }
 
 
