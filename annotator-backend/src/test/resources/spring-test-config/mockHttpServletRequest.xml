@@ -26,6 +26,6 @@
    <!-- Context for testing the sources service with mock implementations -->
 	   
     
-    <bean id="mockUriInfo" factory-bean="mockObjectsFactoryRest" factory-method="newUriInfo" />
+    <bean id="mockHttpServletRequest" factory-bean="mockObjectsFactoryRest" factory-method="newHttpServletRequest" />
     
 </beans>

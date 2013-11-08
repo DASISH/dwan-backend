@@ -30,7 +30,9 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @author Peter Withers <peter.withers@mpi.nl>
  */
 @RunWith(value = SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = {"/spring-test-config/mockeryRest.xml", "/spring-test-config/mockDBIntegrityService.xml", "/spring-config/jaxbMarshallerFactory.xml"})
+@ContextConfiguration(locations = {"/spring-test-config/mockeryRest.xml", "/spring-test-config/mockDBIntegrityService.xml", "/spring-config/jaxbMarshallerFactory.xml",
+    "/spring-test-config/mockUriInfo.xml",  "/spring-test-config/mockHttpServletRequest.xml",
+"/spring-test-config/mockProviders.xml"})
 public class NotebookResourceTest {
 
     @Autowired

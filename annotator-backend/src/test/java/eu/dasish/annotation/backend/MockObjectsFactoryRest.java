@@ -19,6 +19,7 @@ package eu.dasish.annotation.backend;
 
 import eu.dasish.annotation.backend.dao.DBIntegrityService;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Providers;
 import org.jmock.Mockery;
@@ -51,6 +52,10 @@ public class MockObjectsFactoryRest {
    
     public HttpServletRequest newHttpServletRequest() {
         return context.mock(HttpServletRequest.class);
+    }
+    
+    public HttpServletResponse newHttpServletResponce() {
+        return context.mock(HttpServletResponse.class);
     }
    
 }
