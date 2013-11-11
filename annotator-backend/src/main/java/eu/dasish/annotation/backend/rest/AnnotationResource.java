@@ -67,21 +67,39 @@ public class AnnotationResource {
 
     @Autowired
     private DBIntegrityService dbIntegrityService;
-    @Autowired
+    
     @Context
     private HttpServletRequest httpServletRequest;
     
     @Context
     private HttpServletResponse httpServletResponse;
-    @Autowired
+    
     @Context
     private UriInfo uriInfo;
-    @Autowired
+    
     @Context
-    protected Providers providers;
+    private Providers providers;
     
     final String default_permission = "reader";
-
+    
+    
+    public void setUriInfo(UriInfo uriInfo){
+        this.uriInfo = uriInfo; 
+    }
+    
+     public void setHttpServletResponse(HttpServletResponse httpServletResponse){
+        this.httpServletResponse = httpServletResponse; 
+    }
+     
+    public void setHttpServletRequest(HttpServletRequest httpServletRequest){
+        this.httpServletRequest = httpServletRequest; 
+    } 
+     
+    public void setProviders(Providers providers){
+        this.providers = providers; 
+    } 
+    
+    
 
     public AnnotationResource() {
     }
