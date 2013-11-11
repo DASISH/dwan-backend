@@ -49,14 +49,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.ext.Providers;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
 import javax.xml.datatype.DatatypeConfigurationException;
+import org.springframework.mock.web.MockHttpServletRequest;
 
 /**
  *
@@ -65,27 +61,29 @@ import javax.xml.datatype.DatatypeConfigurationException;
 
 @RunWith(value = SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "/spring-test-config/mockeryRest.xml", "/spring-test-config/mockDBIntegrityService.xml", 
-    "/spring-config/jaxbMarshallerFactory.xml", "/spring-test-config/mockUriInfo.xml", "/spring-test-config/mockHttpServletRequest.xml", "/spring-test-config/mockProviders.xml"})
+    "/spring-test-config/mockUriInfo.xml",
+    "/spring-config/jaxbMarshallerFactory.xml"})
 public class AnnotationResourceTest {
     
     @Autowired
-    private Mockery mockeryRest;
+    private Mockery mockeryRest;     
+    @Autowired
+    private MockObjectsFactoryRest mockObjectFactory;
     @Autowired
     private DBIntegrityService mockDbIntegrityService;
     @Autowired
-    private UriInfo mockUriInfo;
-    @Autowired
-    private HttpServletRequest mockHttpServletRequest;
-    
-    @Autowired
-    private Providers mockProviders;    
-    @Autowired
     private AnnotationResource annotationResource;
+    @Autowired
+    UriInfo mockUriInfo;
     
+    private MockHttpServletRequest mockRequest;
     
     public AnnotationResourceTest() { 
+        mockRequest = new MockHttpServletRequest();
+        mockRequest.setRemoteUser("twan");
+        
     }
-    
+        
     
     /**
      * Test of getAnnotation method, of class AnnotationResource.
@@ -94,22 +92,18 @@ public class AnnotationResourceTest {
     public void testGetAnnotation() throws SQLException, JAXBException, Exception {
         System.out.println("getAnnotation");
         final String externalIDstring= TestBackendConstants._TEST_ANNOT_2_EXT;
-        final Annotation expectedAnnotation = (new TestInstances()).getAnnotationOne();
-        final ResourceJaxbMarshallerProvider rmp = new ResourceJaxbMarshallerProvider();
-     
+        final Annotation expectedAnnotation = (new TestInstances()).getAnnotationOne();       
+        annotationResource.setHttpServletRequest(mockRequest);        
+        annotationResource.setUriInfo(mockUriInfo);       
+        
+      
         mockeryRest.checking(new Expectations() {
             {
                 
-                oneOf(mockUriInfo).getBaseUri();
-                will(returnValue(URI.create("http://localhost:8080/annotator-backend/api/")));
-                
-                 
-                oneOf(mockProviders).getContextResolver(Marshaller.class, MediaType.WILDCARD_TYPE);
-                will(returnValue(rmp));
-                
-                oneOf(mockHttpServletRequest).getRemoteUser();
-                will(returnValue("twan"));
-                
+               oneOf(mockUriInfo).getBaseUri();
+               will(returnValue(URI.create("http://localhost:8080/annotator-backend/api/"))); 
+               
+               
                 oneOf(mockDbIntegrityService).setServiceURI(with(any(String.class)));
                 will(doAll());
                 
@@ -127,7 +121,7 @@ public class AnnotationResourceTest {
             }
         });
         
-
+       
         JAXBElement<Annotation> result = annotationResource.getAnnotation(externalIDstring);
         assertEquals(expectedAnnotation, result.getValue());
     }
@@ -138,8 +132,6 @@ public class AnnotationResourceTest {
     @Test
     public void testDeleteAnnotation() throws SQLException, IOException {
         System.out.println("deleteAnnotation");
-        //final Number annotationID = mockDbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(UUID));
-        //int[] resultDelete = mockDbIntegrityService.deleteAnnotation(annotationID);
        
         final int[] mockDelete = new int[4];
         mockDelete[0]=1; // # deleted annotations
@@ -147,18 +139,15 @@ public class AnnotationResourceTest {
         mockDelete[2]=2; // # deleted  annotations_target_Targets, (5,3), (5,4)
         mockDelete[3]=1; // # deletd Targets, 4
         
+        annotationResource.setHttpServletRequest(mockRequest);
+        annotationResource.setUriInfo(mockUriInfo);  
        
-     
         mockeryRest.checking(new Expectations() {
             {  
-                 
-                oneOf(mockUriInfo).getBaseUri();
-                will(returnValue(URI.create("http://localhost:8080/annotator-backend/api/")));
-                   
-                     
-                oneOf(mockHttpServletRequest).getRemoteUser();
-                will(returnValue("twan"));
-                
+               oneOf(mockUriInfo).getBaseUri();
+               will(returnValue(URI.create("http://localhost:8080/annotator-backend/api/"))); 
+               
+              
                 oneOf(mockDbIntegrityService).getUserInternalIDFromRemoteID("twan");
                 will(returnValue(3)); 
                 
@@ -218,17 +207,14 @@ public class AnnotationResourceTest {
         addedAnnotation.setURI("http://localhost:8080/annotator-backend/api/annotations/"+UUID.randomUUID().toString());
         addedAnnotation.setOwnerRef("http://localhost:8080/annotator-backend/api/users/"+TestBackendConstants._TEST_USER_3_EXT_ID);
      
+        annotationResource.setHttpServletRequest(mockRequest); 
+        annotationResource.setUriInfo(mockUriInfo); 
         
         mockeryRest.checking(new Expectations() {
             {
-                
                 oneOf(mockUriInfo).getBaseUri();
-                will(returnValue(URI.create("http://localhost:8080/annotator-backend/api/")));
-                   
-                   
-                oneOf(mockHttpServletRequest).getRemoteUser();
-                will(returnValue("twan"));
-                
+                will(returnValue(URI.create("http://localhost:8080/annotator-backend/api/"))); 
+               
                 
                 oneOf(mockDbIntegrityService).setServiceURI(with(any(String.class)));
                 will(doAll());
