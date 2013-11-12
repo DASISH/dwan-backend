@@ -87,7 +87,7 @@ public class UserResource {
     @Produces(MediaType.TEXT_XML)
     @Path("{userid: " + BackendConstants.regExpIdentifier + "}/current")
     @Secured("ROLE_USER")
-    public JAXBElement<CurrentUserInfo> getCurrentUserInfo(@PathParam("userid") String ExternalIdentifier) throws SQLException {
+    public JAXBElement<CurrentUserInfo> getCurrentUserInfo(@PathParam("userid") String ExternalIdentifier){
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final Number userID = dbIntegrityService.getUserInternalIdentifier(UUID.fromString(ExternalIdentifier));
         final CurrentUserInfo userInfo = new CurrentUserInfo();
@@ -113,7 +113,7 @@ public class UserResource {
     @Produces(MediaType.TEXT_XML)
     @Path("")
     @Secured("ROLE_ADMIN")
-    public JAXBElement<User> updateUser(User user) throws SQLException {
+    public JAXBElement<User> updateUser(User user){
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());        
         final Number userID = dbIntegrityService.updateUser(user);
         final User addedUser = dbIntegrityService.getUser(userID);

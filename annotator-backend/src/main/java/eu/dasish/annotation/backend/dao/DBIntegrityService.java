@@ -109,7 +109,7 @@ public interface DBIntegrityService{
     * -- created after time-samp "after and before time-stamp "before".
      */
     AnnotationInfoList getFilteredAnnotationInfos(String word, String text, Number inloggedUserID, String access, String namespace, UUID
-            ownerID, Timestamp after, Timestamp before) throws SQLException;
+            ownerID, Timestamp after, Timestamp before);
 
     /**
      * 
@@ -160,7 +160,7 @@ public interface DBIntegrityService{
      * @return the object Annotation generated from the tables "annotation", "annotations_target_Targets", "Target", "annotations_principals_permissions".
      * @throws SQLException 
      */
-    Annotation getAnnotation(Number annotationID) throws SQLException;
+    Annotation getAnnotation(Number annotationID);
     
      /**
      * 
@@ -168,7 +168,7 @@ public interface DBIntegrityService{
      * @return the object TargetList containing all target Targets of the annotationID
      * @throws SQLException 
      */
-    ReferenceList getAnnotationTargets(Number annotationID) throws SQLException;
+    ReferenceList getAnnotationTargets(Number annotationID);
     
     
     /**
@@ -185,25 +185,25 @@ public interface DBIntegrityService{
      * @param annotationID
      * @return the list of TargetID's for which there is no cached representation
      */
-    public UserWithPermissionList getPermissionsForAnnotation(Number annotationID) throws SQLException;
+    public UserWithPermissionList getPermissionsForAnnotation(Number annotationID);
     
      /**
      * 
      * @param TargetID
      * @return the list of the external version ID-s that refers to the same source (link) as targetID 
      */
-    public ReferenceList getTargetsForTheSameLinkAs(Number targetID) throws SQLException;
+    public ReferenceList getTargetsForTheSameLinkAs(Number targetID);
     
     /**
      * 
      * @param cachedID
      * @return BLOB of the cachedID
      */
-    public InputStream getCachedRepresentationBlob(Number cachedID) throws SQLException;
+    public InputStream getCachedRepresentationBlob(Number cachedID) ;
     
     
     
-    public Target getTarget(Number internalID) throws SQLException;
+    public Target getTarget(Number internalID);
     
     /**
      * 
@@ -248,7 +248,7 @@ public interface DBIntegrityService{
      * @return 1 of the annotation if it is updated
      * @throws SQLException 
      */
-    int updateUsersAnnotation(Number userID, Annotation annotation) throws SQLException, Exception;
+    int updateUsersAnnotation(Number userID, Annotation annotation);
     
     
        /**
@@ -259,7 +259,7 @@ public interface DBIntegrityService{
      * @return # rows updated to the table "annotations_principals_permissions"
      * Sets the "permission" for the "userID" w.r.t. the annotation with "annotationID".
      */
-    public int updateAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission) throws SQLException;
+    public int updateAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission);
     
    /**
      * 
@@ -267,7 +267,7 @@ public interface DBIntegrityService{
      * @param permissionList
      * @return # of rows updated or added in the table annotations_principals_permissions
      */
-    public int updatePermissions(Number annotationID, UserWithPermissionList permissionList) throws SQLException;
+    public int updatePermissions(Number annotationID, UserWithPermissionList permissionList);
     
     public Number updateUser(User user);
    
@@ -282,7 +282,7 @@ public interface DBIntegrityService{
      * @return result[0] = # updated rows in the table "Targets_cached_representations" (must be 1 or 0).
      * result[1] = the internal ID of the added cached (a new one if "cached" was new for the Data Base).
      */
-    Number[] addCachedForTarget(Number targetID, String fragmentDescriptor, CachedRepresentationInfo cachedInfo, InputStream cachedBlob) throws SQLException;
+    Number[] addCachedForTarget(Number targetID, String fragmentDescriptor, CachedRepresentationInfo cachedInfo, InputStream cachedBlob);
     
  
     /**
@@ -292,7 +292,7 @@ public interface DBIntegrityService{
      * @return map temporaryTargetID |--> TargetExternalID. Its domain is the temporary IDs of all the new Targets. While adding a new Target a new external ID is generated for it and it becomes the value of the map. The TargetIDs which are already present in the DB are not in the domain. If all Targets are old, then the map is empty. 
      * @throws SQLException 
      */
-    Map<String, String> addTargetsForAnnotation(Number annotationID, List<TargetInfo> targets) throws SQLException;
+    Map<String, String> addTargetsForAnnotation(Number annotationID, List<TargetInfo> targets);
 
     /**
      * 
@@ -302,7 +302,7 @@ public interface DBIntegrityService{
      * calls "addTargetsForAnnotation" 
      * @throws SQLException 
      */
-    Number addUsersAnnotation(Number userID, Annotation annotation) throws SQLException, Exception;
+    Number addUsersAnnotation(Number userID, Annotation annotation);
     
     /**
      * 
@@ -311,9 +311,9 @@ public interface DBIntegrityService{
      * @return the internal Id of the just added "user", or null if it was not added for some reason (already exists)
      * @throws SQLException 
      */
-    Number addUser(User user, String remoteID) throws SQLException;
+    Number addUser(User user, String remoteID);
 
-    int addAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission) throws SQLException;
+    int addAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission);
     
     /**
      * DELETERS
@@ -335,7 +335,7 @@ public interface DBIntegrityService{
      * @return result[0] = # deleted rows in the table "Targets_cached_representations" (1, or 0).
      * result[1] = # deleted rows in the table "cached_representation" (should be 0 if the cached representation is in use by some other Target???).
      */
-    int[] deleteCachedRepresentationOfTarget(Number TargetID, Number cachedID) throws SQLException;
+    int[] deleteCachedRepresentationOfTarget(Number TargetID, Number cachedID) ;
 
     
     
@@ -349,7 +349,7 @@ public interface DBIntegrityService{
      * result[1] = # deleted rows in the table "cached_representation".
      **/
     
-    int[] deleteAllCachedRepresentationsOfTarget(Number versionID) throws SQLException;
+    int[] deleteAllCachedRepresentationsOfTarget(Number versionID);
 
       
     
@@ -362,7 +362,7 @@ public interface DBIntegrityService{
      * result[3] = # deleted rows in the table "Target".
      * @throws SQLException 
      */
-    int[] deleteAnnotation(Number annotationID) throws SQLException;
+    int[] deleteAnnotation(Number annotationID);
 
     
     

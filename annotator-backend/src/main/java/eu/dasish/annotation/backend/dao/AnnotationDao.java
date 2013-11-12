@@ -47,7 +47,7 @@ public interface AnnotationDao extends ResourceDao{
      * (Constructing a complete Annotation object using  "getAnnotationWithoutTargets" and "retrieveTargetIDs" is done in "DaoDispatchter".)
      * 
      */
-    public Map<Annotation, Number> getAnnotationWithoutTargetsAndPermissions(Number annotationID) throws SQLException;
+    public Map<Annotation, Number> getAnnotationWithoutTargetsAndPermissions(Number annotationID);
     
     
      /**
@@ -136,7 +136,7 @@ public interface AnnotationDao extends ResourceDao{
      * @throws SQLException 
      * Connects the annotation to its target Target by adding the pair (annotationID, TargetID) to the joint table.
      */ 
-    public int addAnnotationTarget(Number annotationID, Number targetID) throws SQLException;
+    public int addAnnotationTarget(Number annotationID, Number targetID);
     
    
     /**
@@ -147,7 +147,7 @@ public interface AnnotationDao extends ResourceDao{
      * @return # rows added to the table "annotations_principals_permissions"
      * Sets the "permission" for the "userID" w.r.t. the annotation with "annotationID".
      */
-    public int addAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission) throws SQLException;
+    public int addAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission);
     
     
   
@@ -157,7 +157,7 @@ public interface AnnotationDao extends ResourceDao{
      * @return  the internal ID of the added annotation, if it is added, or null otherwise.
      **/
     
-    public Number addAnnotation(Annotation annotation, Number ownerID) throws SQLException, Exception;
+    public Number addAnnotation(Annotation annotation, Number ownerID);
  
      
     /////// UPDATERS //////////////////
@@ -185,7 +185,7 @@ public interface AnnotationDao extends ResourceDao{
      * @return # of updated rows in "annotation" table after updating the annotation. Should return 1 if update  happens
      * @throws SQLException 
      */
-    public int updateAnnotation(Annotation annotation, Number ownerID) throws SQLException, Exception;
+    public int updateAnnotation(Annotation annotation, Number ownerID);
     
     
      /**
@@ -196,7 +196,7 @@ public interface AnnotationDao extends ResourceDao{
      * @return # rows updated to the table "annotations_principals_permissions"
      * Sets the "permission" for the "userID" w.r.t. the annotation with "annotationID".
      */
-    public int updateAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission) throws SQLException;
+    public int updateAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission);
     
     
     
@@ -213,7 +213,7 @@ public interface AnnotationDao extends ResourceDao{
     
     
    
-    public int deleteAnnotation(Number annotationId) throws SQLException;
+    public int deleteAnnotation(Number annotationId);
     
     /**
      * 
@@ -221,7 +221,7 @@ public interface AnnotationDao extends ResourceDao{
      * @return # removed rows in the table "annotations_target_Targets". 
      */
     
-    public int deleteAllAnnotationTarget(Number annotationID) throws SQLException;
+    public int deleteAllAnnotationTarget(Number annotationID);
     
    
    /**
@@ -230,6 +230,6 @@ public interface AnnotationDao extends ResourceDao{
     * @return # removed rows in the table "annotations_principals_permissions".
     * @throws SQLException 
     */
-    public int deleteAnnotationPrincipalPermissions(Number annotationID) throws SQLException ;
+    public int deleteAnnotationPrincipalPermissions(Number annotationID);
 
 }
