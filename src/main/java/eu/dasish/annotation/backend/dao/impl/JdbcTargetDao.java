@@ -182,12 +182,12 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
 
     ///////////////////////// ADDERS /////////////////////////////////
     @Override
-    public Number addTarget(Target Target) throws SQLException {        
+    public Number addTarget(Target target){        
         UUID externalID = UUID.randomUUID();      
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("externalId", externalID.toString());
-        params.put("linkUri", Target.getLink());
-        params.put("version", Target.getVersion());
+        params.put("linkUri", target.getLink());
+        params.put("version", target.getVersion());
         StringBuilder sql = new StringBuilder("INSERT INTO ");
         sql.append(targetTableName).append("(").append(external_id).append(",").append(link_uri).append(",").append(version).append(" ) VALUES (:externalId, :linkUri,  :version)");
         final int affectedRows = getSimpleJdbcTemplate().update(sql.toString(), params);  
@@ -197,7 +197,7 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
     
     ///////////////////////////////////////////////////////////////////
     @Override
-    public int addTargetCachedRepresentation(Number targetID, Number cachedID, String fragmentDescriptor) throws SQLException{
+    public int addTargetCachedRepresentation(Number targetID, Number cachedID, String fragmentDescriptor){
         Map<String, Object> paramsJoint = new HashMap<String, Object>();
         paramsJoint.put("targetId", targetID);
         paramsJoint.put("cachedId", cachedID);
@@ -208,7 +208,7 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
     
      ///////////////////////////////////////////////////////////////////
     @Override
-    public int updateSiblingClass(Number TargetID, int classID) throws SQLException{
+    public int updateSiblingClass(Number TargetID, int classID){
         if (TargetID == null) {
             return 0;
         }
@@ -232,7 +232,7 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
     
     ///////////////////////////////////////////////////////////////////
     @Override
-    public int deleteTargetCachedRepresentation(Number targetID, Number cachedID) throws SQLException {
+    public int deleteTargetCachedRepresentation(Number targetID, Number cachedID){
         if (targetID == null || cachedID == null) {
             return 0;
         }

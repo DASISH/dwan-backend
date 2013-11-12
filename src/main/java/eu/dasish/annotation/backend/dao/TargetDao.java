@@ -98,10 +98,10 @@ public interface TargetDao extends ResourceDao{
     
      /**
      * 
-     * @param Target: the Target-object of the Target to be added to "Target" table.
+     * @param target: the Target-object of the Target to be added to "Target" table.
      * @return the internal ID of the just added Target or null if it has not been added.
      */
-    public Number addTarget(Target Target) throws SQLException;   
+    public Number addTarget(Target target);   
     
     /**
      * 
@@ -110,7 +110,7 @@ public interface TargetDao extends ResourceDao{
      * @return # added rows to the table "Targets_cached_representations". Should be "1" if the pair (TargetID, cachedID) has been added.
      * @throws SQLException 
      */
-    public int addTargetCachedRepresentation(Number TargetID, Number cachedID, String fragmentDescription) throws SQLException; 
+    public int addTargetCachedRepresentation(Number TargetID, Number cachedID, String fragmentDescription); 
     
     /**
      * 
@@ -119,7 +119,7 @@ public interface TargetDao extends ResourceDao{
      * @return # of updated rows (should be 1) when updating the row for TargetID by class classID
      * @throws SQLException 
      */
-    public int updateSiblingClass(Number TargetID, int classID) throws SQLException;
+    public int updateSiblingClass(Number TargetID, int classID);
     
     
     /** 
@@ -140,7 +140,7 @@ public interface TargetDao extends ResourceDao{
      * @return # deleted rows in the table "Targets_cached_representation" when deleting the pair (TargetID, chachedID)
      * @throws SQLException 
      */
-    public int deleteTargetCachedRepresentation(Number TargetID, Number chachedID) throws SQLException;  
+    public int deleteTargetCachedRepresentation(Number TargetID, Number chachedID);  
     
     
   

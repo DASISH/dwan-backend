@@ -252,7 +252,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
 
     //////////////////////////////////////////////////////////////////////////
     @Override
-    public Map<Annotation, Number> getAnnotationWithoutTargetsAndPermissions(Number annotationID) throws SQLException {
+    public Map<Annotation, Number> getAnnotationWithoutTargetsAndPermissions(Number annotationID){
         if (annotationID == null) {
             return null;
         }
@@ -340,7 +340,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
 
     // TODO Unit test
     @Override
-    public int updateAnnotation(Annotation annotation, Number ownerID) throws SQLException, Exception {
+    public int updateAnnotation(Annotation annotation, Number ownerID){
 
         String[] body = retrieveBodyComponents(annotation);
 
@@ -358,7 +358,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
     }
 
     @Override
-    public int updateAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission) throws SQLException {
+    public int updateAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission) {
 
         StringBuilder sql = new StringBuilder("UPDATE ");
         sql.append(permissionsTableName).append(" SET ").
@@ -370,7 +370,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
 
     //////////// ADDERS ////////////////////////
     @Override
-    public Number addAnnotation(Annotation annotation, Number ownerID) throws SQLException, Exception {
+    public Number addAnnotation(Annotation annotation, Number ownerID){
 
         String[] body = retrieveBodyComponents(annotation);
 
@@ -393,7 +393,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
 
     //////////////////////////////////////////////////////////////////////////////////
     @Override
-    public int addAnnotationTarget(Number annotationID, Number targetID) throws SQLException {
+    public int addAnnotationTarget(Number annotationID, Number targetID){
         Map<String, Object> paramsAnnotationsTargets = new HashMap<String, Object>();
         paramsAnnotationsTargets.put("annotationId", annotationID);
         paramsAnnotationsTargets.put("targetId", targetID);
@@ -404,7 +404,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
 
     /////////////////////////////////////////////////////////////////////////////////////////
     @Override
-    public int addAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission) throws SQLException {
+    public int addAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission){
         Map<String, Object> paramsPermissions = new HashMap<String, Object>();
         paramsPermissions.put("annotationId", annotationID);
         paramsPermissions.put("principalId", userID);
@@ -418,7 +418,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
     //////////////////////////////////////////////////////////////////////////////////
     /////////////////// DELETERS //////////////////////////
     @Override
-    public int deleteAnnotation(Number annotationID) throws SQLException {
+    public int deleteAnnotation(Number annotationID){
         if (annotationID != null) {
             if (annotationIsInUse(annotationID)) {
                 return 0;
@@ -432,7 +432,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
     }
 
     @Override
-    public int deleteAllAnnotationTarget(Number annotationID) throws SQLException {
+    public int deleteAllAnnotationTarget(Number annotationID){
         if (annotationID != null) {
             StringBuilder sqlTargetTargets = new StringBuilder("DELETE FROM ");
             sqlTargetTargets.append(annotationsTargetsTableName).append(" WHERE ").append(annotation_id).append(" = ?");
@@ -444,7 +444,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
 
     //////////////////////////////////////////////////////
     @Override
-    public int deleteAnnotationPrincipalPermissions(Number annotationID) throws SQLException {
+    public int deleteAnnotationPrincipalPermissions(Number annotationID) {
         if (annotationID != null) {
             StringBuilder sqlPermissions = new StringBuilder("DELETE FROM ");
             sqlPermissions.append(permissionsTableName).append(" WHERE ").append(annotation_id).append(" = ?");
@@ -456,7 +456,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
     }
 
     /////////////// helpers //////////////////
-    private String[] retrieveBodyComponents(Annotation annotation) throws Exception {
+    private String[] retrieveBodyComponents(Annotation annotation){
         boolean body_is_xml = annotation.getBody().getXmlBody() != null;
         String[] result = new String[2];
         if (body_is_xml) {
@@ -468,7 +468,8 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
                 result[0] = textBody.getValue();
                 result[1] = textBody.getMimeType();
             } else {
-                throw (new Exception());
+                logger.error("Ill-formed body: both options, xml-body ent text-body, are set to null. ");
+                return null;
             }
         }
         return result;
