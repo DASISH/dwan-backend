@@ -112,8 +112,8 @@ public class AnnotationResource {
             return rootElement;
         } else {
             try {
-                logger.error("Unathorized-access attempt");
-                httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+                logger.error("FORBIDDEN-access attempt");
+                httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
             } catch (IOException ioe) {
                 logger.error("IOException: Cannot send server respond about unaithorized access.");
             }
@@ -137,7 +137,7 @@ public class AnnotationResource {
             return new ObjectFactory().createTargetList(TargetList);
         } else {
             try {
-                logger.error("Unathorized-access attempt");
+                logger.error("FORBIDDEN-access attempt");
                 httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED);
             } catch (IOException ioe) {
                 logger.error("IOException: Cannot send server respond about unaithorized access.");
@@ -183,7 +183,7 @@ public class AnnotationResource {
             return new ObjectFactory().createPermissionList(permissionList);
         } else {
             try {
-                logger.error("Unathorized-access attempt");
+                logger.error("FORBIDDEN-access attempt");
                 httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED);
             } catch (IOException ioe) {
                 logger.error("IOException: Cannot send server respond about unaithorized access.");
@@ -208,7 +208,7 @@ public class AnnotationResource {
             logger.info("deleteAnnotation method: OK");
             return result + " annotation(s) deleted.";
         } else {
-            logger.error("Unathorized-access attempt. Only the owner can delete an annotation.");
+            logger.error("FORBIDDEN-access attempt. Only the owner can delete an annotation.");
             try {
                 httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED);
             } catch (IOException ioe) {
@@ -257,7 +257,7 @@ public class AnnotationResource {
             return new ObjectFactory().createResponseBody(makeAnnotationResponseEnvelope(annotationID));
 
         } else {
-            logger.error("Unathorized-access attempt.");
+            logger.error("FORBIDDEN-access attempt.");
             logger.error("The logged-in user is not authorised to alter this annotation. ");
             try {
                 httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED);
@@ -287,7 +287,7 @@ public class AnnotationResource {
             return result + " rows are updated/added";
 
         } else {
-            logger.error("Unathorized-access attempt");
+            logger.error("FORBIDDEN-access attempt");
             logger.error("The logged-in user is not authorised to alter this annotation. ");
             try {
                 httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED);
@@ -312,7 +312,7 @@ public class AnnotationResource {
             logger.info("updatePermissions method: OK");
             return new ObjectFactory().createResponseBody(makePermissionResponseEnvelope(annotationID));
         } else {
-            logger.error("Unathorized-access attempt");
+            logger.error("FORBIDDEN-access attempt");
             logger.error("The logged-in user is not authorised to alter this annotation. ");
             try {
                 httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED);

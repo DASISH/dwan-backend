@@ -19,9 +19,7 @@ Any value defined here will override the pom.xml file value but is only applicab
     <spring-data xmlns="http://www.netbeans.org/ns/spring-data/1">
         <config-files>
             <config-file>src/main/resources/spring-config/applicationContext-security.xml</config-file>
-            <config-file>src/test/resources/spring-test-config/mockHttpServletRequest.xml</config-file>
-            <config-file>src/test/resources/spring-test-config/mockHttpServletResponse.xml</config-file>
-            <config-file>src/main/resources/spring-config/httpServletResponse.xml</config-file>
+            <config-file>src/main/resources/spring-config/securityDataSource.xml</config-file>
         </config-files>
         <config-file-groups/>
     </spring-data>

@@ -38,17 +38,7 @@
 
 <authentication-manager>
     <authentication-provider>
-        <user-service>
-            <user name="olha" password="adminpassword" authorities="ROLE_USER, ROLE_ADMIN" />
-            <user name="twan" password="twanpassword" authorities="ROLE_USER" />
-            <user name="eric" password="ericpassword" authorities="ROLE_USER" />
-            <user name="stephanie" password="stephaniepassword" authorities="ROLE_USER" />
-            <user name="olof" password="olofpassword" authorities="ROLE_USER" />
-            <user name="peter" password="peterpassword" authorities="ROLE_USER" />
-            <user name="daan" password="daanpassword" authorities="ROLE_USER" />
-            <user name="menzo" password="menzopassword" authorities="ROLE_USER" />
-            <user name="przemek" password="przemekpassword" authorities="ROLE_USER" />
-        </user-service>
+        <jdbc-user-service data-source-ref="securityDataSource"/>
     </authentication-provider>
 </authentication-manager>
 
