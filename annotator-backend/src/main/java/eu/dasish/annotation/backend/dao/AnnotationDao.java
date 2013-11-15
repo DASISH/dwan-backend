@@ -18,6 +18,7 @@
 package eu.dasish.annotation.backend.dao;
 
 import eu.dasish.annotation.schema.Annotation;
+import eu.dasish.annotation.schema.AnnotationBody;
 import eu.dasish.annotation.schema.AnnotationInfo;
 import eu.dasish.annotation.schema.Permission;
 import java.sql.SQLException;
@@ -161,22 +162,18 @@ public interface AnnotationDao extends ResourceDao{
  
      
     /////// UPDATERS //////////////////
+    
+    int updateAnnotationBodyText(Number annotationID, String text);
+    
     /**
      * 
      * @param annotationID
-     * @param newBodyText
+     * @param annotationBody
      * @return # of updated rows in "annotation" table after updating the annotation's body text with "newBodyText". Should return 1.
      */
-    public int updateBodyText(Number annotationID, String newBodyText);
+    public int updateAnnotationBody(Number annotationID, AnnotationBody annotationBody);
     
-    /////// UPDATERS //////////////////
-    /**
-     * 
-     * @param annotationID
-     * @param newMimeType
-     * @return # of updated rows in "annotation" table after updating the annotation's body with "newMimeType". Should return 1.
-     */
-    public int updateBodyMimeType(Number annotationID, String newMimeType);
+   
     
     /**
      * 

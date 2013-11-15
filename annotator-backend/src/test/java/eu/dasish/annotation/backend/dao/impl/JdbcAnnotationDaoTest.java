@@ -375,7 +375,7 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
     public void testUpdateBodyText() throws SQLException{
         System.out.println("test updateBodyText");
         String newBodyText = "new body";
-        int result = jdbcAnnotationDao.updateBodyText(2, newBodyText);
+        int result = jdbcAnnotationDao.updateAnnotationBodyText(2, newBodyText);
         assertEquals(1, result);
         Map<Annotation,Number> getResult= jdbcAnnotationDao.getAnnotationWithoutTargetsAndPermissions(2);
         Annotation[] annotations = new Annotation[1];
@@ -383,18 +383,7 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         assertEquals(newBodyText, annotations[0].getBody().getTextBody().getValue());
     }
 
-    //////////////////////////////////
-    @Test
-    public void testUpdateMimeType() throws SQLException{
-        System.out.println("test updateBodyMimeType");
-        String newBodyMimeType = "text/xml";
-        int result = jdbcAnnotationDao.updateBodyMimeType(2, newBodyMimeType);
-        assertEquals(1, result);
-        Map<Annotation,Number> getResult= jdbcAnnotationDao.getAnnotationWithoutTargetsAndPermissions(2);
-        Annotation[] annotations = new Annotation[1];
-        getResult.keySet().toArray(annotations);
-        assertEquals(newBodyMimeType, annotations[0].getBody().getTextBody().getMimeType());
-    }
+  
     
     // public List<Map<Number, String>> retrievePermissions(Number annotationId)
     

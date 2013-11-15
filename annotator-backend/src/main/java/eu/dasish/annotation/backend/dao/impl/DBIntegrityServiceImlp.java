@@ -25,6 +25,7 @@ import eu.dasish.annotation.backend.dao.TargetDao;
 import eu.dasish.annotation.backend.dao.UserDao;
 import eu.dasish.annotation.backend.rest.AnnotationResource;
 import eu.dasish.annotation.schema.Annotation;
+import eu.dasish.annotation.schema.AnnotationBody;
 import eu.dasish.annotation.schema.AnnotationInfo;
 import eu.dasish.annotation.schema.AnnotationInfoList;
 import eu.dasish.annotation.schema.CachedRepresentationFragment;
@@ -40,8 +41,6 @@ import eu.dasish.annotation.schema.User;
 import eu.dasish.annotation.schema.UserWithPermission;
 import java.io.InputStream;
 import java.lang.Number;
-import java.sql.Blob;
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -388,6 +387,16 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         int addedPrincipalsPermissions = addPrincipalsPermissions(annotation, annotationID);
         return updatedAnnotations;
     }
+    
+     
+    // TODO: unit test
+    @Override
+    public int updateAnnotationBody(Number internalID, AnnotationBody annotationBody) {
+        return annotationDao.updateAnnotationBody(internalID, annotationBody);
+    }
+    
+   
+    
     /////////////// ADDERS  /////////////////////////////////
     @Override
     public Number[] addCachedForTarget(Number targetID, String fragmentDescriptor, CachedRepresentationInfo cachedInfo, InputStream cachedBlob) {
@@ -510,9 +519,10 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     private int addTargets(Annotation annotation, Number annotationID) {
         List<TargetInfo> targets = annotation.getTargets().getTargetInfo();
         Map<String, String> targetIdPairs = addTargetsForAnnotation(annotationID, targets);
+        AnnotationBody annotationBody = annotation.getBody();
         String bodyText;
-        String newBody;
-        if (annotation.getBody().getXmlBody() != null) {
+        String newBodyText;
+        if (annotationBody.getXmlBody() != null) {
             bodyText = Helpers.elementToString(annotation.getBody().getXmlBody().getAny());
         } else {
             if (annotation.getBody().getTextBody() != null) {
@@ -523,8 +533,8 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
                 return -1;
             }
         }
-        newBody = Helpers.replace(bodyText, targetIdPairs);
-        return annotationDao.updateBodyText(annotationID, newBody);
+        newBodyText = Helpers.replace(bodyText, targetIdPairs);
+        return annotationDao.updateAnnotationBodyText(annotationID, newBodyText);
     }
 
     private int addPrincipalsPermissions(Annotation annotation, Number annotationID) {

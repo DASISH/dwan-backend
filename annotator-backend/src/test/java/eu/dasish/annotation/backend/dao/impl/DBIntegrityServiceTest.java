@@ -689,7 +689,7 @@ public class DBIntegrityServiceTest {
 
                 ///////////
 
-                oneOf(annotationDao).updateBodyText(6, testAnnotation.getBody().getTextBody().getValue());
+                oneOf(annotationDao).updateAnnotationBodyText(6, testAnnotation.getBody().getTextBody().getValue());
                 will(returnValue(1)); // the DB update will be called at perform anyway, even if the body is not changed (can be optimized)
 
                 oneOf(annotationDao).addAnnotationPrincipalPermission(6, 5, Permission.OWNER);

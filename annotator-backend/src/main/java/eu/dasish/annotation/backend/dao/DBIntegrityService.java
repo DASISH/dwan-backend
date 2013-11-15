@@ -19,6 +19,7 @@ package eu.dasish.annotation.backend.dao;
 
 
 import eu.dasish.annotation.schema.Annotation;
+import eu.dasish.annotation.schema.AnnotationBody;
 import eu.dasish.annotation.schema.AnnotationInfoList;
 import eu.dasish.annotation.schema.CachedRepresentationInfo;
 import eu.dasish.annotation.schema.Permission;
@@ -246,9 +247,19 @@ public interface DBIntegrityService{
      * @param userID
      * @param annotation
      * @return 1 of the annotation if it is updated
-     * @throws SQLException 
      */
     int updateUsersAnnotation(Number userID, Annotation annotation);
+    
+     
+    
+    /**
+     * 
+     * @param userID
+     * @param annotationBody
+     * @return 1 of the annotation if it is updated
+     */
+    int updateAnnotationBody(Number internalID, AnnotationBody annotationBody);
+    
     
     
        /**

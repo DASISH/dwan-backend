@@ -24,6 +24,7 @@ import eu.dasish.annotation.schema.AnnotationActionName;
 import eu.dasish.annotation.schema.AnnotationInfoList;
 import eu.dasish.annotation.schema.Action;
 import eu.dasish.annotation.schema.ActionList;
+import eu.dasish.annotation.schema.AnnotationBody;
 import eu.dasish.annotation.schema.ObjectFactory;
 import eu.dasish.annotation.schema.Permission;
 import eu.dasish.annotation.schema.PermissionActionName;
@@ -254,6 +255,35 @@ public class AnnotationResource {
         if (canWrite(userID, annotationID)) {
             int updatedRows = dbIntegrityService.updateUsersAnnotation(userID, annotation);
             logger.info("updateAnnotation method: OK");
+            return new ObjectFactory().createResponseBody(makeAnnotationResponseEnvelope(annotationID));
+
+        } else {
+            logger.error("FORBIDDEN-access attempt.");
+            logger.error("The logged-in user is not authorised to alter this annotation. ");
+            try {
+                httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+            } catch (IOException ioe) {
+                logger.error("IOException: Cannot send server respond about unaithorized access.");
+            }
+            return null;
+        }
+
+    }
+    
+    @PUT
+    @Consumes(MediaType.APPLICATION_XML)
+    @Produces(MediaType.APPLICATION_XML)
+    @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}/body")
+    @Secured("ROLE_USER")
+    public JAXBElement<ResponseBody> updateAnnotationBody(@PathParam("annotationid") String externalIdentifier, AnnotationBody annotationBody) {
+        String path = uriInfo.getBaseUri().toString();
+        dbIntegrityService.setServiceURI(path);
+        
+        final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(externalIdentifier));
+        final Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(httpServletRequest.getRemoteUser());
+        if (canWrite(userID, annotationID)) {
+            int updatedRows = dbIntegrityService.updateAnnotationBody(annotationID, annotationBody);
+            logger.info("updateAnnotationBody method: OK");
             return new ObjectFactory().createResponseBody(makeAnnotationResponseEnvelope(annotationID));
 
         } else {
