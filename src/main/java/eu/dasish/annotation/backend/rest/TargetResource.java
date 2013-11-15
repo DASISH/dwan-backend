@@ -98,17 +98,17 @@ public class TargetResource {
     //changed path, /Targetpart is removed
     //how to overwork the input stream to make it downloadable
     // using mime type as well
-    @DELETE
-    @Produces(MediaType.TEXT_XML)
-    @Path("{targetid: " + BackendConstants.regExpIdentifier + "}/cached/{cachedid: " + BackendConstants.regExpIdentifier + "}")
-    @Secured("ROLE_ADMIN")
-    public int deleteCached(@PathParam("targetid") String targetIdentifier, @PathParam("cachedid") String cachedIdentifier) throws SQLException {
-        dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
-        final Number targetID = dbIntegrityService.getCachedRepresentationInternalIdentifier(UUID.fromString(targetIdentifier));
-        final Number cachedID = dbIntegrityService.getCachedRepresentationInternalIdentifier(UUID.fromString(cachedIdentifier));
-        int[] result = dbIntegrityService.deleteCachedRepresentationOfTarget(targetID, cachedID);
-        return result[1];
-    }
+//    @DELETE
+//    @Produces(MediaType.TEXT_XML)
+//    @Path("{targetid: " + BackendConstants.regExpIdentifier + "}/cached/{cachedid: " + BackendConstants.regExpIdentifier + "}")
+//    @Secured("ROLE_ADMIN")
+//    public int deleteCached(@PathParam("targetid") String targetIdentifier, @PathParam("cachedid") String cachedIdentifier) throws SQLException {
+//        dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
+//        final Number targetID = dbIntegrityService.getCachedRepresentationInternalIdentifier(UUID.fromString(targetIdentifier));
+//        final Number cachedID = dbIntegrityService.getCachedRepresentationInternalIdentifier(UUID.fromString(cachedIdentifier));
+//        int[] result = dbIntegrityService.deleteCachedRepresentationOfTarget(targetID, cachedID);
+//        return result[1];
+//    }
 
     @POST
     @Consumes("multipart/mixed")

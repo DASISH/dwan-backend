@@ -325,24 +325,37 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
 
     //////////// UPDATERS /////////////
     @Override
-    public int updateBodyText(Number annotationID, String newBodyText) {
+    public int updateAnnotationBodyText(Number annotationID, String text) {
         StringBuilder sql = new StringBuilder("UPDATE ");
-        sql.append(annotationTableName).append(" SET ").append(body_text).append("= '").append(newBodyText).append("' WHERE ").append(annotation_id).append("= ?");
-        return getSimpleJdbcTemplate().update(sql.toString(), annotationID);
+        sql.append(annotationTableName).append(" SET ").
+                append(body_text).append("= '").append(text).
+                append("' WHERE ").append(annotation_id).append("= ?");
+        int affectedRows = getSimpleJdbcTemplate().update(sql.toString(), annotationID);
+        return affectedRows;
     }
-
+    
+    
+    
     @Override
-    public int updateBodyMimeType(Number annotationID, String newMimeType) {
+    public int updateAnnotationBody(Number annotationID, AnnotationBody annotationBody) {
+        String[] body = retrieveBodyComponents(annotationBody);        
         StringBuilder sql = new StringBuilder("UPDATE ");
-        sql.append(annotationTableName).append(" SET ").append(body_mimetype).append("= '").append(newMimeType).append("' WHERE ").append(annotation_id).append("= ?");
-        return getSimpleJdbcTemplate().update(sql.toString(), annotationID);
+        sql.append(annotationTableName).append(" SET ").
+                append(body_text).append("= '").append(body[0]).append("',").
+                append(body_mimetype).append("= '").append(body[1]).append("',").
+                append(is_xml).append("= '").append(annotationBody.getXmlBody() != null).
+                append("' WHERE ").append(annotation_id).append("= ?");
+        int affectedRows = getSimpleJdbcTemplate().update(sql.toString(), annotationID);
+        return affectedRows;
     }
+    
+    
 
     // TODO Unit test
     @Override
     public int updateAnnotation(Annotation annotation, Number ownerID){
 
-        String[] body = retrieveBodyComponents(annotation);
+        String[] body = retrieveBodyComponents(annotation.getBody());
 
         String externalID = stringURItoExternalID(annotation.getURI());
         StringBuilder sql = new StringBuilder("UPDATE ");
@@ -372,7 +385,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
     @Override
     public Number addAnnotation(Annotation annotation, Number ownerID){
 
-        String[] body = retrieveBodyComponents(annotation);
+        String[] body = retrieveBodyComponents(annotation.getBody());
 
         // generate a new annotation ID 
         UUID externalID = UUID.randomUUID();
@@ -456,14 +469,14 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
     }
 
     /////////////// helpers //////////////////
-    private String[] retrieveBodyComponents(Annotation annotation){
-        boolean body_is_xml = annotation.getBody().getXmlBody() != null;
+    private String[] retrieveBodyComponents(AnnotationBody annotationBody){
+        boolean body_is_xml = annotationBody.getXmlBody() != null;
         String[] result = new String[2];
         if (body_is_xml) {
-            result[0] = Helpers.elementToString(annotation.getBody().getXmlBody().getAny());
-            result[1] = annotation.getBody().getXmlBody().getMimeType();
+            result[0] = Helpers.elementToString(annotationBody.getXmlBody().getAny());
+            result[1] = annotationBody.getXmlBody().getMimeType();
         } else {
-            TextBody textBody = annotation.getBody().getTextBody();
+            TextBody textBody = annotationBody.getTextBody();
             if (textBody != null) {
                 result[0] = textBody.getValue();
                 result[1] = textBody.getMimeType();
