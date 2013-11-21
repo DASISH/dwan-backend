@@ -338,13 +338,19 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
     
     @Override
     public int updateAnnotationBody(Number annotationID, AnnotationBody annotationBody) {
-        String[] body = retrieveBodyComponents(annotationBody);        
+        String[] body = retrieveBodyComponents(annotationBody); 
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("annotationID", annotation_id);
+        params.put("bodyText", body[0]);
+        params.put("bodyMimeType", body[1]);
+        params.put("isXml", annotationBody.getXmlBody() != null);
+        
         StringBuilder sql = new StringBuilder("UPDATE ");
         sql.append(annotationTableName).append(" SET ").
-                append(body_text).append("= '").append(body[0]).append("',").
-                append(body_mimetype).append("= '").append(body[1]).append("',").
-                append(is_xml).append("= '").append(annotationBody.getXmlBody() != null).
-                append("' WHERE ").append(annotation_id).append("= ?");
+                append(body_text).append("= :bodyText, ").
+                append(body_mimetype).append("= :bodyMimeType, ").
+                append(is_xml).append("= :isXml").
+                append("' WHERE ").append(annotation_id).append("= :annotationID");
         int affectedRows = getSimpleJdbcTemplate().update(sql.toString(), annotationID);
         return affectedRows;
     }
@@ -354,31 +360,43 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
     // TODO Unit test
     @Override
     public int updateAnnotation(Annotation annotation, Number ownerID){
-
-        String[] body = retrieveBodyComponents(annotation.getBody());
-
+        
+        String[] body = retrieveBodyComponents(annotation.getBody());       
         String externalID = stringURItoExternalID(annotation.getURI());
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("timestamp", Helpers.retrieveTimeStamp(annotation.getTimeStamp()));
+        params.put("bodyText", body[0]);
+        params.put("bodyMimeType", body[1]);
+        params.put("headline", annotation.getHeadline());
+        params.put("isXml", annotation.getBody().getXmlBody() != null);
+        params.put("externalID", externalID);
+         
         StringBuilder sql = new StringBuilder("UPDATE ");
         sql.append(annotationTableName).append(" SET ").
-                append(body_text).append("= '").append(body[0]).append("',").
-                append(body_mimetype).append("= '").append(body[1]).append("',").
-                append(headline).append("= '").append(annotation.getHeadline()).append("',").
-                append(time_stamp).append("= '").append(annotation.getTimeStamp().toString()).append("',").
-                append(is_xml).append("= '").append(annotation.getBody().getXmlBody() != null).
-                append("' WHERE ").append(external_id).append("= ?");
-        int affectedRows = getSimpleJdbcTemplate().update(sql.toString(), externalID);
+                append(body_text).append("=  :bodyText ,").
+                append(body_mimetype).append("= :bodyMimeType ,").
+                append(headline).append("=  :headline ,").                
+                append(time_stamp).append("= :timestamp ,").
+                append(is_xml).append("= :isXml").
+                append(" WHERE ").append(external_id).append("= :externalID");
+        int affectedRows = getSimpleJdbcTemplate().update(sql.toString(), params);
         return affectedRows;
     }
 
     @Override
     public int updateAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission) {
+        
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("permission", permission.value());
+        params.put("annotationID", annotation_id);
+        params.put("principalID", principal_id);
 
         StringBuilder sql = new StringBuilder("UPDATE ");
         sql.append(permissionsTableName).append(" SET ").
-                append(this.permission).append("= '").append(permission.value()).
-                append("' WHERE ").append(annotation_id).append("= ").append(annotationID).
-                append(" AND ").append(principal_id).append("= ").append(userID);
-        return getSimpleJdbcTemplate().update(sql.toString());
+                append(this.permission).append("= :permission").
+                append(" WHERE ").append(annotation_id).append("= : annotationID").
+                append(" AND ").append(principal_id).append("= :principalID");
+        return getSimpleJdbcTemplate().update(sql.toString(), params);
     }
 
     //////////// ADDERS ////////////////////////
@@ -481,7 +499,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
                 result[0] = textBody.getValue();
                 result[1] = textBody.getMimeType();
             } else {
-                logger.error("Ill-formed body: both options, xml-body ent text-body, are set to null. ");
+                logger.error("Ill-formed body: both options, xml-body and text-body, are set to null. ");
                 return null;
             }
         }
