@@ -17,11 +17,11 @@
  */
 package eu.dasish.annotation.backend;
 
-import eu.dasish.annotation.schema.AnnotationBody;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.GregorianCalendar;
 import java.util.Map;
+import java.util.TimeZone;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -33,7 +33,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSSerializer;
 import org.xml.sax.SAXException;
-
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 /**
  *
  * @author olhsha
@@ -45,13 +46,29 @@ public class Helpers {
     
 
     public static XMLGregorianCalendar setXMLGregorianCalendar(Timestamp timeStamp) throws DatatypeConfigurationException {
-            GregorianCalendar gc = new GregorianCalendar();
-            gc.setTime(timeStamp);
+        //DateTimeZone jdtz = DateTimeZone.forTimeZone(xmlGC.getTimeZone(xmlGC.getTimezone()));
+        //DateTime jdt = new DateTime(xmlGC.getYear(), xmlGC.getMonth(), xmlGC.getDay(), xmlGC.getHour(), xmlGC.getMinute(), xmlGC.getSecond(), jdtz);
+            
+        
+        GregorianCalendar gc = new GregorianCalendar();
+            gc.setTimeInMillis(timeStamp.getTime());
             return DatatypeFactory.newInstance().newXMLGregorianCalendar(gc);
     }
     
         
-    
+    public static Timestamp retrieveTimeStamp(XMLGregorianCalendar xmlGC) {
+        //DateTimeZone jdtz = DateTimeZone.forTimeZone(xmlGC.getTimeZone(xmlGC.getTimezone()));
+        //DateTime jdt = new DateTime(xmlGC.getYear(), xmlGC.getMonth(), xmlGC.getDay(), xmlGC.getHour(), xmlGC.getMinute(), xmlGC.getSecond(), jdtz);
+        GregorianCalendar gc = new GregorianCalendar(xmlGC.getTimeZone(xmlGC.getTimezone()));
+        int test = xmlGC.getTimezone();
+        TimeZone tz  = xmlGC.getTimeZone(test);
+        gc.set(xmlGC.getYear(), xmlGC.getMonth(), xmlGC.getDay(), xmlGC.getHour(), xmlGC.getMinute(), xmlGC.getSecond());
+        Timestamp result = new Timestamp(gc.getTimeInMillis());
+        TimeZone tz2 = gc.getTimeZone();
+        int hr = result.getHours();
+        int offset = result.getTimezoneOffset();
+        return result;
+    }
   
     
      
