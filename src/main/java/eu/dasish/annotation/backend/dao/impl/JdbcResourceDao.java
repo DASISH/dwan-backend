@@ -17,15 +17,16 @@
  */
 package eu.dasish.annotation.backend.dao.impl;
 
-import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.dao.ResourceDao;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.UUID;
-import javax.sql.DataSource;
 import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcDaoSupport;
 
@@ -34,9 +35,7 @@ import org.springframework.jdbc.core.simple.SimpleJdbcDaoSupport;
  * @author olhsha
  */
 public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao {
-    
-    
-    
+
     // base string constants: reTarget table Names
     final static protected String notebookTableName = "notebook";
     final static protected String annotationTableName = "annotation";
@@ -60,7 +59,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     final static protected String body_mimetype = "body_mimetype";
     final static protected String title = "title";
     final static protected String principal_id = "principal_id";
-    final static protected String time_stamp = "time_stamp";
+    final static protected String last_modified = "last_modified";
     final static protected String version = "version";
     final static protected String permission = "permission_";
     final static protected String link_uri = "link_uri";
@@ -76,7 +75,6 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     final static protected String is_xml = "is_xml";
     final static protected String fragment_descriptor = "fragment_descriptor";
     final static protected String fragment_descriptor_in_cached = "fragment_descriptor_in_cached";
-            
     // derived string constants: table+field names 
     final static protected String annotationStar = annotationTableName + ".*";
     final static protected String annotationAnnotation_id = annotationTableName + "." + annotation_id;
@@ -96,18 +94,14 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     protected String internalIdName = null;
     protected String resourceTableName = null;
     protected String _serviceURI;
+    private static final Logger _logger = LoggerFactory.getLogger(JdbcResourceDao.class);
+
     ////////
-    
-  
-    
     /////////////////// Class field SETTERS /////////////
     @Override
-    public void setServiceURI(String serviceURI){
+    public void setServiceURI(String serviceURI) {
         _serviceURI = serviceURI;
     }
-       
-    
-    
 
     //////////////////////////////////////////////////////////////////////////////////
     @Override
@@ -118,7 +112,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
         StringBuilder sql = new StringBuilder("SELECT ");
         sql.append(internalIdName).append(" FROM ").append(resourceTableName).append(" WHERE ").append(external_id).append("= ? LIMIT 1");
         List<Number> sqlResult = getSimpleJdbcTemplate().query(sql.toString(), internalIDRowMapper, externalId.toString());
-        return (sqlResult.isEmpty() ? null: sqlResult.get(0));
+        return (sqlResult.isEmpty() ? null : sqlResult.get(0));
     }
 
     /////////////////////////////////////////////
@@ -136,17 +130,17 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
         String externalID = stringURItoExternalID(uri);
         return getInternalID(UUID.fromString(externalID));
     }
-    
+
     //////////////////////////////////////////////
     @Override
     public String getURIFromInternalID(Number internalID) {
         return externalIDtoURI(getExternalID(internalID).toString());
     }
-    
+
     /////////////////////////////////////////////////////
     protected XMLGregorianCalendar retrieveTimeStamp(Number internalID) {
-        StringBuilder sqlTime = new  StringBuilder("SELECT ");
-        sqlTime.append(time_stamp).append(" FROM ").append(resourceTableName).append(" WHERE ").append(internalIdName).append("= ? LIMIT 1");
+        StringBuilder sqlTime = new StringBuilder("SELECT ");
+        sqlTime.append(last_modified).append(" FROM ").append(resourceTableName).append(" WHERE ").append(internalIdName).append("= ? LIMIT 1");
         List<XMLGregorianCalendar> timeStamp = getSimpleJdbcTemplate().query(sqlTime.toString(), timeStampRowMapper, internalID);
         if (timeStamp.isEmpty()) {
             return null;
@@ -156,16 +150,10 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     protected final RowMapper<XMLGregorianCalendar> timeStampRowMapper = new RowMapper<XMLGregorianCalendar>() {
         @Override
         public XMLGregorianCalendar mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            try {
-                XMLGregorianCalendar result = Helpers.setXMLGregorianCalendar(rs.getTimestamp(time_stamp));
-                return result;
-            } catch (DatatypeConfigurationException e) {
-                System.out.println(e);
-                return null;
-            }
+            return timeStampToXMLGregorianCalendar(rs);
         }
     };
-    ////////////////// ROW MAPPERS ///////////////////
+////////////////// ROW MAPPERS ///////////////////
     protected final RowMapper<Number> internalIDRowMapper = new RowMapper<Number>() {
         @Override
         public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
@@ -192,7 +180,6 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
             return rs.getInt(target_id);
         }
     };
-   
     protected final RowMapper<Number> annotationIDRowMapper = new RowMapper<Number>() {
         @Override
         public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
@@ -211,7 +198,6 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
             return rs.getInt(principal_id);
         }
     };
-
     protected final RowMapper<Number> ownerIDRowMapper = new RowMapper<Number>() {
         @Override
         public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
@@ -219,9 +205,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
         }
     };
 
-    
-    
-    @Override 
+    @Override
     public String externalIDtoURI(String externalID) {
         if (_serviceURI != null) {
             return _serviceURI + externalID;
@@ -229,8 +213,8 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
             return externalID;
         }
     }
-    
-    @Override 
+
+    @Override
     public String stringURItoExternalID(String stringURI) {
         return stringURI.substring(_serviceURI.length());
     }
@@ -253,5 +237,21 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
         }
         result = result + vals.get(length - 1).toString() + ")";
         return result;
+    }
+
+    /////////////////////////
+    protected XMLGregorianCalendar timeStampToXMLGregorianCalendar(ResultSet rs) {
+        try {
+            String ts = rs.getString(last_modified).replace(' ', 'T') + "Z";
+            try {
+                return DatatypeFactory.newInstance().newXMLGregorianCalendar(ts);
+            } catch (DatatypeConfigurationException dtce) {
+                _logger.error(" ", dtce);
+                return null;
+            }
+        } catch (SQLException sqle) {
+            _logger.error(" ", sqle);
+            return null;
+        }
     }
 }

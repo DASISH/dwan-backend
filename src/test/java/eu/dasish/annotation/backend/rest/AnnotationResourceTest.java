@@ -52,6 +52,7 @@ import javax.servlet.ServletException;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.JAXBException;
 import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 /**
@@ -183,7 +184,7 @@ public class AnnotationResourceTest {
         TargetInfoList TargetInfoList = new TargetInfoList();
         annotationToAdd.setTargets(TargetInfoList);
         annotationToAdd.setOwnerRef(null);      
-        annotationToAdd.setTimeStamp(Helpers.setXMLGregorianCalendar(Timestamp.valueOf("2013-08-12 11:25:00.383000")));
+        annotationToAdd.setLastModified(DatatypeFactory.newInstance().newXMLGregorianCalendar(TestBackendConstants._TEST_ANNOT_2_TIME_STAMP));
         annotationToAdd.setHeadline("headline");
         annotationToAdd.setTargets(TargetInfoList);
         
@@ -244,7 +245,7 @@ public class AnnotationResourceTest {
         assertEquals(addedAnnotation.getURI(), newAnnotation.getURI());
         assertEquals(addedAnnotation.getHeadline(), newAnnotation.getHeadline());
         assertEquals(addedAnnotation.getTargets(), newAnnotation.getTargets()); 
-        assertEquals(addedAnnotation.getTimeStamp(), newAnnotation.getTimeStamp());
+        assertEquals(addedAnnotation.getLastModified(), newAnnotation.getLastModified());
         assertEquals(addedAnnotation.getBody(), newAnnotation.getBody());
         assertEquals(AnnotationActionName.CREATE_CACHED_REPRESENTATION.value(), actionName);
     }

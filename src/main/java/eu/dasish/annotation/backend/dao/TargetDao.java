@@ -17,7 +17,6 @@
  */
 package eu.dasish.annotation.backend.dao;
 
-import eu.dasish.annotation.schema.CachedRepresentationFragmentList;
 import eu.dasish.annotation.schema.Target;
 import eu.dasish.annotation.schema.TargetInfo;
 import java.sql.SQLException;

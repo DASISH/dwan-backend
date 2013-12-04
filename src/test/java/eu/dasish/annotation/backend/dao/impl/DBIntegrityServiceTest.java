@@ -45,6 +45,7 @@ import java.util.Map;
 import java.util.UUID;
 import javax.sql.rowset.serial.SerialBlob;
 import javax.sql.rowset.serial.SerialException;
+import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
@@ -163,16 +164,15 @@ public class DBIntegrityServiceTest {
     /**
      * Test of getAnnotation method, of class DBIntegrityServiceImlp.
      */
-    @Test
-    
+    @Test    
     public void testGetAnnotation() throws Exception {
         System.out.println("test getAnnotation");
 
         final Annotation mockAnnotation = new Annotation();// corresponds to the annotation # 2
         mockAnnotation.setURI(TestBackendConstants._TEST_SERVLET_URI_annotations +TestBackendConstants._TEST_ANNOT_2_EXT);
         mockAnnotation.setHeadline(TestBackendConstants._TEST_ANNOT_2_HEADLINE);
-        XMLGregorianCalendar mockTimeStamp = Helpers.setXMLGregorianCalendar(Timestamp.valueOf("2013-08-12 11:25:00.383000"));
-        mockAnnotation.setTimeStamp(mockTimeStamp);
+        XMLGregorianCalendar mockTimeStamp = DatatypeFactory.newInstance().newXMLGregorianCalendar(TestBackendConstants._TEST_ANNOT_2_TIME_STAMP);
+        mockAnnotation.setLastModified(mockTimeStamp);
         mockAnnotation.setOwnerRef("3");
 
         AnnotationBody mockBody = new AnnotationBody();
@@ -258,7 +258,7 @@ public class DBIntegrityServiceTest {
         assertEquals("text/plain", result.getBody().getTextBody().getMimeType());
         assertEquals(TestBackendConstants._TEST_ANNOT_2_BODY, result.getBody().getTextBody().getValue());
         assertEquals(TestBackendConstants._TEST_ANNOT_2_HEADLINE, result.getHeadline());
-        assertEquals(TestBackendConstants._TEST_ANNOT_2_TIME_STAMP, result.getTimeStamp().toString());
+        assertEquals(TestBackendConstants._TEST_ANNOT_2_TIME_STAMP, result.getLastModified().toString());
         assertEquals(TestBackendConstants._TEST_SERVLET_URI_users+TestBackendConstants._TEST_USER_3_EXT_ID, result.getOwnerRef());
 
         assertEquals(mockTargetOne.getLink(), result.getTargets().getTargetInfo().get(0).getLink());

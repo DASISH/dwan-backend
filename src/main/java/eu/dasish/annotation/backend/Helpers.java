@@ -35,43 +35,16 @@ import org.w3c.dom.ls.LSSerializer;
 import org.xml.sax.SAXException;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+
 /**
  *
  * @author olhsha
  */
 public class Helpers {
-    
+
     //exception messages
     final static public String INVALID_BODY_EXCEPTION = "Invalide annotation body: both, text and xml options, are null.";
-    
-
-    public static XMLGregorianCalendar setXMLGregorianCalendar(Timestamp timeStamp) throws DatatypeConfigurationException {
-        //DateTimeZone jdtz = DateTimeZone.forTimeZone(xmlGC.getTimeZone(xmlGC.getTimezone()));
-        //DateTime jdt = new DateTime(xmlGC.getYear(), xmlGC.getMonth(), xmlGC.getDay(), xmlGC.getHour(), xmlGC.getMinute(), xmlGC.getSecond(), jdtz);
-            
-        
-        GregorianCalendar gc = new GregorianCalendar();
-            gc.setTimeInMillis(timeStamp.getTime());
-            return DatatypeFactory.newInstance().newXMLGregorianCalendar(gc);
-    }
-    
-        
-    public static Timestamp retrieveTimeStamp(XMLGregorianCalendar xmlGC) {
-        //DateTimeZone jdtz = DateTimeZone.forTimeZone(xmlGC.getTimeZone(xmlGC.getTimezone()));
-        //DateTime jdt = new DateTime(xmlGC.getYear(), xmlGC.getMonth(), xmlGC.getDay(), xmlGC.getHour(), xmlGC.getMinute(), xmlGC.getSecond(), jdtz);
-        GregorianCalendar gc = new GregorianCalendar(xmlGC.getTimeZone(xmlGC.getTimezone()));
-        int test = xmlGC.getTimezone();
-        TimeZone tz  = xmlGC.getTimeZone(test);
-        gc.set(xmlGC.getYear(), xmlGC.getMonth(), xmlGC.getDay(), xmlGC.getHour(), xmlGC.getMinute(), xmlGC.getSecond());
-        Timestamp result = new Timestamp(gc.getTimeInMillis());
-        TimeZone tz2 = gc.getTimeZone();
-        int hr = result.getHours();
-        int offset = result.getTimezoneOffset();
-        return result;
-    }
-  
-    
-     
+   
     public static String replace(String text, Map<String, String> pairs) {
         String result = (new StringBuilder(text)).toString();
         for (String tempTarget : pairs.keySet()) {
@@ -79,10 +52,8 @@ public class Helpers {
         }
         return result;
     }
-    
-    
-    
-   public static Element stringToElement(String string) {
+
+    public static Element stringToElement(String string) {
         try {
             DocumentBuilder dbf = DocumentBuilderFactory.newInstance().newDocumentBuilder();
             try {

@@ -17,7 +17,6 @@
  */
 package eu.dasish.annotation.backend.dao.impl;
 
-import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.dao.TargetDao;
 import eu.dasish.annotation.schema.Target;
 import eu.dasish.annotation.schema.TargetInfo;
@@ -39,15 +38,14 @@ import org.springframework.jdbc.core.RowMapper;
  */
 public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
 
-   
     public JdbcTargetDao(DataSource dataTarget) {
         setDataSource(dataTarget);
         internalIdName = target_id;
         resourceTableName = targetTableName;
     }
-    
-   @Override
-    public void setServiceURI(String serviceURI){
+
+    @Override
+    public void setServiceURI(String serviceURI) {
         _serviceURI = serviceURI;
     }
 
@@ -62,21 +60,14 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
     private final RowMapper<Target> TargetRowMapper = new RowMapper<Target>() {
         @Override
         public Target mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            try {
-                XMLGregorianCalendar xmlDate = Helpers.setXMLGregorianCalendar(rs.getTimestamp(time_stamp));
-                Target result = 
-                        constructTarget(rs.getString(external_id), rs.getString(link_uri), rs.getString(version), xmlDate, rs.getString(fragment_descriptor));
-                return result;
-            } catch (DatatypeConfigurationException e) {
-                // TODO: which logger are we going to use?
-                System.out.println("Cannot construct time stamp: probably worng date/time format");
-                return null;
-            }
+            XMLGregorianCalendar xmlDate = timeStampToXMLGregorianCalendar(rs);
+            Target result =
+                    constructTarget(rs.getString(external_id), rs.getString(link_uri), rs.getString(version), xmlDate, rs.getString(fragment_descriptor));
+            return result;
         }
     };
-    
-    
-   @Override
+
+    @Override
     public String getLink(Number internalID) {
         StringBuilder sql = new StringBuilder("SELECT ");
         sql.append(TargetStar).append(" FROM ").append(targetTableName).append(" WHERE ").append(target_id).append("= ? LIMIT 1");
@@ -89,37 +80,35 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
             return rs.getString(link_uri);
         }
     };
-    
-   
-      /////////////////////////////////////////
+
+    /////////////////////////////////////////
     @Override
     public List<Number> getCachedRepresentations(Number targetID) {
-       
+
         String sql = "SELECT " + cached_representation_id + " FROM " + targetsCachedRepresentationsTableName + " WHERE " + target_id + " = ?";
-        return getSimpleJdbcTemplate().query(sql, cachedIDRowMapper, targetID); 
+        return getSimpleJdbcTemplate().query(sql, cachedIDRowMapper, targetID);
     }
 
-     @Override
-     public Map<Number, String> getCachedRepresentationFragmentPairs(Number targetID){        
-        Map<Number, String> result  = new HashMap<Number, String>(); 
-        String sql = "SELECT " + cached_representation_id + ","+ fragment_descriptor_in_cached+ " FROM " + targetsCachedRepresentationsTableName + " WHERE " + target_id + " = ?";
-        List<Map<Number, String>> respond = getSimpleJdbcTemplate().query(sql, cachedFragmentRowMapper, targetID); 
-        for (Map<Number, String> pair : respond){
+    @Override
+    public Map<Number, String> getCachedRepresentationFragmentPairs(Number targetID) {
+        Map<Number, String> result = new HashMap<Number, String>();
+        String sql = "SELECT " + cached_representation_id + "," + fragment_descriptor_in_cached + " FROM " + targetsCachedRepresentationsTableName + " WHERE " + target_id + " = ?";
+        List<Map<Number, String>> respond = getSimpleJdbcTemplate().query(sql, cachedFragmentRowMapper, targetID);
+        for (Map<Number, String> pair : respond) {
             result.putAll(pair);
         }
         return result;
-     }
-    
-     private final RowMapper<Map<Number, String>> cachedFragmentRowMapper = new RowMapper<Map<Number, String>>() {
+    }
+    private final RowMapper<Map<Number, String>> cachedFragmentRowMapper = new RowMapper<Map<Number, String>>() {
         @Override
         public Map<Number, String> mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            Map<Number, String> result  = new HashMap<Number, String>();
+            Map<Number, String> result = new HashMap<Number, String>();
             result.put(rs.getInt(cached_representation_id), rs.getString(fragment_descriptor_in_cached));
             return result;
         }
     };
-     
-     ///////////////////////////////////////////////////////////////////
+
+    ///////////////////////////////////////////////////////////////////
     @Override
     public List<TargetInfo> getTargetInfos(List<Number> targets) {
         if (targets == null) {
@@ -130,7 +119,7 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
         }
 
         String targetIDs = makeListOfValues(targets);
-        
+
         StringBuilder sql = new StringBuilder("SELECT ");
         sql.append(external_id).append(",").append(link_uri).append(",").append(version).
                 append(" FROM ").append(targetTableName).append(" WHERE ").append(target_id).append(" IN ").append(targetIDs);
@@ -143,17 +132,16 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
         }
     };
 
- 
     /////////////////////////////////////////////////////
     @Override
     public List<Number> getTargetsReferringTo(String word) {
-        String searchTerm = "%"+word+"%";
-        StringBuilder sql = new StringBuilder("SELECT "); 
+        String searchTerm = "%" + word + "%";
+        StringBuilder sql = new StringBuilder("SELECT ");
         sql.append(target_id).append(" FROM ").append(targetTableName).append(" WHERE ").append(link_uri).append(" LIKE ? ");
         return getSimpleJdbcTemplate().query(sql.toString(), internalIDRowMapper, searchTerm);
     }
 
-      /////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////
     @Override
     public List<Number> getTargetsForLink(String link) {
         StringBuilder sql = new StringBuilder("SELECT ");
@@ -161,10 +149,6 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
         return getSimpleJdbcTemplate().query(sql.toString(), internalIDRowMapper, link);
     }
 
-    
-    
-    
-    
     /////////////////////////////////////////////////
     @Override
     public boolean targetIsInUse(Number targetID) {
@@ -174,30 +158,26 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
         if (resultAnnotations == null) {
             return false;
         }
-        return (resultAnnotations.size() > 0) ;
+        return (resultAnnotations.size() > 0);
     }
-    
-  
-    
 
     ///////////////////////// ADDERS /////////////////////////////////
     @Override
-    public Number addTarget(Target target){        
-        UUID externalID = UUID.randomUUID();      
+    public Number addTarget(Target target) {
+        UUID externalID = UUID.randomUUID();
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("externalId", externalID.toString());
         params.put("linkUri", target.getLink());
         params.put("version", target.getVersion());
         StringBuilder sql = new StringBuilder("INSERT INTO ");
-        sql.append(targetTableName).append("(").append(external_id).append(",").append(link_uri).append(",").append(version).append(" ) VALUES (:externalId, :linkUri,  :version)");
-        final int affectedRows = getSimpleJdbcTemplate().update(sql.toString(), params);  
-        return (affectedRows>0 ? getInternalID(UUID.fromString(externalID.toString())) : null);
+        sql.append(targetTableName).append("(").append(external_id).append(",").append(link_uri).append(",").append(version).append(",").append(last_modified).append(" ) VALUES (:externalId, :linkUri,  :version, current_timestamp AT TIME ZONE INTERVAL '00:00')");
+        final int affectedRows = getSimpleJdbcTemplate().update(sql.toString(), params);
+        return (affectedRows > 0 ? getInternalID(UUID.fromString(externalID.toString())) : null);
     }
-    
-    
+
     ///////////////////////////////////////////////////////////////////
     @Override
-    public int addTargetCachedRepresentation(Number targetID, Number cachedID, String fragmentDescriptor){
+    public int addTargetCachedRepresentation(Number targetID, Number cachedID, String fragmentDescriptor) {
         Map<String, Object> paramsJoint = new HashMap<String, Object>();
         paramsJoint.put("targetId", targetID);
         paramsJoint.put("cachedId", cachedID);
@@ -205,10 +185,10 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
         StringBuilder sqlJoint = new StringBuilder("INSERT INTO ").append(targetsCachedRepresentationsTableName).append("(").append(target_id).append(",").append(cached_representation_id).append(",").append(fragment_descriptor_in_cached).append(" ) VALUES (:targetId, :cachedId, :fragmentDescriptor)");
         return getSimpleJdbcTemplate().update(sqlJoint.toString(), paramsJoint);
     }
-    
-     ///////////////////////////////////////////////////////////////////
+
+    ///////////////////////////////////////////////////////////////////
     @Override
-    public int updateSiblingClass(Number TargetID, int classID){
+    public int updateSiblingClass(Number TargetID, int classID) {
         if (TargetID == null) {
             return 0;
         }
@@ -216,11 +196,11 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
         sql.append(targetTableName).append(" SET ").append(sibling_Target_class).append("= '").append(classID).append("' WHERE ").append(target_id).append("= ?");
         return getSimpleJdbcTemplate().update(sql.toString(), TargetID);
     }
-   
+
 ////////////////////// DELETERS ////////////////////////
     @Override
     public int deleteTarget(Number internalID) {
-        if (targetIsInUse(internalID)){
+        if (targetIsInUse(internalID)) {
             return 0;
         }
         StringBuilder sqlTargetsVersions = new StringBuilder("DELETE FROM ");
@@ -229,10 +209,9 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
 
     }
 
-    
     ///////////////////////////////////////////////////////////////////
     @Override
-    public int deleteTargetCachedRepresentation(Number targetID, Number cachedID){
+    public int deleteTargetCachedRepresentation(Number targetID, Number cachedID) {
         if (targetID == null || cachedID == null) {
             return 0;
         }
@@ -245,26 +224,23 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
         return getSimpleJdbcTemplate().update(sqlTargetsVersions.toString(), paramsJoint);
 
     }
- 
-   
-  /////////// HELPERS  ////////////////
-   
 
+    /////////// HELPERS  ////////////////
     private TargetInfo constructTargetInfo(String externalID, String link, String version) {
-        TargetInfo TargetInfo = new TargetInfo();
-        TargetInfo.setRef(externalIDtoURI(externalID));
-        TargetInfo.setLink(link);
-        TargetInfo.setVersion(version);
-        return TargetInfo;
+        TargetInfo targetInfo = new TargetInfo();
+        targetInfo.setRef(externalIDtoURI(externalID));
+        targetInfo.setLink(link);
+        targetInfo.setVersion(version);
+        return targetInfo;
     }
 
     private Target constructTarget(String externalID, String link, String version, XMLGregorianCalendar xmlTimeStamp, String fragment) {
-        Target Target = new Target();
-        Target.setURI(externalIDtoURI(externalID));
-        Target.setTimeStamp(xmlTimeStamp);
-        Target.setLink(link);
-        Target.setVersion(version);
-        Target.setFragmentDescriptor(fragment);
-        return Target;
+        Target target = new Target();
+        target.setURI(externalIDtoURI(externalID));
+        target.setLastModified(xmlTimeStamp);
+        target.setLink(link);
+        target.setVersion(version);
+        target.setFragmentDescriptor(fragment);
+        return target;
     }
 }

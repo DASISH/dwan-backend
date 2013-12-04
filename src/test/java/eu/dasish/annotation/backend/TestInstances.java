@@ -71,7 +71,7 @@ public class TestInstances {
         result.setHeadline(headline);
         result.setOwnerRef(String.valueOf(ownerId)); 
         
-        result.setTimeStamp(null); 
+        result.setLastModified(null); 
         result.setURI(null);
         result.setTargets(null);
         result.setURI(null);

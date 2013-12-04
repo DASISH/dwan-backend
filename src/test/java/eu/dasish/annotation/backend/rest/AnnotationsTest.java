@@ -35,6 +35,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.JAXBElement;
 import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
 import org.jmock.Expectations;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -69,7 +70,7 @@ public class AnnotationsTest extends ResourcesTest{
         final Annotation testAnnotation = new Annotation();
         testAnnotation.setOwnerRef("5");
         testAnnotation.setURI(externalIDstring);
-        testAnnotation.setTimeStamp(Helpers.setXMLGregorianCalendar(Timestamp.valueOf("2013-08-12 11:25:00.383000")));
+        testAnnotation.setLastModified(DatatypeFactory.newInstance().newXMLGregorianCalendar(TestBackendConstants._TEST_ANNOT_2_TIME_STAMP));
         
         //final Number annotationID = daoDispatcher.getAnnotationInternalIdentifier(UUID.fromString(UUID));
         //final Annotation annotation = daoDispatcher.getAnnotation(annotationID);
@@ -101,7 +102,7 @@ public class AnnotationsTest extends ResourcesTest{
         assertEquals(testAnnotation.getOwnerRef(), entity.getOwnerRef());
         assertEquals(testAnnotation.getPermissions(), entity.getPermissions());
         assertEquals(testAnnotation.getTargets(), entity.getTargets());
-        assertEquals(testAnnotation.getTimeStamp(), entity.getTimeStamp());
+        assertEquals(testAnnotation.getLastModified(), entity.getLastModified());
         assertEquals(testAnnotation.getURI(), entity.getURI());
     }  
     
@@ -172,7 +173,7 @@ public class AnnotationsTest extends ResourcesTest{
         addedAnnotation.setTargets(TargetInfoList);
         addedAnnotation.setOwnerRef(ownerString);
         addedAnnotation.setURI(TestBackendConstants._TEST_SERVLET_URI_annotations+UUID.randomUUID().toString());        
-        addedAnnotation.setTimeStamp(Helpers.setXMLGregorianCalendar(Timestamp.valueOf("2013-08-12 11:25:00.383000")));        
+        addedAnnotation.setLastModified(DatatypeFactory.newInstance().newXMLGregorianCalendar(TestBackendConstants._TEST_ANNOT_2_TIME_STAMP));        
         TargetInfo TargetInfo = new TargetInfo();
         TargetInfo.setLink("google.nl");
         TargetInfo.setRef(UUID.randomUUID().toString());
@@ -222,7 +223,7 @@ public class AnnotationsTest extends ResourcesTest{
         assertEquals(addedAnnotation.getTargets().getTargetInfo().get(0).getLink(), entityA.getTargets().getTargetInfo().get(0).getLink());
         assertEquals(addedAnnotation.getTargets().getTargetInfo().get(0).getRef(), entityA.getTargets().getTargetInfo().get(0).getRef());
         assertEquals(addedAnnotation.getTargets().getTargetInfo().get(0).getVersion(), entityA.getTargets().getTargetInfo().get(0).getVersion());
-        assertEquals(addedAnnotation.getTimeStamp(), entityA.getTimeStamp());
+        assertEquals(addedAnnotation.getLastModified(), entityA.getLastModified());
         assertEquals(addedAnnotation.getOwnerRef(), entityA.getOwnerRef());
     }
 }
