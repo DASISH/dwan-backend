@@ -35,7 +35,7 @@ SET client_encoding = 'UTF8';
 
 SET default_with_oids = false;
 
-
+SET TIME ZONE LOCAL;
 
 
 CREATE TABLE principal (
@@ -49,7 +49,7 @@ CREATE TABLE principal (
 CREATE TABLE notebook (
     notebook_id SERIAL UNIQUE NOT NULL,
     external_id text UNIQUE NOT NULL,
-    time_stamp timestamp with time zone default now(),
+    last_modified timestamp default now(),
     title text,
     owner_id integer NOT NULL
 );
@@ -58,7 +58,7 @@ CREATE TABLE notebook (
 CREATE TABLE annotation (
     annotation_id SERIAL UNIQUE NOT NULL, 
     external_id text UNIQUE NOT NULL,
-    time_stamp timestamp with time zone default now(),
+    last_modified timestamp default now(),
     owner_id integer REFERENCES principal(principal_id), 
     headline text,
     body_text text,
@@ -71,7 +71,7 @@ CREATE TABLE annotation (
 CREATE TABLE target (
     target_id SERIAL UNIQUE NOT NULL,
     external_id text UNIQUE NOT NULL,
-    time_stamp timestamp with time zone default now(),
+    last_modified timestamp default now(),
     link_uri text, 
     version text,
     fragment_descriptor text

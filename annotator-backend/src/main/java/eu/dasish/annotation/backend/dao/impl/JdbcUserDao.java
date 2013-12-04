@@ -18,7 +18,6 @@
 package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.dao.UserDao;
-import eu.dasish.annotation.schema.CurrentUserInfo;
 import eu.dasish.annotation.schema.User;
 import java.sql.ResultSet;
 import java.sql.SQLException;

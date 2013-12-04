@@ -17,7 +17,6 @@
  */
 package eu.dasish.annotation.backend.dao.impl;
 
-import eu.dasish.annotation.backend.dao.AnnotationDao;
 import eu.dasish.annotation.backend.dao.NotebookDao;
 import eu.dasish.annotation.schema.ReferenceList;
 import eu.dasish.annotation.schema.Notebook;
@@ -89,10 +88,10 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
 //	    notebook.setId(rs.getInt("notebook_id"));
             notebook.setTitle(rs.getString(title));
             GregorianCalendar calendar = new GregorianCalendar();
-            calendar.setTime(rs.getTimestamp(time_stamp));
+            calendar.setTime(rs.getTimestamp(last_modified));
             try {
                 XMLGregorianCalendar gregorianCalendar = DatatypeFactory.newInstance().newXMLGregorianCalendar(calendar);
-                notebook.setTimeStamp(gregorianCalendar);
+                notebook.setLastModified(gregorianCalendar);
             } catch (DatatypeConfigurationException exception) {
                 throw new SQLException(exception);
             }

@@ -118,9 +118,9 @@ public interface AnnotationDao extends ResourceDao{
     
     /**
      * 
-     * @param TargetID
+     * @param annotationID
      * @return true if "annotationID" is mentioned in at least one of the joint tables:
-     * "annotations_target_Targets", "annotations_principals_permissions", "notebook_annotations".
+     * "annotations_targets", "annotations_principals_permissions", "notebook_annotations".
      * Otherwise return "false".
      */
     public boolean annotationIsInUse(Number annotationID);
