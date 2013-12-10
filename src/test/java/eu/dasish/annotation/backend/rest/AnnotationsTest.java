@@ -23,6 +23,7 @@ import com.sun.jersey.api.client.WebResource.Builder;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 import com.sun.jersey.core.util.Base64;
 import com.sun.jersey.spi.spring.container.servlet.SpringServlet;
+import com.sun.jersey.test.framework.AppDescriptor;
 import com.sun.jersey.test.framework.JerseyTest;
 import com.sun.jersey.test.framework.WebAppDescriptor;
 import eu.dasish.annotation.backend.TestBackendConstants;
@@ -68,21 +69,31 @@ import org.springframework.web.context.request.RequestContextListener;
  * @author olhsha
  */
 @RunWith(value = SpringJUnit4ClassRunner.class)
-@ContextConfiguration({"/spring-integrity-test-config/dataSource.xml"})
+@ContextConfiguration({"/spring-test-config/dataSource.xml"})
 public class AnnotationsTest extends JerseyTest {    
     
     @Autowired
     private JdbcTemplate jdbcTemplate;
     
-    public AnnotationsTest() {
-        super(new WebAppDescriptor.Builder(AnnotationResource.class.getPackage().getName())
+    
+    
+    
+    @Override
+    protected AppDescriptor configure() {
+       return new WebAppDescriptor.Builder(AnnotationResource.class.getPackage().getName())
                 .servletClass(SpringServlet.class)
-                .contextParam("contextConfigLocation", "classpath*:spring-integrity-test-config/*.xml")
+                .contextParam("contextConfigLocation", getApplicationContextFile())
                 .addFilter(DummySecurityFilter.class, "DummySecurityFilter")
                 .requestListenerClass(RequestContextListener.class)
                 .contextListenerClass(ContextLoaderListener.class)
-                .build());
+                .build();
         
+    }
+    
+    private String getApplicationContextFile() {
+	// sorry for the duplication, but JerseyTest is not aware of
+	// @ContextConfiguration
+	return "classpath:spring-config/componentscan.xml, classpath:spring-config/annotationDao.xml, classpath:spring-config/userDao.xml, classpath:spring-config/targetDao.xml, classpath:spring-config/cachedRepresentationDao.xml, classpath:spring-config/dbIntegrityService.xml, classpath:spring-config/jaxbMarshallerFactory.xml, classpath:spring-test-config/dataSource.xml";
     }
     
     private String getNormalisedSql() throws FileNotFoundException, URISyntaxException {
