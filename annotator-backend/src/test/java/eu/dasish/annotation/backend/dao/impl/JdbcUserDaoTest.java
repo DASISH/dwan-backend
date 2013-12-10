@@ -38,7 +38,7 @@ public class JdbcUserDaoTest extends JdbcResourceDaoTest {
 
     @Autowired
     JdbcUserDao jdbcUserDao;
-    TestInstances testInstances = new TestInstances();
+    TestInstances testInstances = new TestInstances(TestBackendConstants._TEST_SERVLET_URI);
     
      /**
      * Test of stringURItoExternalID method

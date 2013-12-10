@@ -18,7 +18,6 @@
 package eu.dasish.annotation.backend.rest;
 
 import eu.dasish.annotation.backend.dao.DBIntegrityService;
-import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.MockObjectsFactoryRest;
 import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.TestInstances;
@@ -44,7 +43,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.lang.InstantiationException;
 import java.net.URI;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -73,9 +71,9 @@ public class AnnotationResourceTest {
     @Autowired
     private DBIntegrityService mockDbIntegrityService;
     @Autowired
-    private AnnotationResource annotationResource;
+    UriInfo mockUriInfo;    
     @Autowired
-    UriInfo mockUriInfo;
+    private AnnotationResource annotationResource;
     
     private MockHttpServletRequest mockRequest;
     
@@ -93,7 +91,7 @@ public class AnnotationResourceTest {
     public void testGetAnnotation() throws SQLException, JAXBException, Exception {
         System.out.println("getAnnotation");
         final String externalIDstring= TestBackendConstants._TEST_ANNOT_2_EXT;
-        final Annotation expectedAnnotation = (new TestInstances()).getAnnotationOne();       
+        final Annotation expectedAnnotation = (new TestInstances(TestBackendConstants._TEST_SERVLET_URI)).getAnnotationOne();       
         annotationResource.setHttpServletRequest(mockRequest);        
         annotationResource.setUriInfo(mockUriInfo);       
         

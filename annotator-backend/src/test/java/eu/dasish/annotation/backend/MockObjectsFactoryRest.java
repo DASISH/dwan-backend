@@ -45,6 +45,7 @@ public class MockObjectsFactoryRest {
     public UriInfo newUriInfo() {
         return context.mock(UriInfo.class);
     }
+   
     
      public Providers newProviders() {
         return context.mock(Providers.class);

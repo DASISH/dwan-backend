@@ -22,6 +22,8 @@ import eu.dasish.annotation.schema.AnnotationBody;
 import eu.dasish.annotation.schema.AnnotationBody.TextBody;
 import eu.dasish.annotation.schema.TargetInfo;
 import eu.dasish.annotation.schema.TargetInfoList;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
 
 /**
  *
@@ -32,19 +34,25 @@ public class TestInstances {
     final private Annotation _annotationOne;
     final private Annotation _annotationToAdd;
     
-    public TestInstances(){
-        _annotationOne = makeAnnotationOne();
-        _annotationToAdd = makeAnnotationToAdd();    
+    public TestInstances(String baseURI){
+        _annotationOne = makeAnnotationOne(baseURI);
+        _annotationToAdd = makeAnnotationToAdd(baseURI);    
     }
     
     
-    private Annotation makeAnnotationOne(){
-        Annotation result = makeAnnotation(TestBackendConstants._TEST_ANNOT_2_BODY, TestBackendConstants._TEST_BODY_MIMETYPE_HTML, TestBackendConstants._TEST_ANNOT_2_HEADLINE, TestBackendConstants._TEST_ANNOT_2_OWNER);
+    private Annotation makeAnnotationOne(String baseURI){
+        Annotation result = makeAnnotation(baseURI, TestBackendConstants._TEST_ANNOT_2_BODY, TestBackendConstants._TEST_BODY_MIMETYPE_HTML, TestBackendConstants._TEST_ANNOT_2_HEADLINE, TestBackendConstants._TEST_USER_3_EXT_ID);
+        try {
+        result.setLastModified(DatatypeFactory.newInstance().newXMLGregorianCalendar(TestBackendConstants._TEST_ANNOT_2_TIME_STAMP));
+        } catch (DatatypeConfigurationException dce) {
+            System.out.println("wrongly-formatted test timestamp "+TestBackendConstants._TEST_ANNOT_2_TIME_STAMP);
+            result.setLastModified(null);
+        }
         return result;
     }
     
-    private Annotation makeAnnotationToAdd(){
-       Annotation result = makeAnnotation(TestBackendConstants._TEST_ANNOT_TO_ADD_BODY, TestBackendConstants._TEST_BODY_MIMETYPE_TEXT, TestBackendConstants._TEST_ANNOT_TO_ADD_HEADLINE, 5);
+    private Annotation makeAnnotationToAdd(String baseURI){
+       Annotation result = makeAnnotation(baseURI, TestBackendConstants._TEST_ANNOT_TO_ADD_BODY, TestBackendConstants._TEST_BODY_MIMETYPE_TEXT, TestBackendConstants._TEST_ANNOT_TO_ADD_HEADLINE, TestBackendConstants._TEST_USER_3_EXT_ID);
        
        TargetInfo TargetInfo =  new TargetInfo();
        TargetInfo.setLink(TestBackendConstants._TEST_Target_1_LINK);
@@ -59,7 +67,7 @@ public class TestInstances {
     }
     
 
-    private Annotation makeAnnotation(String bodyTxt, String bodyMimeType, String headline, int ownerId){
+    private Annotation makeAnnotation(String baseURI, String bodyTxt, String bodyMimeType, String headline, String ownerID){
         Annotation result = new Annotation();
         AnnotationBody body = new AnnotationBody();
         result.setBody(body);
@@ -69,7 +77,7 @@ public class TestInstances {
         textBody.setValue(bodyTxt);
        
         result.setHeadline(headline);
-        result.setOwnerRef(String.valueOf(ownerId)); 
+        result.setOwnerRef(baseURI+"users/"+ownerID); 
         
         result.setLastModified(null); 
         result.setURI(null);

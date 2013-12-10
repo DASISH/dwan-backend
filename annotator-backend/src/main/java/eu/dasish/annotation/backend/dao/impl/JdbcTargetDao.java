@@ -170,7 +170,7 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
         params.put("linkUri", target.getLink());
         params.put("version", target.getVersion());
         StringBuilder sql = new StringBuilder("INSERT INTO ");
-        sql.append(targetTableName).append("(").append(external_id).append(",").append(link_uri).append(",").append(version).append(",").append(last_modified).append(" ) VALUES (:externalId, :linkUri,  :version, current_timestamp AT TIME ZONE INTERVAL '00:00')");
+        sql.append(targetTableName).append("(").append(external_id).append(",").append(link_uri).append(",").append(version).append(",").append(last_modified).append(" ) VALUES (:externalId, :linkUri,  :version, current_timestamp AT TIME ZONE INTERVAL '00:00' HOUR TO MINUTE)");
         final int affectedRows = getSimpleJdbcTemplate().update(sql.toString(), params);
         return (affectedRows > 0 ? getInternalID(UUID.fromString(externalID.toString())) : null);
     }

@@ -32,6 +32,8 @@ import eu.dasish.annotation.schema.UserWithPermissionList;
 import eu.dasish.annotation.schema.ReferenceList;
 import eu.dasish.annotation.schema.ResponseBody;
 import java.io.IOException;
+import java.net.URI;
+import java.security.Principal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,6 +51,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Providers;
 import javax.xml.bind.JAXBElement;
@@ -76,6 +79,8 @@ public class AnnotationResource {
     private UriInfo uriInfo;
     @Context
     private Providers providers;
+    
+    
     final String default_permission = "reader";
     private static final Logger logger = LoggerFactory.getLogger(AnnotationResource.class);
 
@@ -91,6 +96,8 @@ public class AnnotationResource {
         this.httpServletRequest = httpServletRequest;
     }
 
+  
+    
     public void setProviders(Providers providers) {
         this.providers = providers;
     }
@@ -103,9 +110,12 @@ public class AnnotationResource {
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}")
     @Secured("ROLE_USER")
     public JAXBElement<Annotation> getAnnotation(@PathParam("annotationid") String ExternalIdentifier) {
-        dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
+        URI baseURI = uriInfo.getBaseUri();
+        String baseURIstr = baseURI.toString();
+        dbIntegrityService.setServiceURI(baseURIstr);
         final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(ExternalIdentifier));
-        final Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(httpServletRequest.getRemoteUser());
+        String remoteUser = httpServletRequest.getRemoteUser();
+        final Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
         if (canRead(userID, annotationID)) {
             final Annotation annotation = dbIntegrityService.getAnnotation(annotationID);
             JAXBElement<Annotation> rootElement = new ObjectFactory().createAnnotation(annotation);

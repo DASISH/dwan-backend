@@ -18,13 +18,7 @@
 package eu.dasish.annotation.backend;
 
 import java.io.IOException;
-import java.sql.Timestamp;
-import java.util.GregorianCalendar;
 import java.util.Map;
-import java.util.TimeZone;
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -33,8 +27,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSSerializer;
 import org.xml.sax.SAXException;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 
 /**
  *

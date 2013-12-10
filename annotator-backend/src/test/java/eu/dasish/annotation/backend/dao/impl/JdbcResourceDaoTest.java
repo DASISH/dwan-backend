@@ -71,7 +71,7 @@ public class JdbcResourceDaoTest {
     }
 
     private String getTestDataInsertSql() throws FileNotFoundException, URISyntaxException {
-        final URL sqlUrl = JdbcNotebookDaoTest.class.getResource("/test-data/InsertTestData.sql");
+        final URL sqlUrl = JdbcResourceDaoTest.class.getResource("/test-data/InsertTestData.sql");
         String sqlString = new Scanner(new File(sqlUrl.toURI()), "UTF8").useDelimiter("\\Z").next();
         return sqlString;
     }

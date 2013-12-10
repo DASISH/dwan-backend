@@ -61,7 +61,7 @@ public class TestBackendConstants {
     public static final String _TEST_ANNOT_2_BODY = "<html><body>some html 1</body></html>";
     public static final String _TEST_ANNOT_TO_ADD_BODY = "<html><body>the stuff to be added</body></html>";
     
-    public static final String _TEST_ANNOT_2_TIME_STAMP = "2013-08-12T09:25:00.383Z";
+    public static final String _TEST_ANNOT_2_TIME_STAMP = "2013-08-12T09:25:00.383000Z";
     
     public static final String annotaiontoDeleteInDB="INSERT INTO annotation (annotation_id, owner_id,headline,body_text, body_mimetype, external_id) VALUES (25, 111, 'Annotation to delete','<html><body>some html 4</body></html>', 'text/html', 00000000-0000-0000-0000-000000000025');";
     
@@ -94,6 +94,7 @@ public class TestBackendConstants {
     public static final String _TEST_ANNOT_TO_ADD_NEW_Target_HEADLINE = "SF in Catalan";
     public static final String _TEST_NEW_Target_LINK = "http://www.sagradafamilia.cat/docs_instit/historia.php ";
     
+    public static final String _TEST_SERVLET_URI = "http://localhost:8080/annotator-backend/api/";
     public static final String _TEST_SERVLET_URI_annotations = "http://localhost:8080/annotator-backend/api/annotations/";
     public static final String _TEST_SERVLET_URI_Targets = "http://localhost:8080/annotator-backend/api/Targets/";
     public static final String _TEST_SERVLET_URI_cached = "http://localhost:8080/annotator-backend/api/cached/";
