@@ -87,61 +87,34 @@ public class DummySecurityFilter implements Filter {
             if (!isValid(username, password)) {
                 throw new MappableContainerException(new AuthenticationException("Invalid user/password"));
             }
-            
             principalResult = new DummyPrincipal(username);
-            final Principal principal = principalResult;
-            HttpServletRequestWrapper wrapper = new HttpServletRequestWrapper(req) {
-                public boolean isUserInRole(String role) {
-                    return true;
-                }
-
-                public boolean isSecure() {
-                    return false;
-                }
-
-                public Principal getUserPrincipal() {
-                    return principal;
-                }
-
-                @Override
-                public String getAuthType() {
-                    return HttpServletRequest.BASIC_AUTH;
-                }
-
-                @Override
-                public String getRemoteUser() {
-                    return username;
-                }
-            };
-
-            chain.doFilter(wrapper, response);
-        } else {
-            final Principal principal = principalResult;
-            HttpServletRequestWrapper wrapper = new HttpServletRequestWrapper(req) {
-                public boolean isUserInRole(String role) {
-                    return true;
-                }
-
-                public boolean isSecure() {
-                    return false;
-                }
-
-                public Principal getUserPrincipal() {
-                    return principal;
-                }
-
-                @Override
-                public String getAuthType() {
-                    return HttpServletRequest.BASIC_AUTH;
-                }
-
-                @Override
-                public String getRemoteUser() {
-                    return null;
-                }
-            };
-            chain.doFilter(wrapper, response);
         }
+        final Principal principal = principalResult;
+        HttpServletRequestWrapper wrapper = new HttpServletRequestWrapper(req) {
+            public boolean isUserInRole(String role) {
+                return true;
+            }
+
+            public boolean isSecure() {
+                return false;
+            }
+
+            public Principal getUserPrincipal() {
+                return principal;
+            }
+
+            @Override
+            public String getAuthType() {
+                return HttpServletRequest.BASIC_AUTH;
+            }
+
+            @Override
+            public String getRemoteUser() {
+                return principal.getName();
+            }
+        };
+
+        chain.doFilter(wrapper, response);
     }
 
     @Override
