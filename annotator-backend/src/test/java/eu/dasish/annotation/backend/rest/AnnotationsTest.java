@@ -20,7 +20,6 @@ package eu.dasish.annotation.backend.rest;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.WebResource.Builder;
-import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 import com.sun.jersey.core.util.Base64;
 import com.sun.jersey.spi.spring.container.servlet.SpringServlet;
 import com.sun.jersey.test.framework.AppDescriptor;
@@ -30,6 +29,8 @@ import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.TestInstances;
 import eu.dasish.annotation.backend.dao.impl.JdbcResourceDaoTest;
 import eu.dasish.annotation.schema.Annotation;
+import eu.dasish.annotation.schema.AnnotationBody;
+import eu.dasish.annotation.schema.AnnotationBody.TextBody;
 import eu.dasish.annotation.schema.ObjectFactory;
 import eu.dasish.annotation.schema.ResponseBody;
 import eu.dasish.annotation.schema.TargetInfo;
@@ -39,12 +40,8 @@ import java.io.FileNotFoundException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
 import java.util.UUID;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.xml.bind.JAXBElement;
@@ -53,12 +50,10 @@ import javax.xml.datatype.DatatypeFactory;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.context.ContextLoaderListener;
@@ -156,8 +151,7 @@ public class AnnotationsTest extends JerseyTest {
         final String requestUrl = "annotations/" + externalIDstring;
         System.out.println("requestUrl: " + requestUrl);
         
-        Builder responseBuilder = getAuthenticatedResource(resource().path(requestUrl)).accept(MediaType.TEXT_XML);
-        
+        Builder responseBuilder = getAuthenticatedResource(resource().path(requestUrl)).accept(MediaType.TEXT_XML);        
         ClientResponse response = responseBuilder.get(ClientResponse.class);        
         
         assertEquals(200, response.getStatus());
@@ -184,27 +178,16 @@ public class AnnotationsTest extends JerseyTest {
      * <nid>. DELETE api/annotations/<aid>
      */
     @Test
-    @Ignore
     public void testDeleteAnnotation() throws SQLException {
         System.out.println("testDeleteAnnotation");
-        //final Number annotationID = daoDispatcher.getAnnotationInternalIdentifier(UUID.fromString(UUID));
-        //int[] resultDelete = daoDispatcher.deleteAnnotation(annotationID);
-        
-        final int[] mockDelete = new int[4];
-        mockDelete[0] = 1; // # deleted annotations
-        mockDelete[3] = 1; // # deleted annotation_prinipal_permissions
-        mockDelete[2] = 2; // # deleted  annotations_target_Targets, (5,3), (5,4)
-        mockDelete[3] = 1; // # deletd Targets, 4
-        
-        final String baseURI = this.getBaseURI().toString();
-        
-        final String requestUrl = "annotations/" + TestBackendConstants._TEST_ANNOT_5_EXT;
+        String externalIDstring  =  TestBackendConstants._TEST_ANNOT_5_EXT;
+        final String requestUrl = "annotations/" + externalIDstring;
         System.out.println("requestUrl: " + requestUrl);
-        ClientResponse response = resource().path(requestUrl).delete(ClientResponse.class);
+        
+        Builder responseBuilder = getAuthenticatedResource(resource().path(requestUrl)).accept(MediaType.TEXT_XML);        
+        ClientResponse response = responseBuilder.delete(ClientResponse.class);   
         assertEquals(200, response.getStatus());
         assertEquals("1 annotation(s) deleted.", response.getEntity(String.class));
-        
-        
     }
 
     /**
@@ -212,54 +195,52 @@ public class AnnotationsTest extends JerseyTest {
      * api/annotations/
      */
     @Test
-    @Ignore
     public void testCreateAnnotation() throws SQLException, InstantiationException, IllegalAccessException, DatatypeConfigurationException, Exception {
         System.out.println("test createAnnotation");
-        // Peter's workaround on absence of "ObjectFactory.create... for annotations        
-        //final JAXBElement<Annotation> jaxbElement = new JAXBElement<Annotation>(new QName("http://www.dasish.eu/ns/addit", "annotation"), Annotation.class, null, annotationToAdd);
+        System.out.println("POST "+resource().getURI().toString()+"annotations/");
+        final String ownerString = resource().getURI().toString()+"users/"+TestBackendConstants._TEST_USER_5_EXT_ID;
+        final Annotation annotationToAdd = new Annotation();
+        final JAXBElement<Annotation> jaxbElement = (new ObjectFactory()).createAnnotation(annotationToAdd);
+        annotationToAdd.setPermissions(null);
+        annotationToAdd.setOwnerRef(ownerString);
+        annotationToAdd.setURI(resource().getURI().toString()+"annotations/"+ UUID.randomUUID().toString());        
+        annotationToAdd.setLastModified(DatatypeFactory.newInstance().newXMLGregorianCalendar(TestBackendConstants._TEST_ANNOT_2_TIME_STAMP));        
         
-        final String ownerString = "5";
-        final Number ownerID = 5;
-        final Number newAnnotationID = 6;
+        TargetInfoList targetInfoList = new TargetInfoList();
+        annotationToAdd.setTargets(targetInfoList);
+        TargetInfo targetInfo = new TargetInfo();
+        targetInfo.setLink("http://nl.wikipedia.org/wiki/Viktor_Janoekovytsj#Biografie");
+        targetInfo.setRef(resource().getURI().toString()+"targets/"+UUID.randomUUID().toString());
+        targetInfo.setVersion("5 apr 2013 om 18:42");
+        targetInfoList.getTargetInfo().add(targetInfo);       
         
-        ResponseBody responseBody = new ResponseBody();
-        final JAXBElement<ResponseBody> jaxbElement = (new ObjectFactory()).createResponseBody(responseBody);
-        responseBody.setPermissions(null);
-        final Annotation addedAnnotation = new Annotation();
-        responseBody.setAnnotation(addedAnnotation);
-        responseBody.setActionList(null);
-        
-        TargetInfoList TargetInfoList = new TargetInfoList();
-        addedAnnotation.setTargets(TargetInfoList);
-        addedAnnotation.setOwnerRef(ownerString);
-        addedAnnotation.setURI(TestBackendConstants._TEST_SERVLET_URI_annotations + UUID.randomUUID().toString());        
-        addedAnnotation.setLastModified(DatatypeFactory.newInstance().newXMLGregorianCalendar(TestBackendConstants._TEST_ANNOT_2_TIME_STAMP));        
-        TargetInfo TargetInfo = new TargetInfo();
-        TargetInfo.setLink("google.nl");
-        TargetInfo.setRef(UUID.randomUUID().toString());
-        TargetInfo.setVersion("vandaag");
-        TargetInfoList.getTargetInfo().add(TargetInfo);        
-        
-        final List<Number> Targets = new ArrayList<Number>();
-        Targets.add(6);
-        
-        final String baseURI = this.getBaseURI().toString();
-        
-        final String requestUrl = "annotations";
-        System.out.println("requestUrl: " + requestUrl);
-        ClientResponse response = resource().path(requestUrl).type(MediaType.APPLICATION_XML).accept(MediaType.APPLICATION_XML).post(ClientResponse.class, jaxbElement);
+        AnnotationBody annotationBody = new AnnotationBody();
+        annotationBody.setXmlBody(null);
+        TextBody textBody = new TextBody();
+        textBody.setMimeType("plain/text");
+        textBody.setValue("yanuk - zek");
+        annotationBody.setTextBody(textBody);
+        annotationToAdd.setBody(annotationBody);
+      
+        Builder responseBuilder = getAuthenticatedResource(resource().path("annotations/")).type(MediaType.APPLICATION_XML).accept(MediaType.APPLICATION_XML);        
+        ClientResponse response = responseBuilder.post(ClientResponse.class, jaxbElement);
         assertEquals(200, response.getStatus());
         
         ResponseBody entity = response.getEntity(ResponseBody.class);        
         Annotation entityA = entity.getAnnotation();
-        assertEquals(addedAnnotation.getBody(), entityA.getBody());
-        assertEquals(addedAnnotation.getHeadline(), entityA.getHeadline());
-        assertEquals(addedAnnotation.getPermissions(), entityA.getPermissions());
-        assertEquals(addedAnnotation.getTargets().getTargetInfo().get(0).getLink(), entityA.getTargets().getTargetInfo().get(0).getLink());
-        assertEquals(addedAnnotation.getTargets().getTargetInfo().get(0).getRef(), entityA.getTargets().getTargetInfo().get(0).getRef());
-        assertEquals(addedAnnotation.getTargets().getTargetInfo().get(0).getVersion(), entityA.getTargets().getTargetInfo().get(0).getVersion());
-        assertEquals(addedAnnotation.getLastModified(), entityA.getLastModified());
-        assertEquals(addedAnnotation.getOwnerRef(), entityA.getOwnerRef());
+        assertEquals(annotationToAdd.getBody().getTextBody().getValue(), entityA.getBody().getTextBody().getValue());
+        assertEquals(annotationToAdd.getBody().getTextBody().getMimeType(), entityA.getBody().getTextBody().getMimeType());
+        assertEquals(annotationToAdd.getHeadline(), entityA.getHeadline());
+        assertEquals(1, entityA.getPermissions().getUserWithPermission().size());
+        assertEquals("owner", entityA.getPermissions().getUserWithPermission().get(0).getPermission().value());
+        assertEquals(annotationToAdd.getOwnerRef(), entityA.getPermissions().getUserWithPermission().get(0).getRef());
+        assertEquals(annotationToAdd.getTargets().getTargetInfo().get(0).getLink(), entityA.getTargets().getTargetInfo().get(0).getLink());
+        // new ref is generated
+        //assertEquals(annotationToAdd.getTargets().getTargetInfo().get(0).getRef(), entityA.getTargets().getTargetInfo().get(0).getRef());
+        assertEquals(annotationToAdd.getTargets().getTargetInfo().get(0).getVersion(), entityA.getTargets().getTargetInfo().get(0).getVersion());
+        //last modified is updated by the server
+        //assertEquals(annotationToAdd.getLastModified(), entityA.getLastModified());
+        assertEquals(annotationToAdd.getOwnerRef(), entityA.getOwnerRef());
     }
     
     
