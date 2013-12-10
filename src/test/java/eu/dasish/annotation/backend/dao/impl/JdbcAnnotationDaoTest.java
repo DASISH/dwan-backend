@@ -47,7 +47,7 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
 
     @Autowired
     JdbcAnnotationDao jdbcAnnotationDao;    
-    TestInstances testInstances = new TestInstances();
+    TestInstances testInstances = new TestInstances(TestBackendConstants._TEST_SERVLET_URI);
     
      /**
      * Test of stringURItoExternalID method
@@ -228,7 +228,6 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
      * getAnnotation(Number annotationlID)
      */
     @Test
-    @Ignore
     public void getAnnotationWithoutTargetsAndPermissions() throws SQLException, DatatypeConfigurationException {
         System.out.println("test getAnnotationWithoutTargets");
         jdbcAnnotationDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_annotations);
@@ -268,8 +267,7 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
     /**
      * Test of addAnnotation method, of class JdbcAnnotationDao.
      */
-    @Test
-    @Ignore    
+    @Test  
     public void testAddAnnotation() throws SQLException, Exception {
         System.out.println("test_addAnnotation ");
 
@@ -377,8 +375,7 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
     }
     
     //////////////////////////////////
-    @Test
-    @Ignore    
+    @Test 
     public void testUpdateBodyText() throws SQLException{
         System.out.println("test updateBodyText");
         String newBodyText = "new body";

@@ -78,7 +78,7 @@ public class DBIntegrityServiceTest {
     private TargetDao targetDao;
     @Autowired
     private AnnotationDao annotationDao;
-    TestInstances testInstances = new TestInstances();
+    TestInstances testInstances = new TestInstances(TestBackendConstants._TEST_SERVLET_URI);
 
     public DBIntegrityServiceTest() {
     }

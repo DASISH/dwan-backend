@@ -160,7 +160,6 @@ public class JdbcTargetDaoTest extends JdbcResourceDaoTest {
      * Test of addTarget method, of class JdbcTargetDao.
      */
     @Test
-    @Ignore
     public void testAddTarget() throws SQLException {
         System.out.println("addTarget");
 

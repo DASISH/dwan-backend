@@ -38,7 +38,7 @@ INSERT INTO notebooks_annotations (notebook_id,annotation_id) VALUES (2,1);
 
 INSERT INTO principal (principal_name, external_id, remote_id, e_mail) VALUES ('Twan', '00000000-0000-0000-0000-000000000111', 'x3', 'twagoo@mpi.nl'); --3 
 INSERT INTO principal (principal_name, external_id, remote_id, e_mail) VALUES ('Peter', '00000000-0000-0000-0000-000000000112', 'y4', 'Peter.Withers@mpi.nl'); -- 4
-INSERT INTO principal (principal_name, external_id, remote_id, e_mail) VALUES ('Olha', '00000000-0000-0000-0000-000000000113', 'z5', 'olhsha@mpi.nl'); -- 5
+INSERT INTO principal (principal_name, external_id, remote_id, e_mail) VALUES ('Olha', '00000000-0000-0000-0000-000000000113', 'JUnit@test.com', 'olhsha@mpi.nl'); -- 5
 INSERT INTO principal (principal_name, external_id, remote_id, e_mail) VALUES ('Eric', '00000000-0000-0000-0000-000000000114', 'v6', 'eriaue@mpi.nl'); -- 6
 
 
