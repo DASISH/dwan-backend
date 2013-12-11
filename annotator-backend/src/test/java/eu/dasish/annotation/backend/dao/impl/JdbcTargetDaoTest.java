@@ -118,9 +118,8 @@ public class JdbcTargetDaoTest extends JdbcResourceDaoTest {
         jdbcTargetDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_Targets);
         Target result = jdbcTargetDao.getTarget(1);
         assertEquals(TestBackendConstants._TEST_SERVLET_URI_Targets+TestBackendConstants._TEST_Target_1_EXT_ID, result.getURI());
-        assertEquals(TestBackendConstants._TEST_Target_1_LINK, result.getLink());
+        assertEquals(TestBackendConstants._TEST_Target_1_LINK+"#"+TestBackendConstants._TEST_Target_1_FRAGMENT, result.getLink());
         assertEquals(TestBackendConstants._TEST_Target_1_VERSION, result.getVersion());
-        assertEquals("#de_Opdracht", result.getFragmentDescriptor());
         // TODO :add time stamp test
         
     }
@@ -163,9 +162,8 @@ public class JdbcTargetDaoTest extends JdbcResourceDaoTest {
     public void testAddTarget() throws SQLException {
         System.out.println("addTarget");
 
-        String link = "http://www.sagradafamilia.cat/";
         Target freshTarget = new Target();
-        freshTarget.setLink(link);
+        freshTarget.setLink(TestBackendConstants._TEST_Target_1_LINK+"#Het_ontwerp");
         freshTarget.setVersion(TestBackendConstants._TEST_Target_1_VERSION);
         freshTarget.setLastModified(null);
         
@@ -173,7 +171,7 @@ public class JdbcTargetDaoTest extends JdbcResourceDaoTest {
         assertEquals(8, result);
         // detailed checking
         Target addedTarget = jdbcTargetDao.getTarget(result);
-        assertEquals(link, addedTarget.getLink());
+        assertEquals(TestBackendConstants._TEST_Target_1_LINK+"#Het_ontwerp", addedTarget.getLink());
         assertEquals(TestBackendConstants._TEST_Target_1_VERSION, addedTarget.getVersion());
         assertTrue(addedTarget.getURI().startsWith(TestBackendConstants._TEST_SERVLET_URI_Targets));
     }
@@ -194,8 +192,8 @@ public class JdbcTargetDaoTest extends JdbcResourceDaoTest {
         assertEquals(TestBackendConstants._TEST_SERVLET_URI_Targets+TestBackendConstants._TEST_Target_2_EXT_ID, result.get(1).getRef());
         assertEquals(TestBackendConstants._TEST_Target_1_VERSION, result.get(0).getVersion());
         assertEquals(TestBackendConstants._TEST_Target_2_VERSION, result.get(1).getVersion());
-        assertEquals(TestBackendConstants._TEST_Target_1_LINK, result.get(0).getLink());
-        assertEquals(TestBackendConstants._TEST_Target_2_LINK, result.get(1).getLink());
+        assertEquals(TestBackendConstants._TEST_Target_1_LINK+"#"+TestBackendConstants._TEST_Target_1_FRAGMENT, result.get(0).getLink());
+        assertEquals(TestBackendConstants._TEST_Target_2_LINK+"#Vroege_werk", result.get(1).getLink());
 
     }
 

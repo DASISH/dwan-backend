@@ -134,8 +134,7 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         return cachedRepresentationDao.getExternalID(cachedID);
     }
 
-    ////////////////////////////////////////////////////////
-    // TODO: refactor, Target grabbing should be made a separate private method
+    
     @Override
     public Annotation getAnnotation(Number annotationID) {
         if (annotationID != null) {
@@ -149,11 +148,7 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
             List<Number> targetIDs = annotationDao.retrieveTargetIDs(annotationID);
             TargetInfoList sis = new TargetInfoList();
             for (Number targetID : targetIDs) {
-                Target target = targetDao.getTarget(targetID);
-                TargetInfo targetInfo = new TargetInfo();
-                targetInfo.setLink(target.getLink());
-                targetInfo.setRef(target.getURI());
-                targetInfo.setVersion(target.getVersion());
+                TargetInfo targetInfo = getTargetInfoFromTarget(targetDao.getTarget(targetID));
                 sis.getTargetInfo().add(targetInfo);
             }
             result.setTargets(sis);
@@ -545,5 +540,13 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
 
         }
         return addedPermissions;
+    }
+    
+     private TargetInfo getTargetInfoFromTarget(Target target) {
+        TargetInfo targetInfo = new TargetInfo();
+        targetInfo.setRef(target.getURI());
+        targetInfo.setLink(target.getLink());
+        targetInfo.setVersion(target.getVersion());
+        return targetInfo;
     }
 }

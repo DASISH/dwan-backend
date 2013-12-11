@@ -53,11 +53,11 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
     @Override
     public Target getTarget(Number internalID) {
         StringBuilder sql = new StringBuilder("SELECT ");
-        sql.append(TargetStar).append(" FROM ").append(targetTableName).append(" WHERE ").append(target_id).append("= ? LIMIT 1");
-        List<Target> result = getSimpleJdbcTemplate().query(sql.toString(), TargetRowMapper, internalID);
+        sql.append(targetStar).append(" FROM ").append(targetTableName).append(" WHERE ").append(target_id).append("= ? LIMIT 1");
+        List<Target> result = getSimpleJdbcTemplate().query(sql.toString(), targetRowMapper, internalID);
         return (!result.isEmpty() ? result.get(0) : null);
     }
-    private final RowMapper<Target> TargetRowMapper = new RowMapper<Target>() {
+    private final RowMapper<Target> targetRowMapper = new RowMapper<Target>() {
         @Override
         public Target mapRow(ResultSet rs, int rowNumber) throws SQLException {
             XMLGregorianCalendar xmlDate = timeStampToXMLGregorianCalendar(rs);
@@ -70,7 +70,7 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
     @Override
     public String getLink(Number internalID) {
         StringBuilder sql = new StringBuilder("SELECT ");
-        sql.append(TargetStar).append(" FROM ").append(targetTableName).append(" WHERE ").append(target_id).append("= ? LIMIT 1");
+        sql.append(targetStar).append(" FROM ").append(targetTableName).append(" WHERE ").append(target_id).append("= ? LIMIT 1");
         List<String> result = getSimpleJdbcTemplate().query(sql.toString(), linkRowMapper, internalID);
         return (!result.isEmpty() ? result.get(0) : null);
     }
@@ -121,14 +121,14 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
         String targetIDs = makeListOfValues(targets);
 
         StringBuilder sql = new StringBuilder("SELECT ");
-        sql.append(external_id).append(",").append(link_uri).append(",").append(version).
+        sql.append(external_id).append(",").append(link_uri).append(",").append(version).append(",").append(fragment_descriptor).
                 append(" FROM ").append(targetTableName).append(" WHERE ").append(target_id).append(" IN ").append(targetIDs);
         return getSimpleJdbcTemplate().query(sql.toString(), targetInfoRowMapper);
     }
     private final RowMapper<TargetInfo> targetInfoRowMapper = new RowMapper<TargetInfo>() {
         @Override
         public TargetInfo mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            return constructTargetInfo(rs.getString(external_id), rs.getString(link_uri), rs.getString(version));
+            return constructTargetInfo(rs.getString(external_id), rs.getString(link_uri), rs.getString(version), rs.getString(fragment_descriptor));
         }
     };
 
@@ -165,12 +165,14 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
     @Override
     public Number addTarget(Target target) {
         UUID externalID = UUID.randomUUID();
+        String[] linkParts = splitLink(target.getLink());
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("externalId", externalID.toString());
-        params.put("linkUri", target.getLink());
+        params.put("linkUri", linkParts[0]);
         params.put("version", target.getVersion());
+        params.put("fragmentDescriptor", linkParts[1]);
         StringBuilder sql = new StringBuilder("INSERT INTO ");
-        sql.append(targetTableName).append("(").append(external_id).append(",").append(link_uri).append(",").append(version).append(",").append(last_modified).append(" ) VALUES (:externalId, :linkUri,  :version, current_timestamp AT TIME ZONE INTERVAL '00:00' HOUR TO MINUTE)");
+        sql.append(targetTableName).append("(").append(external_id).append(",").append(link_uri).append(",").append(version).append(",").append(last_modified).append(",").append(fragment_descriptor).append(" ) VALUES (:externalId, :linkUri,  :version, current_timestamp AT TIME ZONE INTERVAL '00:00' HOUR TO MINUTE, :fragmentDescriptor)");
         final int affectedRows = getSimpleJdbcTemplate().update(sql.toString(), params);
         return (affectedRows > 0 ? getInternalID(UUID.fromString(externalID.toString())) : null);
     }
@@ -226,10 +228,10 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
     }
 
     /////////// HELPERS  ////////////////
-    private TargetInfo constructTargetInfo(String externalID, String link, String version) {
+    private TargetInfo constructTargetInfo(String externalID, String link, String version, String fragment) {
         TargetInfo targetInfo = new TargetInfo();
         targetInfo.setRef(externalIDtoURI(externalID));
-        targetInfo.setLink(link);
+        targetInfo.setLink(((new StringBuilder(link)).append("#").append(fragment)).toString());
         targetInfo.setVersion(version);
         return targetInfo;
     }
@@ -238,9 +240,27 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
         Target target = new Target();
         target.setURI(externalIDtoURI(externalID));
         target.setLastModified(xmlTimeStamp);
-        target.setLink(link);
+        target.setLink(((new StringBuilder(link)).append("#").append(fragment)).toString());
         target.setVersion(version);
-        target.setFragmentDescriptor(fragment);
         return target;
+    }
+    
+    private String[] splitLink(String link){
+      if (link!=null) {
+         String[] result = new String[2]; 
+         String[] parts = link.split("#");
+         if (parts.length > 1) {
+             result[0] = parts[0];             
+             StringBuilder buffer = new StringBuilder();
+             for (int i=1; i<parts.length ; i++){
+                 if (parts[i]!=null){
+                     buffer.append(parts[i]);
+                 }
+             }
+             result[1] = buffer.toString();
+         }
+         return result;
+      }
+      else return null;
     }
 }
