@@ -78,6 +78,9 @@ public class TestBackendConstants {
     public static final String _TEST_Target_1_LINK = "http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia";
     public static final String _TEST_Target_2_LINK = "http://nl.wikipedia.org/wiki/Antoni_Gaud%C3%AD";
     
+     public static final String _TEST_Target_1_FRAGMENT = "de_Opdracht";
+    
+    
     public static final String _TEST_Target_1_VERSION = "version 1.0";
     public static final String _TEST_Target_2_VERSION = "version 1.0";
     

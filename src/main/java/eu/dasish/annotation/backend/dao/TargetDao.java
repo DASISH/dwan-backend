@@ -141,6 +141,4 @@ public interface TargetDao extends ResourceDao{
      */
     public int deleteTargetCachedRepresentation(Number TargetID, Number chachedID);  
     
-    
-  
 }
