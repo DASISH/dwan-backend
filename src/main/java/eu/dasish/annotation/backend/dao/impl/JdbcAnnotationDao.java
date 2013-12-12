@@ -315,7 +315,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
     public int updateAnnotationBodyText(Number annotationID, String text) {
         StringBuilder sql = new StringBuilder("UPDATE ");
         sql.append(annotationTableName).append(" SET ").
-                append(last_modified).append("=  current_timestamp AT TIME ZONE INTERVAL '00:00' HOUR TO MINUTE,").
+                append(last_modified).append("=  default,").
                 append(body_text).append("= '").append(text).
                 append("' WHERE ").append(annotation_id).append("= ?");
         int affectedRows = getSimpleJdbcTemplate().update(sql.toString(), annotationID);
@@ -333,7 +333,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
 
         StringBuilder sql = new StringBuilder("UPDATE ");
         sql.append(annotationTableName).append(" SET ").
-                append(last_modified).append("=  current_timestamp AT TIME ZONE 'UTC' HOUR TO MINUTE,").
+                append(last_modified).append("=  default,").
                 append(body_text).append("= :bodyText, ").
                 append(body_mimetype).append("= :bodyMimeType, ").
                 append(is_xml).append("= :isXml").
@@ -361,7 +361,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
                 append(body_text).append("=  :bodyText ,").
                 append(body_mimetype).append("= :bodyMimeType ,").
                 append(headline).append("=  :headline ,").
-                append(last_modified).append("=  current_timestamp AT TIME ZONE 'UTC' HOUR TO MINUTE,").
+                append(last_modified).append("=  default,").
                 append(is_xml).append("= :isXml").
                 append(" WHERE ").append(external_id).append("= :externalID");
         int affectedRows = getSimpleJdbcTemplate().update(sql.toString(), params);
@@ -402,7 +402,8 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
 
         StringBuilder sql = new StringBuilder("INSERT INTO ");
         sql.append(annotationTableName).append("(").append(external_id).append(",").append(owner_id);
-        sql.append(",").append(headline).append(",").append(body_text).append(",").append(body_mimetype).append(",").append(is_xml).append(",").append(last_modified).append(" ) VALUES (:externalId, :ownerId, :headline, :bodyText, :bodyMimeType, :isXml, current_timestamp AT TIME ZONE INTERVAL '00:00' HOUR TO MINUTE)");
+        sql.append(",").append(headline).append(",").append(body_text).append(",").append(body_mimetype).append(",").append(is_xml).
+                append(" ) VALUES (:externalId, :ownerId, :headline, :bodyText, :bodyMimeType, :isXml)");
         int affectedRows = getSimpleJdbcTemplate().update(sql.toString(), params);
         return ((affectedRows > 0) ? getInternalID(externalID) : null);
     }
