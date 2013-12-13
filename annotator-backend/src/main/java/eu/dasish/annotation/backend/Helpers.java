@@ -17,7 +17,9 @@
  */
 package eu.dasish.annotation.backend;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -50,7 +52,8 @@ public class Helpers {
             DocumentBuilder dbf = DocumentBuilderFactory.newInstance().newDocumentBuilder();
             try {
                 try {
-                    Document doc = dbf.parse(string);
+                    InputStream is = new ByteArrayInputStream(string.getBytes("UTF-16"));
+                    Document doc = dbf.parse(is);
                     return doc.getDocumentElement();
                 } catch (SAXException saxException) {
                     System.out.println(saxException);
@@ -66,8 +69,8 @@ public class Helpers {
 
     public static String elementToString(Element element) {
         Document document = element.getOwnerDocument();
-        DOMImplementationLS domImplLS = (DOMImplementationLS) document
-                .getImplementation();
+        DOMImplementationLS domImplLS = (DOMImplementationLS) document.getImplementation();
+        String encoding=document.getInputEncoding();
         LSSerializer serializer = domImplLS.createLSSerializer();
         String result = serializer.writeToString(element);
         return result;
