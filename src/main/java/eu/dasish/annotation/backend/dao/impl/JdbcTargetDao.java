@@ -240,27 +240,32 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
         Target target = new Target();
         target.setURI(externalIDtoURI(externalID));
         target.setLastModified(xmlTimeStamp);
-        target.setLink(((new StringBuilder(link)).append("#").append(fragment)).toString());
+        if (fragment != null) {
+            target.setLink(((new StringBuilder(link)).append("#").append(fragment)).toString());
+        } else {
+            target.setLink(link);
+        }
         target.setVersion(version);
         return target;
     }
-    
-    private String[] splitLink(String link){
-      if (link!=null) {
-         String[] result = new String[2]; 
-         String[] parts = link.split("#");
-         if (parts.length > 1) {
-             result[0] = parts[0];             
-             StringBuilder buffer = new StringBuilder();
-             for (int i=1; i<parts.length ; i++){
-                 if (parts[i]!=null){
-                     buffer.append(parts[i]);
-                 }
-             }
-             result[1] = buffer.toString();
-         }
-         return result;
-      }
-      else return null;
+
+    private String[] splitLink(String link) {
+        if (link != null) {
+            String[] result = new String[2];
+            String[] parts = link.split("#");
+            result[0] = parts[0];
+            if (parts.length > 1) {
+                StringBuilder buffer = new StringBuilder();
+                for (int i = 1; i < parts.length; i++) {
+                    if (parts[i] != null) {
+                        buffer.append(parts[i]);
+                    }
+                }
+                result[1] = buffer.toString();
+            }
+            return result;
+        } else {
+            return null;
+        }
     }
 }
