@@ -18,13 +18,17 @@
 package eu.dasish.annotation.backend.rest;
 
 import eu.dasish.annotation.backend.dao.DBIntegrityService;
+import java.io.IOException;
+import java.sql.SQLException;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Providers;
+import javax.xml.parsers.ParserConfigurationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Created on : Jun 11, 2013, 5:10:55 PM
@@ -33,6 +37,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @Path("/notebooks")
+@Transactional(rollbackFor={Exception.class, SQLException.class, IOException.class, ParserConfigurationException.class})
 public class NotebookResource {
 
     @Autowired

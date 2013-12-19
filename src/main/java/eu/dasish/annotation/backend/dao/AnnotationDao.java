@@ -113,7 +113,7 @@ public interface AnnotationDao extends ResourceDao{
      */ 
     public Permission  getPermission(Number annotationID, Number userID);
     
-    public List<Number> getAnnotationIDsForUserWithPermission(Number userID, String permissionString);
+    public List<Number> getAnnotationIDsForUserWithPermission(Number userID, String[] permissionStrings);
     
     
     /**
@@ -163,15 +163,8 @@ public interface AnnotationDao extends ResourceDao{
      
     /////// UPDATERS //////////////////
     
-    int updateAnnotationBodyText(Number annotationID, String text);
-    
-    /**
-     * 
-     * @param annotationID
-     * @param annotationBody
-     * @return # of updated rows in "annotation" table after updating the annotation's body text with "newBodyText". Should return 1.
-     */
-    public int updateAnnotationBody(Number annotationID, AnnotationBody annotationBody);
+   
+    public int updateAnnotationBody(Number annotationID, String text, String mimeType, Boolean isXml);
     
    
     
@@ -228,5 +221,11 @@ public interface AnnotationDao extends ResourceDao{
     * @throws SQLException 
     */
     public int deleteAnnotationPrincipalPermissions(Number annotationID);
+    
+    /*
+     * HELPERS 
+     */
+    
+    public String[] retrieveBodyComponents(AnnotationBody annotationBody);
 
 }

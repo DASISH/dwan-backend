@@ -33,7 +33,6 @@ import eu.dasish.annotation.schema.ReferenceList;
 import eu.dasish.annotation.schema.ResponseBody;
 import java.io.IOException;
 import java.net.URI;
-import java.security.Principal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,7 +50,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Providers;
 import javax.xml.bind.JAXBElement;
@@ -60,6 +58,7 @@ import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
@@ -67,6 +66,7 @@ import org.slf4j.LoggerFactory;
  */
 @Component
 @Path("/annotations")
+@Transactional(rollbackFor = {Exception.class})
 public class AnnotationResource {
 
     @Autowired
@@ -109,7 +109,8 @@ public class AnnotationResource {
     @Produces(MediaType.TEXT_XML)
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}")
     @Secured("ROLE_USER")
-    public JAXBElement<Annotation> getAnnotation(@PathParam("annotationid") String ExternalIdentifier) {
+    @Transactional(readOnly = true)
+    public JAXBElement<Annotation> getAnnotation(@PathParam("annotationid") String ExternalIdentifier) throws IOException {
         URI baseURI = uriInfo.getBaseUri();
         String baseURIstr = baseURI.toString();
         dbIntegrityService.setServiceURI(baseURIstr);
@@ -122,12 +123,7 @@ public class AnnotationResource {
             logger.info("getAnnotation method: OK");
             return rootElement;
         } else {
-            try {
-                logger.error("FORBIDDEN-access attempt");
-                httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
-            } catch (IOException ioe) {
-                logger.error("IOException: Cannot send server respond about unaithorized access.");
-            }
+            httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
             return null;
         }
 
@@ -138,7 +134,8 @@ public class AnnotationResource {
     @Produces(MediaType.TEXT_XML)
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}/targets")
     @Secured("ROLE_USER")
-    public JAXBElement<ReferenceList> getAnnotationTargets(@PathParam("annotationid") String ExternalIdentifier) {
+    @Transactional(readOnly = true)
+    public JAXBElement<ReferenceList> getAnnotationTargets(@PathParam("annotationid") String ExternalIdentifier) throws IOException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(ExternalIdentifier));
         final Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(httpServletRequest.getRemoteUser());
@@ -147,12 +144,7 @@ public class AnnotationResource {
             logger.info("getAnnotationTargets method: OK");
             return new ObjectFactory().createTargetList(TargetList);
         } else {
-            try {
-                logger.error("FORBIDDEN-access attempt");
-                httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-            } catch (IOException ioe) {
-                logger.error("IOException: Cannot send server respond about unaithorized access.");
-            }
+            httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED);
             return null;
         }
     }
@@ -162,6 +154,7 @@ public class AnnotationResource {
     @Produces(MediaType.TEXT_XML)
     @Path("")
     @Secured("ROLE_USER")
+    @Transactional(readOnly = true)
     public JAXBElement<AnnotationInfoList> getFilteredAnnotations(@QueryParam("link") String link,
             @QueryParam("text") String text,
             @QueryParam("access") String permission,
@@ -174,7 +167,7 @@ public class AnnotationResource {
         Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(httpServletRequest.getRemoteUser());
         UUID ownerExternalUUID = (ownerExternalId != null) ? UUID.fromString(ownerExternalId) : null;
         String access = (permission != null) ? permission : default_permission;
-        final AnnotationInfoList annotationInfoList = dbIntegrityService.getFilteredAnnotationInfos(link, text, userID, access, namespace, ownerExternalUUID, after, before);
+        final AnnotationInfoList annotationInfoList = dbIntegrityService.getFilteredAnnotationInfos(link, text, userID, makeAccessModeChain(access), namespace, ownerExternalUUID, after, before);
         logger.info("getFilteredAnnotations method: OK");
         return new ObjectFactory().createAnnotationInfoList(annotationInfoList);
     }
@@ -184,7 +177,8 @@ public class AnnotationResource {
     @Produces(MediaType.TEXT_XML)
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}/permissions")
     @Secured("ROLE_USER")
-    public JAXBElement<UserWithPermissionList> getAnnotationPermissions(@PathParam("annotationid") String ExternalIdentifier) {
+    @Transactional(readOnly = true)
+    public JAXBElement<UserWithPermissionList> getAnnotationPermissions(@PathParam("annotationid") String ExternalIdentifier) throws IOException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(ExternalIdentifier));
         final Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(httpServletRequest.getRemoteUser());
@@ -193,12 +187,7 @@ public class AnnotationResource {
             logger.info("getAnnotationPermissions method: OK");
             return new ObjectFactory().createPermissionList(permissionList);
         } else {
-            try {
-                logger.error("FORBIDDEN-access attempt");
-                httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-            } catch (IOException ioe) {
-                logger.error("IOException: Cannot send server respond about unaithorized access.");
-            }
+            httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED);
             return null;
         }
 
@@ -209,7 +198,7 @@ public class AnnotationResource {
     @DELETE
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}")
     @Secured("ROLE_USER")
-    public String deleteAnnotation(@PathParam("annotationid") String externalIdentifier) {
+    public String deleteAnnotation(@PathParam("annotationid") String externalIdentifier) throws IOException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(externalIdentifier));
         final Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(httpServletRequest.getRemoteUser());
@@ -219,12 +208,7 @@ public class AnnotationResource {
             logger.info("deleteAnnotation method: OK");
             return result + " annotation(s) deleted.";
         } else {
-            logger.error("FORBIDDEN-access attempt. Only the owner can delete an annotation.");
-            try {
-                httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-            } catch (IOException ioe) {
-                logger.error("IOException: Cannot send server respond about unaithorized access.");
-            }
+            httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED);
             return null;
         }
 
@@ -236,7 +220,7 @@ public class AnnotationResource {
     @Produces(MediaType.APPLICATION_XML)
     @Path("")
     @Secured("ROLE_USER")
-    public JAXBElement<ResponseBody> createAnnotation(Annotation annotation) {
+    public JAXBElement<ResponseBody> createAnnotation(Annotation annotation) throws IOException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(httpServletRequest.getRemoteUser());
         Number annotationID = dbIntegrityService.addUsersAnnotation(userID, annotation);
@@ -251,7 +235,7 @@ public class AnnotationResource {
     @Produces(MediaType.APPLICATION_XML)
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}")
     @Secured("ROLE_USER")
-    public JAXBElement<ResponseBody> updateAnnotation(@PathParam("annotationid") String externalIdentifier, Annotation annotation) {
+    public JAXBElement<ResponseBody> updateAnnotation(@PathParam("annotationid") String externalIdentifier, Annotation annotation) throws IOException {
         String path = uriInfo.getBaseUri().toString();
         dbIntegrityService.setServiceURI(path);
         String annotationURI = annotation.getURI();
@@ -268,42 +252,29 @@ public class AnnotationResource {
             return new ObjectFactory().createResponseBody(makeAnnotationResponseEnvelope(annotationID));
 
         } else {
-            logger.error("FORBIDDEN-access attempt.");
-            logger.error("The logged-in user is not authorised to alter this annotation. ");
-            try {
-                httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-            } catch (IOException ioe) {
-                logger.error("IOException: Cannot send server respond about unaithorized access.");
-            }
+            httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED);
             return null;
         }
 
     }
-    
+
     @PUT
     @Consumes(MediaType.APPLICATION_XML)
     @Produces(MediaType.APPLICATION_XML)
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}/body")
     @Secured("ROLE_USER")
-    public JAXBElement<ResponseBody> updateAnnotationBody(@PathParam("annotationid") String externalIdentifier, AnnotationBody annotationBody) {
+    public JAXBElement<ResponseBody> updateAnnotationBody(@PathParam("annotationid") String externalIdentifier, AnnotationBody annotationBody) throws IOException {
         String path = uriInfo.getBaseUri().toString();
         dbIntegrityService.setServiceURI(path);
-        
+
         final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(externalIdentifier));
         final Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(httpServletRequest.getRemoteUser());
         if (canWrite(userID, annotationID)) {
             int updatedRows = dbIntegrityService.updateAnnotationBody(annotationID, annotationBody);
             logger.info("updateAnnotationBody method: OK");
             return new ObjectFactory().createResponseBody(makeAnnotationResponseEnvelope(annotationID));
-
         } else {
-            logger.error("FORBIDDEN-access attempt.");
-            logger.error("The logged-in user is not authorised to alter this annotation. ");
-            try {
-                httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-            } catch (IOException ioe) {
-                logger.error("IOException: Cannot send server respond about unaithorized access.");
-            }
+            httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED);
             return null;
         }
 
@@ -314,7 +285,7 @@ public class AnnotationResource {
     @Produces(MediaType.APPLICATION_XML)
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}/permissions/{userid: " + BackendConstants.regExpIdentifier + "}")
     @Secured("ROLE_USER")
-    public String updatePermission(@PathParam("annotationid") String annotationExternalId, @PathParam("userid") String userExternalId, Permission permission) {
+    public String updatePermission(@PathParam("annotationid") String annotationExternalId, @PathParam("userid") String userExternalId, Permission permission) throws IOException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(annotationExternalId));
         final Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(httpServletRequest.getRemoteUser());
@@ -327,13 +298,7 @@ public class AnnotationResource {
             return result + " rows are updated/added";
 
         } else {
-            logger.error("FORBIDDEN-access attempt");
-            logger.error("The logged-in user is not authorised to alter this annotation. ");
-            try {
-                httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-            } catch (IOException ioe) {
-                logger.error("IOException: Cannot send server respond about unaithorized access.");
-            }
+            httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED);
             return null;
         }
     }
@@ -343,7 +308,7 @@ public class AnnotationResource {
     @Produces(MediaType.APPLICATION_XML)
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}/permissions/")
     @Secured("ROLE_USER")
-    public JAXBElement<ResponseBody> updatePermissions(@PathParam("annotationid") String annotationExternalId, UserWithPermissionList permissions) {
+    public JAXBElement<ResponseBody> updatePermissions(@PathParam("annotationid") String annotationExternalId, UserWithPermissionList permissions) throws IOException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(annotationExternalId));
         final Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(httpServletRequest.getRemoteUser());
@@ -352,13 +317,7 @@ public class AnnotationResource {
             logger.info("updatePermissions method: OK");
             return new ObjectFactory().createResponseBody(makePermissionResponseEnvelope(annotationID));
         } else {
-            logger.error("FORBIDDEN-access attempt");
-            logger.error("The logged-in user is not authorised to alter this annotation. ");
-            try {
-                httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-            } catch (IOException ioe) {
-                logger.error("IOException: Cannot send server respond about unaithorized access.");
-            }
+            httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED);
             return null;
         }
     }
@@ -389,6 +348,7 @@ public class AnnotationResource {
         return result;
     }
 
+    // REFACTOR : move to the integrity service all te methods below  
     private List<Action> makeActionList(List<String> resourceURIs, String message) {
         if (resourceURIs != null) {
             if (resourceURIs.isEmpty()) {
@@ -432,6 +392,38 @@ public class AnnotationResource {
             return (permission.value() == Permission.OWNER.value());
         } else {
             return false;
+        }
+    }
+
+    private String[] makeAccessModeChain(String accessMode) {
+        if (accessMode != null) {
+            if (accessMode == Permission.OWNER.value()) {
+                String[] result = new String[1];
+                result[0] = accessMode;
+                return result;
+            } else {
+                if (accessMode == Permission.WRITER.value()) {
+                    String[] result = new String[2];
+                    result[0] = Permission.WRITER.value();
+                    result[1] = Permission.OWNER.value();
+                    return result;
+                } else {
+                    if (accessMode == Permission.READER.value()) {
+                        String[] result = new String[3];
+                        result[0] = Permission.READER.value();
+                        result[1] = Permission.WRITER.value();
+                        result[2] = Permission.OWNER.value();
+                        return result;
+                    } else {
+                        logger.error("Invalide access " + accessMode);
+                        return null;
+                    }
+
+                }
+            }
+
+        } else {
+            return null;
         }
     }
 }

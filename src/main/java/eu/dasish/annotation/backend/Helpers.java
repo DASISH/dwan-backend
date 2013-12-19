@@ -70,7 +70,6 @@ public class Helpers {
     public static String elementToString(Element element) {
         Document document = element.getOwnerDocument();
         DOMImplementationLS domImplLS = (DOMImplementationLS) document.getImplementation();
-        String encoding=document.getInputEncoding();
         LSSerializer serializer = domImplLS.createLSSerializer();
         String result = serializer.writeToString(element);
         return result;
