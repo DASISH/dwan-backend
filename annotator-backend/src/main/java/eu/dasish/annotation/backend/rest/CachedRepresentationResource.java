@@ -36,9 +36,11 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.JAXBElement;
+import javax.xml.parsers.ParserConfigurationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
@@ -46,6 +48,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @Path("/cached")
+@Transactional(rollbackFor={Exception.class, SQLException.class, IOException.class, ParserConfigurationException.class})
 public class CachedRepresentationResource {
 
     @Autowired
@@ -64,7 +67,8 @@ public class CachedRepresentationResource {
     @GET
     @Produces(MediaType.TEXT_XML)
     @Path("{cachedid: " + BackendConstants.regExpIdentifier + "}/metadata")
-    @Secured("ROLE_USER")
+    @Secured("ROLE_USER")    
+    @Transactional(readOnly=true)
     public JAXBElement<CachedRepresentationInfo> getCachedRepresentationInfo(@PathParam("cachedid") String externalId) throws SQLException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final Number cachedID = dbIntegrityService.getCachedRepresentationInternalIdentifier(UUID.fromString(externalId));
@@ -75,7 +79,8 @@ public class CachedRepresentationResource {
     @GET
     @Produces({"image/jpeg", "image/png"})
     @Path("{cachedid: " + BackendConstants.regExpIdentifier + "}/content")
-    @Secured("ROLE_USER")
+    @Secured("ROLE_USER")    
+    @Transactional(readOnly=true)
     public BufferedImage getCachedRepresentationContent(@PathParam("cachedid") String externalId) throws SQLException, IOException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final Number cachedID = dbIntegrityService.getCachedRepresentationInternalIdentifier(UUID.fromString(externalId));

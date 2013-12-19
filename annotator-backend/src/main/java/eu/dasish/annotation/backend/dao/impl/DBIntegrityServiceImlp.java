@@ -39,17 +39,21 @@ import eu.dasish.annotation.schema.Target;
 import eu.dasish.annotation.schema.TargetInfo;
 import eu.dasish.annotation.schema.User;
 import eu.dasish.annotation.schema.UserWithPermission;
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.Number;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import javax.xml.parsers.ParserConfigurationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
@@ -93,7 +97,7 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         return annotationDao.getExternalID(annotationID);
     }
 
-    ///////////// GETTERS //////////////////////////
+    
     @Override
     public Number getTargetInternalIdentifier(UUID externalID) {
         return targetDao.getInternalID(externalID);
@@ -188,13 +192,13 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
 
     ////////////////////////////////////////////////////////////////////////
     @Override
-    public List<Number> getFilteredAnnotationIDs(String link, String text, Number inloggedUserID, String access, String namespace, UUID owner, Timestamp after, Timestamp before) {
+    public List<Number> getFilteredAnnotationIDs(String link, String text, Number inloggedUserID, String[] accessModes, String namespace, UUID owner, Timestamp after, Timestamp before) {
 
-        if (access == null) {
+        if (accessModes == null) {
             return null;
         }
 
-        List<Number> annotationIDs = annotationDao.getAnnotationIDsForUserWithPermission(inloggedUserID, access);
+        List<Number> annotationIDs = annotationDao.getAnnotationIDsForUserWithPermission(inloggedUserID, accessModes);
 
         if (link != null) {
             List<Number> targetIDs = targetDao.getTargetsReferringTo(link);
@@ -257,8 +261,8 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     }
 
     @Override
-    public AnnotationInfoList getFilteredAnnotationInfos(String word, String text, Number inloggedUserID, String access, String namespace, UUID owner, Timestamp after, Timestamp before) {
-        List<Number> annotationIDs = getFilteredAnnotationIDs(word, text, inloggedUserID, access, namespace, owner, after, before);
+    public AnnotationInfoList getFilteredAnnotationInfos(String word, String text, Number inloggedUserID, String[] accessModes, String namespace, UUID owner, Timestamp after, Timestamp before) {
+        List<Number> annotationIDs = getFilteredAnnotationIDs(word, text, inloggedUserID, accessModes, namespace, owner, after, before);
         if (annotationIDs != null) {
             AnnotationInfoList result = new AnnotationInfoList();
             for (Number annotationID : annotationIDs) {
@@ -387,7 +391,8 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     // TODO: unit test
     @Override
     public int updateAnnotationBody(Number internalID, AnnotationBody annotationBody) {
-        return annotationDao.updateAnnotationBody(internalID, annotationBody);
+        String[] body = annotationDao.retrieveBodyComponents(annotationBody);
+        return annotationDao.updateAnnotationBody(internalID, body[0], body[1], annotationBody.getXmlBody()!=null);
     }
     
    
@@ -517,19 +522,21 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         AnnotationBody annotationBody = annotation.getBody();
         String bodyText;
         String newBodyText;
+        String mimeType;
         if (annotationBody.getXmlBody() != null) {
             bodyText = Helpers.elementToString(annotation.getBody().getXmlBody().getAny());
+            mimeType = annotationBody.getXmlBody().getMimeType();
         } else {
             if (annotation.getBody().getTextBody() != null) {
                 bodyText = annotation.getBody().getTextBody().getValue();
-
+                mimeType = annotationBody.getTextBody().getMimeType();
             } else {
                 logger.error("The client has sent ill-formed annotation body.");
                 return -1;
             }
         }
         newBodyText = Helpers.replace(bodyText, targetIdPairs);
-        return annotationDao.updateAnnotationBodyText(annotationID, newBodyText);
+        return annotationDao.updateAnnotationBody(annotationID, newBodyText, mimeType, annotationBody.getXmlBody() != null);
     }
 
     private int addPrincipalsPermissions(Annotation annotation, Number annotationID) {

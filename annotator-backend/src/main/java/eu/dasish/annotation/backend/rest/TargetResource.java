@@ -25,6 +25,7 @@ import eu.dasish.annotation.schema.CachedRepresentationInfo;
 import eu.dasish.annotation.schema.ObjectFactory;
 import eu.dasish.annotation.schema.ReferenceList;
 import eu.dasish.annotation.schema.Target;
+import java.io.IOException;
 import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.UUID;
@@ -40,9 +41,11 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.JAXBElement;
+import javax.xml.parsers.ParserConfigurationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
@@ -54,6 +57,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @Path("/targets")
+@Transactional(rollbackFor={Exception.class, SQLException.class, IOException.class, ParserConfigurationException.class})
 public class TargetResource {
 
     @Autowired
@@ -74,7 +78,8 @@ public class TargetResource {
     @GET
     @Produces(MediaType.TEXT_XML)
     @Path("{targetid: " + BackendConstants.regExpIdentifier + "}")
-    @Secured("ROLE_USER")
+    @Secured("ROLE_USER")    
+    @Transactional(readOnly=true)
     public JAXBElement<Target> getTarget(@PathParam("targetid") String ExternalIdentifier) throws SQLException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final Number targetID = dbIntegrityService.getTargetInternalIdentifier(UUID.fromString(ExternalIdentifier));
@@ -86,7 +91,8 @@ public class TargetResource {
     @GET
     @Produces(MediaType.TEXT_XML)
     @Path("{targetid: " + BackendConstants.regExpIdentifier + "}/versions")
-    @Secured("ROLE_USER")
+    @Secured("ROLE_USER")    
+    @Transactional(readOnly=true)
     public JAXBElement<ReferenceList> getSiblingTargets(@PathParam("targetid") String ExternalIdentifier) throws SQLException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final Number targetID = dbIntegrityService.getTargetInternalIdentifier(UUID.fromString(ExternalIdentifier));

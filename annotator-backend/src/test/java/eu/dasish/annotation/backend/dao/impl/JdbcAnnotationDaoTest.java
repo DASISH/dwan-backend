@@ -375,19 +375,7 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
     }
     
     //////////////////////////////////
-    @Test 
-    public void testUpdateBodyText() throws SQLException{
-        System.out.println("test updateBodyText");
-        String newBodyText = "new body";
-        int result = jdbcAnnotationDao.updateAnnotationBodyText(2, newBodyText);
-        assertEquals(1, result);
-        Map<Annotation,Number> getResult= jdbcAnnotationDao.getAnnotationWithoutTargetsAndPermissions(2);
-        Annotation[] annotations = new Annotation[1];
-        getResult.keySet().toArray(annotations);
-        assertEquals(newBodyText, annotations[0].getBody().getTextBody().getValue());
-        System.out.println("update time "+annotations[0].getLastModified());
-    }
-
+   
   
     
     // public List<Map<Number, String>> retrievePermissions(Number annotationId)

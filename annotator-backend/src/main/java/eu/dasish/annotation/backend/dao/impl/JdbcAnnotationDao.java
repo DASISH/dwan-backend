@@ -25,6 +25,7 @@ import eu.dasish.annotation.schema.AnnotationBody.TextBody;
 import eu.dasish.annotation.schema.AnnotationBody.XmlBody;
 import eu.dasish.annotation.schema.AnnotationInfo;
 import eu.dasish.annotation.schema.Permission;
+import java.io.IOException;
 import java.lang.String;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -36,7 +37,9 @@ import java.util.Map;
 import java.util.UUID;
 import javax.sql.DataSource;
 import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.parsers.ParserConfigurationException;
 import org.springframework.jdbc.core.RowMapper;
+import org.xml.sax.SAXException;
 
 /**
  * Created on : Jun 27, 2013, 10:30:52 AM
@@ -114,15 +117,35 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
     };
 
     @Override
-    public List<Number> getAnnotationIDsForUserWithPermission(Number userID, String permissionString) {
-        if (userID == null || permissionString == null) {
+    public List<Number> getAnnotationIDsForUserWithPermission(Number userID, String[] permissionStrings) {
+        if (userID == null || permissionStrings == null) {
             return null;
         }
+
+        String values = stringsToValuesString(permissionStrings);
+
         StringBuilder sql = new StringBuilder("SELECT ");
         sql.append(annotation_id).append(" FROM ").append(permissionsTableName).append(" WHERE ").
                 append(principal_id).append("  = ").append(userID.toString()).append(" AND ").
-                append(permission).append("  = ?");;
-        return getSimpleJdbcTemplate().query(sql.toString(), internalIDRowMapper, permissionString);
+                append(permission).append("  IN ").append(values);
+        return getSimpleJdbcTemplate().query(sql.toString(), internalIDRowMapper);
+    }
+
+    private String stringsToValuesString(String[] strings) {
+        if (strings == null) {
+            return null;
+        }
+
+        int length = strings.length;
+        if (length == 0) {
+            return null;
+        }
+        String result = "(";
+        for (int i = 0; i < length - 1; i++) {
+            result = result + "'"+strings[i] + "', ";
+        }
+        result = result + "'"+strings[length - 1] + "')";
+        return result;
     }
 
     ////////////////////////////////////////////////////////////////////////
@@ -311,25 +334,15 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
     }
 
     //////////// UPDATERS /////////////
-    @Override
-    public int updateAnnotationBodyText(Number annotationID, String text) {
-        StringBuilder sql = new StringBuilder("UPDATE ");
-        sql.append(annotationTableName).append(" SET ").
-                append(last_modified).append("=  default,").
-                append(body_text).append("= '").append(text).
-                append("' WHERE ").append(annotation_id).append("= ?");
-        int affectedRows = getSimpleJdbcTemplate().update(sql.toString(), annotationID);
-        return affectedRows;
-    }
+   
 
     @Override
-    public int updateAnnotationBody(Number annotationID, AnnotationBody annotationBody) {
-        String[] body = retrieveBodyComponents(annotationBody);
+    public int updateAnnotationBody(Number annotationID, String text, String mimeType, Boolean isXml) {
         Map<String, Object> params = new HashMap<String, Object>();
-        params.put("annotationID", annotation_id);
-        params.put("bodyText", body[0]);
-        params.put("bodyMimeType", body[1]);
-        params.put("isXml", annotationBody.getXmlBody() != null);
+        params.put("annotationID", annotationID);
+        params.put("bodyText", text);
+        params.put("bodyMimeType", mimeType);
+        params.put("isXml", isXml);
 
         StringBuilder sql = new StringBuilder("UPDATE ");
         sql.append(annotationTableName).append(" SET ").
@@ -337,8 +350,8 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
                 append(body_text).append("= :bodyText, ").
                 append(body_mimetype).append("= :bodyMimeType, ").
                 append(is_xml).append("= :isXml").
-                append("' WHERE ").append(annotation_id).append("= :annotationID");
-        int affectedRows = getSimpleJdbcTemplate().update(sql.toString(), annotationID);
+                append(" WHERE ").append(annotation_id).append("= :annotationID");
+        int affectedRows = getSimpleJdbcTemplate().update(sql.toString(), params);
         return affectedRows;
     }
 
@@ -373,13 +386,13 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
 
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("permission", permission.value());
-        params.put("annotationID", annotation_id);
-        params.put("principalID", principal_id);
+        params.put("annotationID", annotationID);
+        params.put("principalID", userID);
 
         StringBuilder sql = new StringBuilder("UPDATE ");
         sql.append(permissionsTableName).append(" SET ").
                 append(this.permission).append("= :permission").
-                append(" WHERE ").append(annotation_id).append("= : annotationID").
+                append(" WHERE ").append(annotation_id).append("= :annotationID").
                 append(" AND ").append(principal_id).append("= :principalID");
         return getSimpleJdbcTemplate().update(sql.toString(), params);
     }
@@ -473,7 +486,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
     }
 
     /////////////// helpers //////////////////
-    private String[] retrieveBodyComponents(AnnotationBody annotationBody) {
+    public String[] retrieveBodyComponents(AnnotationBody annotationBody) {
         boolean body_is_xml = annotationBody.getXmlBody() != null;
         String[] result = new String[2];
         if (body_is_xml) {
