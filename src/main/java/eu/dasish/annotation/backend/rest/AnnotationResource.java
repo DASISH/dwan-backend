@@ -123,7 +123,7 @@ public class AnnotationResource {
             logger.info("getAnnotation method: OK");
             return rootElement;
         } else {
-            httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
+            httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "The logged-in user cannot read the annotation.");
             return null;
         }
 
@@ -144,7 +144,7 @@ public class AnnotationResource {
             logger.info("getAnnotationTargets method: OK");
             return new ObjectFactory().createTargetList(TargetList);
         } else {
-            httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+            httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "The logged-in user cannot read the annotation.");
             return null;
         }
     }
@@ -187,7 +187,7 @@ public class AnnotationResource {
             logger.info("getAnnotationPermissions method: OK");
             return new ObjectFactory().createPermissionList(permissionList);
         } else {
-            httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+            httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "The logged-in user cannot read the annotation.");
             return null;
         }
 
@@ -208,7 +208,7 @@ public class AnnotationResource {
             logger.info("deleteAnnotation method: OK");
             return result + " annotation(s) deleted.";
         } else {
-            httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+            httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "The logged-in user cannot delete the annotation. Only the owner can delete the annotation.");
             return null;
         }
 

@@ -249,4 +249,6 @@ public class AnnotationsTest extends JerseyTest {
     protected Builder getAuthenticatedResource(WebResource resource) {
 	return resource.header(HttpHeaders.AUTHORIZATION, "Basic "  + new String(Base64.encode(DummyPrincipal.DUMMY_PRINCIPAL.getName()+":olhapassword")));
     }
+    
+    
 }

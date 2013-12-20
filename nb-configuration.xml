@@ -19,16 +19,7 @@ Any value defined here will override the pom.xml file value but is only applicab
     <spring-data xmlns="http://www.netbeans.org/ns/spring-data/1">
         <config-files>
             <config-file>src/main/resources/spring-config/applicationContext-security.xml</config-file>
-            <config-file>src/main/resources/spring-config/securityDataSource.xml</config-file>
-            <config-file>src/test/resources/spring-test-config/jaxbMarshallerFactory.xml</config-file>
-            <config-file>src/test/resources/spring-integrity-test-config/dataSource.xml</config-file>
-            <config-file>src/test/resources/spring-integrity-test-config/annotationDao.xml</config-file>
-            <config-file>src/test/resources/spring-integrity-test-config/userDao.xml</config-file>
-            <config-file>src/test/resources/spring-integrity-test-config/targetDao.xml</config-file>
-            <config-file>src/test/resources/spring-integrity-test-config/cachedRepresentationDao.xml</config-file>
-            <config-file>src/test/resources/spring-integrity-test-config/componentscan.xml</config-file>
-            <config-file>src/test/resources/spring-integrity-test-config/dbIntegrityService.xml</config-file>
-            <config-file>src/test/resources/spring-integrity-test-config/JaxbMarshallerFactory.xml</config-file>
+            <config-file>src/main/resources/spring-config/bCryptPasswordEncoder.xml</config-file>
         </config-files>
         <config-file-groups/>
     </spring-data>
