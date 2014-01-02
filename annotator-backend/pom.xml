@@ -1,17 +1,19 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    
     <groupId>eu.dasish.annotation</groupId>
     <artifactId>annotator-backend</artifactId>
+    <version>${project.version}</version>    
     <packaging>war</packaging>
-    <version>1.0-SNAPSHOT</version>
     <name>annotator-backend Jersey Webapp</name>
     <organization> 
         <name>DASISH</name>
         <url>https://trac.clarin.eu/wiki/DASISH</url>
     </organization>
+    
     <build>
-        <finalName>annotator-backend</finalName>
+        <finalName>annotator-backend-${project.version}</finalName>
         <testResources>
             <testResource>
                 <directory>src/main/</directory>
@@ -33,6 +35,33 @@
                     <target>1.6</target>
                 </configuration>
             </plugin>
+            
+            
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>2.3</version>
+            </plugin>
+            
+           <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.4</version>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>src/main/assembly/deploymenttarball.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            
             <!-- Run the application using "mvn embedded-glassfish:run" -->
             <plugin>
                 <groupId>org.glassfish</groupId>
@@ -251,5 +280,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>        
         <netbeans.hint.license>gpl20</netbeans.hint.license>  
         <plugin.license.copyrightYear>2013</plugin.license.copyrightYear>
+        <project.version>1.0</project.version>
     </properties>
 </project>
