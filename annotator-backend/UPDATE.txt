@@ -1,0 +1,6 @@
+Take the tar-ball of the new  version XXX, and follow the standard MPI deployment procedure
+Consult the instructions from INSTALL.txt about placing war file. 
+
+For testing consult "Testing" section of INSTALL.txt. 
+
+

@@ -29,7 +29,7 @@
     
     <fileSets>
         
-       <!-- <fileSet>
+      <fileSet>
             <directory>${project.basedir}</directory>
             <outputDirectory>/</outputDirectory>
             <includes>
@@ -42,13 +42,7 @@
             <fileMode>0644</fileMode>
         </fileSet>
         
-        <fileSet>            
-            <directory>${project.basedir}/DeploymentSettings</directory>
-            <outputDirectory>DeploymentSettings</outputDirectory>
-            <fileMode>0644</fileMode>
-            <directoryMode>0755</directoryMode>
-        </fileSet> -->
-               
+       
         <fileSet>            
             <directory>target</directory>
             <outputDirectory>war</outputDirectory>
