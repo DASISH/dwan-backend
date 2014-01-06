@@ -20,7 +20,7 @@ Contents:
 
 = Installation and configuration   =
 =========================================================================================
-== Plasing war-file and ds#webannotator.xml at the tomcat's conf/Catalina/localhost ==
+== Placing war-file and ds#webannotator.xml at the tomcat's conf/Catalina/localhost ==
 
 You must deploy the annotator's .war file to the tomcat-webuser. Make a directory for the 
 application, like e.g. lat/webapps/dasish-web-annotator on lux16,  and deploy .war there following
@@ -41,7 +41,7 @@ Then the corresponding ds#webannotator.xml looks as follows:
 The file must contain the fragment for the database, like e.g.on lux16:
 
          <Resource
-                 name="jdbc/DASISH"
+                 name="jdbc/DASISHAnnotator"
                  auth="Container"
                  type="javax.sql.DataSource"
                  driverClassName="org.postgresql.Driver"

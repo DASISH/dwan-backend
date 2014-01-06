@@ -1,4 +1,5 @@
 January 2, 2014: the first deployment on lux16.
 
-January 3, 2014: files README, ISNTALL, UPDATE, CHANGES are added to the deployment tar-ball which
-is from now on is generated using maven assembly plug-in
+January 3, 2014: files README, INSTALL, UPDATE, CHANGES are added to the 
+deployment tar-ball which is from now on is generated using maven assembly 
+plug-in.

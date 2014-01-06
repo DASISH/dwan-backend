@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -50,12 +51,15 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Component
 @Path("/users")
-@Transactional(rollbackFor={Exception.class, SQLException.class, IOException.class, ParserConfigurationException.class})
+@Transactional(rollbackFor = {Exception.class, SQLException.class, IOException.class, ParserConfigurationException.class})
 public class UserResource {
+
     @Autowired
     private DBIntegrityService dbIntegrityService;
     @Context
     private HttpServletRequest httpServletRequest;
+    @Context
+    private HttpServletResponse httpServletResponse;
     @Context
     private UriInfo uriInfo;
 
@@ -65,71 +69,89 @@ public class UserResource {
 
     public UserResource() {
     }
-    
+
     @GET
     @Produces(MediaType.TEXT_XML)
     @Path("{userid: " + BackendConstants.regExpIdentifier + "}")
-    @Secured("ROLE_USER")    
-    @Transactional(readOnly=true)
-    public JAXBElement<User> getUser(@PathParam("userid") String ExternalIdentifier) throws SQLException {
-         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
+    @Secured("ROLE_USER")
+    @Transactional(readOnly = true)
+    public JAXBElement<User> getUser(@PathParam("userid") String ExternalIdentifier) throws SQLException, IOException {
+        dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final Number userID = dbIntegrityService.getUserInternalIdentifier(UUID.fromString(ExternalIdentifier));
-        final User user = dbIntegrityService.getUser(userID);
-        return new ObjectFactory().createUser(user);
+        if (userID != null) {
+            final User user = dbIntegrityService.getUser(userID);
+            return new ObjectFactory().createUser(user);
+        } else {
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The user with the given id is not found in the database");
+            return null;
+        }
     }
-    
+
     @GET
     @Produces(MediaType.TEXT_XML)
     @Path("/info")
-    @Secured("ROLE_USER")    
-    @Transactional(readOnly=true)
-    public JAXBElement<User> getUserByInfo(@QueryParam("email") String email) throws SQLException {
+    @Secured("ROLE_USER")
+    @Transactional(readOnly = true)
+    public JAXBElement<User> getUserByInfo(@QueryParam("email") String email) throws SQLException, IOException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final User user = dbIntegrityService.getUserByInfo(email);
-        return new ObjectFactory().createUser(user);
+        if (user != null) {
+            return new ObjectFactory().createUser(user);
+        } else {
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The user with the given info is not found in the database");
+            return null;
+        }
     }
-    
+
     @GET
     @Produces(MediaType.TEXT_XML)
     @Path("{userid: " + BackendConstants.regExpIdentifier + "}/current")
-    @Secured("ROLE_USER")    
-    @Transactional(readOnly=true)
-    public JAXBElement<CurrentUserInfo> getCurrentUserInfo(@PathParam("userid") String ExternalIdentifier){
+    @Secured("ROLE_USER")
+    @Transactional(readOnly = true)
+    public JAXBElement<CurrentUserInfo> getCurrentUserInfo(@PathParam("userid") String ExternalIdentifier) throws IOException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final Number userID = dbIntegrityService.getUserInternalIdentifier(UUID.fromString(ExternalIdentifier));
-        final CurrentUserInfo userInfo = new CurrentUserInfo();
-        userInfo.setRef(dbIntegrityService.getUserURI(userID));
-        userInfo.setCurrentUser(ifLoggedIn(userID));
-        return new ObjectFactory().createCurrentUserInfo(userInfo);
+        if (userID != null) {
+            final CurrentUserInfo userInfo = new CurrentUserInfo();
+            userInfo.setRef(dbIntegrityService.getUserURI(userID));
+            userInfo.setCurrentUser(ifLoggedIn(userID));
+            return new ObjectFactory().createCurrentUserInfo(userInfo);
+        } else {
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The user with the given id is not found in the database");
+            return null;
+        }
     }
-    
+
     @POST
     @Consumes(MediaType.TEXT_XML)
     @Produces(MediaType.TEXT_XML)
     @Path("{remoteId: " + BackendConstants.regExpIdentifier + "}")
     @Secured("ROLE_ADMIN")
     public JAXBElement<User> addUser(@PathParam("userid") String remoteId, User user) throws SQLException {
-        dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());        
+        dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final Number userID = dbIntegrityService.addUser(user, remoteId);
         final User addedUser = dbIntegrityService.getUser(userID);
         return new ObjectFactory().createUser(addedUser);
     }
-    
+
     @PUT
     @Consumes(MediaType.TEXT_XML)
     @Produces(MediaType.TEXT_XML)
     @Path("")
     @Secured("ROLE_ADMIN")
-    public JAXBElement<User> updateUser(User user){
-        dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());        
+    public JAXBElement<User> updateUser(User user) throws IOException{
+        dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final Number userID = dbIntegrityService.updateUser(user);
-        final User addedUser = dbIntegrityService.getUser(userID);
-        return new ObjectFactory().createUser(addedUser);
+        if (userID != null) {
+            final User addedUser = dbIntegrityService.getUser(userID);
+            return new ObjectFactory().createUser(addedUser);
+        } else {
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The user with the given id is not found in the database");
+            return null;
+        }
     }
-    
-    
-    
-    private boolean ifLoggedIn(Number userID){
+
+    private boolean ifLoggedIn(Number userID) {
         return httpServletRequest.getRemoteUser().equals(dbIntegrityService.getUserRemoteID(userID));
     }
 }

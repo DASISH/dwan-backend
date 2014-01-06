@@ -28,6 +28,7 @@ import java.sql.SQLException;
 import java.util.UUID;
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -48,13 +49,15 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Component
 @Path("/cached")
-@Transactional(rollbackFor={Exception.class, SQLException.class, IOException.class, ParserConfigurationException.class})
+@Transactional(rollbackFor = {Exception.class, SQLException.class, IOException.class, ParserConfigurationException.class})
 public class CachedRepresentationResource {
 
     @Autowired
     private DBIntegrityService dbIntegrityService;
     @Context
     private HttpServletRequest httpServletRequest;
+    @Context
+    private HttpServletResponse httpServletResponse;
     @Context
     private UriInfo uriInfo;
 
@@ -67,28 +70,36 @@ public class CachedRepresentationResource {
     @GET
     @Produces(MediaType.TEXT_XML)
     @Path("{cachedid: " + BackendConstants.regExpIdentifier + "}/metadata")
-    @Secured("ROLE_USER")    
-    @Transactional(readOnly=true)
-    public JAXBElement<CachedRepresentationInfo> getCachedRepresentationInfo(@PathParam("cachedid") String externalId) throws SQLException {
+    @Secured("ROLE_USER")
+    @Transactional(readOnly = true)
+    public JAXBElement<CachedRepresentationInfo> getCachedRepresentationInfo(@PathParam("cachedid") String externalId) throws SQLException, IOException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final Number cachedID = dbIntegrityService.getCachedRepresentationInternalIdentifier(UUID.fromString(externalId));
-        final CachedRepresentationInfo cachedInfo = dbIntegrityService.getCachedRepresentationInfo(cachedID);
-        return new ObjectFactory().createCashedRepresentationInfo(cachedInfo);
+        if (cachedID != null) {
+            final CachedRepresentationInfo cachedInfo = dbIntegrityService.getCachedRepresentationInfo(cachedID);
+            return new ObjectFactory().createCashedRepresentationInfo(cachedInfo);
+        } else {
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The cached representation with the given id is not found in the database");
+            return null;
+        }
     }
 
     @GET
     @Produces({"image/jpeg", "image/png"})
     @Path("{cachedid: " + BackendConstants.regExpIdentifier + "}/content")
-    @Secured("ROLE_USER")    
-    @Transactional(readOnly=true)
+    @Secured("ROLE_USER")
+    @Transactional(readOnly = true)
     public BufferedImage getCachedRepresentationContent(@PathParam("cachedid") String externalId) throws SQLException, IOException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final Number cachedID = dbIntegrityService.getCachedRepresentationInternalIdentifier(UUID.fromString(externalId));
-        InputStream dbRespond = dbIntegrityService.getCachedRepresentationBlob(cachedID);
-        ImageIO.setUseCache(false);
-        BufferedImage result = ImageIO.read(dbRespond);
-        return result;
+        if (cachedID != null) {
+            InputStream dbRespond = dbIntegrityService.getCachedRepresentationBlob(cachedID);
+            ImageIO.setUseCache(false);
+            BufferedImage result = ImageIO.read(dbRespond);
+            return result;
+        } else {
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The cached representation  with the given id is not found in the database");
+            return null;
+        }
     }
-    
-   
 }
