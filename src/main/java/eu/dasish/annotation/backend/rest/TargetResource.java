@@ -30,6 +30,7 @@ import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -57,13 +58,15 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Component
 @Path("/targets")
-@Transactional(rollbackFor={Exception.class, SQLException.class, IOException.class, ParserConfigurationException.class})
+@Transactional(rollbackFor = {Exception.class, SQLException.class, IOException.class, ParserConfigurationException.class})
 public class TargetResource {
 
     @Autowired
     private DBIntegrityService dbIntegrityService;
     @Context
     private HttpServletRequest httpServletRequest;
+    @Context
+    private HttpServletResponse httpServletResponse;
     @Context
     private UriInfo uriInfo;
 
@@ -78,32 +81,42 @@ public class TargetResource {
     @GET
     @Produces(MediaType.TEXT_XML)
     @Path("{targetid: " + BackendConstants.regExpIdentifier + "}")
-    @Secured("ROLE_USER")    
-    @Transactional(readOnly=true)
-    public JAXBElement<Target> getTarget(@PathParam("targetid") String ExternalIdentifier) throws SQLException {
+    @Secured("ROLE_USER")
+    @Transactional(readOnly = true)
+    public JAXBElement<Target> getTarget(@PathParam("targetid") String ExternalIdentifier) throws SQLException, IOException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final Number targetID = dbIntegrityService.getTargetInternalIdentifier(UUID.fromString(ExternalIdentifier));
-        final Target target = dbIntegrityService.getTarget(targetID);
-        return new ObjectFactory().createTarget(target);
+        if (targetID != null) {
+            final Target target = dbIntegrityService.getTarget(targetID);
+            return new ObjectFactory().createTarget(target);
+        } else {
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The target with the given id is not found in the database");
+            return null;
+        }
     }
 
     // TODOD both unit tests
     @GET
     @Produces(MediaType.TEXT_XML)
     @Path("{targetid: " + BackendConstants.regExpIdentifier + "}/versions")
-    @Secured("ROLE_USER")    
-    @Transactional(readOnly=true)
-    public JAXBElement<ReferenceList> getSiblingTargets(@PathParam("targetid") String ExternalIdentifier) throws SQLException {
+    @Secured("ROLE_USER")
+    @Transactional(readOnly = true)
+    public JAXBElement<ReferenceList> getSiblingTargets(@PathParam("targetid") String ExternalIdentifier) throws SQLException, IOException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final Number targetID = dbIntegrityService.getTargetInternalIdentifier(UUID.fromString(ExternalIdentifier));
-        final ReferenceList siblings = dbIntegrityService.getTargetsForTheSameLinkAs(targetID);
-        return new ObjectFactory().createReferenceList(siblings);
+        if (targetID != null) {
+            final ReferenceList siblings = dbIntegrityService.getTargetsForTheSameLinkAs(targetID);
+            return new ObjectFactory().createReferenceList(siblings);
+        } else {
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The target with the given id is not found in the database");
+            return null;
+        }
     }
 
-    // TODO both unit tests
-    //changed path, /Targetpart is removed
-    //how to overwork the input stream to make it downloadable
-    // using mime type as well
+// TODO both unit tests
+//changed path, /Targetpart is removed
+//how to overwork the input stream to make it downloadable
+// using mime type as well
 //    @DELETE
 //    @Produces(MediaType.TEXT_XML)
 //    @Path("{targetid: " + BackendConstants.regExpIdentifier + "}/cached/{cachedid: " + BackendConstants.regExpIdentifier + "}")
@@ -115,16 +128,14 @@ public class TargetResource {
 //        int[] result = dbIntegrityService.deleteCachedRepresentationOfTarget(targetID, cachedID);
 //        return result[1];
 //    }
-
     @POST
     @Consumes("multipart/mixed")
     @Produces(MediaType.APPLICATION_XML)
     @Path("{targetid: " + BackendConstants.regExpIdentifier + "}/fragment/{fragmentDescriptor}/cached")
     @Secured("ROLE_USER")
     public JAXBElement<CachedRepresentationInfo> postCached(@PathParam("targetid") String targetIdentifier,
-            @PathParam("fragmentDescriptor") String fragmentDescriptor, 
+            @PathParam("fragmentDescriptor") String fragmentDescriptor,
             MultiPart multiPart) throws SQLException {
-
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final Number targetID = dbIntegrityService.getTargetInternalIdentifier(UUID.fromString(targetIdentifier));
         CachedRepresentationInfo metadata = multiPart.getBodyParts().get(0).getEntityAs(CachedRepresentationInfo.class);
@@ -132,23 +143,31 @@ public class TargetResource {
         InputStream cachedSource = bpe.getInputStream();
         final Number[] respondDB = dbIntegrityService.addCachedForTarget(targetID, fragmentDescriptor, metadata, cachedSource);
         final CachedRepresentationInfo cachedInfo = dbIntegrityService.getCachedRepresentationInfo(respondDB[1]);
-        return new ObjectFactory().createCashedRepresentationInfo(cachedInfo);
+        return new ObjectFactory()
+                .createCashedRepresentationInfo(cachedInfo);
 
     }
-    
-    
+
     @DELETE
     @Path("{targetid: " + BackendConstants.regExpIdentifier + "}/cached/{cachedid: " + BackendConstants.regExpIdentifier + "}")
     @Secured("ROLE_ADMIN")
-    public String deleteCachedForTarget(@PathParam("targetid") String targetExternalIdentifier, 
-    @PathParam("cachedid") String cachedExternalIdentifier) throws SQLException {
+    public String deleteCachedForTarget(@PathParam("targetid") String targetExternalIdentifier,
+            @PathParam("cachedid") String cachedExternalIdentifier) throws SQLException, IOException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final Number targetID = dbIntegrityService.getTargetInternalIdentifier(UUID.fromString(targetExternalIdentifier));
-        final Number cachedID = dbIntegrityService.getCachedRepresentationInternalIdentifier(UUID.fromString(cachedExternalIdentifier));
-        int[] resultDelete = dbIntegrityService.deleteCachedRepresentationOfTarget(targetID, cachedID);
-        String result = Integer.toString(resultDelete[0]);
-        return result + " pair(s) target-cached deleted.";
+        if (targetID != null) {
+            final Number cachedID = dbIntegrityService.getCachedRepresentationInternalIdentifier(UUID.fromString(cachedExternalIdentifier));
+            if (cachedID != null) {
+                int[] resultDelete = dbIntegrityService.deleteCachedRepresentationOfTarget(targetID, cachedID);
+                String result = Integer.toString(resultDelete[0]);
+                return result + " pair(s) target-cached deleted.";
+            } else {
+                httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The cached representation with the given id is not found in the database");
+                return null;
+            }
+        } else {
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The target with the given id is not found in the database");
+            return null;
+        }
     }
-
-    
 }

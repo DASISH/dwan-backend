@@ -7,7 +7,7 @@ found at https://trac.clarin.eu/wiki/DASISH. For this you need a clarin wiki acc
 
 The DASISH web-annotator back-end consists of two parts: the database, where the 
 annotations are stored, and the Jerseys web-application that by means of REST requests 
-performs  authentified red/write  access to the database.
+performs  authentified read/write  access to the database.
 
 === Requests ===
 
