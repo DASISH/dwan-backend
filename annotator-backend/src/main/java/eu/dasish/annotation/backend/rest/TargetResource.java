@@ -44,7 +44,6 @@ import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.JAXBElement;
 import javax.xml.parsers.ParserConfigurationException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -81,7 +80,6 @@ public class TargetResource {
     @GET
     @Produces(MediaType.TEXT_XML)
     @Path("{targetid: " + BackendConstants.regExpIdentifier + "}")
-    @Secured("ROLE_USER")
     @Transactional(readOnly = true)
     public JAXBElement<Target> getTarget(@PathParam("targetid") String ExternalIdentifier) throws SQLException, IOException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
@@ -99,7 +97,6 @@ public class TargetResource {
     @GET
     @Produces(MediaType.TEXT_XML)
     @Path("{targetid: " + BackendConstants.regExpIdentifier + "}/versions")
-    @Secured("ROLE_USER")
     @Transactional(readOnly = true)
     public JAXBElement<ReferenceList> getSiblingTargets(@PathParam("targetid") String ExternalIdentifier) throws SQLException, IOException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
@@ -132,7 +129,6 @@ public class TargetResource {
     @Consumes("multipart/mixed")
     @Produces(MediaType.APPLICATION_XML)
     @Path("{targetid: " + BackendConstants.regExpIdentifier + "}/fragment/{fragmentDescriptor}/cached")
-    @Secured("ROLE_USER")
     public JAXBElement<CachedRepresentationInfo> postCached(@PathParam("targetid") String targetIdentifier,
             @PathParam("fragmentDescriptor") String fragmentDescriptor,
             MultiPart multiPart) throws SQLException {
@@ -150,7 +146,6 @@ public class TargetResource {
 
     @DELETE
     @Path("{targetid: " + BackendConstants.regExpIdentifier + "}/cached/{cachedid: " + BackendConstants.regExpIdentifier + "}")
-    @Secured("ROLE_ADMIN")
     public String deleteCachedForTarget(@PathParam("targetid") String targetExternalIdentifier,
             @PathParam("cachedid") String cachedExternalIdentifier) throws SQLException, IOException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());

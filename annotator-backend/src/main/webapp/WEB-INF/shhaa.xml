@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright (C) 2013 DASISH
+
+    This program is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License
+    as published by the Free Software Foundation; either version 2
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+-->
+<ROOT>
+    <shhaa>
+
+	<authentication>
+	    <shibheader>
+		<username>oid:eduPersonPrincipalName</username>
+		<username>mace:eduPersonPrincipalName</username>
+		<username>eduPersonPrincipalName</username>
+		
+		<username>oid:eduPersonTargetedID</username>
+		<username>mace:eduPersonTargetedID</username>
+		<username>eduPersonTargetedID</username>
+
+		<session>Shib-Session-ID</session>
+		<idp>Shib-Identity-Provider</idp>
+		<timestamp>Shib-Authentication-Instant</timestamp>
+	    </shibheader>
+	    <fallback>
+		<username>anonymous</username>
+	    </fallback>
+	    <sso action="lI">https://lux16.mpi.nl/Shibboleth.sso/Login</sso> 
+	    <slo action="lO">https://lux16.mpi.nl/Shibboleth.sso/Logout</slo> 
+            <!-- <sso action="lI">http://localhost:8080/annotator-backend/api/index.jsp</sso> 
+	    <slo action="lO">http://localhost:8080/annotator-backend/api/index.jsp</slo>  -->
+	</authentication>
+	
+	
+	<!-- <composition action="rF">
+	    <shibheader>
+		<attribute>displayName</attribute>
+		<attribute>commonName</attribute>
+	    </shibheader>
+	</composition> -->
+
+	
+	<authorization>
+	    <location  target="/hvwkejfhvwkehf/*" />
+	</authorization>
+	
+	
+	
+    </shhaa>
+</ROOT>
