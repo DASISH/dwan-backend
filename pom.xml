@@ -246,7 +246,7 @@
             <artifactId>postgresql</artifactId>
             <version>8.4-702.jdbc4</version>
         </dependency>
-        <dependency>
+       <!-- <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-core</artifactId>
             <version>${spring.version}</version>
@@ -259,8 +259,8 @@
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-web</artifactId>
-            <version>${spring.version}</version>
-        </dependency>
+            <version>${spring.version}</version> 
+        </dependency> -->
         <dependency>
             <groupId>cglib</groupId>
             <artifactId>cglib</artifactId>
@@ -271,6 +271,17 @@
             <artifactId>slf4j-log4j12</artifactId>
             <version>${slf4j.version}</version>
         </dependency>
+        <dependency>
+            <groupId>de.mpg.mpgaai</groupId>
+            <artifactId>mpgaai-shhaa</artifactId>
+            <version>1.0.3</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
     </dependencies>
     <properties>
         <jersey.version>1.17.1</jersey.version>
@@ -280,6 +291,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>        
         <netbeans.hint.license>gpl20</netbeans.hint.license>  
         <plugin.license.copyrightYear>2013</plugin.license.copyrightYear>
-        <project.version>1.0</project.version>
+        <project.version>1.1</project.version>
     </properties>
 </project>

@@ -41,7 +41,6 @@ import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.JAXBElement;
 import javax.xml.parsers.ParserConfigurationException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -73,7 +72,6 @@ public class UserResource {
     @GET
     @Produces(MediaType.TEXT_XML)
     @Path("{userid: " + BackendConstants.regExpIdentifier + "}")
-    @Secured("ROLE_USER")
     @Transactional(readOnly = true)
     public JAXBElement<User> getUser(@PathParam("userid") String ExternalIdentifier) throws SQLException, IOException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
@@ -90,7 +88,6 @@ public class UserResource {
     @GET
     @Produces(MediaType.TEXT_XML)
     @Path("/info")
-    @Secured("ROLE_USER")
     @Transactional(readOnly = true)
     public JAXBElement<User> getUserByInfo(@QueryParam("email") String email) throws SQLException, IOException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
@@ -106,7 +103,6 @@ public class UserResource {
     @GET
     @Produces(MediaType.TEXT_XML)
     @Path("{userid: " + BackendConstants.regExpIdentifier + "}/current")
-    @Secured("ROLE_USER")
     @Transactional(readOnly = true)
     public JAXBElement<CurrentUserInfo> getCurrentUserInfo(@PathParam("userid") String ExternalIdentifier) throws IOException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
@@ -126,7 +122,6 @@ public class UserResource {
     @Consumes(MediaType.TEXT_XML)
     @Produces(MediaType.TEXT_XML)
     @Path("{remoteId: " + BackendConstants.regExpIdentifier + "}")
-    @Secured("ROLE_ADMIN")
     public JAXBElement<User> addUser(@PathParam("userid") String remoteId, User user) throws SQLException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final Number userID = dbIntegrityService.addUser(user, remoteId);
@@ -138,7 +133,6 @@ public class UserResource {
     @Consumes(MediaType.TEXT_XML)
     @Produces(MediaType.TEXT_XML)
     @Path("")
-    @Secured("ROLE_ADMIN")
     public JAXBElement<User> updateUser(User user) throws IOException{
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final Number userID = dbIntegrityService.updateUser(user);

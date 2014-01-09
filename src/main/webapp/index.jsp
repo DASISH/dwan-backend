@@ -39,10 +39,10 @@
         POST api/notebooks/_nid_	Creates a new annotation in _nid_. The content of an annotation is given in the request body. In fact this is a short cut of two actions:<br>
         DELETE <form action="api/notebooks/_nid_" method="DELETE"><input type="submit" /></form>api/notebooks/_nid_	Delete _nid_. Annotations stay, they just lose connection to _nid_.<br> 
  -->
-     <br> 
+    <!--  <br> 
      <a href="spring_security_login"> Login</a> <br> 
      <br> 
-     <a href="j_spring_security_logout"> Logout</a> <br> 
+     <a href="j_spring_security_logout"> Logout</a> <br> -->
      <br> 
       <b>Test URI-s</b><br>
       <b>All output xml-s are valid w.r.t. the schema</b><br>

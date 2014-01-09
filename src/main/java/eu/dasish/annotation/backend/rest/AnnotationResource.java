@@ -54,7 +54,6 @@ import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Providers;
 import javax.xml.bind.JAXBElement;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -104,7 +103,6 @@ public class AnnotationResource {
     @GET
     @Produces(MediaType.TEXT_XML)
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}")
-    @Secured("ROLE_USER")
     @Transactional(readOnly = true)
     public JAXBElement<Annotation> getAnnotation(@PathParam("annotationid") String ExternalIdentifier) throws IOException {
         URI baseURI = uriInfo.getBaseUri();
@@ -134,7 +132,6 @@ public class AnnotationResource {
     @GET
     @Produces(MediaType.TEXT_XML)
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}/targets")
-    @Secured("ROLE_USER")
     @Transactional(readOnly = true)
     public JAXBElement<ReferenceList> getAnnotationTargets(@PathParam("annotationid") String ExternalIdentifier) throws IOException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
@@ -159,7 +156,6 @@ public class AnnotationResource {
     @GET
     @Produces(MediaType.TEXT_XML)
     @Path("")
-    @Secured("ROLE_USER")
     @Transactional(readOnly = true)
     public JAXBElement<AnnotationInfoList> getFilteredAnnotations(@QueryParam("link") String link,
             @QueryParam("text") String text,
@@ -182,7 +178,6 @@ public class AnnotationResource {
     @GET
     @Produces(MediaType.TEXT_XML)
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}/permissions")
-    @Secured("ROLE_USER")
     @Transactional(readOnly = true)
     public JAXBElement<UserWithPermissionList> getAnnotationPermissions(@PathParam("annotationid") String ExternalIdentifier) throws IOException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
@@ -207,7 +202,6 @@ public class AnnotationResource {
     // TODO: how to return the status code? 
     @DELETE
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}")
-    @Secured("ROLE_USER")
     public String deleteAnnotation(@PathParam("annotationid") String externalIdentifier) throws IOException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(externalIdentifier));
@@ -233,7 +227,6 @@ public class AnnotationResource {
     @Consumes(MediaType.APPLICATION_XML)
     @Produces(MediaType.APPLICATION_XML)
     @Path("")
-    @Secured("ROLE_USER")
     public JAXBElement<ResponseBody> createAnnotation(Annotation annotation) throws IOException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(httpServletRequest.getRemoteUser());
@@ -248,7 +241,6 @@ public class AnnotationResource {
     @Consumes(MediaType.APPLICATION_XML)
     @Produces(MediaType.APPLICATION_XML)
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}")
-    @Secured("ROLE_USER")
     public JAXBElement<ResponseBody> updateAnnotation(@PathParam("annotationid") String externalIdentifier, Annotation annotation) throws IOException {
         String path = uriInfo.getBaseUri().toString();
         dbIntegrityService.setServiceURI(path);
@@ -280,7 +272,6 @@ public class AnnotationResource {
     @Consumes(MediaType.APPLICATION_XML)
     @Produces(MediaType.APPLICATION_XML)
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}/body")
-    @Secured("ROLE_USER")
     public JAXBElement<ResponseBody> updateAnnotationBody(@PathParam("annotationid") String externalIdentifier, AnnotationBody annotationBody) throws IOException {
         String path = uriInfo.getBaseUri().toString();
         dbIntegrityService.setServiceURI(path);
@@ -306,7 +297,6 @@ public class AnnotationResource {
     @Consumes(MediaType.APPLICATION_XML)
     @Produces(MediaType.APPLICATION_XML)
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}/permissions/{userid: " + BackendConstants.regExpIdentifier + "}")
-    @Secured("ROLE_USER")
     public String updatePermission(@PathParam("annotationid") String annotationExternalId, @PathParam("userid") String userExternalId, Permission permission) throws IOException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(annotationExternalId));
@@ -334,7 +324,6 @@ public class AnnotationResource {
     @Consumes(MediaType.APPLICATION_XML)
     @Produces(MediaType.APPLICATION_XML)
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}/permissions/")
-    @Secured("ROLE_USER")
     public JAXBElement<ResponseBody> updatePermissions(@PathParam("annotationid") String annotationExternalId, UserWithPermissionList permissions) throws IOException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(annotationExternalId));
