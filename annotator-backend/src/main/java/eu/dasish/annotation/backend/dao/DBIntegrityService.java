@@ -234,7 +234,7 @@ public interface DBIntegrityService{
     public Permission  getPermission(Number annotationID, Number userID);
     
     
-    
+    public boolean userHasAdminRights(Number userID);
     
     /**
      * UPDATERS

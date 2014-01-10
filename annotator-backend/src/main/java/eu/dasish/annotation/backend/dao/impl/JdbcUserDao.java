@@ -130,6 +130,20 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
        return  (result.size() > 0) ? result.get(0) :null; 
     }
     
+    @Override
+    public boolean hasAdminRights(Number internalID){
+       StringBuilder requestDB  = new StringBuilder("SELECT ");
+       requestDB.append(admin_rights).append(" FROM ").append(principalTableName).append(" WHERE ").append(principal_id).append("= ? LIMIT 1");
+       List<Boolean> result = getSimpleJdbcTemplate().query(requestDB.toString(), adminRightsRowMapper, internalID);
+       return  (result.size() > 0) ? result.get(0).booleanValue() :false;    
+    }
+     private final RowMapper<Boolean> adminRightsRowMapper = new RowMapper<Boolean>() {
+        @Override
+        public Boolean mapRow(ResultSet rs, int rowNumber) throws SQLException {
+            return new Boolean(rs.getBoolean(admin_rights));
+        }
+    };
+    
      ///////////////////// ADDERS ////////////////////////////
      public Number addUser(User user, String remoteID){
         UUID externalIdentifier = UUID.randomUUID();
@@ -152,8 +166,8 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
         StringBuilder sql = new StringBuilder("UPDATE ");
         sql.append(principalTableName).append(" SET ").
                 append(e_mail).append("= '").append(user.getEMail()).append("',").
-                append(principal_name).append("= '").append(user.getDisplayName()).append("',").
-                append("' WHERE ").append(principal_id).append("= ?");
+                append(principal_name).append("= '").append(user.getDisplayName()).append("' ").
+                append(" WHERE ").append(principal_id).append("= ?");
         int affectedRows = getSimpleJdbcTemplate().update(sql.toString(), principalID);
         return principalID;
       }

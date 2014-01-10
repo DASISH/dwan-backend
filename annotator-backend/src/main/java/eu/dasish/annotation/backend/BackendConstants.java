@@ -26,4 +26,5 @@ public class BackendConstants {
     public static final String regExpIdentifier = "[a-zA-Z0-9_-]*";
     public static final String regExpEmail = regExpIdentifier+"@"+regExpIdentifier;
     public static final String fragmentDescriptors = "[a-zA-Z0-9_-(),#%]*";
+    public static final String regExpRemoteId = regExpIdentifier+"|"+regExpEmail;
 }
