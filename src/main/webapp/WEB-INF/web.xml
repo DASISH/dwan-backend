@@ -65,7 +65,7 @@ see implementation details http://jersey.java.net/nonav/documentation/latest/jax
     </servlet-mapping>
     
     <!-- lux16, 17, corpus 1 (shibbolized) -->
-    <!-- <filter>
+   <!--  <filter>
         <filter-name>AAIFilter</filter-name>
         <filter-class>de.mpg.aai.shhaa.AuthFilter</filter-class>
     </filter>
@@ -75,8 +75,7 @@ see implementation details http://jersey.java.net/nonav/documentation/latest/jax
     </filter-mapping> -->
     
     
-    <!-- localhost auth experiments -->
-    
+    <!-- localhost auth  -->
     
     <security-constraint>
         <display-name>Backend localhost</display-name>
@@ -100,6 +99,6 @@ see implementation details http://jersey.java.net/nonav/documentation/latest/jax
         <description> The role that is required to log in to the Application
         </description>
         <role-name>tomcat</role-name>
-    </security-role>
+    </security-role> 
     
 </web-app>
