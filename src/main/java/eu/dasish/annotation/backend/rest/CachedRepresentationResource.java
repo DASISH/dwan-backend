@@ -71,13 +71,20 @@ public class CachedRepresentationResource {
     @Path("{cachedid: " + BackendConstants.regExpIdentifier + "}/metadata")
     @Transactional(readOnly = true)
     public JAXBElement<CachedRepresentationInfo> getCachedRepresentationInfo(@PathParam("cachedid") String externalId) throws SQLException, IOException {
-        dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
-        final Number cachedID = dbIntegrityService.getCachedRepresentationInternalIdentifier(UUID.fromString(externalId));
-        if (cachedID != null) {
-            final CachedRepresentationInfo cachedInfo = dbIntegrityService.getCachedRepresentationInfo(cachedID);
-            return new ObjectFactory().createCashedRepresentationInfo(cachedInfo);
+
+        final Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(httpServletRequest.getRemoteUser());
+        if (remoteUserID != null) {
+            dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
+            final Number cachedID = dbIntegrityService.getCachedRepresentationInternalIdentifier(UUID.fromString(externalId));
+            if (cachedID != null) {
+                final CachedRepresentationInfo cachedInfo = dbIntegrityService.getCachedRepresentationInfo(cachedID);
+                return new ObjectFactory().createCashedRepresentationInfo(cachedInfo);
+            } else {
+                httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The cached representation with the given id is not found in the database");
+                return null;
+            }
         } else {
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The cached representation with the given id is not found in the database");
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged in user is not found in the database");
             return null;
         }
     }
@@ -87,15 +94,21 @@ public class CachedRepresentationResource {
     @Path("{cachedid: " + BackendConstants.regExpIdentifier + "}/content")
     @Transactional(readOnly = true)
     public BufferedImage getCachedRepresentationContent(@PathParam("cachedid") String externalId) throws SQLException, IOException {
-        dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
-        final Number cachedID = dbIntegrityService.getCachedRepresentationInternalIdentifier(UUID.fromString(externalId));
-        if (cachedID != null) {
-            InputStream dbRespond = dbIntegrityService.getCachedRepresentationBlob(cachedID);
-            ImageIO.setUseCache(false);
-            BufferedImage result = ImageIO.read(dbRespond);
-            return result;
+        final Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(httpServletRequest.getRemoteUser());
+        if (remoteUserID != null) {
+            dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
+            final Number cachedID = dbIntegrityService.getCachedRepresentationInternalIdentifier(UUID.fromString(externalId));
+            if (cachedID != null) {
+                InputStream dbRespond = dbIntegrityService.getCachedRepresentationBlob(cachedID);
+                ImageIO.setUseCache(false);
+                BufferedImage result = ImageIO.read(dbRespond);
+                return result;
+            } else {
+                httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The cached representation  with the given id is not found in the database");
+                return null;
+            }
         } else {
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The cached representation  with the given id is not found in the database");
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged in user is not found in the database");
             return null;
         }
     }

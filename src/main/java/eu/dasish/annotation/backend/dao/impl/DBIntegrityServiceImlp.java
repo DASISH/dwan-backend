@@ -347,6 +347,11 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         return userDao.getUserInternalIDFromRemoteID(remoteID);
     }
 
+    @Override
+    public boolean userHasAdminRights(Number userID){
+       return userDao.hasAdminRights(userID); 
+    }
+    
     ///// UPDATERS /////////////////
     @Override
     public int updateAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission) {

@@ -31,11 +31,16 @@ public interface UserDao extends ResourceDao{
      
      public User getUserByInfo(String  eMail);
      
+     // where is it used?
      public boolean userIsInUse(Number userID);
      
+     // where is it used??
      public boolean userExists(User user);
      
+     public boolean hasAdminRights(Number internalID);
+     
      public String getRemoteID(Number internalID);
+     
      
      public Number getUserInternalIDFromRemoteID(String remoteID);
      

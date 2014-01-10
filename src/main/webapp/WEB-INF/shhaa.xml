@@ -40,8 +40,6 @@
 	    </fallback>
 	    <sso action="lI">https://lux16.mpi.nl/Shibboleth.sso/Login</sso> 
 	    <slo action="lO">https://lux16.mpi.nl/Shibboleth.sso/Logout</slo> 
-            <!-- <sso action="lI">http://localhost:8080/annotator-backend/api/index.jsp</sso> 
-	    <slo action="lO">http://localhost:8080/annotator-backend/api/index.jsp</slo>  -->
 	</authentication>
 	
 	
@@ -54,7 +52,10 @@
 
 	
 	<authorization>
-	    <location  target="/hvwkejfhvwkehf/*" />
+            <!-- lux16, 17, corpus1 -->
+            <location  target="/*" />
+            <!-- localhost -->
+	    <location  target="/dummy/*" />
 	</authorization>
 	
 	
