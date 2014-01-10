@@ -140,7 +140,7 @@ public class UserResource {
     @POST
     @Consumes(MediaType.APPLICATION_XML)
     @Produces(MediaType.APPLICATION_XML)
-    @Path("{remoteId: " + BackendConstants.regExpRemoteId+ "}")
+    @Path("{remoteId: " + BackendConstants.regExpRemoteId + "}")
     public JAXBElement<User> addUser(@PathParam("remoteId") String remoteId, User user) throws SQLException, IOException {
         final Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(httpServletRequest.getRemoteUser());
         if (remoteUserID != null) {
@@ -148,10 +148,9 @@ public class UserResource {
                 dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
                 final Number userID = dbIntegrityService.addUser(user, remoteId);
                 if (userID != null) {
-                final User addedUser = dbIntegrityService.getUser(userID);
-                return new ObjectFactory().createUser(addedUser);
-                }
-                else {
+                    final User addedUser = dbIntegrityService.getUser(userID);
+                    return new ObjectFactory().createUser(addedUser);
+                } else {
                     httpServletResponse.sendError(HttpServletResponse.SC_CONFLICT, "The user with the given e-mail already exists in the database");
                     return null;
                 }
@@ -192,8 +191,6 @@ public class UserResource {
         }
     }
 
-    
-    
     @DELETE
     @Path("{userId: " + BackendConstants.regExpRemoteId + "}")
     public String deleteUser(@PathParam("userId") String externalIdentifier) throws IOException {
@@ -204,7 +201,7 @@ public class UserResource {
                 final Number userID = dbIntegrityService.getUserInternalIdentifier(UUID.fromString(externalIdentifier));
                 if (userID != null) {
                     final Integer result = dbIntegrityService.deleteUser(userID);
-                    return "There is "+ result.toString()+" row deleted";
+                    return "There is " + result.toString() + " row deleted";
                 } else {
                     httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The user with the given id is not found in the database");
                     return null;
@@ -218,11 +215,7 @@ public class UserResource {
             return null;
         }
     }
-    }
-    
-    
-    
-    
+
     private boolean ifLoggedIn(Number userID) {
         return httpServletRequest.getRemoteUser().equals(dbIntegrityService.getUserRemoteID(userID));
     }
