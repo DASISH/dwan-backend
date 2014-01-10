@@ -72,7 +72,7 @@ public class UserResource {
 
     @GET
     @Produces(MediaType.TEXT_XML)
-    @Path("{userid: " + BackendConstants.regExpRemoteId + "}")
+    @Path("{userid}")
     @Transactional(readOnly = true)
     public JAXBElement<User> getUser(@PathParam("userid") String ExternalIdentifier) throws SQLException, IOException {
         final Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(httpServletRequest.getRemoteUser());
@@ -115,7 +115,7 @@ public class UserResource {
 
     @GET
     @Produces(MediaType.TEXT_XML)
-    @Path("{userid: " + BackendConstants.regExpIdentifier + "}/current")
+    @Path("{userid}/current")
     @Transactional(readOnly = true)
     public JAXBElement<CurrentUserInfo> getCurrentUserInfo(@PathParam("userid") String ExternalIdentifier) throws IOException {
         final Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(httpServletRequest.getRemoteUser());
@@ -140,7 +140,7 @@ public class UserResource {
     @POST
     @Consumes(MediaType.APPLICATION_XML)
     @Produces(MediaType.APPLICATION_XML)
-    @Path("{remoteId: " + BackendConstants.regExpRemoteId + "}")
+    @Path("{remoteId}")
     public JAXBElement<User> addUser(@PathParam("remoteId") String remoteId, User user) throws SQLException, IOException {
         final Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(httpServletRequest.getRemoteUser());
         if (remoteUserID != null) {
@@ -192,7 +192,7 @@ public class UserResource {
     }
 
     @DELETE
-    @Path("{userId: " + BackendConstants.regExpRemoteId + "}")
+    @Path("{userId}")
     public String deleteUser(@PathParam("userId") String externalIdentifier) throws IOException {
         final Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(httpServletRequest.getRemoteUser());
         if (remoteUserID != null) {
