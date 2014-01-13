@@ -55,36 +55,18 @@ see implementation details http://jersey.java.net/nonav/documentation/latest/jax
         <servlet-name>annotator-backend</servlet-name>
         <url-pattern>/api/*</url-pattern>
     </servlet-mapping>
-    <!--    <servlet-mapping>
-        <servlet-name>ServletAdaptor</servlet-name>
-        <url-pattern>/webresources/*</url-pattern>
-    </servlet-mapping>-->
+    
     <servlet-mapping>
         <servlet-name>ServletAdaptor</servlet-name>
         <url-pattern>/webresources/*</url-pattern>
     </servlet-mapping>
     
-    <security-constraint>
-        <display-name>Backend localhost</display-name>
-        <web-resource-collection>
-            <web-resource-name> Backend rest service </web-resource-name>
-            <description />
-            <url-pattern>/*</url-pattern>
-            <http-method>GET</http-method>
-            <http-method>POST</http-method>
-            <http-method>PUT</http-method>
-            <http-method>DELETE</http-method>
-        </web-resource-collection>
-        <auth-constraint>
-            <role-name>tomcat</role-name>
-        </auth-constraint>
-    </security-constraint>
-    <login-config>
-        <auth-method>BASIC</auth-method>
-    </login-config>
-    <security-role>
-        <description> The role that is required to log in to the Application
-        </description>
-        <role-name>tomcat</role-name>
-    </security-role> 
+   <filter>
+        <filter-name>AAIFilter</filter-name>
+        <filter-class>de.mpg.aai.shhaa.AuthFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>AAIFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping> 
 </web-app>

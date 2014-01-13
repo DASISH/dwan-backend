@@ -3,3 +3,8 @@ January 2, 2014: the first deployment on lux16.
 January 3, 2014: files README, INSTALL, UPDATE, CHANGES are added to the 
 deployment tar-ball which is from now on is generated using maven assembly 
 plug-in.
+
+January 9-10, 2014. The spring-security settings (authentication and authorisation) 
+are removed. Shibboleth sshaa.xml is added,  and web.xml is adapted. The boolean  column admin_rights 
+is added to the table "principal" in the DB. Adding, updating and deleting a user 
+in the DB (only by admin) is debugged and tested.

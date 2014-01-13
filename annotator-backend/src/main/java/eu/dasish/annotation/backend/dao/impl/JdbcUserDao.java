@@ -96,7 +96,7 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
     
     @Override 
     public boolean userExists(User user){
-        String emailCriterion = user.getEMail();
+        String emailCriterion = user.getEMail().toLowerCase();
         StringBuilder sqlTargets  = new StringBuilder("SELECT ");
         sqlTargets.append(principal_id).append(" FROM ").append(principalTableName).append(" WHERE ").append(e_mail).append("= ? LIMIT 1");
         List<Number> resultTargets = getSimpleJdbcTemplate().query(sqlTargets.toString(), principalIDRowMapper, emailCriterion);
@@ -151,7 +151,7 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("externalId", newExternalIdentifier);
         params.put("principalName", user.getDisplayName());
-        params.put("email", user.getEMail());
+        params.put("email", user.getEMail().toLowerCase());
         params.put("remoteID", remoteID);
         StringBuilder sql = new StringBuilder("INSERT INTO ");
         sql.append(principalTableName).append("(").append(external_id).append(",").append(principal_name).append(",").append(e_mail).append(",").append(remote_id).append(" ) VALUES (:externalId, :principalName, :email, :remoteID)");
@@ -165,7 +165,7 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
         Number principalID = this.getInternalIDFromURI(user.getURI());
         StringBuilder sql = new StringBuilder("UPDATE ");
         sql.append(principalTableName).append(" SET ").
-                append(e_mail).append("= '").append(user.getEMail()).append("',").
+                append(e_mail).append("= '").append(user.getEMail().toLowerCase()).append("',").
                 append(principal_name).append("= '").append(user.getDisplayName()).append("' ").
                 append(" WHERE ").append(principal_id).append("= ?");
         int affectedRows = getSimpleJdbcTemplate().update(sql.toString(), principalID);
