@@ -49,6 +49,8 @@ public interface UserDao extends ResourceDao{
      public Number addUser(User user, String remoteID);
      
      public int deleteUser(Number intenralID);
+     
+     public int deleteUserSafe(Number internalID);
   
      
 }

@@ -97,7 +97,6 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         return annotationDao.getExternalID(annotationID);
     }
 
-    
     @Override
     public Number getTargetInternalIdentifier(UUID externalID) {
         return targetDao.getInternalID(externalID);
@@ -138,7 +137,6 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         return cachedRepresentationDao.getExternalID(cachedID);
     }
 
-    
     @Override
     public Annotation getAnnotation(Number annotationID) {
         if (annotationID != null) {
@@ -348,10 +346,10 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     }
 
     @Override
-    public boolean userHasAdminRights(Number userID){
-       return userDao.hasAdminRights(userID); 
+    public boolean userHasAdminRights(Number userID) {
+        return userDao.hasAdminRights(userID);
     }
-    
+
     ///// UPDATERS /////////////////
     @Override
     public int updateAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission) {
@@ -365,14 +363,16 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         int result = 0;
         for (UserWithPermission userWithPermission : usersWithPermissions) {
             Number userID = userDao.getInternalID(UUID.fromString(userDao.stringURItoExternalID(userWithPermission.getRef())));
-            Permission permission = userWithPermission.getPermission();
-            Permission currentPermission = annotationDao.getPermission(annotationID, userID);
-            if (currentPermission != null) {
-                if (!permission.value().equals(currentPermission.value())) {
-                    result = result + annotationDao.updateAnnotationPrincipalPermission(annotationID, userID, permission);
+            if (userID != null) {
+                Permission permission = userWithPermission.getPermission();
+                Permission currentPermission = annotationDao.getPermission(annotationID, userID);
+                if (currentPermission != null) {
+                    if (!permission.value().equals(currentPermission.value())) {
+                        result = result + annotationDao.updateAnnotationPrincipalPermission(annotationID, userID, permission);
+                    }
+                } else {
+                    result = result + annotationDao.addAnnotationPrincipalPermission(annotationID, userID, permission);
                 }
-            } else {
-                result = result + annotationDao.addAnnotationPrincipalPermission(annotationID, userID, permission);
             }
         }
 
@@ -391,17 +391,14 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         int addedPrincipalsPermissions = addPrincipalsPermissions(annotation, annotationID);
         return updatedAnnotations;
     }
-    
-     
+
     // TODO: unit test
     @Override
     public int updateAnnotationBody(Number internalID, AnnotationBody annotationBody) {
         String[] body = annotationDao.retrieveBodyComponents(annotationBody);
-        return annotationDao.updateAnnotationBody(internalID, body[0], body[1], annotationBody.getXmlBody()!=null);
+        return annotationDao.updateAnnotationBody(internalID, body[0], body[1], annotationBody.getXmlBody() != null);
     }
-    
-   
-    
+
     /////////////// ADDERS  /////////////////////////////////
     @Override
     public Number[] addCachedForTarget(Number targetID, String fragmentDescriptor, CachedRepresentationInfo cachedInfo, InputStream cachedBlob) {
@@ -553,8 +550,8 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         }
         return addedPermissions;
     }
-    
-     private TargetInfo getTargetInfoFromTarget(Target target) {
+
+    private TargetInfo getTargetInfoFromTarget(Target target) {
         TargetInfo targetInfo = new TargetInfo();
         targetInfo.setRef(target.getURI());
         targetInfo.setLink(target.getLink());

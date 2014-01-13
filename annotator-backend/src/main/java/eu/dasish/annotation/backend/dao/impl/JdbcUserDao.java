@@ -145,6 +145,7 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
     };
     
      ///////////////////// ADDERS ////////////////////////////
+     @Override
      public Number addUser(User user, String remoteID){
         UUID externalIdentifier = UUID.randomUUID();
         String newExternalIdentifier = externalIdentifier.toString();
@@ -160,7 +161,7 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
      }
      
      ////////// UPDATERS ///////////////////////
-     
+      @Override
       public Number updateUser(User user){
         Number principalID = this.getInternalIDFromURI(user.getURI());
         StringBuilder sql = new StringBuilder("UPDATE ");
@@ -174,7 +175,17 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
      
      
      ////// DELETERS ////////////
+     @Override
      public int deleteUser(Number internalID){
+           
+        StringBuilder sql = new StringBuilder("DELETE FROM ");
+        sql.append(principalTableName).append(" where ").append(principal_id).append(" = ?");
+        return getSimpleJdbcTemplate().update(sql.toString(), internalID);
+
+     }
+     
+    @Override 
+    public int deleteUserSafe(Number internalID){
           if (userIsInUse(internalID)) {
             return 0;
         }        
@@ -183,5 +194,4 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
         return getSimpleJdbcTemplate().update(sql.toString(), internalID);
 
      }
-    
 }
