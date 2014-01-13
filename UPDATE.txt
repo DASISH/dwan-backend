@@ -1,6 +1,30 @@
-Take the tar-ball of the new  version XXX, and follow the standard MPI deployment procedure
-Consult the instructions from INSTALL.txt about placing war file. 
+1. Placing tarball: as always, take the tar-ball of the new  version 1.1, and follow the 
+standard MPI deployment procedure.  Consult the instructions from INSTALL.txt 
+about placing war file if you haveforgotte.
 
-For testing consult "Testing" section of INSTALL.txt. 
+2. Adjusting shhaa.xml:  you need to set "sso action" and "slo action". E.g.
+for lux16 they look as follows:
+<sso action="lI">https://lux16.mpi.nl/Shibboleth.sso/Login</sso> 
+<slo action="lO">https://lux16.mpi.nl/Shibboleth.sso/Logout</slo> 
+For the other servers the sysadmins should know.
+
+3. This time the dasish database on lux17 is changed because we removed spring-security 
+related tables. You have 2 options. Option A: remove the databse and copy the database from lux16
+to lux17. Option B: remove the tables "users" and "authorities" from the databse, and add
+a boolean column "admin_rights" to the table "principal", with the default values "false";
+and set Olha's admin_rights to "true".
+
+4. If the application is succesfully deployed, you will get the jsp page after requesting
+
+<server uri>/ds/webannotator
+
+On this web-page there is a number of test GET requests there which you can send if you want 
+to check if it works. If you are not in the DB yet, any request
+will end up with the Server  error message "the logged-in-user". Ask Olha to add you 
+providing with your shibboleth  remote ID. If you are in the DB you should be able to perform any request, except may be
+getting annotation. If you have read access to the test annotation, 
+you will get it. Ask Olha to test POST, PUT, DELETE or do it youself consulting "Testing" 
+section in INSTAL.txt.
+
 
 

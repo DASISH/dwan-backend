@@ -246,7 +246,7 @@
             <artifactId>postgresql</artifactId>
             <version>8.4-702.jdbc4</version>
         </dependency>
-       <!-- <dependency>
+        <!-- <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-core</artifactId>
             <version>${spring.version}</version>
@@ -283,6 +283,48 @@
             </exclusions>
         </dependency>
     </dependencies>
+    
+    <profiles>
+        <profile>
+            <id>lux16</id>
+            <properties>
+                <serviceRootUrl>http://lux16.mpi.nl/ds/webannotator/</serviceRootUrl>
+                <!-- Will be inserted in context.xml -->
+                <shibLI>http://lux16.mpi.nl/Shibboleth.sso/Login</shibLI>
+                <!-- Shibboleth login URI for SHHAA -->
+                <shibLO>http://lux16.mpi.nl/Shibboleth.sso/Logout</shibLO>
+                <!-- Shibboleth logout URI for SHHAA -->
+                <webXmlPath>src/main/webapp/WEB-INF/web-shib.xml</webXmlPath>
+                <!-- web.xml for shibboleth authentication -->
+            </properties>
+        </profile>
+        
+        <profile>
+            <id>lux17</id>
+            <properties>
+                <serviceRootUrl>http://lux17.mpi.nl/ds/webannotator/</serviceRootUrl>
+                <!-- Will be inserted in context.xml -->
+                <shibLI>http://lux17.mpi.nl/Shibboleth.sso/Login</shibLI>
+                <!-- Shibboleth login URI for SHHAA -->
+                <shibLO>http://lux17.mpi.nl/Shibboleth.sso/Logout</shibLO>
+                <!-- Shibboleth logout URI for SHHAA -->
+                <webXmlPath>src/main/webapp/WEB-INF/web-shib.xml</webXmlPath>
+                <!-- web.xml for shibboleth authentication -->
+            </properties>
+        </profile>
+        
+        <profile>
+            <id>localhost</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <serviceRootUrl>localhost:8080/annotator-backend/api/</serviceRootUrl>
+                <webXmlPath>src/main/webapp/WEB-INF/web.xml</webXmlPath>
+            </properties>
+        </profile>
+    </profiles>
+        
     <properties>
         <jersey.version>1.17.1</jersey.version>
         <spring.version>3.2.0.RELEASE</spring.version>
@@ -293,4 +335,6 @@
         <plugin.license.copyrightYear>2013</plugin.license.copyrightYear>
         <project.version>1.1</project.version>
     </properties>
+    
+    
 </project>
