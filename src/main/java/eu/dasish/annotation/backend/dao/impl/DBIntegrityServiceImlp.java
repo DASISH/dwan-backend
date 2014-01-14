@@ -385,7 +385,6 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         int deletedPrinsipalsPermissions = annotationDao.deleteAnnotationPrincipalPermissions(annotationID);
         int addedTargets = addTargets(annotation, annotationID);
         int addedPrincipalsPermissions = addPrincipalsPermissions(annotation.getPermissions().getUserWithPermission(), annotationID);
-        int addedOwner = annotationDao.addAnnotationPrincipalPermission(annotationID, userID, Permission.OWNER);
         return updatedAnnotations;
     }
 
