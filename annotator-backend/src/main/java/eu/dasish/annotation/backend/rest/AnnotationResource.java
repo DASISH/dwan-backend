@@ -100,8 +100,6 @@ public class AnnotationResource {
 
     public AnnotationResource() {
     }
-    
-    
 
     @GET
     @Produces(MediaType.TEXT_XML)
@@ -166,9 +164,6 @@ public class AnnotationResource {
     }
 // TODO Unit test 
 
-   
-    
-    
     @GET
     @Produces(MediaType.TEXT_XML)
     @Path("")
@@ -254,12 +249,9 @@ public class AnnotationResource {
             return null;
         }
     }
-    
+
     // TODO: how to return the status code? 
-
-    
 ///////////////////////////////////////////////////////
-
     @POST
     @Consumes(MediaType.APPLICATION_XML)
     @Produces(MediaType.APPLICATION_XML)
@@ -287,15 +279,20 @@ public class AnnotationResource {
         String path = uriInfo.getBaseUri().toString();
         dbIntegrityService.setServiceURI(path);
         String annotationURI = annotation.getURI();
-        
+
         if (!(path + "annotations/" + externalIdentifier).equals(annotationURI)) {
             httpServletResponse.sendError(HttpServletResponse.SC_CONFLICT, "Wrong request: the external annotation ID and the annotation ID from the request body do not match. Correct the request and resend.");
             return null;
         }
-        
+
         List<UserWithPermission> permissions = annotation.getPermissions().getUserWithPermission();
-        
-        
+        String ownerURI = annotation.getOwnerRef();
+        if (!ownerIsListed(ownerURI, permissions)) {
+            httpServletResponse.sendError(HttpServletResponse.SC_CONFLICT, "Wrong request body: the  owner URI's is not listed in the list of permissions as 'owner'. Correct the request and resend.");
+            return null;
+        }
+
+
         final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(externalIdentifier));
         if (annotationID != null) {
             final Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(httpServletRequest.getRemoteUser());
@@ -517,6 +514,13 @@ public class AnnotationResource {
             return null;
         }
     }
-    
-    
+
+    private boolean ownerIsListed(String uri, List<UserWithPermission> permissions) {
+        for (UserWithPermission permissionPair : permissions) {
+            if (permissionPair.getRef().equals(uri) && permissionPair.getPermission().equals(Permission.OWNER)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
