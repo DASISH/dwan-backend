@@ -77,7 +77,7 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
 
     @Override
     public List<Notebook> getUsersNotebooks(UUID userID) {
-        String sql = "SELECT " + notebookStar + " FROM " + notebookTableName + ", " + principalTableName + " where " + principal_id + " = " + owner_id + " and " + principalExternal_id + " = ?";
+        String sql = "SELECT " + notebookStar + " FROM " + notebookTableName + ", " + principalTableName + " where " + principal_id + " = " + notebookOwner_id + " and " + principalExternal_id + " = ?";
         return getSimpleJdbcTemplate().query(sql, notebookRowMapper, userID.toString());
     }
     
@@ -105,7 +105,7 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
     public UUID addNotebook(UUID userID, String title) {
         try {
             final UUID externalIdentifier = UUID.randomUUID();
-            String sql = "INSERT INTO " + notebookTableName + " (" + external_id + ", " + this.title + "," + owner_id + ") VALUES (:notebookId, :title, (SELECT " + principal_id + " FROM " + principalTableName + " WHERE " + principalExternal_id + " = :userID))";
+            String sql = "INSERT INTO " + notebookTableName + " (" + external_id + ", " + this.title + "," + notebookOwner_id + ") VALUES (:notebookId, :title, (SELECT " + principal_id + " FROM " + principalTableName + " WHERE " + principalExternal_id + " = :userID))";
             Map<String, Object> params = new HashMap<String, Object>();
             params.put("notebookId", externalIdentifier.toString());
             params.put("userID", userID.toString());

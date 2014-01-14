@@ -54,12 +54,12 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     final static protected String notebook_id = "notebook_id";
     final static protected String target_id = "target_id";
     final static protected String external_id = "external_id";
-    final static protected String owner_id = "owner_id";
     final static protected String headline = "headline";
     final static protected String body_text = "body_text";
     final static protected String body_mimetype = "body_mimetype";
     final static protected String title = "title";
     final static protected String principal_id = "principal_id";
+    final static protected String notebookOwner_id = "owner_id";
     final static protected String last_modified = "last_modified";
     final static protected String version = "version";
     final static protected String permission = "permission_";
@@ -84,7 +84,6 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     final static protected String notebookNotebook_id = notebookTableName + "." + notebook_id;
     final static protected String notebookTitle = notebookTableName + "." + title;
     final static protected String notebookExternal_id = notebookTableName + "." + external_id;
-    final static protected String notebookOwner_id = notebookTableName + "." + owner_id;
     final static protected String notebooksAnnotationsTableNameAnnotation_id = notebooksAnnotationsTableName + "." + annotation_id;
     final static protected String principalPrincipal_id = principalTableName + "." + principal_id;
     final static protected String principalExternal_id = principalTableName + "." + external_id;
@@ -199,10 +198,11 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
             return rs.getInt(principal_id);
         }
     };
-    protected final RowMapper<Number> ownerIDRowMapper = new RowMapper<Number>() {
+   
+    protected final RowMapper<Number> notebookOwnerIDRowMapper = new RowMapper<Number>() {
         @Override
         public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            return rs.getInt(owner_id);
+            return rs.getInt(notebookOwner_id);
         }
     };
 

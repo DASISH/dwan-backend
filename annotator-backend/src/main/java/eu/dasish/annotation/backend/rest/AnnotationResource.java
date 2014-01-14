@@ -31,6 +31,7 @@ import eu.dasish.annotation.schema.PermissionActionName;
 import eu.dasish.annotation.schema.UserWithPermissionList;
 import eu.dasish.annotation.schema.ReferenceList;
 import eu.dasish.annotation.schema.ResponseBody;
+import eu.dasish.annotation.schema.UserWithPermission;
 import java.io.IOException;
 import java.net.URI;
 import java.sql.Timestamp;
@@ -99,6 +100,8 @@ public class AnnotationResource {
 
     public AnnotationResource() {
     }
+    
+    
 
     @GET
     @Produces(MediaType.TEXT_XML)
@@ -163,6 +166,9 @@ public class AnnotationResource {
     }
 // TODO Unit test 
 
+   
+    
+    
     @GET
     @Produces(MediaType.TEXT_XML)
     @Path("")
@@ -248,6 +254,10 @@ public class AnnotationResource {
             return null;
         }
     }
+    
+    // TODO: how to return the status code? 
+
+    
 ///////////////////////////////////////////////////////
 
     @POST
@@ -277,22 +287,26 @@ public class AnnotationResource {
         String path = uriInfo.getBaseUri().toString();
         dbIntegrityService.setServiceURI(path);
         String annotationURI = annotation.getURI();
+        
         if (!(path + "annotations/" + externalIdentifier).equals(annotationURI)) {
-            logger.error("Wrong request: the external annotation ID and the annotation ID from the request body do not match.");
-            logger.error("Will do nothing.");
+            httpServletResponse.sendError(HttpServletResponse.SC_CONFLICT, "Wrong request: the external annotation ID and the annotation ID from the request body do not match. Correct the request and resend.");
             return null;
         }
+        
+        List<UserWithPermission> permissions = annotation.getPermissions().getUserWithPermission();
+        
+        
         final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(externalIdentifier));
         if (annotationID != null) {
             final Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(httpServletRequest.getRemoteUser());
             if (userID != null) {
-                if (canWrite(userID, annotationID)) {
+                if (isOwner(userID, annotationID)) {
                     int updatedRows = dbIntegrityService.updateUsersAnnotation(userID, annotation);
                     logger.info("updateAnnotation method: OK");
                     return new ObjectFactory().createResponseBody(makeAnnotationResponseEnvelope(annotationID));
 
                 } else {
-                    httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+                    httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Only owner can update the annotation fully (incl. permissions). Only writer can update the annotation's body.");
                     return null;
                 }
             } else {
@@ -448,7 +462,7 @@ public class AnnotationResource {
     private boolean canRead(Number userID, Number annotationID) {
         final Permission permission = dbIntegrityService.getPermission(annotationID, userID);
         if (permission != null) {
-            return (permission.value() == Permission.OWNER.value() || permission.value() == Permission.WRITER.value() || permission.value() == Permission.READER.value());
+            return (permission.value().equals(Permission.OWNER.value()) || permission.value().equals(Permission.WRITER.value()) || permission.value().equals(Permission.READER.value()));
         } else {
             return false;
         }
@@ -457,7 +471,7 @@ public class AnnotationResource {
     private boolean canWrite(Number userID, Number annotationID) {
         final Permission permission = dbIntegrityService.getPermission(annotationID, userID);
         if (permission != null) {
-            return (permission.value() == Permission.OWNER.value() || permission.value() == Permission.WRITER.value());
+            return (permission.value().equals(Permission.OWNER.value()) || permission.value().equals(Permission.WRITER.value()));
         } else {
             return false;
         }
@@ -466,7 +480,7 @@ public class AnnotationResource {
     private boolean isOwner(Number userID, Number annotationID) {
         final Permission permission = dbIntegrityService.getPermission(annotationID, userID);
         if (permission != null) {
-            return (permission.value() == Permission.OWNER.value());
+            return (permission.value().equals(Permission.OWNER.value()));
         } else {
             return false;
         }
@@ -474,18 +488,18 @@ public class AnnotationResource {
 
     private String[] makeAccessModeChain(String accessMode) {
         if (accessMode != null) {
-            if (accessMode == Permission.OWNER.value()) {
+            if (accessMode.contains(Permission.OWNER.value())) {
                 String[] result = new String[1];
                 result[0] = accessMode;
                 return result;
             } else {
-                if (accessMode == Permission.WRITER.value()) {
+                if (accessMode.equals(Permission.WRITER.value())) {
                     String[] result = new String[2];
                     result[0] = Permission.WRITER.value();
                     result[1] = Permission.OWNER.value();
                     return result;
                 } else {
-                    if (accessMode == Permission.READER.value()) {
+                    if (accessMode.equals(Permission.READER.value())) {
                         String[] result = new String[3];
                         result[0] = Permission.READER.value();
                         result[1] = Permission.WRITER.value();
@@ -503,4 +517,6 @@ public class AnnotationResource {
             return null;
         }
     }
+    
+    
 }
