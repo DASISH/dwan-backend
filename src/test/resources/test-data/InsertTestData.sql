@@ -26,7 +26,7 @@ INSERT INTO principal (principal_name, external_id, remote_id, e_mail) VALUES ('
 INSERT INTO notebook (title, owner_id, external_id) VALUES ('a notebook', 2, '00000000-0000-0000-0000-000000000001'); -- 1 
 -- INSERT INTO notebook (title, owner_id, external_id) VALUES ('a notebook', 1, 1);
 
-INSERT INTO annotation (owner_id,headline, body_text, body_mimetype, external_id, is_xml) VALUES (1, 'a headline', '<html><body>some html</body></html>', 'text/html' , '00000000-0000-0000-0000-000000000005', false); --1 
+INSERT INTO annotation (headline, body_text, body_mimetype, external_id, is_xml) VALUES ('a headline', '<html><body>some html</body></html>', 'text/html' , '00000000-0000-0000-0000-000000000005', false); --1 
 
 INSERT INTO notebook (title, owner_id, external_id) VALUES ('a second notebook', 2, '00000000-0000-0000-0000-000000000002'); --2
 -- INSERT INTO notebook (title, owner_id, external_id) VALUES ('a second notebook', 1, 2);
@@ -47,10 +47,10 @@ INSERT INTO notebook (title, owner_id, external_id) VALUES ('Notebook 4', 4, '00
 INSERT INTO notebook (title, owner_id, external_id) VALUES ('Notebook 5', 5, '00000000-0000-0000-0000-000000000013'); --5
 INSERT INTO notebook (title, owner_id, external_id) VALUES ('Notebook 6', 5, '00000000-0000-0000-0000-000000000014'); --6
 
-INSERT INTO annotation (owner_id,headline,body_text, body_mimetype, external_id, last_modified, is_xml) VALUES (3, 'Sagrada Famiglia','<html><body>some html 1</body></html>', 'text/html' , '00000000-0000-0000-0000-000000000021', '2013-08-12 09:25:00.383', false); --2
-INSERT INTO annotation (owner_id,headline,body_text, body_mimetype, external_id, is_xml) VALUES (4, 'Gaudi','<html><body>some html 2</body></html>', 'text/html' , '00000000-0000-0000-0000-000000000022',false); --3
-INSERT INTO annotation (owner_id,headline,body_text, body_mimetype, external_id, is_xml) VALUES (5, 'Art Nuveau','some plain text', 'text/plain' , '00000000-0000-0000-0000-000000000023', false); --4
-INSERT INTO annotation (owner_id,headline,body_text, body_mimetype, external_id, is_xml) VALUES (3, 'Annotation to delete','<html><body>some html 4</body></html>', 'text/html' , '00000000-0000-0000-0000-000000000024',false); --5
+INSERT INTO annotation (headline,body_text, body_mimetype, external_id, last_modified, is_xml) VALUES ('Sagrada Famiglia','<html><body>some html 1</body></html>', 'text/html' , '00000000-0000-0000-0000-000000000021', '2013-08-12 09:25:00.383', false); --2
+INSERT INTO annotation (headline,body_text, body_mimetype, external_id, is_xml) VALUES ('Gaudi','<html><body>some html 2</body></html>', 'text/html' , '00000000-0000-0000-0000-000000000022',false); --3
+INSERT INTO annotation (headline,body_text, body_mimetype, external_id, is_xml) VALUES ('Art Nuveau','some plain text', 'text/plain' , '00000000-0000-0000-0000-000000000023', false); --4
+INSERT INTO annotation (headline,body_text, body_mimetype, external_id, is_xml) VALUES ('Annotation to delete','<html><body>some html 4</body></html>', 'text/html' , '00000000-0000-0000-0000-000000000024',false); --5
 
 
 

@@ -215,6 +215,32 @@ public class UserResource {
             return null;
         }
     }
+    
+    
+    @DELETE
+    @Path("{userId}/safe")
+    public String deleteUserSafe(@PathParam("userId") String externalIdentifier) throws IOException {
+        final Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(httpServletRequest.getRemoteUser());
+        if (remoteUserID != null) {
+            if (dbIntegrityService.userHasAdminRights(remoteUserID)) {
+                dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
+                final Number userID = dbIntegrityService.getUserInternalIdentifier(UUID.fromString(externalIdentifier));
+                if (userID != null) {
+                    final Integer result = dbIntegrityService.deleteUserSafe(userID);
+                    return "There is " + result.toString() + " row deleted";
+                } else {
+                    httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The user with the given id is not found in the database");
+                    return null;
+                }
+            } else {
+                httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, "The logged in user does not have admin rights to update a user info in the database");
+                return null;
+            }
+        } else {
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged in user is not found in the database");
+            return null;
+        }
+    }
 
     private boolean ifLoggedIn(Number userID) {
         return httpServletRequest.getRemoteUser().equals(dbIntegrityService.getUserRemoteID(userID));

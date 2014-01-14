@@ -76,7 +76,6 @@ public interface DBIntegrityService{
     * @param text
     * @param access
     * @param namespace
-    * @param owner
     * @param after
     * @param before
     * @return the list of internal id-s of the annotations such that:
@@ -87,8 +86,7 @@ public interface DBIntegrityService{
     * -- owned by "owner",
     * -- created after time-samp "after and before time-stamp "before".
     */
-    List<Number> getFilteredAnnotationIDs(String link, String text, Number inloggedUserID, String[] accessModes, String namespace, UUID
-            owner, Timestamp after, Timestamp before);
+    List<Number> getFilteredAnnotationIDs(String link, String text, Number inloggedUserID, String[] accessModes, String namespace, Timestamp after, Timestamp before);
     
     
     
@@ -144,7 +142,7 @@ public interface DBIntegrityService{
 
     String getTargetURI(Number targetID);
    
-     UUID getTargetExternalIdentifier(Number targetID);
+    UUID getTargetExternalIdentifier(Number targetID);
      
     String getUserURI(Number userID); 
     
@@ -338,6 +336,15 @@ public interface DBIntegrityService{
      * it is 0 if it is not found or not deleted, e.g. because it is in use in the table "annotationsPreincipalsPermissions"
      */
     public int deleteUser(Number userID);
+    
+     /**
+     * 
+     * @param userID
+     * @return # of affected rows in the table "principal". 
+     * It is 1 if the userId is found and deleted; 
+     * it is 0 if it is not found or not deleted, e.g. because it is in use in the table "annotationsPreincipalsPermissions"
+     */
+    public int deleteUserSafe(Number userID);
     
     /**
      * 

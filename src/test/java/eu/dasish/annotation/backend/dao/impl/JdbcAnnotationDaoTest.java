@@ -231,17 +231,14 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
     public void getAnnotationWithoutTargetsAndPermissions() throws SQLException, DatatypeConfigurationException {
         System.out.println("test getAnnotationWithoutTargets");
         jdbcAnnotationDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_annotations);
-        final Map<Annotation, Number> result= jdbcAnnotationDao.getAnnotationWithoutTargetsAndPermissions(2);
-        Annotation[] annotations = new Annotation[1];
-        result.keySet().toArray(annotations);
+        final Annotation result= jdbcAnnotationDao.getAnnotationWithoutTargetsAndPermissions(2);
         
-        assertEquals(TestBackendConstants._TEST_ANNOT_2_HEADLINE, annotations[0].getHeadline());
-        assertEquals(3, result.get(annotations[0]));
-        assertEquals(TestBackendConstants._TEST_ANNOT_2_BODY, annotations[0].getBody().getTextBody().getValue()); 
-        assertEquals(TestBackendConstants._TEST_BODY_MIMETYPE_HTML, annotations[0].getBody().getTextBody().getMimeType()); 
+        assertEquals(TestBackendConstants._TEST_ANNOT_2_HEADLINE, result.getHeadline());
+        assertEquals(TestBackendConstants._TEST_ANNOT_2_BODY, result.getBody().getTextBody().getValue()); 
+        assertEquals(TestBackendConstants._TEST_BODY_MIMETYPE_HTML, result.getBody().getTextBody().getMimeType()); 
         assertEquals(TestBackendConstants._TEST_SERVLET_URI_annotations+
-                TestBackendConstants._TEST_ANNOT_2_EXT, annotations[0].getURI());
-        assertEquals(DatatypeFactory.newInstance().newXMLGregorianCalendar(TestBackendConstants._TEST_ANNOT_2_TIME_STAMP), annotations[0].getLastModified());
+                TestBackendConstants._TEST_ANNOT_2_EXT, result.getURI());
+        assertEquals(DatatypeFactory.newInstance().newXMLGregorianCalendar(TestBackendConstants._TEST_ANNOT_2_TIME_STAMP), result.getLastModified());
     }
 
     /**
@@ -275,17 +272,13 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         assertEquals(null, annotationToAdd.getURI());
         assertEquals(null, annotationToAdd.getLastModified());
         
-        Number newAnnotationID = jdbcAnnotationDao.addAnnotation(annotationToAdd, 5);
+        Number newAnnotationID = jdbcAnnotationDao.addAnnotation(annotationToAdd);
         assertEquals(6, newAnnotationID);
         
         // checking
-        Map<Annotation, Number> getResult= jdbcAnnotationDao.getAnnotationWithoutTargetsAndPermissions(6);
-        Annotation[] annotations = new Annotation[1];
-        getResult.keySet().toArray(annotations);
-        Annotation addedAnnotation = annotations[0];
+        Annotation addedAnnotation= jdbcAnnotationDao.getAnnotationWithoutTargetsAndPermissions(6);
         assertFalse(null == addedAnnotation.getURI());
         assertFalse(null == addedAnnotation.getLastModified());
-        assertEquals(5, getResult.get(addedAnnotation));
         assertEquals(annotationToAdd.getBody().getTextBody().getMimeType(), addedAnnotation.getBody().getTextBody().getMimeType());
         assertEquals(annotationToAdd.getBody().getTextBody().getValue(), addedAnnotation.getBody().getTextBody().getValue()); 
         assertEquals(annotationToAdd.getHeadline(), addedAnnotation.getHeadline());
@@ -342,33 +335,28 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         annotationIDs.add(2);
         annotationIDs.add(3);
         
-        List<Number> result_1 = jdbcAnnotationDao.getFilteredAnnotationIDs(annotationIDs, null, null, null, null, null);        
+        List<Number> result_1 = jdbcAnnotationDao.getFilteredAnnotationIDs(annotationIDs, null, null, null, null);        
         assertEquals(2, result_1.size());
         assertEquals(2, result_1.get(0));
         assertEquals(3, result_1.get(1));
         
        
-        List<Number> result_2 = jdbcAnnotationDao.getFilteredAnnotationIDs(annotationIDs, "some html", null, null, null, null);        
+        List<Number> result_2 = jdbcAnnotationDao.getFilteredAnnotationIDs(annotationIDs, "some html", null, null, null);        
         assertEquals(2, result_2.size());
         assertEquals(2, result_2.get(0));
         assertEquals(3, result_2.get(1));
         
         
-       
-        List<Number> result_3 = jdbcAnnotationDao.getFilteredAnnotationIDs(annotationIDs, "some html", null, 3, null, null);        
-        assertEquals(1, result_3.size());
-        assertEquals(2, result_3.get(0));
-        
-       
+             
         Timestamp after = new Timestamp(0); 
         Timestamp before = new Timestamp(System.currentTimeMillis());  
-        List<Number> result_4 = jdbcAnnotationDao.getFilteredAnnotationIDs(annotationIDs, "some html", null, 3, after, before);        
-        assertEquals(1, result_4.size());
+        List<Number> result_4 = jdbcAnnotationDao.getFilteredAnnotationIDs(annotationIDs, "some html", null, after, before);        
+        assertEquals(2, result_4.size());
         assertEquals(2, result_4.get(0));
-        
+        assertEquals(3, result_2.get(1));
         
         Timestamp after_1 = new Timestamp(System.currentTimeMillis()); // no annotations added after "now"       
-        List<Number> result_5 = jdbcAnnotationDao.getFilteredAnnotationIDs(annotationIDs, "some html", null, 3, after_1, null);        
+        List<Number> result_5 = jdbcAnnotationDao.getFilteredAnnotationIDs(annotationIDs, "some html", null, after_1, null);        
         assertEquals(0, result_5.size());
         
         

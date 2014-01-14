@@ -59,7 +59,6 @@ CREATE TABLE annotation (
     annotation_id SERIAL UNIQUE NOT NULL, 
     external_id text UNIQUE NOT NULL,
     last_modified timestamp default current_timestamp AT TIME ZONE 'UTC',
-    owner_id integer REFERENCES principal(principal_id), 
     headline text,
     body_text text,
     body_mimetype text,

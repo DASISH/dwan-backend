@@ -48,7 +48,7 @@ public interface AnnotationDao extends ResourceDao{
      * (Constructing a complete Annotation object using  "getAnnotationWithoutTargets" and "retrieveTargetIDs" is done in "DaoDispatchter".)
      * 
      */
-    public Map<Annotation, Number> getAnnotationWithoutTargetsAndPermissions(Number annotationID);
+    public Annotation getAnnotationWithoutTargetsAndPermissions(Number annotationID);
     
     
      /**
@@ -65,15 +65,15 @@ public interface AnnotationDao extends ResourceDao{
      * -- added to the database between "before" and "after" time-dates.
      * 
      */
-    public List<Number> getFilteredAnnotationIDs(List<Number> annotationIDs, String text, String namespace, Number ownerID, Timestamp after, Timestamp before);
+    public List<Number> getFilteredAnnotationIDs(List<Number> annotationIDs, String text, String namespace, Timestamp after, Timestamp before);
      
        /**
      * unit test is missing
      * @param annotationIDs
-     * @return pair <annotationInfo, owner_id>  for the annotation with the internal annotationID.
+     * @return annotationInfo  for the annotation with the internal annotationID.
      * 
      */
-    public Map<AnnotationInfo, Number> getAnnotationInfoWithoutTargets(Number annotationID);    
+    public AnnotationInfo getAnnotationInfoWithoutTargets(Number annotationID);    
    
     /**
      * 
@@ -104,6 +104,8 @@ public interface AnnotationDao extends ResourceDao{
      * @return all the pairs (user-permission) for "annotationId" from the table annotations_principals permissions.
      */
     public List<Map<Number, String>>  getPermissions(Number annotationID);
+    
+    public Number  getOwner(Number annotationID);
     
     /**
      * 
@@ -158,7 +160,7 @@ public interface AnnotationDao extends ResourceDao{
      * @return  the internal ID of the added annotation, if it is added, or null otherwise.
      **/
     
-    public Number addAnnotation(Annotation annotation, Number ownerID);
+    public Number addAnnotation(Annotation annotation);
  
      
     /////// UPDATERS //////////////////
@@ -171,11 +173,10 @@ public interface AnnotationDao extends ResourceDao{
     /**
      * 
      * @param annotation
-     * @param ownerID
      * @return # of updated rows in "annotation" table after updating the annotation. Should return 1 if update  happens
      * @throws SQLException 
      */
-    public int updateAnnotation(Annotation annotation, Number ownerID);
+    public int updateAnnotation(Annotation annotation);
     
     
      /**
