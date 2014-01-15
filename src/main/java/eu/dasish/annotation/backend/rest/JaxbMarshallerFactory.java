@@ -32,7 +32,7 @@ public class JaxbMarshallerFactory {
     private JAXBContext context;
     private Marshaller marshaller;
     // overwritten by the context.xml's 
-    private String schemaLocation = "http://www.dasish.eu/ns/addit file:/Users/olhsha/repositories/DASISH/t5.6/schema/trunk/annotator-schema/src/main/reTargets/DASISH-schema.xsd";
+    private String schemaLocation = "http://www.dasish.eu/ns/addit file:/Users/olhsha/repositories/DASISH/t5.6/schema/trunk/annotator-schema/src/main/target/DASISH-schema.xsd";
     
     public JaxbMarshallerFactory() throws Exception {
         

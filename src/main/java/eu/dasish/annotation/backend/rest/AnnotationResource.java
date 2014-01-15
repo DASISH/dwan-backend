@@ -32,12 +32,15 @@ import eu.dasish.annotation.schema.UserWithPermissionList;
 import eu.dasish.annotation.schema.ReferenceList;
 import eu.dasish.annotation.schema.ResponseBody;
 import eu.dasish.annotation.schema.UserWithPermission;
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.net.URI;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
@@ -79,6 +82,9 @@ public class AnnotationResource {
     private UriInfo uriInfo;
     @Context
     private Providers providers;
+    @Context
+    private ServletContext context;
+    
     final String default_permission = "reader";
     private final Logger logger = LoggerFactory.getLogger(AnnotationResource.class);
     private final String admin = "admin";
@@ -103,28 +109,7 @@ public class AnnotationResource {
     public AnnotationResource() {
     }
 
-    @GET
-    @Produces(MediaType.TEXT_XML)
-    @Path("/all/debug")
-    @Transactional(readOnly = true)
-    public JAXBElement<AnnotationInfoList> getAllAnnotations() throws IOException {
-        dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
-        Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(httpServletRequest.getRemoteUser());
-        if (userID != null) {
-            String typeOfAccount = dbIntegrityService.getTypeOfUserAccount(userID);
-            if (typeOfAccount.equals(admin) || typeOfAccount.equals(developer)) {
-                final AnnotationInfoList annotationInfoList = dbIntegrityService.getAllAnnotationInfos();
-                return new ObjectFactory().createAnnotationInfoList(annotationInfoList);
-            } else {
-                httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "The logged in user is neither developer nor admin, and therefore cannot perform this request.");
-                return null;
-            }
-        } else {
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged in user is not found in the database");
-            return null;
-        }
-
-    }
+    
 
     @GET
     @Produces(MediaType.TEXT_XML)
