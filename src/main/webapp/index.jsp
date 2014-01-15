@@ -57,6 +57,10 @@
      GET <a href="api/targets/00000000-0000-0000-0000-000000000032">api/targets/00000000-0000-0000-0000-000000000032</a>  <br>
      GET <a href="api/targets/00000000-0000-0000-0000-000000000032/versions">api/targets/00000000-0000-0000-0000-000000000032/versions</a>   <br>
      GET <a href="api/cached/00000000-0000-0000-0000-000000000051/metadata">api/cached/00000000-0000-0000-0000-000000000051/metadata</a><br>
-     GET <a href="api/cached/00000000-0000-0000-0000-000000000051/content">api/cached/00000000-0000-0000-0000-000000000051/content></a> !Problem: works only on image.jpeg, end maps png-blobs to jpegs.
-    </body>
+     GET <a href="api/cached/00000000-0000-0000-0000-000000000051/content">api/cached/00000000-0000-0000-0000-000000000051/content</a> !Problem: works only on image.jpeg, end maps png-blobs to jpegs.
+     <br> 
+     <br>
+      <b>Debugging URI's (only for developers)</b><br>
+      GET <a href="api/annotations/all/debug">api/annotations/all/debug</a> 
+      </body>
         </html>

@@ -180,6 +180,15 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
 
         return getSimpleJdbcTemplate().query(sql.toString(), internalIDRowMapper, params);
     }
+    
+    /////////////////////////////////////////
+    
+    @Override
+    public List<Number> getAllAnnotationIDs(){
+        StringBuilder sql = new StringBuilder("SELECT ");
+        sql.append(annotation_id).append(" , ").append(last_modified).append(" FROM ").append(annotationTableName).append(" ORDER BY ").append(last_modified).append(" DESC");
+        return getSimpleJdbcTemplate().query(sql.toString(), internalIDRowMapper);        
+    }
 
     //////////////////////////////
     @Override

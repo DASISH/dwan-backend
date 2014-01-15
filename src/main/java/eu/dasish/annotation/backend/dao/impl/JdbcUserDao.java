@@ -131,16 +131,16 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
     }
     
     @Override
-    public boolean hasAdminRights(Number internalID){
+    public String getTypeOfUserAccount(Number internalID){
        StringBuilder requestDB  = new StringBuilder("SELECT ");
-       requestDB.append(admin_rights).append(" FROM ").append(principalTableName).append(" WHERE ").append(principal_id).append("= ? LIMIT 1");
-       List<Boolean> result = getSimpleJdbcTemplate().query(requestDB.toString(), adminRightsRowMapper, internalID);
-       return  (result.size() > 0) ? result.get(0).booleanValue() :false;    
+       requestDB.append(account).append(" FROM ").append(principalTableName).append(" WHERE ").append(principal_id).append("= ? LIMIT 1");
+       List<String> result = getSimpleJdbcTemplate().query(requestDB.toString(), adminRightsRowMapper, internalID);
+       return  (result.size() > 0) ? result.get(0) :null;    
     }
-     private final RowMapper<Boolean> adminRightsRowMapper = new RowMapper<Boolean>() {
+     private final RowMapper<String> adminRightsRowMapper = new RowMapper<String>() {
         @Override
-        public Boolean mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            return new Boolean(rs.getBoolean(admin_rights));
+        public String mapRow(ResultSet rs, int rowNumber) throws SQLException {
+            return rs.getString(account);
         }
     };
     
