@@ -37,7 +37,7 @@ public interface UserDao extends ResourceDao{
      // where is it used??
      public boolean userExists(User user);
      
-     public boolean hasAdminRights(Number internalID);
+     public String getTypeOfUserAccount(Number internalID);
      
      public String getRemoteID(Number internalID);
      

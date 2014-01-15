@@ -62,7 +62,9 @@ public class UserResource {
     private HttpServletResponse httpServletResponse;
     @Context
     private UriInfo uriInfo;
-
+    
+    final private String admin = "admin";
+    
     public void setHttpRequest(HttpServletRequest request) {
         this.httpServletRequest = request;
     }
@@ -144,7 +146,7 @@ public class UserResource {
     public JAXBElement<User> addUser(@PathParam("remoteId") String remoteId, User user) throws SQLException, IOException {
         final Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(httpServletRequest.getRemoteUser());
         if (remoteUserID != null) {
-            if (dbIntegrityService.userHasAdminRights(remoteUserID)) {
+            if (dbIntegrityService.getTypeOfUserAccount(remoteUserID).equals(admin)) {
                 dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
                 final Number userID = dbIntegrityService.addUser(user, remoteId);
                 if (userID != null) {
@@ -171,7 +173,7 @@ public class UserResource {
     public JAXBElement<User> updateUser(User user) throws IOException {
         final Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(httpServletRequest.getRemoteUser());
         if (remoteUserID != null) {
-            if (dbIntegrityService.userHasAdminRights(remoteUserID)) {
+            if (dbIntegrityService.getTypeOfUserAccount(remoteUserID).equals(admin)) {
                 dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
                 final Number userID = dbIntegrityService.updateUser(user);
                 if (userID != null) {
@@ -196,7 +198,7 @@ public class UserResource {
     public String deleteUser(@PathParam("userId") String externalIdentifier) throws IOException {
         final Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(httpServletRequest.getRemoteUser());
         if (remoteUserID != null) {
-            if (dbIntegrityService.userHasAdminRights(remoteUserID)) {
+            if (dbIntegrityService.getTypeOfUserAccount(remoteUserID).equals(admin)) {
                 dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
                 final Number userID = dbIntegrityService.getUserInternalIdentifier(UUID.fromString(externalIdentifier));
                 if (userID != null) {
@@ -222,7 +224,7 @@ public class UserResource {
     public String deleteUserSafe(@PathParam("userId") String externalIdentifier) throws IOException {
         final Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(httpServletRequest.getRemoteUser());
         if (remoteUserID != null) {
-            if (dbIntegrityService.userHasAdminRights(remoteUserID)) {
+            if (dbIntegrityService.getTypeOfUserAccount(remoteUserID).equals(admin)) {
                 dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
                 final Number userID = dbIntegrityService.getUserInternalIdentifier(UUID.fromString(externalIdentifier));
                 if (userID != null) {

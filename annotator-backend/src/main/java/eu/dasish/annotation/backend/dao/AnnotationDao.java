@@ -67,6 +67,8 @@ public interface AnnotationDao extends ResourceDao{
      */
     public List<Number> getFilteredAnnotationIDs(List<Number> annotationIDs, String text, String namespace, Timestamp after, Timestamp before);
      
+    public List<Number> getAllAnnotationIDs();
+    
        /**
      * unit test is missing
      * @param annotationIDs

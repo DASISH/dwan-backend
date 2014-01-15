@@ -88,7 +88,7 @@ public interface DBIntegrityService{
     */
     List<Number> getFilteredAnnotationIDs(String link, String text, Number inloggedUserID, String[] accessModes, String namespace, Timestamp after, Timestamp before);
     
-    
+    AnnotationInfoList getAllAnnotationInfos();
     
     /**
      * 
@@ -232,7 +232,7 @@ public interface DBIntegrityService{
     public Permission  getPermission(Number annotationID, Number userID);
     
     
-    public boolean userHasAdminRights(Number userID);
+    public String getTypeOfUserAccount(Number userID);
     
     /**
      * UPDATERS

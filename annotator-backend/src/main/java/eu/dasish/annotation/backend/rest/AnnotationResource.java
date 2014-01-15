@@ -80,7 +80,9 @@ public class AnnotationResource {
     @Context
     private Providers providers;
     final String default_permission = "reader";
-    private static final Logger logger = LoggerFactory.getLogger(AnnotationResource.class);
+    private final Logger logger = LoggerFactory.getLogger(AnnotationResource.class);
+    private final String admin = "admin";
+    private final String developer = "developer";
 
     public void setUriInfo(UriInfo uriInfo) {
         this.uriInfo = uriInfo;
@@ -99,6 +101,29 @@ public class AnnotationResource {
     }
 
     public AnnotationResource() {
+    }
+
+    @GET
+    @Produces(MediaType.TEXT_XML)
+    @Path("/all/debug")
+    @Transactional(readOnly = true)
+    public JAXBElement<AnnotationInfoList> getAllAnnotations() throws IOException {
+        dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
+        Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(httpServletRequest.getRemoteUser());
+        if (userID != null) {
+            String typeOfAccount = dbIntegrityService.getTypeOfUserAccount(userID);
+            if (typeOfAccount.equals(admin) || typeOfAccount.equals(developer)) {
+                final AnnotationInfoList annotationInfoList = dbIntegrityService.getAllAnnotationInfos();
+                return new ObjectFactory().createAnnotationInfoList(annotationInfoList);
+            } else {
+                httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "The logged in user is neither developer nor admin, and therefore cannot perform this request.");
+                return null;
+            }
+        } else {
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged in user is not found in the database");
+            return null;
+        }
+
     }
 
     @GET

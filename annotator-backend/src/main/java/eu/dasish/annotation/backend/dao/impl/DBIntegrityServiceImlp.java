@@ -274,7 +274,30 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         } else {
             return null;
         }
+    }
 
+    @Override
+    public AnnotationInfoList getAllAnnotationInfos() {
+        List<Number> annotationIDs = annotationDao.getAllAnnotationIDs();
+        if (annotationIDs != null) {
+            AnnotationInfoList result = new AnnotationInfoList();
+            for (Number annotationID : annotationIDs) {
+                Number ownerID = annotationDao.getOwner(annotationID);               
+                ReferenceList targets = getAnnotationTargets(annotationID);
+                AnnotationInfo annotationInfo = annotationDao.getAnnotationInfoWithoutTargets(annotationID);
+                annotationInfo.setTargets(targets);
+                if (ownerID != null){
+                annotationInfo.setOwnerRef(userDao.getURIFromInternalID(ownerID));}
+                else {
+                   annotationInfo.setOwnerRef("ACHTUNG: This annotation does not have an owner in the DB!!!!");
+                }
+                result.getAnnotationInfo().add(annotationInfo);
+            }
+
+            return result;
+        } else {
+            return null;
+        }
     }
 
     // TODO unit test
@@ -342,8 +365,8 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     }
 
     @Override
-    public boolean userHasAdminRights(Number userID) {
-        return userDao.hasAdminRights(userID);
+    public String getTypeOfUserAccount(Number userID) {
+        return userDao.getTypeOfUserAccount(userID);
     }
 
     ///// UPDATERS /////////////////
