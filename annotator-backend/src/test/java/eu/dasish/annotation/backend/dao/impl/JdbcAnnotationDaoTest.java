@@ -234,7 +234,7 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         final Annotation result= jdbcAnnotationDao.getAnnotationWithoutTargetsAndPermissions(2);
         
         assertEquals(TestBackendConstants._TEST_ANNOT_2_HEADLINE, result.getHeadline());
-        assertEquals(TestBackendConstants._TEST_ANNOT_2_BODY, result.getBody().getTextBody().getValue()); 
+        assertEquals(TestBackendConstants._TEST_ANNOT_2_BODY, result.getBody().getTextBody().getBody()); 
         assertEquals(TestBackendConstants._TEST_BODY_MIMETYPE_HTML, result.getBody().getTextBody().getMimeType()); 
         assertEquals(TestBackendConstants._TEST_SERVLET_URI_annotations+
                 TestBackendConstants._TEST_ANNOT_2_EXT, result.getURI());
@@ -280,7 +280,7 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         assertFalse(null == addedAnnotation.getURI());
         assertFalse(null == addedAnnotation.getLastModified());
         assertEquals(annotationToAdd.getBody().getTextBody().getMimeType(), addedAnnotation.getBody().getTextBody().getMimeType());
-        assertEquals(annotationToAdd.getBody().getTextBody().getValue(), addedAnnotation.getBody().getTextBody().getValue()); 
+        assertEquals(annotationToAdd.getBody().getTextBody().getBody(), addedAnnotation.getBody().getTextBody().getBody()); 
         assertEquals(annotationToAdd.getHeadline(), addedAnnotation.getHeadline());
         System.out.println("creation time "+addedAnnotation.getLastModified());
     }

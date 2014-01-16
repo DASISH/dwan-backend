@@ -291,7 +291,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
                 body.setXmlBody(null);
                 TextBody textBody = new TextBody();
                 textBody.setMimeType(rs.getString(body_mimetype));
-                textBody.setValue(rs.getString(body_text));
+                textBody.setBody(rs.getString(body_text));
                 body.setTextBody(textBody);
             }
             annotation.setBody(body);
@@ -508,7 +508,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         } else {
             TextBody textBody = annotationBody.getTextBody();
             if (textBody != null) {
-                result[0] = textBody.getValue();
+                result[0] = textBody.getBody();
                 result[1] = textBody.getMimeType();
             } else {
                 logger.error("Ill-formed body: both options, xml-body and text-body, are set to null. ");

@@ -43,7 +43,8 @@ CREATE TABLE principal (
     external_id text UNIQUE NOT NULL,
     remote_id text UNIQUE NOT NULL,
     principal_name text,
-    e_mail text
+    e_mail text,
+    account text
 );
 
 CREATE TABLE notebook (

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 DASISH
+ * Copyright (C) 2013 DASISH
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -25,17 +25,18 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.GET;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.ext.Providers;
 import javax.xml.bind.JAXBElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,7 +64,7 @@ public class DebugResource {
     private ServletContext context;
     
     final String default_permission = "reader";
-    private final Logger logger = LoggerFactory.getLogger(AnnotationResource.class);
+    private final Logger logger = LoggerFactory.getLogger(DebugResource.class);
     private final String admin = "admin";
     private final String developer = "developer"; 
     
@@ -126,5 +127,29 @@ public class DebugResource {
         }
 
     }
+    
+    @PUT
+    @Produces(MediaType.TEXT_XML)
+    @Path("account/{userId}/make/{account}")
+    @Transactional(readOnly = true)
+    public String updateUsersAccount(@PathParam("userId") String userId, @PathParam("account") String account) throws IOException {
+        dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
+        Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(httpServletRequest.getRemoteUser());
+        if (userID != null) {
+            String typeOfAccount = dbIntegrityService.getTypeOfUserAccount(userID);
+            if (typeOfAccount.equals(admin)) {
+                final boolean update = dbIntegrityService.updateAccount(UUID.fromString(userId), account);
+                return (update ? "The account is updated" : "The account is not updated, see the log.");
+            } else {
+                httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "The logged in user is not admin, and therefore cannot perform this request.");
+                return null;
+            }
+        } else {
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged in user is not found in the database");
+            return null;
+        }
+
+    }
+
     
 }

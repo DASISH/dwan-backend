@@ -32,8 +32,6 @@ import eu.dasish.annotation.schema.UserWithPermissionList;
 import eu.dasish.annotation.schema.ReferenceList;
 import eu.dasish.annotation.schema.ResponseBody;
 import eu.dasish.annotation.schema.UserWithPermission;
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
 import java.net.URI;
 import java.sql.Timestamp;
@@ -87,9 +85,7 @@ public class AnnotationResource {
     
     final String default_permission = "reader";
     private final Logger logger = LoggerFactory.getLogger(AnnotationResource.class);
-    private final String admin = "admin";
-    private final String developer = "developer";
-
+    
     public void setUriInfo(UriInfo uriInfo) {
         this.uriInfo = uriInfo;
     }

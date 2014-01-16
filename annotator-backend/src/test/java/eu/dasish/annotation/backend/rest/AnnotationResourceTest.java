@@ -192,7 +192,7 @@ public class AnnotationResourceTest {
         TextBody textBody = new TextBody();
         body.setTextBody(textBody);
         textBody.setMimeType("text/plain");
-        textBody.setValue("blah");
+        textBody.setBody("blah");
         
         TargetInfo TargetInfo = new TargetInfo();
         TargetInfo.setLink("google.nl");

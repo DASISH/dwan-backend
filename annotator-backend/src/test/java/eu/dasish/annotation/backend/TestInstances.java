@@ -74,7 +74,7 @@ public class TestInstances {
         TextBody textBody = new TextBody();
         body.setTextBody(textBody);
         textBody.setMimeType(bodyMimeType);
-        textBody.setValue(bodyTxt);
+        textBody.setBody(bodyTxt);
        
         result.setHeadline(headline);
         result.setOwnerRef(baseURI+"users/"+ownerID); 

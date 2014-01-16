@@ -20,8 +20,8 @@
 -- Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 --
 
-INSERT INTO principal (principal_name, external_id, remote_id, e_mail) VALUES ('a user', '00000000-0000-0000-0000-000000000003', 'a1', 'a.user@gmail.com'); -- 1
-INSERT INTO principal (principal_name, external_id, remote_id, e_mail) VALUES ('b user', '00000000-0000-0000-0000-000000000004', 'b2', 'b.user@gmail.com');-- 2
+INSERT INTO principal (principal_name, external_id, remote_id, e_mail, account) VALUES ('a user', '00000000-0000-0000-0000-000000000003', 'a1', 'a.user@gmail.com', 'user'); -- 1
+INSERT INTO principal (principal_name, external_id, remote_id, e_mail, account) VALUES ('b user', '00000000-0000-0000-0000-000000000004', 'b2', 'b.user@gmail.com', 'user');-- 2
 
 INSERT INTO notebook (title, owner_id, external_id) VALUES ('a notebook', 2, '00000000-0000-0000-0000-000000000001'); -- 1 
 -- INSERT INTO notebook (title, owner_id, external_id) VALUES ('a notebook', 1, 1);
@@ -36,10 +36,10 @@ INSERT INTO notebooks_annotations (notebook_id,annotation_id) VALUES (2,1);
 
 -- Test data for jdbcAnnotationDao --
 
-INSERT INTO principal (principal_name, external_id, remote_id, e_mail) VALUES ('Twan', '00000000-0000-0000-0000-000000000111', 'x3', 'twagoo@mpi.nl'); --3 
-INSERT INTO principal (principal_name, external_id, remote_id, e_mail) VALUES ('Peter', '00000000-0000-0000-0000-000000000112', 'y4', 'Peter.Withers@mpi.nl'); -- 4
-INSERT INTO principal (principal_name, external_id, remote_id, e_mail) VALUES ('Olha', '00000000-0000-0000-0000-000000000113', 'JUnit@test.com', 'olhsha@mpi.nl'); -- 5
-INSERT INTO principal (principal_name, external_id, remote_id, e_mail) VALUES ('Eric', '00000000-0000-0000-0000-000000000114', 'v6', 'eriaue@mpi.nl'); -- 6
+INSERT INTO principal (principal_name, external_id, remote_id, e_mail, account) VALUES ('Twan', '00000000-0000-0000-0000-000000000111', 'x3', 'twagoo@mpi.nl', 'developer'); --3 
+INSERT INTO principal (principal_name, external_id, remote_id, e_mail, account) VALUES ('Peter', '00000000-0000-0000-0000-000000000112', 'y4', 'Peter.Withers@mpi.nl', 'developer'); -- 4
+INSERT INTO principal (principal_name, external_id, remote_id, e_mail, account) VALUES ('Olha', '00000000-0000-0000-0000-000000000113', 'JUnit@test.com', 'olhsha@mpi.nl', 'admin'); -- 5
+INSERT INTO principal (principal_name, external_id, remote_id, e_mail, account) VALUES ('Eric', '00000000-0000-0000-0000-000000000114', 'v6', 'eriaue@mpi.nl', 'developer'); -- 6
 
 
 INSERT INTO notebook (title, owner_id, external_id) VALUES ('Notebook 3', 3, '00000000-0000-0000-0000-000000000011'); -- 3

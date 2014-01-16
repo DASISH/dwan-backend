@@ -370,6 +370,12 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     }
 
     ///// UPDATERS /////////////////
+    
+    @Override
+    public boolean updateAccount(UUID userExternalID, String account) {
+        return userDao.updateAccount(userExternalID, account);
+    }
+    
     @Override
     public int updateAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission) {
         return annotationDao.updateAnnotationPrincipalPermission(annotationID, userID, permission);
@@ -455,6 +461,7 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     public Number addUsersAnnotation(Number userID, Annotation annotation) {
         Number annotationID = annotationDao.addAnnotation(annotation);
         int affectedAnnotRows = addTargets(annotation, annotationID);
+        int addedPrincipalsPermissions = addPrincipalsPermissions(annotation.getPermissions().getUserWithPermission(), annotationID);
         int affectedPermissions = annotationDao.addAnnotationPrincipalPermission(annotationID, userID, Permission.OWNER);
         return annotationID;
     }
@@ -555,7 +562,7 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
             mimeType = annotationBody.getXmlBody().getMimeType();
         } else {
             if (annotation.getBody().getTextBody() != null) {
-                bodyText = annotation.getBody().getTextBody().getValue();
+                bodyText = annotation.getBody().getTextBody().getBody();
                 mimeType = annotationBody.getTextBody().getMimeType();
             } else {
                 logger.error("The client has sent ill-formed annotation body.");
