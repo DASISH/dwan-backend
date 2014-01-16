@@ -50,6 +50,9 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     final static protected String targetsCachedRepresentationsTableName = "targets_cached_representations";
     // base string constants: field Names
     final static protected String account = "account";
+    final static protected String admin = "admin";
+    final static protected String developer = "developer";
+    final static protected String user = "user";
     final static protected String annotation_id = "annotation_id";
     final static protected String notebook_id = "notebook_id";
     final static protected String target_id = "target_id";
@@ -198,7 +201,6 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
             return rs.getInt(principal_id);
         }
     };
-   
     protected final RowMapper<Number> notebookOwnerIDRowMapper = new RowMapper<Number>() {
         @Override
         public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {

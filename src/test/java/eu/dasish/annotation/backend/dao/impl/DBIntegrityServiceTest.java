@@ -17,7 +17,6 @@
  */
 package eu.dasish.annotation.backend.dao.impl;
 
-import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.TestInstances;
 import eu.dasish.annotation.backend.dao.AnnotationDao;
@@ -43,7 +42,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import javax.sql.rowset.serial.SerialBlob;
 import javax.sql.rowset.serial.SerialException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -179,7 +177,7 @@ public class DBIntegrityServiceTest {
         TextBody textBody = new AnnotationBody.TextBody();
         mockBody.setTextBody(textBody);
         textBody.setMimeType("text/plain");
-        textBody.setValue(TestBackendConstants._TEST_ANNOT_2_BODY);
+        textBody.setBody(TestBackendConstants._TEST_ANNOT_2_BODY);
         mockAnnotation.setBody(mockBody);
         mockAnnotation.setTargets(null);
 
@@ -253,7 +251,7 @@ public class DBIntegrityServiceTest {
         Annotation result = dbIntegrityService.getAnnotation(2);
         assertEquals(TestBackendConstants._TEST_SERVLET_URI_annotations+TestBackendConstants._TEST_ANNOT_2_EXT, result.getURI());
         assertEquals("text/plain", result.getBody().getTextBody().getMimeType());
-        assertEquals(TestBackendConstants._TEST_ANNOT_2_BODY, result.getBody().getTextBody().getValue());
+        assertEquals(TestBackendConstants._TEST_ANNOT_2_BODY, result.getBody().getTextBody().getBody());
         assertEquals(TestBackendConstants._TEST_ANNOT_2_HEADLINE, result.getHeadline());
         assertEquals(TestBackendConstants._TEST_ANNOT_2_TIME_STAMP, result.getLastModified().toString());
         assertEquals(TestBackendConstants._TEST_SERVLET_URI_users+TestBackendConstants._TEST_USER_3_EXT_ID, result.getOwnerRef());
@@ -687,7 +685,7 @@ public class DBIntegrityServiceTest {
 
                 ///////////
 
-                oneOf(annotationDao).updateAnnotationBody(6, testAnnotation.getBody().getTextBody().getValue(), testAnnotation.getBody().getTextBody().getMimeType(), false);
+                oneOf(annotationDao).updateAnnotationBody(6, testAnnotation.getBody().getTextBody().getBody(), testAnnotation.getBody().getTextBody().getMimeType(), false);
                 will(returnValue(1)); // the DB update will be called at perform anyway, even if the body is not changed (can be optimized)
 
                 oneOf(annotationDao).addAnnotationPrincipalPermission(6, 5, Permission.OWNER);

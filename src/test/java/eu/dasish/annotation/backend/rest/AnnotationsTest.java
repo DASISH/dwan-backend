@@ -157,7 +157,7 @@ public class AnnotationsTest extends JerseyTest {
         
         assertEquals(200, response.getStatus());
         Annotation entity = response.getEntity(Annotation.class);
-        assertEquals(testAnnotation.getBody().getTextBody().getValue(), entity.getBody().getTextBody().getValue());
+        assertEquals(testAnnotation.getBody().getTextBody().getBody(), entity.getBody().getTextBody().getBody());
         assertEquals(testAnnotation.getHeadline(), entity.getHeadline());
         assertEquals(testAnnotation.getOwnerRef(), entity.getOwnerRef());
         assertEquals(3, entity.getPermissions().getUserWithPermission().size());
@@ -219,7 +219,7 @@ public class AnnotationsTest extends JerseyTest {
         annotationBody.setXmlBody(null);
         TextBody textBody = new TextBody();
         textBody.setMimeType("plain/text");
-        textBody.setValue("yanuk - zek");
+        textBody.setBody("yanuk - zek");
         annotationBody.setTextBody(textBody);
         annotationToAdd.setBody(annotationBody);
       
@@ -229,7 +229,7 @@ public class AnnotationsTest extends JerseyTest {
         
         ResponseBody entity = response.getEntity(ResponseBody.class);        
         Annotation entityA = entity.getAnnotation();
-        assertEquals(annotationToAdd.getBody().getTextBody().getValue(), entityA.getBody().getTextBody().getValue());
+        assertEquals(annotationToAdd.getBody().getTextBody().getBody(), entityA.getBody().getTextBody().getBody());
         assertEquals(annotationToAdd.getBody().getTextBody().getMimeType(), entityA.getBody().getTextBody().getMimeType());
         assertEquals(annotationToAdd.getHeadline(), entityA.getHeadline());
         assertEquals(1, entityA.getPermissions().getUserWithPermission().size());

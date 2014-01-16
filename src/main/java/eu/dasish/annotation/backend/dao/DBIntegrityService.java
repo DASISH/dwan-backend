@@ -238,6 +238,7 @@ public interface DBIntegrityService{
      * UPDATERS
      */
     
+    public boolean updateAccount(UUID userExternalID, String account);
    
     
     /**

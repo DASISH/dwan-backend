@@ -17,8 +17,8 @@
  */
 package eu.dasish.annotation.backend.dao;
 
-import eu.dasish.annotation.schema.CurrentUserInfo;
 import eu.dasish.annotation.schema.User;
+import java.util.UUID;
 
 
 /**
@@ -43,6 +43,8 @@ public interface UserDao extends ResourceDao{
      
      
      public Number getUserInternalIDFromRemoteID(String remoteID);
+     
+     public boolean updateAccount(UUID externalID, String account);
      
      public Number updateUser(User user);
     

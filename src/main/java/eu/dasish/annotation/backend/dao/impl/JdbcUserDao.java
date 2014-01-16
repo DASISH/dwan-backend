@@ -41,19 +41,18 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
     }
 
     @Override
-    public void setServiceURI(String serviceURI){
+    public void setServiceURI(String serviceURI) {
         _serviceURI = serviceURI;
     }
-    
+
     /////////// GETTERS //////////////////////
-    @Override 
-    public User getUser(Number internalID){
-        StringBuilder sql  = new StringBuilder("SELECT ");
+    @Override
+    public User getUser(Number internalID) {
+        StringBuilder sql = new StringBuilder("SELECT ");
         sql.append(principalStar).append(" FROM ").append(principalTableName).append(" WHERE ").append(principal_id).append("= ? LIMIT 1");
         List<User> result = getSimpleJdbcTemplate().query(sql.toString(), userRowMapper, internalID);
         return (!result.isEmpty() ? result.get(0) : null);
-     }
-    
+    }
     private final RowMapper<User> userRowMapper = new RowMapper<User>() {
         @Override
         public User mapRow(ResultSet rs, int rowNumber) throws SQLException {
@@ -64,27 +63,25 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
             return result;
         }
     };
-    
-    @Override 
-    public User getUserByInfo(String eMail){
-        StringBuilder sql  = new StringBuilder("SELECT ");
+
+    @Override
+    public User getUserByInfo(String eMail) {
+        StringBuilder sql = new StringBuilder("SELECT ");
         sql.append(principalStar).append(" FROM ").append(principalTableName).append(" WHERE ").append(e_mail).append("= ? LIMIT 1");
         List<User> result = getSimpleJdbcTemplate().query(sql.toString(), userRowMapper, eMail.toLowerCase());
         return (!result.isEmpty() ? result.get(0) : null);
-     }
-    
-   
-    
+    }
+
     @Override
     public boolean userIsInUse(Number userID) {
-        StringBuilder sqlPermissions  = new StringBuilder("SELECT ");
+        StringBuilder sqlPermissions = new StringBuilder("SELECT ");
         sqlPermissions.append(principal_id).append(" FROM ").append(permissionsTableName).append(" WHERE ").append(principal_id).append("= ? LIMIT 1");
         List<Number> resultTargets = getSimpleJdbcTemplate().query(sqlPermissions.toString(), principalIDRowMapper, userID);
         if (resultTargets.size() > 0) {
             return true;
         };
-        
-        StringBuilder sqlNotebooks  = new StringBuilder("SELECT ");
+
+        StringBuilder sqlNotebooks = new StringBuilder("SELECT ");
         sqlNotebooks.append(notebookOwner_id).append(" FROM ").append(notebookTableName).append(" WHERE ").append(notebookOwner_id).append("= ? LIMIT 1");
         List<Number> resultNotebooks = getSimpleJdbcTemplate().query(sqlNotebooks.toString(), notebookOwnerIDRowMapper, userID);
         if (resultNotebooks.size() > 0) {
@@ -92,28 +89,26 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
         };
         return false;
     }
-    
-    
-    @Override 
-    public boolean userExists(User user){
+
+    @Override
+    public boolean userExists(User user) {
         String emailCriterion = user.getEMail().toLowerCase();
-        StringBuilder sqlTargets  = new StringBuilder("SELECT ");
+        StringBuilder sqlTargets = new StringBuilder("SELECT ");
         sqlTargets.append(principal_id).append(" FROM ").append(principalTableName).append(" WHERE ").append(e_mail).append("= ? LIMIT 1");
         List<Number> resultTargets = getSimpleJdbcTemplate().query(sqlTargets.toString(), principalIDRowMapper, emailCriterion);
         if (resultTargets.size() > 0) {
             return true;
-        }
-        else {
+        } else {
             return false;
         }
     }
 
-    @Override 
-    public String getRemoteID(Number internalID){
-        StringBuilder requestDB  = new StringBuilder("SELECT ");
+    @Override
+    public String getRemoteID(Number internalID) {
+        StringBuilder requestDB = new StringBuilder("SELECT ");
         requestDB.append(remote_id).append(" FROM ").append(principalTableName).append(" WHERE ").append(principal_id).append("= ? LIMIT 1");
         List<String> result = getSimpleJdbcTemplate().query(requestDB.toString(), remoteIDRowMapper, internalID);
-       return  (result.size() > 0) ? result.get(0) :null;
+        return (result.size() > 0) ? result.get(0) : null;
     }
     private final RowMapper<String> remoteIDRowMapper = new RowMapper<String>() {
         @Override
@@ -121,32 +116,32 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
             return rs.getString(remote_id);
         }
     };
-    
+
     @Override
-    public Number getUserInternalIDFromRemoteID(String remoteID){
-       StringBuilder requestDB  = new StringBuilder("SELECT ");
-       requestDB.append(principal_id).append(" FROM ").append(principalTableName).append(" WHERE ").append(remote_id).append("= ? LIMIT 1");
-       List<Number> result = getSimpleJdbcTemplate().query(requestDB.toString(), internalIDRowMapper, remoteID);
-       return  (result.size() > 0) ? result.get(0) :null; 
+    public Number getUserInternalIDFromRemoteID(String remoteID) {
+        StringBuilder requestDB = new StringBuilder("SELECT ");
+        requestDB.append(principal_id).append(" FROM ").append(principalTableName).append(" WHERE ").append(remote_id).append("= ? LIMIT 1");
+        List<Number> result = getSimpleJdbcTemplate().query(requestDB.toString(), internalIDRowMapper, remoteID);
+        return (result.size() > 0) ? result.get(0) : null;
     }
-    
+
     @Override
-    public String getTypeOfUserAccount(Number internalID){
-       StringBuilder requestDB  = new StringBuilder("SELECT ");
-       requestDB.append(account).append(" FROM ").append(principalTableName).append(" WHERE ").append(principal_id).append("= ? LIMIT 1");
-       List<String> result = getSimpleJdbcTemplate().query(requestDB.toString(), adminRightsRowMapper, internalID);
-       return  (result.size() > 0) ? result.get(0) :null;    
+    public String getTypeOfUserAccount(Number internalID) {
+        StringBuilder requestDB = new StringBuilder("SELECT ");
+        requestDB.append(account).append(" FROM ").append(principalTableName).append(" WHERE ").append(principal_id).append("= ? LIMIT 1");
+        List<String> result = getSimpleJdbcTemplate().query(requestDB.toString(), adminRightsRowMapper, internalID);
+        return (result.size() > 0) ? result.get(0) : null;
     }
-     private final RowMapper<String> adminRightsRowMapper = new RowMapper<String>() {
+    private final RowMapper<String> adminRightsRowMapper = new RowMapper<String>() {
         @Override
         public String mapRow(ResultSet rs, int rowNumber) throws SQLException {
             return rs.getString(account);
         }
     };
-    
-     ///////////////////// ADDERS ////////////////////////////
-     @Override
-     public Number addUser(User user, String remoteID){
+
+    ///////////////////// ADDERS ////////////////////////////
+    @Override
+    public Number addUser(User user, String remoteID) {
         UUID externalIdentifier = UUID.randomUUID();
         String newExternalIdentifier = externalIdentifier.toString();
         Map<String, Object> params = new HashMap<String, Object>();
@@ -154,15 +149,47 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
         params.put("principalName", user.getDisplayName());
         params.put("email", user.getEMail().toLowerCase());
         params.put("remoteID", remoteID);
+        params.put("accountType", this.user);
         StringBuilder sql = new StringBuilder("INSERT INTO ");
-        sql.append(principalTableName).append("(").append(external_id).append(",").append(principal_name).append(",").append(e_mail).append(",").append(remote_id).append(" ) VALUES (:externalId, :principalName, :email, :remoteID)");
+        sql.append(principalTableName).append("(").append(external_id).append(",").
+                append(principal_name).append(",").append(e_mail).append(",").
+                append(remote_id).append(",").append(account).append(" ) VALUES (:externalId, :principalName, :email, :remoteID, :accountType)");
         final int affectedRows = getSimpleJdbcTemplate().update(sql.toString(), params);
-        return (affectedRows>0 ? getInternalID(externalIdentifier) : null);
-     }
-     
-     ////////// UPDATERS ///////////////////////
-      @Override
-      public Number updateUser(User user){
+        return (affectedRows > 0 ? getInternalID(externalIdentifier) : null);
+    }
+
+    ////////// UPDATERS ///////////////////////
+    @Override
+    public boolean updateAccount(UUID externalID, String account) {
+        if (!account.equals(admin) && !account.equals(developer) && !account.equals(user)) {
+            logger.error("the given type of account '" + account + "' does not exist.");
+            return false;
+        }
+        Number principalID = this.getInternalID(externalID);
+        if (principalID != null) {
+            Map<String, Object> params = new HashMap<String, Object>();
+            params.put("externalId", externalID.toString());
+            params.put("accountType", account);
+            StringBuilder sql = new StringBuilder("UPDATE ");
+            sql.append(principalTableName).append(" SET ").
+                    append(this.account).append("= :accountType").
+                    append(" WHERE ").append(external_id).append("= :externalId");
+            int affectedRows = getSimpleJdbcTemplate().update(sql.toString(), params);
+            if (affectedRows > 0) {
+                return true;
+            } else {
+                logger.error("For some reason the database refuses update the account of " + externalID.toString() + " . Consult the servers' respond.");
+                return false;
+            }
+        } else {
+            logger.error("The user with external ID " + externalID.toString() + " is not found in the data base");
+            return false;
+        }
+
+    }
+
+    @Override
+    public Number updateUser(User user) {
         Number principalID = this.getInternalIDFromURI(user.getURI());
         StringBuilder sql = new StringBuilder("UPDATE ");
         sql.append(principalTableName).append(" SET ").
@@ -171,27 +198,26 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
                 append(" WHERE ").append(principal_id).append("= ?");
         int affectedRows = getSimpleJdbcTemplate().update(sql.toString(), principalID);
         return principalID;
-      }
-     
-     
-     ////// DELETERS ////////////
-     @Override
-     public int deleteUser(Number internalID){
-           
+    }
+
+    ////// DELETERS ////////////
+    @Override
+    public int deleteUser(Number internalID) {
+
         StringBuilder sql = new StringBuilder("DELETE FROM ");
         sql.append(principalTableName).append(" where ").append(principal_id).append(" = ?");
         return getSimpleJdbcTemplate().update(sql.toString(), internalID);
 
-     }
-     
-    @Override 
-    public int deleteUserSafe(Number internalID){
-          if (userIsInUse(internalID)) {
+    }
+
+    @Override
+    public int deleteUserSafe(Number internalID) {
+        if (userIsInUse(internalID)) {
             return 0;
-        }        
+        }
         StringBuilder sql = new StringBuilder("DELETE FROM ");
         sql.append(principalTableName).append(" where ").append(principal_id).append(" = ?");
         return getSimpleJdbcTemplate().update(sql.toString(), internalID);
 
-     }
+    }
 }
