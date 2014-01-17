@@ -41,6 +41,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.JAXBElement;
 import javax.xml.parsers.ParserConfigurationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -63,6 +65,9 @@ public class UserResource {
     @Context
     private UriInfo uriInfo;
     
+    private final Logger logger = LoggerFactory.getLogger(UserResource.class);
+
+    
     final private String admin = "admin";
     
     public void setHttpRequest(HttpServletRequest request) {
@@ -76,20 +81,23 @@ public class UserResource {
     @Produces(MediaType.TEXT_XML)
     @Path("{userid}")
     @Transactional(readOnly = true)
-    public JAXBElement<User> getUser(@PathParam("userid") String ExternalIdentifier) throws SQLException, IOException {
-        final Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(httpServletRequest.getRemoteUser());
+    public JAXBElement<User> getUser(@PathParam("userid") String externalIdentifier) throws SQLException, IOException {
+        String remoteUser = httpServletRequest.getRemoteUser();
+        Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
         if (remoteUserID != null) {
             dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
-            final Number userID = dbIntegrityService.getUserInternalIdentifier(UUID.fromString(ExternalIdentifier));
+            final Number userID = dbIntegrityService.getUserInternalIdentifier(UUID.fromString(externalIdentifier));
             if (userID != null) {
                 final User user = dbIntegrityService.getUser(userID);
                 return new ObjectFactory().createUser(user);
             } else {
-                httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The user with the given id is not found in the database");
+                AnnotationResource.loggerServer.debug(HttpServletResponse.SC_NOT_FOUND + ": The user with the given id " + externalIdentifier + " is not found in the database");
+                httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The user with the given id   " + externalIdentifier + " is not found in the database");
                 return null;
             }
         } else {
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged in user is not found in the database");
+            AnnotationResource.loggerServer.debug(httpServletResponse.SC_NOT_FOUND + ": the logged-in user is not found in the database");
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged-in user is not found in the database");
             return null;
         }
     }
@@ -99,18 +107,21 @@ public class UserResource {
     @Path("/info")
     @Transactional(readOnly = true)
     public JAXBElement<User> getUserByInfo(@QueryParam("email") String email) throws SQLException, IOException {
-        final Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(httpServletRequest.getRemoteUser());
+        String remoteUser = httpServletRequest.getRemoteUser();
+        Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
         if (remoteUserID != null) {
             dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
             final User user = dbIntegrityService.getUserByInfo(email);
             if (user != null) {
                 return new ObjectFactory().createUser(user);
             } else {
+                AnnotationResource.loggerServer.debug(HttpServletResponse.SC_NOT_FOUND + ": The user with the given info is not found in the database");
                 httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The user with the given info is not found in the database");
                 return null;
             }
         } else {
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged in user is not found in the database");
+            AnnotationResource.loggerServer.debug(httpServletResponse.SC_NOT_FOUND + ": the logged-in user is not found in the database");
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged-in user is not found in the database");
             return null;
         }
     }
@@ -119,22 +130,25 @@ public class UserResource {
     @Produces(MediaType.TEXT_XML)
     @Path("{userid}/current")
     @Transactional(readOnly = true)
-    public JAXBElement<CurrentUserInfo> getCurrentUserInfo(@PathParam("userid") String ExternalIdentifier) throws IOException {
-        final Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(httpServletRequest.getRemoteUser());
+    public JAXBElement<CurrentUserInfo> getCurrentUserInfo(@PathParam("userid") String externalIdentifier) throws IOException {
+        String remoteUser = httpServletRequest.getRemoteUser();
+        Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
         if (remoteUserID != null) {
             dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
-            final Number userID = dbIntegrityService.getUserInternalIdentifier(UUID.fromString(ExternalIdentifier));
+            final Number userID = dbIntegrityService.getUserInternalIdentifier(UUID.fromString(externalIdentifier));
             if (userID != null) {
                 final CurrentUserInfo userInfo = new CurrentUserInfo();
                 userInfo.setRef(dbIntegrityService.getUserURI(userID));
                 userInfo.setCurrentUser(ifLoggedIn(userID));
                 return new ObjectFactory().createCurrentUserInfo(userInfo);
             } else {
-                httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The user with the given id is not found in the database");
+                AnnotationResource.loggerServer.debug(HttpServletResponse.SC_NOT_FOUND + ": The user with the given id " + externalIdentifier + " is not found in the database");
+                httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The user with the given id   " + externalIdentifier + " is not found in the database");
                 return null;
             }
         } else {
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged in user is not found in the database");
+            AnnotationResource.loggerServer.debug(httpServletResponse.SC_NOT_FOUND + ": the logged-in user is not found in the database");
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged-in user is not found in the database");
             return null;
         }
     }
@@ -144,7 +158,8 @@ public class UserResource {
     @Produces(MediaType.APPLICATION_XML)
     @Path("{remoteId}")
     public JAXBElement<User> addUser(@PathParam("remoteId") String remoteId, User user) throws SQLException, IOException {
-        final Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(httpServletRequest.getRemoteUser());
+        String remoteUser = httpServletRequest.getRemoteUser();
+        Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
         if (remoteUserID != null) {
             if (dbIntegrityService.getTypeOfUserAccount(remoteUserID).equals(admin)) {
                 dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
@@ -153,15 +168,15 @@ public class UserResource {
                     final User addedUser = dbIntegrityService.getUser(userID);
                     return new ObjectFactory().createUser(addedUser);
                 } else {
-                    httpServletResponse.sendError(HttpServletResponse.SC_CONFLICT, "The user with the given e-mail already exists in the database");
+                    httpServletResponse.sendError(HttpServletResponse.SC_CONFLICT, "The user canot be added to the database, (possibly) because a user with the given e-mail already exist in the database.");
                     return null;
                 }
             } else {
-                httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, "The logged in user does not have admin rights to add a user to the database");
+                httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, "The logged-in user does not have admin rights to add a user to the database");
                 return null;
             }
-        } else {
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged in user is not found in the database");
+        } else {            
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged-in user is not found in the database");
             return null;
         }
     }
@@ -171,7 +186,8 @@ public class UserResource {
     @Produces(MediaType.APPLICATION_XML)
     @Path("")
     public JAXBElement<User> updateUser(User user) throws IOException {
-        final Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(httpServletRequest.getRemoteUser());
+        String remoteUser = httpServletRequest.getRemoteUser();
+        Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
         if (remoteUserID != null) {
             if (dbIntegrityService.getTypeOfUserAccount(remoteUserID).equals(admin)) {
                 dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
@@ -180,15 +196,16 @@ public class UserResource {
                     final User addedUser = dbIntegrityService.getUser(userID);
                     return new ObjectFactory().createUser(addedUser);
                 } else {
-                    httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The user with the given id is not found in the database");
+                    AnnotationResource.loggerServer.debug(HttpServletResponse.SC_NOT_FOUND + ": The user with the given id is not found in the database");
+                    httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The user with the given id  is not found in the database");
                     return null;
                 }
             } else {
-                httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, "The logged in user does not have admin rights to update a user info in the database");
+                httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, "The logged-in user does not have admin rights to update a user info in the database");
                 return null;
             }
         } else {
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged in user is not found in the database");
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged-in user is not found in the database");
             return null;
         }
     }
@@ -196,7 +213,8 @@ public class UserResource {
     @DELETE
     @Path("{userId}")
     public String deleteUser(@PathParam("userId") String externalIdentifier) throws IOException {
-        final Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(httpServletRequest.getRemoteUser());
+        String remoteUser = httpServletRequest.getRemoteUser();
+        Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
         if (remoteUserID != null) {
             if (dbIntegrityService.getTypeOfUserAccount(remoteUserID).equals(admin)) {
                 dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
@@ -205,15 +223,16 @@ public class UserResource {
                     final Integer result = dbIntegrityService.deleteUser(userID);
                     return "There is " + result.toString() + " row deleted";
                 } else {
-                    httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The user with the given id is not found in the database");
+                    AnnotationResource.loggerServer.debug(HttpServletResponse.SC_NOT_FOUND + ": The user with the given id " + externalIdentifier + " is not found in the database");
+                    httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The user with the given id   " + externalIdentifier + " is not found in the database");
                     return null;
                 }
             } else {
-                httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, "The logged in user does not have admin rights to update a user info in the database");
+                httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, "The logged-in user does not have admin rights to update a user info in the database");
                 return null;
             }
         } else {
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged in user is not found in the database");
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged-in user is not found in the database");
             return null;
         }
     }
@@ -222,7 +241,8 @@ public class UserResource {
     @DELETE
     @Path("{userId}/safe")
     public String deleteUserSafe(@PathParam("userId") String externalIdentifier) throws IOException {
-        final Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(httpServletRequest.getRemoteUser());
+        String remoteUser = httpServletRequest.getRemoteUser();
+        Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
         if (remoteUserID != null) {
             if (dbIntegrityService.getTypeOfUserAccount(remoteUserID).equals(admin)) {
                 dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
@@ -231,15 +251,15 @@ public class UserResource {
                     final Integer result = dbIntegrityService.deleteUserSafe(userID);
                     return "There is " + result.toString() + " row deleted";
                 } else {
-                    httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The user with the given id is not found in the database");
+                    httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The user with the given id   " + externalIdentifier + " is not found in the database");
                     return null;
                 }
             } else {
-                httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, "The logged in user does not have admin rights to update a user info in the database");
+                httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, "The logged-in user does not have admin rights to update a user info in the database");
                 return null;
             }
         } else {
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged in user is not found in the database");
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged-in user is not found in the database");
             return null;
         }
     }

@@ -61,7 +61,9 @@
         <br> 
         <br>
         <b>Debugging URI's (only for developers)</b><br>
+        GET <a href="api/debug/remoteID">api/debug/remoteID</a> <br>
         GET <a href="api/debug/annotations">api/debug/annotations</a> <br>
-        GET <a href="api/debug/log/16">api/debug/log/16</a> <br>
+        GET <a href="api/debug/logDatabase/32">api/debug/logDatabase/32</a> <br>
+        GET <a href="api/debug/logServer/32">api/debug/logServer/32</a> <br>
     </body>
 </html>

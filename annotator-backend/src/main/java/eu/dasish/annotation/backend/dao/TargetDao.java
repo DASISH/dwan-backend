@@ -111,14 +111,7 @@ public interface TargetDao extends ResourceDao{
      */
     public int addTargetCachedRepresentation(Number TargetID, Number cachedID, String fragmentDescription); 
     
-    /**
-     * 
-     * @param TargetID
-     * @param classID
-     * @return # of updated rows (should be 1) when updating the row for TargetID by class classID
-     * @throws SQLException 
-     */
-    public int updateSiblingClass(Number TargetID, int classID);
+   
     
     
     /** 

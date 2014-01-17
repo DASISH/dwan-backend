@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import javax.sql.DataSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.RowMapper;
 
 /**
@@ -33,6 +35,8 @@ import org.springframework.jdbc.core.RowMapper;
  * @author olhsha
  */
 public class JdbcUserDao extends JdbcResourceDao implements UserDao {
+
+    private final Logger loggerUserDao = LoggerFactory.getLogger(JdbcUserDao.class);
 
     public JdbcUserDao(DataSource dataSource) {
         setDataSource(dataSource);
@@ -48,6 +52,12 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
     /////////// GETTERS //////////////////////
     @Override
     public User getUser(Number internalID) {
+
+        if (internalID == null) {
+            loggerUserDao.debug("internalID: " + nullArgument);
+            return null;
+        }
+
         StringBuilder sql = new StringBuilder("SELECT ");
         sql.append(principalStar).append(" FROM ").append(principalTableName).append(" WHERE ").append(principal_id).append("= ? LIMIT 1");
         List<User> result = getSimpleJdbcTemplate().query(sql.toString(), userRowMapper, internalID);
@@ -74,6 +84,12 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
 
     @Override
     public boolean userIsInUse(Number userID) {
+
+        if (userID == null) {
+            loggerUserDao.debug("userID: " + nullArgument);
+            return false;
+        }
+
         StringBuilder sqlPermissions = new StringBuilder("SELECT ");
         sqlPermissions.append(principal_id).append(" FROM ").append(permissionsTableName).append(" WHERE ").append(principal_id).append("= ? LIMIT 1");
         List<Number> resultTargets = getSimpleJdbcTemplate().query(sqlPermissions.toString(), principalIDRowMapper, userID);
@@ -92,6 +108,11 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
 
     @Override
     public boolean userExists(User user) {
+        if (user == null) {
+            loggerUserDao.debug("user: " + nullArgument);
+            return false;
+        }
+
         String emailCriterion = user.getEMail().toLowerCase();
         StringBuilder sqlTargets = new StringBuilder("SELECT ");
         sqlTargets.append(principal_id).append(" FROM ").append(principalTableName).append(" WHERE ").append(e_mail).append("= ? LIMIT 1");
@@ -105,6 +126,12 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
 
     @Override
     public String getRemoteID(Number internalID) {
+
+        if (internalID == null) {
+            loggerUserDao.debug("internalID: " + nullArgument);
+            return null;
+        }
+
         StringBuilder requestDB = new StringBuilder("SELECT ");
         requestDB.append(remote_id).append(" FROM ").append(principalTableName).append(" WHERE ").append(principal_id).append("= ? LIMIT 1");
         List<String> result = getSimpleJdbcTemplate().query(requestDB.toString(), remoteIDRowMapper, internalID);
@@ -119,6 +146,12 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
 
     @Override
     public Number getUserInternalIDFromRemoteID(String remoteID) {
+
+        if (remoteID == null) {
+            loggerUserDao.debug("remoteID: " + nullArgument);
+            return null;
+        }
+
         StringBuilder requestDB = new StringBuilder("SELECT ");
         requestDB.append(principal_id).append(" FROM ").append(principalTableName).append(" WHERE ").append(remote_id).append("= ? LIMIT 1");
         List<Number> result = getSimpleJdbcTemplate().query(requestDB.toString(), internalIDRowMapper, remoteID);
@@ -127,6 +160,12 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
 
     @Override
     public String getTypeOfUserAccount(Number internalID) {
+
+        if (internalID == null) {
+            loggerUserDao.debug("internalID: " + nullArgument);
+            return null;
+        }
+
         StringBuilder requestDB = new StringBuilder("SELECT ");
         requestDB.append(account).append(" FROM ").append(principalTableName).append(" WHERE ").append(principal_id).append("= ? LIMIT 1");
         List<String> result = getSimpleJdbcTemplate().query(requestDB.toString(), adminRightsRowMapper, internalID);
@@ -142,6 +181,17 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
     ///////////////////// ADDERS ////////////////////////////
     @Override
     public Number addUser(User user, String remoteID) {
+
+        if (remoteID == null) {
+            loggerUserDao.debug("remoteID: " + nullArgument);
+            return null;
+        }
+
+        if (user == null) {
+            loggerUserDao.debug("user: " + nullArgument);
+            return null;
+        }
+
         UUID externalIdentifier = UUID.randomUUID();
         String newExternalIdentifier = externalIdentifier.toString();
         Map<String, Object> params = new HashMap<String, Object>();
@@ -161,6 +211,17 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
     ////////// UPDATERS ///////////////////////
     @Override
     public boolean updateAccount(UUID externalID, String account) {
+
+        if (externalID == null) {
+            loggerUserDao.debug("eternalId: " + nullArgument);
+            return false;
+        }
+
+        if (account == null) {
+            loggerUserDao.debug("account: " + nullArgument);
+            return false;
+        }
+
         if (!account.equals(admin) && !account.equals(developer) && !account.equals(user)) {
             logger.error("the given type of account '" + account + "' does not exist.");
             return false;
@@ -190,6 +251,12 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
 
     @Override
     public Number updateUser(User user) {
+
+        if (user == null) {
+            loggerUserDao.debug("user: " + nullArgument);
+            return null;
+        }
+
         Number principalID = this.getInternalIDFromURI(user.getURI());
         StringBuilder sql = new StringBuilder("UPDATE ");
         sql.append(principalTableName).append(" SET ").
@@ -203,6 +270,11 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
     ////// DELETERS ////////////
     @Override
     public int deleteUser(Number internalID) {
+        if (internalID == null) {
+            loggerUserDao.debug("internalID: " + nullArgument);
+            return 0;
+        }
+
 
         StringBuilder sql = new StringBuilder("DELETE FROM ");
         sql.append(principalTableName).append(" where ").append(principal_id).append(" = ?");
@@ -212,7 +284,15 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
 
     @Override
     public int deleteUserSafe(Number internalID) {
+         
+        if (internalID == null) {
+            loggerUserDao.debug("internalID: " + nullArgument);
+            return 0;
+        }
+        
+        
         if (userIsInUse(internalID)) {
+            loggerUserDao.debug("User is in use, and cannot be deleted.");
             return 0;
         }
         StringBuilder sql = new StringBuilder("DELETE FROM ");

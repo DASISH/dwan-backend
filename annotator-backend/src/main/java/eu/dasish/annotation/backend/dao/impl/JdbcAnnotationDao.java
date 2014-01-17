@@ -35,6 +35,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import javax.sql.DataSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.RowMapper;
 
 /**
@@ -44,6 +46,8 @@ import org.springframework.jdbc.core.RowMapper;
  */
 public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao {
 
+    private  final Logger loggerAnnotationDao = LoggerFactory.getLogger(JdbcAnnotationDao.class);
+    
     public JdbcAnnotationDao(DataSource dataSource) {
         setDataSource(dataSource);
         internalIdName = annotation_id;
@@ -64,6 +68,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
             sql.append(target_id).append(" FROM ").append(annotationsTargetsTableName).append(" WHERE ").append(annotation_id).append("= ?");
             return getSimpleJdbcTemplate().query(sql.toString(), TargetIDRowMapper, annotationID);
         } else {
+            loggerAnnotationDao.debug(nullArgument);
             return null;
         }
     }
@@ -72,6 +77,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
     @Override
     public List<Map<Number, String>> getPermissions(Number annotationID) {
         if (annotationID == null) {
+            loggerAnnotationDao.debug(nullArgument);
             return null;
         }
         StringBuilder sql = new StringBuilder("SELECT ");
@@ -89,9 +95,16 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
 
     @Override
     public Permission getPermission(Number annotationID, Number userID) {
-        if (annotationID == null || userID == null) {
+        if (annotationID == null) {
+            loggerAnnotationDao.debug("annotationID: "+nullArgument);
             return null;
         }
+        
+        if (userID == null) {
+            loggerAnnotationDao.debug("userID: "+nullArgument);
+            return null;
+        }
+        
         StringBuilder sql = new StringBuilder("SELECT ");
         sql.append(permission).append(" FROM ").append(permissionsTableName).append(" WHERE ").
                 append(annotation_id).append("  = ").append(annotationID.toString()).append(" AND ").
@@ -114,7 +127,13 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
 
     @Override
     public List<Number> getAnnotationIDsForUserWithPermission(Number userID, String[] permissionStrings) {
-        if (userID == null || permissionStrings == null) {
+        if (permissionStrings == null) {
+            loggerAnnotationDao.debug("premissionStrings: "+nullArgument);
+            return null;
+        }
+        
+         if (userID == null) {
+            loggerAnnotationDao.debug("userID: "+nullArgument);
             return null;
         }
 
@@ -153,6 +172,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         Map<String, Object> params = new HashMap<String, Object>();
 
         if (annotationIDs == null) {
+            loggerAnnotationDao.debug("annotationIDs: "+nullArgument);
             return null;
         } else {
             if (annotationIDs.isEmpty()) {
@@ -192,14 +212,15 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
 
     //////////////////////////////
     @Override
-    public List<Number> retrieveAnnotationList(List<Number> TargetIDs) {
-        if (TargetIDs == null) {
+    public List<Number> retrieveAnnotationList(List<Number> targetIDs) {
+        if (targetIDs == null) {
+           loggerAnnotationDao.debug("targetIDs: "+nullArgument);
             return null;
         }
-        if (TargetIDs.isEmpty()) {
+        if (targetIDs.isEmpty()) {
             return new ArrayList<Number>();
         }
-        String values = makeListOfValues(TargetIDs);
+        String values = makeListOfValues(targetIDs);
         StringBuilder query = new StringBuilder("SELECT DISTINCT ");
         query.append(annotation_id).append(" FROM ").append(annotationsTargetsTableName).append(" WHERE ").append(target_id).append(" IN ");
         query.append(values);
@@ -209,6 +230,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
     @Override
     public AnnotationInfo getAnnotationInfoWithoutTargets(Number annotationID) {
         if (annotationID == null) {
+            loggerAnnotationDao.debug("annotationID: "+nullArgument);
             return null;
         }
         StringBuilder sql = new StringBuilder("SELECT  ");
@@ -246,6 +268,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
     @Override
     public List<String> getAnnotationREFs(List<Number> annotationIDs) {
         if (annotationIDs == null) {
+           loggerAnnotationDao.debug("annotationIDs: "+nullArgument);
             return null;
         }
         if (annotationIDs.isEmpty()) {
@@ -268,6 +291,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
     @Override
     public Annotation getAnnotationWithoutTargetsAndPermissions(Number annotationID) {
         if (annotationID == null) {
+            loggerAnnotationDao.debug("annotationID: "+nullArgument);
             return null;
         }
         StringBuilder sql = new StringBuilder("SELECT ");
@@ -306,6 +330,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
     @Override
     public Number  getOwner(Number annotationID){
         if (annotationID == null) {
+            loggerAnnotationDao.debug("annotationID: "+nullArgument);
             return null;
         }
         StringBuilder sql = new StringBuilder("SELECT ");
@@ -388,6 +413,21 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
     @Override
     public int updateAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission) {
 
+        if (annotationID == null) {
+            loggerAnnotationDao.debug("annotationID: "+nullArgument);
+            return 0;
+        }
+        
+        if (userID == null) {
+            loggerAnnotationDao.debug("userID: "+nullArgument);
+            return 0;
+        }
+        
+         if (permission == null) {
+            loggerAnnotationDao.debug("permission: "+nullArgument);
+            return 0;
+        }
+        
         Map<String, Object> params = new HashMap<String, Object>();
 
         params.put("annotationID", annotationID);
@@ -415,6 +455,11 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
     public Number addAnnotation(Annotation annotation) {
 
         String[] body = retrieveBodyComponents(annotation.getBody());
+        
+        if (annotation == null) {
+            loggerAnnotationDao.debug("annotation: "+nullArgument);
+            return 0;
+        }
 
         // generate a new annotation ID 
         UUID externalID = UUID.randomUUID();
@@ -436,6 +481,17 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
     //////////////////////////////////////////////////////////////////////////////////
     @Override
     public int addAnnotationTarget(Number annotationID, Number targetID) {
+        
+        if (annotationID == null) {
+            loggerAnnotationDao.debug("annotationID: "+nullArgument);
+            return 0;
+        }
+        
+        if (targetID == null) {
+            loggerAnnotationDao.debug("targetID: "+nullArgument);
+            return 0;
+        }
+        
         Map<String, Object> paramsAnnotationsTargets = new HashMap<String, Object>();
         paramsAnnotationsTargets.put("annotationId", annotationID);
         paramsAnnotationsTargets.put("targetId", targetID);
@@ -447,6 +503,23 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
     /////////////////////////////////////////////////////////////////////////////////////////
     @Override
     public int addAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission) {
+        
+         if (annotationID == null) {
+            loggerAnnotationDao.debug("annotationID: "+nullArgument);
+            return 0;
+        }
+        
+        if (userID == null) {
+            loggerAnnotationDao.debug("userID: "+nullArgument);
+            return 0;
+        }
+        
+         if (permission == null) {
+            loggerAnnotationDao.debug("permission: "+nullArgument);
+            return 0;
+        }
+               
+        
         Map<String, Object> paramsPermissions = new HashMap<String, Object>();
         paramsPermissions.put("annotationId", annotationID);
         paramsPermissions.put("principalId", userID);
@@ -469,6 +542,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
             sqlAnnotation.append(annotationTableName).append(" where ").append(annotation_id).append(" = ?");
             return (getSimpleJdbcTemplate().update(sqlAnnotation.toString(), annotationID));
         } else {
+            loggerAnnotationDao.debug("annotationID: "+nullArgument);
             return 0;
         }
     }
@@ -480,6 +554,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
             sqlTargetTargets.append(annotationsTargetsTableName).append(" WHERE ").append(annotation_id).append(" = ?");
             return getSimpleJdbcTemplate().update(sqlTargetTargets.toString(), annotationID); // # removed "annotations_target_Targets" rows
         } else {
+            loggerAnnotationDao.debug("annotationID: "+nullArgument);
             return 0;
         }
     }
@@ -492,6 +567,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
             sqlPermissions.append(permissionsTableName).append(" WHERE ").append(annotation_id).append(" = ?");
             return getSimpleJdbcTemplate().update(sqlPermissions.toString(), annotationID); // removed "permission" rows 
         } else {
+            loggerAnnotationDao.debug("annotationID: "+nullArgument);
             return 0;
         }
 
@@ -511,7 +587,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
                 result[0] = textBody.getBody();
                 result[1] = textBody.getMimeType();
             } else {
-                logger.error("Ill-formed body: both options, xml-body and text-body, are set to null. ");
+                loggerAnnotationDao.error("Ill-formed body: both options, xml-body and text-body, are set to null. ");
                 return null;
             }
         }

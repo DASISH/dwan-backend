@@ -82,10 +82,11 @@ public class AnnotationResource {
     private Providers providers;
     @Context
     private ServletContext context;
-    
     final String default_permission = "reader";
     private final Logger logger = LoggerFactory.getLogger(AnnotationResource.class);
-    
+    public static final Logger loggerServer = LoggerFactory.getLogger(HttpServletResponse.class);
+    final private String admin = "admin";
+
     public void setUriInfo(UriInfo uriInfo) {
         this.uriInfo = uriInfo;
     }
@@ -105,36 +106,36 @@ public class AnnotationResource {
     public AnnotationResource() {
     }
 
-    
-
     @GET
     @Produces(MediaType.TEXT_XML)
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}")
     @Transactional(readOnly = true)
-    public JAXBElement<Annotation> getAnnotation(@PathParam("annotationid") String ExternalIdentifier) throws IOException {
+    public JAXBElement<Annotation> getAnnotation(@PathParam("annotationid") String externalIdentifier) throws IOException {
         URI baseURI = uriInfo.getBaseUri();
         String baseURIstr = baseURI.toString();
         dbIntegrityService.setServiceURI(baseURIstr);
-        final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(ExternalIdentifier));
+        final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(externalIdentifier));
         if (annotationID != null) {
             String remoteUser = httpServletRequest.getRemoteUser();
             final Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
             if (userID != null) {
-                if (canRead(userID, annotationID)) {
+                if (dbIntegrityService.getTypeOfUserAccount(userID).equals(admin) || canRead(userID, annotationID)) {
                     final Annotation annotation = dbIntegrityService.getAnnotation(annotationID);
                     JAXBElement<Annotation> rootElement = new ObjectFactory().createAnnotation(annotation);
-                    logger.info("getAnnotation method: OK");
                     return rootElement;
                 } else {
+                    loggerServer.debug(httpServletResponse.SC_FORBIDDEN + ": The logged-in user cannot read the annotation.");
                     httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "The logged-in user cannot read the annotation.");
                     return null;
                 }
             } else {
-                httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The annotation with the given id is not found in the database");
+                loggerServer.debug(httpServletResponse.SC_NOT_FOUND + ": the logged-in user is not found in the database");
+                httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged-in user is not found in the database");
                 return null;
             }
         } else {
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged in user is not found in the database");
+            loggerServer.debug(HttpServletResponse.SC_NOT_FOUND + ": The annotation with the given id " + externalIdentifier + " is not found in the database");
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The annotation with the given id " + externalIdentifier + " is not found in the database");
             return null;
         }
 
@@ -145,26 +146,30 @@ public class AnnotationResource {
     @Produces(MediaType.TEXT_XML)
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}/targets")
     @Transactional(readOnly = true)
-    public JAXBElement<ReferenceList> getAnnotationTargets(@PathParam("annotationid") String ExternalIdentifier) throws IOException {
+    public JAXBElement<ReferenceList> getAnnotationTargets(@PathParam("annotationid") String externalIdentifier) throws IOException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
-        final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(ExternalIdentifier));
+        final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(externalIdentifier));
         if (annotationID != null) {
-            final Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(httpServletRequest.getRemoteUser());
+            String remoteUser = httpServletRequest.getRemoteUser();
+            final Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
             if (userID != null) {
-                if (canRead(userID, annotationID)) {
+                if (dbIntegrityService.getTypeOfUserAccount(userID).equals(admin) || canRead(userID, annotationID)) {
                     final ReferenceList TargetList = dbIntegrityService.getAnnotationTargets(annotationID);
                     logger.info("getAnnotationTargets method: OK");
                     return new ObjectFactory().createTargetList(TargetList);
                 } else {
+                    loggerServer.debug(httpServletResponse.SC_FORBIDDEN + ": The logged-in user cannot read the annotation.");
                     httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "The logged-in user cannot read the annotation.");
                     return null;
                 }
             } else {
-                httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The annotation with the given id is not found in the database");
+                loggerServer.debug(httpServletResponse.SC_NOT_FOUND + ": the logged-in user is not found in the database");
+                httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged-in user is not found in the database");
                 return null;
             }
         } else {
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged in user is not found in the database");
+            loggerServer.debug(HttpServletResponse.SC_NOT_FOUND + ": The annotation with the given id " + externalIdentifier + " is not found in the database");
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The annotation with the given id " + externalIdentifier + " is not found in the database");
             return null;
         }
     }
@@ -183,7 +188,8 @@ public class AnnotationResource {
             @QueryParam("before") Timestamp before) throws IOException {
 
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
-        Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(httpServletRequest.getRemoteUser());
+        String remoteUser = httpServletRequest.getRemoteUser();
+        Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
         if (userID != null) {
             UUID ownerExternalUUID = (ownerExternalId != null) ? UUID.fromString(ownerExternalId) : null;
             String access = (permission != null) ? permission : default_permission;
@@ -191,7 +197,8 @@ public class AnnotationResource {
             logger.info("getFilteredAnnotations method: OK");
             return new ObjectFactory().createAnnotationInfoList(annotationInfoList);
         } else {
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged in user is not found in the database");
+            loggerServer.debug(httpServletResponse.SC_NOT_FOUND + ": the logged-in user is not found in the database");
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged-in user is not found in the database");
             return null;
         }
 
@@ -202,26 +209,30 @@ public class AnnotationResource {
     @Produces(MediaType.TEXT_XML)
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}/permissions")
     @Transactional(readOnly = true)
-    public JAXBElement<UserWithPermissionList> getAnnotationPermissions(@PathParam("annotationid") String ExternalIdentifier) throws IOException {
+    public JAXBElement<UserWithPermissionList> getAnnotationPermissions(@PathParam("annotationid") String externalIdentifier) throws IOException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
-        final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(ExternalIdentifier));
-        final Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(httpServletRequest.getRemoteUser());
+        final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(externalIdentifier));
+        String remoteUser = httpServletRequest.getRemoteUser();
+        Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
         if (userID != null) {
             if (annotationID != null) {
-                if (canRead(userID, annotationID)) {
+                if (dbIntegrityService.getTypeOfUserAccount(userID).equals(admin) || canRead(userID, annotationID)) {
                     final UserWithPermissionList permissionList = dbIntegrityService.getPermissionsForAnnotation(annotationID);
-                    logger.info("getAnnotationPermissions method: OK");
+                    logger.debug("getAnnotationPermissions method: OK");
                     return new ObjectFactory().createPermissionList(permissionList);
                 } else {
+                    loggerServer.debug(httpServletResponse.SC_FORBIDDEN + ": The logged-in user cannot read the annotation.");
                     httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "The logged-in user cannot read the annotation.");
                     return null;
                 }
             } else {
-                httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The annotation with the given id is not found in the database");
+                loggerServer.debug(HttpServletResponse.SC_NOT_FOUND + ": The annotation with the given id " + externalIdentifier + " is not found in the database");
+                httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The annotation with the given id " + externalIdentifier + " is not found in the database");
                 return null;
             }
         } else {
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged in user is not found in the database");
+            loggerServer.debug(httpServletResponse.SC_NOT_FOUND + ": the logged-in user is not found in the database");
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged-in user is not found in the database");
             return null;
         }
     }
@@ -233,7 +244,8 @@ public class AnnotationResource {
     public String deleteAnnotation(@PathParam("annotationid") String externalIdentifier) throws IOException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(externalIdentifier));
-        final Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(httpServletRequest.getRemoteUser());
+        String remoteUser = httpServletRequest.getRemoteUser();
+        Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
         if (userID != null) {
             if (annotationID != null) {
                 if (isOwner(userID, annotationID)) {
@@ -242,16 +254,19 @@ public class AnnotationResource {
                     logger.info("deleteAnnotation method: OK");
                     return result + " annotation(s) deleted.";
                 } else {
+                    loggerServer.debug(httpServletResponse.SC_FORBIDDEN + ": The logged-in user cannot delete the annotation. Only the owner can delete the annotation.");
                     httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "The logged-in user cannot delete the annotation. Only the owner can delete the annotation.");
                     return null;
                 }
             } else {
-                httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The annotation with the given id is not found in the database.");
+                loggerServer.debug(HttpServletResponse.SC_NOT_FOUND + ": The annotation with the given id " + externalIdentifier + " is not found in the database");
+                httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The annotation with the given id  " + externalIdentifier + " is not found in the database.");
                 return null;
             }
 
         } else {
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged in user is not found in the database.");
+            loggerServer.debug(httpServletResponse.SC_NOT_FOUND + ": the logged-in user is not found in the database.");
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged-in user is not found in the database.");
             return null;
         }
     }
@@ -264,13 +279,14 @@ public class AnnotationResource {
     @Path("")
     public JAXBElement<ResponseBody> createAnnotation(Annotation annotation) throws IOException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
-        final Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(httpServletRequest.getRemoteUser());
+        String remoteUser = httpServletRequest.getRemoteUser();
+        Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
         if (userID != null) {
             Number annotationID = dbIntegrityService.addUsersAnnotation(userID, annotation);
-            logger.info("createAnnotation method: OK");
             return new ObjectFactory().createResponseBody(makeAnnotationResponseEnvelope(annotationID));
         } else {
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged in user is not found in the database.");
+            loggerServer.debug(httpServletResponse.SC_NOT_FOUND + ": the logged-in user is not found in the database");
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged-in user is not found in the database.");
             return null;
         }
     }
@@ -287,13 +303,15 @@ public class AnnotationResource {
         String annotationURI = annotation.getURI();
 
         if (!(path + "annotations/" + externalIdentifier).equals(annotationURI)) {
-            httpServletResponse.sendError(HttpServletResponse.SC_CONFLICT, "Wrong request: the external annotation ID and the annotation ID from the request body do not match. Correct the request and resend.");
+            loggerServer.debug(httpServletResponse.SC_CONFLICT + "Wrong request: the annotation identifier   " + externalIdentifier + " and the annotation ID from the request body do not match. Correct the request and resend.");
+            httpServletResponse.sendError(HttpServletResponse.SC_CONFLICT, "Wrong request: the annotation identifier   " + externalIdentifier + " and the annotation ID from the request body do not match. Correct the request and resend.");
             return null;
         }
 
         List<UserWithPermission> permissions = annotation.getPermissions().getUserWithPermission();
         String ownerURI = annotation.getOwnerRef();
         if (!ownerIsListed(ownerURI, permissions)) {
+            loggerServer.debug(httpServletResponse.SC_CONFLICT + "Wrong request body: the  owner URI's is not listed in the list of permissions as 'owner'. Correct the request and resend.");
             httpServletResponse.sendError(HttpServletResponse.SC_CONFLICT, "Wrong request body: the  owner URI's is not listed in the list of permissions as 'owner'. Correct the request and resend.");
             return null;
         }
@@ -301,23 +319,26 @@ public class AnnotationResource {
 
         final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(externalIdentifier));
         if (annotationID != null) {
-            final Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(httpServletRequest.getRemoteUser());
+            String remoteUser = httpServletRequest.getRemoteUser();
+            Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
             if (userID != null) {
                 if (isOwner(userID, annotationID)) {
                     int updatedRows = dbIntegrityService.updateUsersAnnotation(userID, annotation);
-                    logger.info("updateAnnotation method: OK");
                     return new ObjectFactory().createResponseBody(makeAnnotationResponseEnvelope(annotationID));
 
                 } else {
-                    httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Only owner can update the annotation fully (incl. permissions). Only writer can update the annotation's body.");
+                    loggerServer.debug(httpServletResponse.SC_UNAUTHORIZED + "Only the owner can update the annotation fully (incl. permissions). Only writer can update the annotation's body.");
+                    httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Only the owner can update the annotation fully (incl. permissions). Only writer can update the annotation's body.");
                     return null;
                 }
             } else {
-                httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The annotation with the given id is not found in the database.");
+                loggerServer.debug(httpServletResponse.SC_NOT_FOUND + ": the logged-in user is not found in the database");
+                httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged-in user is not found in the database.");
                 return null;
             }
         } else {
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged in user is not found in the database.");
+            loggerServer.debug(HttpServletResponse.SC_NOT_FOUND + ": The annotation with the given id " + externalIdentifier + " is not found in the database");
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The annotation with the given id   " + externalIdentifier + " is not found in the database.");
             return null;
         }
     }
@@ -330,23 +351,26 @@ public class AnnotationResource {
         String path = uriInfo.getBaseUri().toString();
         dbIntegrityService.setServiceURI(path);
         final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(externalIdentifier));
-        final Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(httpServletRequest.getRemoteUser());
+        String remoteUser = httpServletRequest.getRemoteUser();
+        Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
         if (userID != null) {
             if (annotationID != null) {
                 if (canWrite(userID, annotationID)) {
                     int updatedRows = dbIntegrityService.updateAnnotationBody(annotationID, annotationBody);
-                    logger.info("updateAnnotationBody method: OK");
                     return new ObjectFactory().createResponseBody(makeAnnotationResponseEnvelope(annotationID));
                 } else {
+                    loggerServer.debug(httpServletResponse.SC_UNAUTHORIZED + "The logged-in user cannot change the body of this annotation because (s)he is  not its 'writer'.");
                     httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, "The logged-in user cannot change the body of this annotation because (s)he is  not its 'writer'.");
                     return null;
                 }
             } else {
-                httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The annotation with the given id is not found in the database.");
+                loggerServer.debug(HttpServletResponse.SC_NOT_FOUND + ": The annotation with the given id " + externalIdentifier + " is not found in the database");
+                httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The annotation with the given id   " + externalIdentifier + " is not found in the database.");
                 return null;
             }
         } else {
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged in user is not found in the database.");
+            loggerServer.debug(httpServletResponse.SC_NOT_FOUND + ": the logged-in user is not found in the database");
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged-in user is not found in the database.");
             return null;
         }
     }
@@ -357,7 +381,8 @@ public class AnnotationResource {
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}/permissions/{userid: " + BackendConstants.regExpIdentifier + "}")
     public String updatePermission(@PathParam("annotationid") String annotationExternalId, @PathParam("userid") String userExternalId, Permission permission) throws IOException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
-        final Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(httpServletRequest.getRemoteUser());
+        String remoteUser = httpServletRequest.getRemoteUser();
+        Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
         if (remoteUserID != null) {
             final Number userID = dbIntegrityService.getUserInternalIdentifier(UUID.fromString(userExternalId));
             if (userID != null) {
@@ -371,20 +396,24 @@ public class AnnotationResource {
                         return result + " rows are updated/added";
 
                     } else {
+                        loggerServer.debug(httpServletResponse.SC_UNAUTHORIZED + "The logged-in user cannot change the body of this annotation because (s)he is  not its 'writer'.");
                         httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, "The logged-in user cannot change the rights on this annotation because (s)he is  not its owner.");
                         return null;
                     }
                 } else {
-                    httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The annotation with the given id is not found in the database.");
+                    loggerServer.debug(HttpServletResponse.SC_NOT_FOUND + ": The annotation with the given id " + annotationExternalId + " is not found in the database");
+                    httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The annotation with the given id  " + annotationExternalId + "  is not found in the database.");
                     return null;
                 }
             } else {
-                httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The user with the given id is not found in the database.");
+                loggerServer.debug(HttpServletResponse.SC_NOT_FOUND + ": The user with the given id   " + userExternalId + " is not found in the database");
+                httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The user with the given id   " + userExternalId + " is not found in the database.");
                 return null;
             }
 
         } else {
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged in user is not found in the database.");
+            loggerServer.debug(httpServletResponse.SC_NOT_FOUND + ": the logged-in user is not found in the database");
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged-in user is not found in the database.");
             return null;
         }
     }
@@ -396,22 +425,26 @@ public class AnnotationResource {
     public JAXBElement<ResponseBody> updatePermissions(@PathParam("annotationid") String annotationExternalId, UserWithPermissionList permissions) throws IOException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(annotationExternalId));
-        final Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(httpServletRequest.getRemoteUser());
+        String remoteUser = httpServletRequest.getRemoteUser();
+        Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
         if (remoteUserID != null) {
             if (annotationID != null) {
                 if (isOwner(remoteUserID, annotationID)) {
                     int updatedRows = dbIntegrityService.updatePermissions(annotationID, permissions);
                     return new ObjectFactory().createResponseBody(makePermissionResponseEnvelope(annotationID));
                 } else {
-                    httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, "The logged-in user cannot change the rights on this annotation because (s)he is  not its owner.");
+                    loggerServer.debug(httpServletResponse.SC_UNAUTHORIZED + "The logged-in user cannot change the access rights on this annotation because (s)he is  not its owner.");
+                    httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, "The logged-in user cannot change the access rights on this annotation because (s)he is  not its owner.");
                     return null;
                 }
             } else {
-                httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The annotation with the given id is not found in the database.");
+                loggerServer.debug(HttpServletResponse.SC_NOT_FOUND + ": The annotation with the given id " + annotationExternalId + " is not found in the database");
+                httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The annotation with the given id  " + annotationExternalId + "  is not found in the database.");
                 return null;
             }
         } else {
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged in user is not found in the database.");
+            loggerServer.debug(httpServletResponse.SC_NOT_FOUND + ": the logged-in user is not found in the database");
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged-in user is not found in the database.");
             return null;
         }
     }

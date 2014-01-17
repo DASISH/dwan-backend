@@ -282,14 +282,14 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         if (annotationIDs != null) {
             AnnotationInfoList result = new AnnotationInfoList();
             for (Number annotationID : annotationIDs) {
-                Number ownerID = annotationDao.getOwner(annotationID);               
+                Number ownerID = annotationDao.getOwner(annotationID);
                 ReferenceList targets = getAnnotationTargets(annotationID);
                 AnnotationInfo annotationInfo = annotationDao.getAnnotationInfoWithoutTargets(annotationID);
                 annotationInfo.setTargets(targets);
-                if (ownerID != null){
-                annotationInfo.setOwnerRef(userDao.getURIFromInternalID(ownerID));}
-                else {
-                   annotationInfo.setOwnerRef("ACHTUNG: This annotation does not have an owner in the DB!!!!");
+                if (ownerID != null) {
+                    annotationInfo.setOwnerRef(userDao.getURIFromInternalID(ownerID));
+                } else {
+                    annotationInfo.setOwnerRef("ACHTUNG: This annotation does not have an owner in the DB!!!!");
                 }
                 result.getAnnotationInfo().add(annotationInfo);
             }
@@ -370,12 +370,11 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     }
 
     ///// UPDATERS /////////////////
-    
     @Override
     public boolean updateAccount(UUID userExternalID, String account) {
         return userDao.updateAccount(userExternalID, account);
     }
-    
+
     @Override
     public int updateAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission) {
         return annotationDao.updateAnnotationPrincipalPermission(annotationID, userID, permission);
@@ -461,7 +460,11 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     public Number addUsersAnnotation(Number userID, Annotation annotation) {
         Number annotationID = annotationDao.addAnnotation(annotation);
         int affectedAnnotRows = addTargets(annotation, annotationID);
-        int addedPrincipalsPermissions = addPrincipalsPermissions(annotation.getPermissions().getUserWithPermission(), annotationID);
+        if (annotation.getPermissions() != null) {
+            if (annotation.getPermissions().getUserWithPermission() != null) {
+                int addedPrincipalsPermissions = addPrincipalsPermissions(annotation.getPermissions().getUserWithPermission(), annotationID);
+            }
+        }
         int affectedPermissions = annotationDao.addAnnotationPrincipalPermission(annotationID, userID, Permission.OWNER);
         return annotationID;
     }
