@@ -30,6 +30,8 @@ import java.util.UUID;
 import javax.sql.DataSource;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.XMLGregorianCalendar;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.RowMapper;
 
 /**
@@ -37,6 +39,8 @@ import org.springframework.jdbc.core.RowMapper;
  * @author olhsha
  */
 public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
+
+    private final Logger loggerTargetDao = LoggerFactory.getLogger(JdbcTargetDao.class);
 
     public JdbcTargetDao(DataSource dataTarget) {
         setDataSource(dataTarget);
@@ -52,6 +56,12 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
     //////////////////////// GETTERS ///////////////////////////////////
     @Override
     public Target getTarget(Number internalID) {
+
+        if (internalID == null) {
+            loggerTargetDao.debug("internalID: " + nullArgument);
+            return null;
+        }
+
         StringBuilder sql = new StringBuilder("SELECT ");
         sql.append(targetStar).append(" FROM ").append(targetTableName).append(" WHERE ").append(target_id).append("= ? LIMIT 1");
         List<Target> result = getSimpleJdbcTemplate().query(sql.toString(), targetRowMapper, internalID);
@@ -69,6 +79,12 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
 
     @Override
     public String getLink(Number internalID) {
+
+        if (internalID == null) {
+            loggerTargetDao.debug("internalID: " + nullArgument);
+            return null;
+        }
+
         StringBuilder sql = new StringBuilder("SELECT ");
         sql.append(targetStar).append(" FROM ").append(targetTableName).append(" WHERE ").append(target_id).append("= ? LIMIT 1");
         List<String> result = getSimpleJdbcTemplate().query(sql.toString(), linkRowMapper, internalID);
@@ -85,12 +101,23 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
     @Override
     public List<Number> getCachedRepresentations(Number targetID) {
 
+        if (targetID == null) {
+            loggerTargetDao.debug("targetID: " + nullArgument);
+            return null;
+        }
+
         String sql = "SELECT " + cached_representation_id + " FROM " + targetsCachedRepresentationsTableName + " WHERE " + target_id + " = ?";
         return getSimpleJdbcTemplate().query(sql, cachedIDRowMapper, targetID);
     }
 
     @Override
     public Map<Number, String> getCachedRepresentationFragmentPairs(Number targetID) {
+
+        if (targetID == null) {
+            loggerTargetDao.debug("targetID: " + nullArgument);
+            return null;
+        }
+
         Map<Number, String> result = new HashMap<Number, String>();
         String sql = "SELECT " + cached_representation_id + "," + fragment_descriptor_in_cached + " FROM " + targetsCachedRepresentationsTableName + " WHERE " + target_id + " = ?";
         List<Map<Number, String>> respond = getSimpleJdbcTemplate().query(sql, cachedFragmentRowMapper, targetID);
@@ -112,6 +139,7 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
     @Override
     public List<TargetInfo> getTargetInfos(List<Number> targets) {
         if (targets == null) {
+            loggerTargetDao.debug("targets: " + nullArgument);
             return null;
         }
         if (targets.isEmpty()) {
@@ -135,6 +163,10 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
     /////////////////////////////////////////////////////
     @Override
     public List<Number> getTargetsReferringTo(String word) {
+        if (word == null) {
+            loggerTargetDao.debug("word: " + nullArgument);
+            return null;
+        }
         String searchTerm = "%" + word + "%";
         StringBuilder sql = new StringBuilder("SELECT ");
         sql.append(target_id).append(" FROM ").append(targetTableName).append(" WHERE ").append(link_uri).append(" LIKE ? ");
@@ -144,6 +176,11 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
     /////////////////////////////////////////////////////
     @Override
     public List<Number> getTargetsForLink(String link) {
+        if (link == null) {
+            loggerTargetDao.debug("link: " + nullArgument);
+            return null;
+        }
+
         StringBuilder sql = new StringBuilder("SELECT ");
         sql.append(target_id).append(" FROM ").append(targetTableName).append(" WHERE ").append(link_uri).append(" =  ? ");
         return getSimpleJdbcTemplate().query(sql.toString(), internalIDRowMapper, link);
@@ -152,6 +189,12 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
     /////////////////////////////////////////////////
     @Override
     public boolean targetIsInUse(Number targetID) {
+        if (targetID == null) {
+            loggerTargetDao.debug("targetID: " + nullArgument);
+            return false;
+        }
+
+
         StringBuilder sqlAnnotations = new StringBuilder("SELECT ");
         sqlAnnotations.append(annotation_id).append(" FROM ").append(annotationsTargetsTableName).append(" WHERE ").append(target_id).append(" = ? LIMIT 1");
         List<Number> resultAnnotations = getSimpleJdbcTemplate().query(sqlAnnotations.toString(), annotationIDRowMapper, targetID);
@@ -164,6 +207,13 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
     ///////////////////////// ADDERS /////////////////////////////////
     @Override
     public Number addTarget(Target target) {
+        
+        if (target == null) {
+            loggerTargetDao.debug("target: " + nullArgument);
+            return null;
+        }
+
+        
         UUID externalID = UUID.randomUUID();
         String[] linkParts = splitLink(target.getLink());
         Map<String, Object> params = new HashMap<String, Object>();
@@ -180,6 +230,16 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
     ///////////////////////////////////////////////////////////////////
     @Override
     public int addTargetCachedRepresentation(Number targetID, Number cachedID, String fragmentDescriptor) {
+         if (targetID == null) {
+            loggerTargetDao.debug("targetID: " + nullArgument);
+            return 0;
+        }
+
+         if (cachedID == null) {
+            loggerTargetDao.debug("cachedID: " + nullArgument);
+            return 0;
+        }
+         
         Map<String, Object> paramsJoint = new HashMap<String, Object>();
         paramsJoint.put("targetId", targetID);
         paramsJoint.put("cachedId", cachedID);
@@ -188,21 +248,18 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
         return getSimpleJdbcTemplate().update(sqlJoint.toString(), paramsJoint);
     }
 
-    ///////////////////////////////////////////////////////////////////
-    @Override
-    public int updateSiblingClass(Number TargetID, int classID) {
-        if (TargetID == null) {
-            return 0;
-        }
-        StringBuilder sql = new StringBuilder("UPDATE ");
-        sql.append(targetTableName).append(" SET ").append(sibling_Target_class).append("= '").append(classID).append("' WHERE ").append(target_id).append("= ?");
-        return getSimpleJdbcTemplate().update(sql.toString(), TargetID);
-    }
+   
 
 ////////////////////// DELETERS ////////////////////////
     @Override
     public int deleteTarget(Number internalID) {
+        if (internalID == null) {
+            loggerTargetDao.debug("internalID: " + nullArgument);
+            return 0;
+        }
+        
         if (targetIsInUse(internalID)) {
+            loggerTargetDao.debug("The target is in use, and cannot be deleted.");
             return 0;
         }
         StringBuilder sqlTargetsVersions = new StringBuilder("DELETE FROM ");
@@ -214,9 +271,18 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
     ///////////////////////////////////////////////////////////////////
     @Override
     public int deleteTargetCachedRepresentation(Number targetID, Number cachedID) {
-        if (targetID == null || cachedID == null) {
+        
+         if (targetID == null) {
+            loggerTargetDao.debug("targetID: " + nullArgument);
             return 0;
         }
+
+         if (cachedID == null) {
+            loggerTargetDao.debug("cachedID: " + nullArgument);
+            return 0;
+        }
+        
+       
         Map<String, Object> paramsJoint = new HashMap<String, Object>();
         paramsJoint.put("targetId", targetID);
         paramsJoint.put("cachedId", cachedID);

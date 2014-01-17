@@ -97,7 +97,8 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     protected String internalIdName = null;
     protected String resourceTableName = null;
     protected String _serviceURI;
-    private static final Logger _logger = LoggerFactory.getLogger(JdbcResourceDao.class);
+    private final Logger _logger = LoggerFactory.getLogger(JdbcResourceDao.class);
+    protected String nullArgument = "Null argument is given to the method.";
 
     ////////
     /////////////////// Class field SETTERS /////////////
@@ -109,18 +110,25 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     //////////////////////////////////////////////////////////////////////////////////
     @Override
     public Number getInternalID(UUID externalId) {
-        if (externalId == null) {
-            return null;
-        }
         StringBuilder sql = new StringBuilder("SELECT ");
         sql.append(internalIdName).append(" FROM ").append(resourceTableName).append(" WHERE ").append(external_id).append("= ? LIMIT 1");
         List<Number> sqlResult = getSimpleJdbcTemplate().query(sql.toString(), internalIDRowMapper, externalId.toString());
-        return (sqlResult.isEmpty() ? null : sqlResult.get(0));
+        if (sqlResult.isEmpty()) {
+            _logger.debug("The object with external ID " + externalId.toString() + " is not found in the database.");
+            return null;
+        } else {
+            return sqlResult.get(0);
+        }
+
     }
 
     /////////////////////////////////////////////
     @Override
     public UUID getExternalID(Number internalId) {
+        if (internalId == null) {
+            _logger.debug("internalId: " + nullArgument);
+            return null;
+        }
         StringBuilder sql = new StringBuilder("SELECT ");
         sql.append(external_id).append(" FROM ").append(resourceTableName).append(" WHERE ").append(internalIdName).append("= ? LIMIT 1");
         List<UUID> sqlResult = getSimpleJdbcTemplate().query(sql.toString(), externalIDRowMapper, internalId);
@@ -131,12 +139,21 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     @Override
     public Number getInternalIDFromURI(String uri) {
         String externalID = stringURItoExternalID(uri);
-        return getInternalID(UUID.fromString(externalID));
+        try {
+            return getInternalID(UUID.fromString(externalID));
+        } catch (IllegalArgumentException e) {
+            _logger.debug("Got a non valid external ID (not an UUID) " + externalID + " from uri " + uri);
+            return null;
+        }
     }
 
     //////////////////////////////////////////////
     @Override
     public String getURIFromInternalID(Number internalID) {
+        if (internalID == null) {
+            _logger.debug("internalID: " + nullArgument);
+            return null;
+        }
         return externalIDtoURI(getExternalID(internalID).toString());
     }
 

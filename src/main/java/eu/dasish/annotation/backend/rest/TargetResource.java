@@ -43,6 +43,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.JAXBElement;
 import javax.xml.parsers.ParserConfigurationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -68,6 +70,7 @@ public class TargetResource {
     private HttpServletResponse httpServletResponse;
     @Context
     private UriInfo uriInfo;
+    private final Logger logger = LoggerFactory.getLogger(TargetResource.class);
 
     public void setHttpRequest(HttpServletRequest request) {
         this.httpServletRequest = request;
@@ -81,20 +84,23 @@ public class TargetResource {
     @Produces(MediaType.TEXT_XML)
     @Path("{targetid: " + BackendConstants.regExpIdentifier + "}")
     @Transactional(readOnly = true)
-    public JAXBElement<Target> getTarget(@PathParam("targetid") String ExternalIdentifier) throws SQLException, IOException {
-        final Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(httpServletRequest.getRemoteUser());
+    public JAXBElement<Target> getTarget(@PathParam("targetid") String externalIdentifier) throws SQLException, IOException {
+        String remoteUser = httpServletRequest.getRemoteUser();
+        Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
         if (remoteUserID != null) {
             dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
-            final Number targetID = dbIntegrityService.getTargetInternalIdentifier(UUID.fromString(ExternalIdentifier));
+            final Number targetID = dbIntegrityService.getTargetInternalIdentifier(UUID.fromString(externalIdentifier));
             if (targetID != null) {
                 final Target target = dbIntegrityService.getTarget(targetID);
                 return new ObjectFactory().createTarget(target);
             } else {
-                httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The target with the given id is not found in the database");
+                AnnotationResource.loggerServer.debug(HttpServletResponse.SC_NOT_FOUND + ": The target with the given id " + externalIdentifier + " is not found in the database");
+                httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The target with the given id   " + externalIdentifier + " is not found in the database");
                 return null;
             }
         } else {
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged in user is not found in the database");
+            AnnotationResource.loggerServer.debug(httpServletResponse.SC_NOT_FOUND + ": the logged-in user is not found in the database");
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged-in user is not found in the database");
             return null;
         }
     }
@@ -104,20 +110,23 @@ public class TargetResource {
     @Produces(MediaType.TEXT_XML)
     @Path("{targetid: " + BackendConstants.regExpIdentifier + "}/versions")
     @Transactional(readOnly = true)
-    public JAXBElement<ReferenceList> getSiblingTargets(@PathParam("targetid") String ExternalIdentifier) throws SQLException, IOException {
-        final Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(httpServletRequest.getRemoteUser());
+    public JAXBElement<ReferenceList> getSiblingTargets(@PathParam("targetid") String externalIdentifier) throws SQLException, IOException {
+        String remoteUser = httpServletRequest.getRemoteUser();
+        Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
         if (remoteUserID != null) {
             dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
-            final Number targetID = dbIntegrityService.getTargetInternalIdentifier(UUID.fromString(ExternalIdentifier));
+            final Number targetID = dbIntegrityService.getTargetInternalIdentifier(UUID.fromString(externalIdentifier));
             if (targetID != null) {
                 final ReferenceList siblings = dbIntegrityService.getTargetsForTheSameLinkAs(targetID);
                 return new ObjectFactory().createReferenceList(siblings);
             } else {
-                httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The target with the given id is not found in the database");
+                AnnotationResource.loggerServer.debug(HttpServletResponse.SC_NOT_FOUND + ": The target with the given id " + externalIdentifier + " is not found in the database");
+                httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The target with the given id   " + externalIdentifier + " is not found in the database");
                 return null;
             }
         } else {
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged in user is not found in the database");
+            AnnotationResource.loggerServer.debug(httpServletResponse.SC_NOT_FOUND + ": the logged-in user is not found in the database");
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged-in user is not found in the database");
             return null;
         }
     }
@@ -144,19 +153,27 @@ public class TargetResource {
     public JAXBElement<CachedRepresentationInfo> postCached(@PathParam("targetid") String targetIdentifier,
             @PathParam("fragmentDescriptor") String fragmentDescriptor,
             MultiPart multiPart) throws SQLException, IOException {
-        final Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(httpServletRequest.getRemoteUser());
+        String remoteUser = httpServletRequest.getRemoteUser();
+        Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
         if (remoteUserID != null) {
             dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
             final Number targetID = dbIntegrityService.getTargetInternalIdentifier(UUID.fromString(targetIdentifier));
-            CachedRepresentationInfo metadata = multiPart.getBodyParts().get(0).getEntityAs(CachedRepresentationInfo.class);
-            BodyPartEntity bpe = (BodyPartEntity) multiPart.getBodyParts().get(1).getEntity();
-            InputStream cachedSource = bpe.getInputStream();
-            final Number[] respondDB = dbIntegrityService.addCachedForTarget(targetID, fragmentDescriptor, metadata, cachedSource);
-            final CachedRepresentationInfo cachedInfo = dbIntegrityService.getCachedRepresentationInfo(respondDB[1]);
-            return new ObjectFactory()
-                    .createCashedRepresentationInfo(cachedInfo);
+            if (targetID != null) {
+                CachedRepresentationInfo metadata = multiPart.getBodyParts().get(0).getEntityAs(CachedRepresentationInfo.class);
+                BodyPartEntity bpe = (BodyPartEntity) multiPart.getBodyParts().get(1).getEntity();
+                InputStream cachedSource = bpe.getInputStream();
+                final Number[] respondDB = dbIntegrityService.addCachedForTarget(targetID, fragmentDescriptor, metadata, cachedSource);
+                final CachedRepresentationInfo cachedInfo = dbIntegrityService.getCachedRepresentationInfo(respondDB[1]);
+                return new ObjectFactory()
+                        .createCashedRepresentationInfo(cachedInfo);
+            } else {
+                AnnotationResource.loggerServer.debug(HttpServletResponse.SC_NOT_FOUND + ": The target with the given id " + targetIdentifier + " is not found in the database");
+                httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The target with the given id   " + targetIdentifier + " is not found in the database");
+                return null;
+            }
         } else {
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged in user is not found in the database");
+            AnnotationResource.loggerServer.debug(httpServletResponse.SC_NOT_FOUND + ": the logged-in user is not found in the database");
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged-in user is not found in the database");
             return null;
         }
 
@@ -166,7 +183,8 @@ public class TargetResource {
     @Path("{targetid: " + BackendConstants.regExpIdentifier + "}/cached/{cachedid: " + BackendConstants.regExpIdentifier + "}")
     public String deleteCachedForTarget(@PathParam("targetid") String targetExternalIdentifier,
             @PathParam("cachedid") String cachedExternalIdentifier) throws SQLException, IOException {
-        final Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(httpServletRequest.getRemoteUser());
+        String remoteUser = httpServletRequest.getRemoteUser();
+        Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
         if (remoteUserID != null) {
             dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
             final Number targetID = dbIntegrityService.getTargetInternalIdentifier(UUID.fromString(targetExternalIdentifier));
@@ -177,14 +195,17 @@ public class TargetResource {
                     String result = Integer.toString(resultDelete[0]);
                     return result + " pair(s) target-cached deleted.";
                 } else {
-                    httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The cached representation with the given id is not found in the database");
+                    AnnotationResource.loggerServer.debug(HttpServletResponse.SC_NOT_FOUND + ": The target with the given id " + cachedExternalIdentifier + " is not found in the database");
+                    httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The cached representation with the given id   " + cachedExternalIdentifier + " is not found in the database");
                     return null;
                 }
             } else {
-                httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The target with the given id is not found in the database");
+                AnnotationResource.loggerServer.debug(HttpServletResponse.SC_NOT_FOUND + ": The target with the given id " + cachedExternalIdentifier + " is not found in the database");
+                httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The target with the given id   " + targetExternalIdentifier + " is not found in the database");
                 return null;
             }
         } else {
+            AnnotationResource.loggerServer.debug(httpServletResponse.SC_NOT_FOUND + ": the logged-in user is not found in the database");
             httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged in user is not found in the database");
             return null;
         }

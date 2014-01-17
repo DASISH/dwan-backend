@@ -38,6 +38,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.JAXBElement;
 import javax.xml.parsers.ParserConfigurationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -59,6 +61,7 @@ public class CachedRepresentationResource {
     private HttpServletResponse httpServletResponse;
     @Context
     private UriInfo uriInfo;
+    private final Logger logger = LoggerFactory.getLogger(CachedRepresentationResource.class);
 
     public void setHttpRequest(HttpServletRequest request) {
         this.httpServletRequest = request;
@@ -72,7 +75,8 @@ public class CachedRepresentationResource {
     @Transactional(readOnly = true)
     public JAXBElement<CachedRepresentationInfo> getCachedRepresentationInfo(@PathParam("cachedid") String externalId) throws SQLException, IOException {
 
-        final Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(httpServletRequest.getRemoteUser());
+        String remoteUser = httpServletRequest.getRemoteUser();
+        Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
         if (remoteUserID != null) {
             dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
             final Number cachedID = dbIntegrityService.getCachedRepresentationInternalIdentifier(UUID.fromString(externalId));
@@ -80,10 +84,12 @@ public class CachedRepresentationResource {
                 final CachedRepresentationInfo cachedInfo = dbIntegrityService.getCachedRepresentationInfo(cachedID);
                 return new ObjectFactory().createCashedRepresentationInfo(cachedInfo);
             } else {
+                AnnotationResource.loggerServer.debug(httpServletResponse.SC_NOT_FOUND + "The cached representation with the given id is not found in the database");
                 httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The cached representation with the given id is not found in the database");
                 return null;
             }
         } else {
+            AnnotationResource.loggerServer.debug(httpServletResponse.SC_NOT_FOUND + ": the logged-in user is not found in the database");
             httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged in user is not found in the database");
             return null;
         }
@@ -94,7 +100,8 @@ public class CachedRepresentationResource {
     @Path("{cachedid: " + BackendConstants.regExpIdentifier + "}/content")
     @Transactional(readOnly = true)
     public BufferedImage getCachedRepresentationContent(@PathParam("cachedid") String externalId) throws SQLException, IOException {
-        final Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(httpServletRequest.getRemoteUser());
+        String remoteUser = httpServletRequest.getRemoteUser();
+        Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
         if (remoteUserID != null) {
             dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
             final Number cachedID = dbIntegrityService.getCachedRepresentationInternalIdentifier(UUID.fromString(externalId));
@@ -104,11 +111,13 @@ public class CachedRepresentationResource {
                 BufferedImage result = ImageIO.read(dbRespond);
                 return result;
             } else {
-                httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The cached representation  with the given id is not found in the database");
+                AnnotationResource.loggerServer.debug(httpServletResponse.SC_NOT_FOUND + "The cached representation with the given id is not found in the database");
+                httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The cached representation  with the given id   " + externalId + " is not found in the database");
                 return null;
             }
         } else {
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged in user is not found in the database");
+            AnnotationResource.loggerServer.debug(httpServletResponse.SC_NOT_FOUND + ": the logged-in user is not found in the database");
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged-in user is not found in the database");
             return null;
         }
     }

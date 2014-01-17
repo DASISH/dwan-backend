@@ -205,8 +205,7 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         final Number annotaionIdNE = jdbcAnnotationDao.getInternalID(UUID.fromString(TestBackendConstants._TEST_ANNOT_7_EXT_NOT_IN_DB));
         assertEquals(null, annotaionIdNE);
 
-        final Number annotaionIdNull = jdbcAnnotationDao.getInternalID(null);
-        assertEquals(null, annotaionIdNull);
+       
     }
     
       /**

@@ -18,26 +18,101 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 -->
 <!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+    
     <appender class="org.apache.log4j.DailyRollingFileAppender" name="ROOT">
-        <param value="${catalina.base}/logs/dasishAnnotator.log" name="File"/>
+        <param value="${catalina.base}/logs/dasishRoot.log" name="File"/>
         <layout class="org.apache.log4j.PatternLayout">
             <param value="%d %p [%c#%M:%L] - %m%n" name="ConversionPattern"/>
         </layout>
     </appender>
-    <logger name="eu.dasish.annotation.backend.rest.AnnotationResource">
-        <level value="info"/>
+    
+    <appender class="org.apache.log4j.DailyRollingFileAppender" name="DATABASE">
+        <param value="${catalina.base}/logs/dasishDatabase.log" name="File"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param value="%d %p [%c#%M:%L] - %m%n" name="ConversionPattern"/>
+        </layout>
+    </appender>
+    
+    <appender class="org.apache.log4j.DailyRollingFileAppender" name="SERVER">
+        <param value="${catalina.base}/logs/dasishServer.log" name="File"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param value="%d %p [%c#%M:%L] - %m%n" name="ConversionPattern"/>
+        </layout>
+    </appender>
+    
+  
+    <logger name="eu.dasish.annotation.backend.rest.AnnotationResource"  additivity="false">
+        <level value="debug"/>
+        <appender-ref ref="DATABASE"/>
     </logger>
-    <logger name="eu.dasish.annotation.backend.rest.TargetResource">
-        <level value="info"/>
+    <logger name="eu.dasish.annotation.backend.rest.TargetResource" additivity="false">
+        <level value="debug"/>
+        <appender-ref ref="DATABASE"/>
     </logger>
-    <logger name="eu.dasish.annotation.backend.rest.UserResource">
-        <level value="info"/>
+    <logger name="eu.dasish.annotation.backend.rest.UserResource" additivity="false">
+        <level value="debug"/>
+        <appender-ref ref="DATABASE"/>
     </logger>
-    <logger name="eu.dasish.annotation.backend.rest.CachedRepresentationResource">
-        <level value="info"/>
+    <logger name="eu.dasish.annotation.backend.rest.CachedRepresentationResource" additivity="false">
+        <level value="debug"/>
+        <appender-ref ref="DATABASE"/>
     </logger>
+    <logger name="eu.dasish.annotation.backend.rest.DebugResource" additivity="false">
+        <level value="debug"/>
+        <appender-ref ref="DATABASE"/>
+    </logger>
+    <logger name="org.springframework.jdbc.core.JdbcTemplate" additivity="false">
+        <level value="error"/>
+        <appender-ref ref="DATABASE"/>
+    </logger>
+     <logger name="eu.dasish.annotation.backend.dao.impl.JdbcResourceDao" additivity="false">
+        <level value="debug"/>
+        <appender-ref ref="DATABASE"/>
+    </logger>
+    
+    <logger name="eu.dasish.annotation.backend.dao.impl.JdbcAnnotationDao" additivity="false">
+        <level value="debug"/>
+        <appender-ref ref="DATABASE"/>
+    </logger>
+    
+    <logger name="javax.servlet.http.HttpServletResponse" additivity="false">
+        <level value="debug"/>
+        <appender-ref ref="SERVER"/>
+        <appender-ref ref="DATABASE"/>
+    </logger>
+    
+   
+    
+   <logger name="org.springframework.beans.factory.xml.XmlBeanDefinitionReader" additivity="false">
+        <level value="off"/>
+        <appender-ref ref="SERVER"/>
+        <appender-ref ref="DATABASE"/>
+    </logger>
+    
+     <logger name="org.springframework.beans.factory.support.DefaultListableBeanFactory" additivity="false">
+        <level value="off"/>
+        <appender-ref ref="SERVER"/>
+        <appender-ref ref="DATABASE"/>
+    </logger>
+    
+     <logger name="org.springframework.web.context.ContextLoader" additivity="false">
+        <level value="off"/>
+        <appender-ref ref="SERVER"/>
+        <appender-ref ref="DATABASE"/>
+    </logger>
+    
+     <logger name="org.springframework.web.context.support.XmlWebApplicationContext" additivity="false">
+        <level value="off"/>
+        <appender-ref ref="SERVER"/>
+        <appender-ref ref="DATABASE"/>
+    </logger>
+    
+    
     <root>
         <level value="info"/>
-        <appender-ref ref="ROOT"/>
+        <appender-ref ref="ROOT"/>  
+        <appender-ref ref="SERVER"/> 
+        <appender-ref ref="DATABASE"/> 
     </root>
+    
 </log4j:configuration>

@@ -80,8 +80,6 @@ public class JdbcUserDaoTest extends JdbcResourceDaoTest {
         Number testTwo = jdbcUserDao.getInternalID(UUID.fromString(TestBackendConstants._TEST_USER_XXX_EXT_ID));
         assertEquals(null, testTwo);
 
-        Number testThree = jdbcUserDao.getInternalID(null);
-        assertEquals(null, testThree);
     }
 
     /**

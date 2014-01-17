@@ -110,7 +110,10 @@ public class AnnotationResourceTest {
                 will(returnValue(3)); 
                 
                 oneOf(mockDbIntegrityService).getAnnotationInternalIdentifier(with(any(UUID.class)));                
-                will(returnValue(2));    
+                will(returnValue(2)); 
+                
+                oneOf(mockDbIntegrityService).getTypeOfUserAccount(3);
+                will(returnValue("developer"));
                 
                 oneOf(mockDbIntegrityService).getPermission(2, 3);
                 will(returnValue(Permission.OWNER));  
@@ -154,8 +157,9 @@ public class AnnotationResourceTest {
                 will(doAll());
                 
                 oneOf(mockDbIntegrityService).getAnnotationInternalIdentifier(with(aNonNull(UUID.class)));              
-                will(returnValue(5));    
+                will(returnValue(5)); 
                 
+               
                 oneOf(mockDbIntegrityService).getPermission(5, 3);
                 will(returnValue(Permission.OWNER));  
                 

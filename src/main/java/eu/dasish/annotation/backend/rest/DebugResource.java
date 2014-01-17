@@ -74,18 +74,19 @@ public class DebugResource {
     @Transactional(readOnly = true)
     public JAXBElement<AnnotationInfoList> getAllAnnotations() throws IOException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
-        Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(httpServletRequest.getRemoteUser());
+        String remoteUser = httpServletRequest.getRemoteUser();
+        Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
         if (userID != null) {
             String typeOfAccount = dbIntegrityService.getTypeOfUserAccount(userID);
             if (typeOfAccount.equals(admin) || typeOfAccount.equals(developer)) {
                 final AnnotationInfoList annotationInfoList = dbIntegrityService.getAllAnnotationInfos();
                 return new ObjectFactory().createAnnotationInfoList(annotationInfoList);
             } else {
-                httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "The logged in user is neither developer nor admin, and therefore cannot perform this request.");
+                httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "The logged-in user is neither developer nor admin, and therefore cannot perform this request.");
                 return null;
             }
         } else {
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged in user is not found in the database");
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged-in user is not found in the database");
             return null;
         }
 
@@ -93,15 +94,64 @@ public class DebugResource {
 
     @GET
     @Produces(MediaType.TEXT_PLAIN)
-    @Path("/log/{n}")
+    @Path("/logDatabase/{n}")
     @Transactional(readOnly = true)
     public String getDasishBackendLog(@PathParam("n") int n) throws IOException {
+        return logFile("eu.dasish.annotation.backend.logDatabaseLocation", n);
+    }
+    
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    @Path("/remoteID")
+    @Transactional(readOnly = true)
+    public String getLoggedInRemoteID() throws IOException {
+        return httpServletRequest.getRemoteUser();
+    }
+    
+    /////
+    
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    @Path("/logServer/{n}")
+    @Transactional(readOnly = true)
+    public String getDasishServerLog(@PathParam("n") int n) throws IOException {
+        return logFile("eu.dasish.annotation.backend.logServerLocation", n);
+    }
+    
+    //////////////////////////////////
+    @PUT
+    @Produces(MediaType.TEXT_XML)
+    @Path("account/{userId}/make/{account}")
+    @Transactional(readOnly = true)
+    public String updateUsersAccount(@PathParam("userId") String userId, @PathParam("account") String account) throws IOException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
-        Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(httpServletRequest.getRemoteUser());
+        String remoteUser = httpServletRequest.getRemoteUser();
+        Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
+        if (userID != null) {
+            String typeOfAccount = dbIntegrityService.getTypeOfUserAccount(userID);
+            if (typeOfAccount.equals(admin)) {
+                final boolean update = dbIntegrityService.updateAccount(UUID.fromString(userId), account);
+                return (update ? "The account is updated" : "The account is not updated, see the log.");
+            } else {
+                httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "The logged-in user is not admin, and therefore cannot perform this request.");
+                return null;
+            }
+        } else {
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged-in user is not found in the database");
+            return null;
+        }
+
+    }
+
+    ///////////////////////////////////////////////////
+    private String logFile(String location, int n) throws IOException{
+       dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
+        String remoteUser = httpServletRequest.getRemoteUser();
+        Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
         if (userID != null) {
             String typeOfAccount = dbIntegrityService.getTypeOfUserAccount(userID);
             if (typeOfAccount.equals(admin) || typeOfAccount.equals(developer)) {
-                BufferedReader reader = new BufferedReader(new FileReader(context.getInitParameter("eu.dasish.annotation.backend.logLocation")));
+                BufferedReader reader = new BufferedReader(new FileReader(context.getInitParameter(location)));
                 List<String> lines = new ArrayList<String>();
                 StringBuilder result = new StringBuilder();
                 int i = 0;
@@ -118,38 +168,12 @@ public class DebugResource {
                 return result.toString();
 
             } else {
-                httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "The logged in user is neither developer nor admin, and therefore cannot perform this request.");
+                httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "The logged-in user is neither developer nor admin, and therefore cannot perform this request.");
                 return null;
             }
         } else {
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged in user is not found in the database");
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged-in user is not found in the database");
             return null;
-        }
-
+        } 
     }
-    
-    @PUT
-    @Produces(MediaType.TEXT_XML)
-    @Path("account/{userId}/make/{account}")
-    @Transactional(readOnly = true)
-    public String updateUsersAccount(@PathParam("userId") String userId, @PathParam("account") String account) throws IOException {
-        dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
-        Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(httpServletRequest.getRemoteUser());
-        if (userID != null) {
-            String typeOfAccount = dbIntegrityService.getTypeOfUserAccount(userID);
-            if (typeOfAccount.equals(admin)) {
-                final boolean update = dbIntegrityService.updateAccount(UUID.fromString(userId), account);
-                return (update ? "The account is updated" : "The account is not updated, see the log.");
-            } else {
-                httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "The logged in user is not admin, and therefore cannot perform this request.");
-                return null;
-            }
-        } else {
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged in user is not found in the database");
-            return null;
-        }
-
-    }
-
-    
 }
