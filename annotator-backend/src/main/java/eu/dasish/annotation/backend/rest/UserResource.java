@@ -64,12 +64,9 @@ public class UserResource {
     private HttpServletResponse httpServletResponse;
     @Context
     private UriInfo uriInfo;
-    
     private final Logger logger = LoggerFactory.getLogger(UserResource.class);
-
-    
     final private String admin = "admin";
-    
+
     public void setHttpRequest(HttpServletRequest request) {
         this.httpServletRequest = request;
     }
@@ -86,13 +83,19 @@ public class UserResource {
         Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
         if (remoteUserID != null) {
             dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
-            final Number userID = dbIntegrityService.getUserInternalIdentifier(UUID.fromString(externalIdentifier));
-            if (userID != null) {
-                final User user = dbIntegrityService.getUser(userID);
-                return new ObjectFactory().createUser(user);
-            } else {
-                AnnotationResource.loggerServer.debug(HttpServletResponse.SC_NOT_FOUND + ": The user with the given id " + externalIdentifier + " is not found in the database");
-                httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The user with the given id   " + externalIdentifier + " is not found in the database");
+            try {
+                final Number userID = dbIntegrityService.getUserInternalIdentifier(UUID.fromString(externalIdentifier));
+                if (userID != null) {
+                    final User user = dbIntegrityService.getUser(userID);
+                    return new ObjectFactory().createUser(user);
+                } else {
+                    AnnotationResource.loggerServer.debug(HttpServletResponse.SC_NOT_FOUND + ": The user with the given id " + externalIdentifier + " is not found in the database");
+                    httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The user with the given id   " + externalIdentifier + " is not found in the database");
+                    return null;
+                }
+            } catch (IllegalArgumentException e) {
+                AnnotationResource.loggerServer.debug(HttpServletResponse.SC_BAD_REQUEST + ": Illegal argument UUID " + externalIdentifier);
+                httpServletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST, "Illegal argument UUID " + externalIdentifier);
                 return null;
             }
         } else {
@@ -135,15 +138,21 @@ public class UserResource {
         Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
         if (remoteUserID != null) {
             dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
-            final Number userID = dbIntegrityService.getUserInternalIdentifier(UUID.fromString(externalIdentifier));
-            if (userID != null) {
-                final CurrentUserInfo userInfo = new CurrentUserInfo();
-                userInfo.setRef(dbIntegrityService.getUserURI(userID));
-                userInfo.setCurrentUser(ifLoggedIn(userID));
-                return new ObjectFactory().createCurrentUserInfo(userInfo);
-            } else {
-                AnnotationResource.loggerServer.debug(HttpServletResponse.SC_NOT_FOUND + ": The user with the given id " + externalIdentifier + " is not found in the database");
-                httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The user with the given id   " + externalIdentifier + " is not found in the database");
+            try {
+                final Number userID = dbIntegrityService.getUserInternalIdentifier(UUID.fromString(externalIdentifier));
+                if (userID != null) {
+                    final CurrentUserInfo userInfo = new CurrentUserInfo();
+                    userInfo.setRef(dbIntegrityService.getUserURI(userID));
+                    userInfo.setCurrentUser(ifLoggedIn(userID));
+                    return new ObjectFactory().createCurrentUserInfo(userInfo);
+                } else {
+                    AnnotationResource.loggerServer.debug(HttpServletResponse.SC_NOT_FOUND + ": The user with the given id " + externalIdentifier + " is not found in the database");
+                    httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The user with the given id   " + externalIdentifier + " is not found in the database");
+                    return null;
+                }
+            } catch (IllegalArgumentException e) {
+                AnnotationResource.loggerServer.debug(HttpServletResponse.SC_BAD_REQUEST + ": Illegal argument UUID " + externalIdentifier);
+                httpServletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST, "Illegal argument UUID " + externalIdentifier);
                 return null;
             }
         } else {
@@ -175,7 +184,7 @@ public class UserResource {
                 httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, "The logged-in user does not have admin rights to add a user to the database");
                 return null;
             }
-        } else {            
+        } else {
             httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged-in user is not found in the database");
             return null;
         }
@@ -236,8 +245,7 @@ public class UserResource {
             return null;
         }
     }
-    
-    
+
     @DELETE
     @Path("{userId}/safe")
     public String deleteUserSafe(@PathParam("userId") String externalIdentifier) throws IOException {

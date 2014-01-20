@@ -8,3 +8,8 @@ January 9-10, 2014. The spring-security settings (authentication and authorisati
 are removed. Shibboleth sshaa.xml is added,  and web.xml is adapted. The boolean  column admin_rights 
 is added to the table "principal" in the DB. Adding, updating and deleting a user 
 in the DB (only by admin) is debugged and tested.
+
+January 20/01, 2014. The database is updated (redundant  duplicating ownerId column is removed f
+rom annotation table, and "admin_rights" is replaced with more informative "account" for the
+table principal. There are two profiles now: fot tomcat authentication (laptop developemnt testing)
+and shibbolized one. The depolyment tarball is compiled with the shibbolized  profile.

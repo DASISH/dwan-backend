@@ -256,7 +256,7 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     @Override
     public AnnotationInfoList getFilteredAnnotationInfos(String word, String text, Number inloggedUserID, String[] accessModes, String namespace, UUID owner, Timestamp after, Timestamp before) {
         List<Number> annotationIDs = getFilteredAnnotationIDs(word, text, inloggedUserID, accessModes, namespace, after, before);
-        Number givenOwnerID = userDao.getInternalID(owner);
+        Number givenOwnerID = (owner != null) ? userDao.getInternalID(owner) : null;
         if (annotationIDs != null) {
             AnnotationInfoList result = new AnnotationInfoList();
             for (Number annotationID : annotationIDs) {

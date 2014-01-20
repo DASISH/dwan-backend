@@ -333,7 +333,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>        
         <netbeans.hint.license>gpl20</netbeans.hint.license>  
         <plugin.license.copyrightYear>2013</plugin.license.copyrightYear>
-        <project.version>1.1</project.version>
+        <project.version>1.2</project.version>
     </properties>
     
     

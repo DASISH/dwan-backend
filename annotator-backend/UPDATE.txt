@@ -4,15 +4,21 @@ about placing war file if you haveforgotte.
 
 2. Adjusting shhaa.xml:  you need to set "sso action" and "slo action". E.g.
 for lux16 they look as follows:
-<sso action="lI">https://lux16.mpi.nl/Shibboleth.sso/Login</sso> 
-<slo action="lO">https://lux16.mpi.nl/Shibboleth.sso/Logout</slo> 
-For the other servers the sysadmins should know.
+<sso action="lI">{$shibLI}</sso> 
+<slo action="lO">{$shibLI}</slo> 
 
-3. This time the dasish database on lux17 is changed because we removed spring-security 
-related tables. You have 2 options. Option A: remove the databse and copy the database from lux16
-to lux17. Option B: remove the tables "users" and "authorities" from the databse, and add
-a boolean column "admin_rights" to the table "principal", with the default values "false";
-and set Olha's admin_rights to "true".
+where the values of the variables are set by maven to  
+http://lux16.mpi.nl/Shibboleth.sso/Login 
+ and 
+ http://lux16.mpi.nl/Shibboleth.sso/Logout</shibLO> 
+ respectively
+
+
+For the other servers the sysadmins should know their values and place them in the shhaa.xml.
+
+3. This time the dasish database on lux17 is changed because I have removed some obsolete columns
+and added a new one "account" for principals. Its values are "admin", "developer", "user". 
+Remove the databse and copy the database from lux16 to lux17. 
 
 4. If the application is succesfully deployed, you will get the jsp page after requesting
 
