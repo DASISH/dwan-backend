@@ -89,13 +89,19 @@ public class TargetResource {
         Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
         if (remoteUserID != null) {
             dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
-            final Number targetID = dbIntegrityService.getTargetInternalIdentifier(UUID.fromString(externalIdentifier));
-            if (targetID != null) {
-                final Target target = dbIntegrityService.getTarget(targetID);
-                return new ObjectFactory().createTarget(target);
-            } else {
-                AnnotationResource.loggerServer.debug(HttpServletResponse.SC_NOT_FOUND + ": The target with the given id " + externalIdentifier + " is not found in the database");
-                httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The target with the given id   " + externalIdentifier + " is not found in the database");
+            try {
+                final Number targetID = dbIntegrityService.getTargetInternalIdentifier(UUID.fromString(externalIdentifier));
+                if (targetID != null) {
+                    final Target target = dbIntegrityService.getTarget(targetID);
+                    return new ObjectFactory().createTarget(target);
+                } else {
+                    AnnotationResource.loggerServer.debug(HttpServletResponse.SC_NOT_FOUND + ": The target with the given id " + externalIdentifier + " is not found in the database");
+                    httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The target with the given id   " + externalIdentifier + " is not found in the database");
+                    return null;
+                }
+            } catch (IllegalArgumentException e) {
+                AnnotationResource.loggerServer.debug(HttpServletResponse.SC_BAD_REQUEST + ": Illegal argument UUID " + externalIdentifier);
+                httpServletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST, "Illegal argument UUID " + externalIdentifier);
                 return null;
             }
         } else {
@@ -115,13 +121,19 @@ public class TargetResource {
         Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
         if (remoteUserID != null) {
             dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
-            final Number targetID = dbIntegrityService.getTargetInternalIdentifier(UUID.fromString(externalIdentifier));
-            if (targetID != null) {
-                final ReferenceList siblings = dbIntegrityService.getTargetsForTheSameLinkAs(targetID);
-                return new ObjectFactory().createReferenceList(siblings);
-            } else {
-                AnnotationResource.loggerServer.debug(HttpServletResponse.SC_NOT_FOUND + ": The target with the given id " + externalIdentifier + " is not found in the database");
-                httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The target with the given id   " + externalIdentifier + " is not found in the database");
+            try {
+                final Number targetID = dbIntegrityService.getTargetInternalIdentifier(UUID.fromString(externalIdentifier));
+                if (targetID != null) {
+                    final ReferenceList siblings = dbIntegrityService.getTargetsForTheSameLinkAs(targetID);
+                    return new ObjectFactory().createReferenceList(siblings);
+                } else {
+                    AnnotationResource.loggerServer.debug(HttpServletResponse.SC_NOT_FOUND + ": The target with the given id " + externalIdentifier + " is not found in the database");
+                    httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The target with the given id   " + externalIdentifier + " is not found in the database");
+                    return null;
+                }
+            } catch (IllegalArgumentException e) {
+                AnnotationResource.loggerServer.debug(HttpServletResponse.SC_BAD_REQUEST + ": Illegal argument UUID " + externalIdentifier);
+                httpServletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST, "Illegal argument UUID " + externalIdentifier);
                 return null;
             }
         } else {
@@ -157,18 +169,24 @@ public class TargetResource {
         Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
         if (remoteUserID != null) {
             dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
-            final Number targetID = dbIntegrityService.getTargetInternalIdentifier(UUID.fromString(targetIdentifier));
-            if (targetID != null) {
-                CachedRepresentationInfo metadata = multiPart.getBodyParts().get(0).getEntityAs(CachedRepresentationInfo.class);
-                BodyPartEntity bpe = (BodyPartEntity) multiPart.getBodyParts().get(1).getEntity();
-                InputStream cachedSource = bpe.getInputStream();
-                final Number[] respondDB = dbIntegrityService.addCachedForTarget(targetID, fragmentDescriptor, metadata, cachedSource);
-                final CachedRepresentationInfo cachedInfo = dbIntegrityService.getCachedRepresentationInfo(respondDB[1]);
-                return new ObjectFactory()
-                        .createCashedRepresentationInfo(cachedInfo);
-            } else {
-                AnnotationResource.loggerServer.debug(HttpServletResponse.SC_NOT_FOUND + ": The target with the given id " + targetIdentifier + " is not found in the database");
-                httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The target with the given id   " + targetIdentifier + " is not found in the database");
+            try {
+                final Number targetID = dbIntegrityService.getTargetInternalIdentifier(UUID.fromString(targetIdentifier));
+                if (targetID != null) {
+                    CachedRepresentationInfo metadata = multiPart.getBodyParts().get(0).getEntityAs(CachedRepresentationInfo.class);
+                    BodyPartEntity bpe = (BodyPartEntity) multiPart.getBodyParts().get(1).getEntity();
+                    InputStream cachedSource = bpe.getInputStream();
+                    final Number[] respondDB = dbIntegrityService.addCachedForTarget(targetID, fragmentDescriptor, metadata, cachedSource);
+                    final CachedRepresentationInfo cachedInfo = dbIntegrityService.getCachedRepresentationInfo(respondDB[1]);
+                    return new ObjectFactory()
+                            .createCashedRepresentationInfo(cachedInfo);
+                } else {
+                    AnnotationResource.loggerServer.debug(HttpServletResponse.SC_NOT_FOUND + ": The target with the given id " + targetIdentifier + " is not found in the database");
+                    httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The target with the given id   " + targetIdentifier + " is not found in the database");
+                    return null;
+                }
+            } catch (IllegalArgumentException e) {
+                AnnotationResource.loggerServer.debug(HttpServletResponse.SC_BAD_REQUEST + ": Illegal argument UUID " + targetIdentifier);
+                httpServletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST, "Illegal argument UUID " + targetIdentifier);
                 return null;
             }
         } else {
@@ -187,21 +205,27 @@ public class TargetResource {
         Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
         if (remoteUserID != null) {
             dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
-            final Number targetID = dbIntegrityService.getTargetInternalIdentifier(UUID.fromString(targetExternalIdentifier));
-            if (targetID != null) {
-                final Number cachedID = dbIntegrityService.getCachedRepresentationInternalIdentifier(UUID.fromString(cachedExternalIdentifier));
-                if (cachedID != null) {
-                    int[] resultDelete = dbIntegrityService.deleteCachedRepresentationOfTarget(targetID, cachedID);
-                    String result = Integer.toString(resultDelete[0]);
-                    return result + " pair(s) target-cached deleted.";
+            try {
+                final Number targetID = dbIntegrityService.getTargetInternalIdentifier(UUID.fromString(targetExternalIdentifier));
+                if (targetID != null) {
+                    final Number cachedID = dbIntegrityService.getCachedRepresentationInternalIdentifier(UUID.fromString(cachedExternalIdentifier));
+                    if (cachedID != null) {
+                        int[] resultDelete = dbIntegrityService.deleteCachedRepresentationOfTarget(targetID, cachedID);
+                        String result = Integer.toString(resultDelete[0]);
+                        return result + " pair(s) target-cached deleted.";
+                    } else {
+                        AnnotationResource.loggerServer.debug(HttpServletResponse.SC_NOT_FOUND + ": The target with the given id " + cachedExternalIdentifier + " is not found in the database");
+                        httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The cached representation with the given id   " + cachedExternalIdentifier + " is not found in the database");
+                        return null;
+                    }
                 } else {
                     AnnotationResource.loggerServer.debug(HttpServletResponse.SC_NOT_FOUND + ": The target with the given id " + cachedExternalIdentifier + " is not found in the database");
-                    httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The cached representation with the given id   " + cachedExternalIdentifier + " is not found in the database");
+                    httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The target with the given id   " + targetExternalIdentifier + " is not found in the database");
                     return null;
                 }
-            } else {
-                AnnotationResource.loggerServer.debug(HttpServletResponse.SC_NOT_FOUND + ": The target with the given id " + cachedExternalIdentifier + " is not found in the database");
-                httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The target with the given id   " + targetExternalIdentifier + " is not found in the database");
+            } catch (IllegalArgumentException e) {
+                AnnotationResource.loggerServer.debug(HttpServletResponse.SC_BAD_REQUEST + ": Illegal argument UUID " + targetExternalIdentifier);
+                httpServletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST, "Illegal argument UUID " + targetExternalIdentifier);
                 return null;
             }
         } else {

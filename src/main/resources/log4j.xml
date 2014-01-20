@@ -62,7 +62,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
         <appender-ref ref="DATABASE"/>
     </logger>
     <logger name="org.springframework.jdbc.core.JdbcTemplate" additivity="false">
-        <level value="error"/>
+        <level value="debug"/>
         <appender-ref ref="DATABASE"/>
     </logger>
      <logger name="eu.dasish.annotation.backend.dao.impl.JdbcResourceDao" additivity="false">
@@ -81,32 +81,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
         <appender-ref ref="DATABASE"/>
     </logger>
     
-   
     
-   <logger name="org.springframework.beans.factory.xml.XmlBeanDefinitionReader" additivity="false">
+    <logger name="org.springframework">
         <level value="off"/>
         <appender-ref ref="SERVER"/>
         <appender-ref ref="DATABASE"/>
     </logger>
-    
-     <logger name="org.springframework.beans.factory.support.DefaultListableBeanFactory" additivity="false">
-        <level value="off"/>
-        <appender-ref ref="SERVER"/>
-        <appender-ref ref="DATABASE"/>
-    </logger>
-    
-     <logger name="org.springframework.web.context.ContextLoader" additivity="false">
-        <level value="off"/>
-        <appender-ref ref="SERVER"/>
-        <appender-ref ref="DATABASE"/>
-    </logger>
-    
-     <logger name="org.springframework.web.context.support.XmlWebApplicationContext" additivity="false">
-        <level value="off"/>
-        <appender-ref ref="SERVER"/>
-        <appender-ref ref="DATABASE"/>
-    </logger>
-    
+
     
     <root>
         <level value="info"/>

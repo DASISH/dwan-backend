@@ -79,13 +79,19 @@ public class CachedRepresentationResource {
         Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
         if (remoteUserID != null) {
             dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
-            final Number cachedID = dbIntegrityService.getCachedRepresentationInternalIdentifier(UUID.fromString(externalId));
-            if (cachedID != null) {
-                final CachedRepresentationInfo cachedInfo = dbIntegrityService.getCachedRepresentationInfo(cachedID);
-                return new ObjectFactory().createCashedRepresentationInfo(cachedInfo);
-            } else {
-                AnnotationResource.loggerServer.debug(httpServletResponse.SC_NOT_FOUND + "The cached representation with the given id is not found in the database");
-                httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The cached representation with the given id is not found in the database");
+            try {
+                final Number cachedID = dbIntegrityService.getCachedRepresentationInternalIdentifier(UUID.fromString(externalId));
+                if (cachedID != null) {
+                    final CachedRepresentationInfo cachedInfo = dbIntegrityService.getCachedRepresentationInfo(cachedID);
+                    return new ObjectFactory().createCashedRepresentationInfo(cachedInfo);
+                } else {
+                    AnnotationResource.loggerServer.debug(httpServletResponse.SC_NOT_FOUND + ": The cached representation with the given id is not found in the database");
+                    httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The cached representation with the given id is not found in the database");
+                    return null;
+                }
+            } catch (IllegalArgumentException e) {
+                AnnotationResource.loggerServer.debug(HttpServletResponse.SC_BAD_REQUEST + ": Illegal argument UUID " + externalId);
+                httpServletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST, "Illegal argument UUID " + externalId);
                 return null;
             }
         } else {
@@ -104,15 +110,21 @@ public class CachedRepresentationResource {
         Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
         if (remoteUserID != null) {
             dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
-            final Number cachedID = dbIntegrityService.getCachedRepresentationInternalIdentifier(UUID.fromString(externalId));
-            if (cachedID != null) {
-                InputStream dbRespond = dbIntegrityService.getCachedRepresentationBlob(cachedID);
-                ImageIO.setUseCache(false);
-                BufferedImage result = ImageIO.read(dbRespond);
-                return result;
-            } else {
-                AnnotationResource.loggerServer.debug(httpServletResponse.SC_NOT_FOUND + "The cached representation with the given id is not found in the database");
-                httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The cached representation  with the given id   " + externalId + " is not found in the database");
+            try {
+                final Number cachedID = dbIntegrityService.getCachedRepresentationInternalIdentifier(UUID.fromString(externalId));
+                if (cachedID != null) {
+                    InputStream dbRespond = dbIntegrityService.getCachedRepresentationBlob(cachedID);
+                    ImageIO.setUseCache(false);
+                    BufferedImage result = ImageIO.read(dbRespond);
+                    return result;
+                } else {
+                    AnnotationResource.loggerServer.debug(httpServletResponse.SC_NOT_FOUND + "The cached representation with the given id is not found in the database");
+                    httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The cached representation  with the given id   " + externalId + " is not found in the database");
+                    return null;
+                }
+            } catch (IllegalArgumentException e) {
+                AnnotationResource.loggerServer.debug(HttpServletResponse.SC_BAD_REQUEST + ": Illegal argument UUID " + externalId);
+                httpServletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST, "Illegal argument UUID " + externalId);
                 return null;
             }
         } else {
