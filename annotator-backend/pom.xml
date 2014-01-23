@@ -12,6 +12,129 @@
         <url>https://trac.clarin.eu/wiki/DASISH</url>
     </organization>
     
+   
+    <dependencies>
+        <dependency>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-servlet</artifactId>
+            <version>${jersey.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-json</artifactId>
+            <version>${jersey.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-client</artifactId>
+            <version>${jersey.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.jersey.jersey-test-framework</groupId>
+            <artifactId>jersey-test-framework-grizzly2</artifactId>
+            <version>${jersey.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.jersey.contribs</groupId>
+            <artifactId>jersey-spring</artifactId>
+            <version>${jersey.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.jersey.contribs</groupId>
+            <artifactId>jersey-multipart</artifactId>
+            <version>${jersey.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jmock</groupId>
+            <artifactId>jmock-junit4</artifactId>
+            <version>2.5.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jdbc</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.hsqldb</groupId>
+            <artifactId>hsqldb</artifactId>
+            <version>2.2.9</version>
+            <scope>test</scope>
+            <classifier>jdk5</classifier>
+        </dependency>
+        <dependency>
+            <groupId>commons-dbcp</groupId>
+            <artifactId>commons-dbcp</artifactId>
+            <version>1.4</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <version>${spring.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.2</version>
+        </dependency>
+        <dependency>
+            <groupId>postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>8.4-702.jdbc4</version>
+        </dependency>
+       
+        <dependency>
+            <groupId>cglib</groupId>
+            <artifactId>cglib</artifactId>
+            <version>2.2.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>de.mpg.mpgaai</groupId>
+            <artifactId>mpgaai-shhaa</artifactId>
+            <version>1.0.3</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+    </dependencies>
+    
+    <profiles>
+        <profile>
+            <id>lux16</id>
+            <activation>                
+            <activeByDefault>false</activeByDefault> 
+            </activation>
+            <properties>
+                <webXmlPath>src/main/webapp/WEB-INF/web-shib.xml</webXmlPath>
+                <!-- web.xml for shibboleth authentication -->
+            </properties>
+        </profile>
+    
+    </profiles>
+       
+        
     <build>
         <finalName>annotator-backend-${project.version}</finalName>
         <testResources>
@@ -36,11 +159,24 @@
                 </configuration>
             </plugin>
             
+ 
             
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
                 <version>2.3</version>
+                <configuration>
+                    <webXml>${webXmlPath}</webXml>
+                    <webResources>
+                        <resource>
+                            <directory>src/main/webapp</directory>
+                            <filtering>true</filtering>
+                            <includes>  
+                                <include>WEB-INF/web-shib.xml</include>
+                            </includes> 
+                        </resource>
+                    </webResources>
+                </configuration>
             </plugin>
             
            <plugin>
@@ -142,8 +278,8 @@
                         <cmdi>XML_STYLE</cmdi>
                     </mapping>
                     <excludes>
-                        <exclude>nbactions.xml</exclude>
-                        <exclude>nb-configuration.xml</exclude>
+                        <exclude>nbactions*</exclude>
+                        <exclude>nb-configuration*</exclude>
                         <exclude>**/*.txt</exclude>
                         <exclude>src/main/resources/xml.xsd</exclude>
                     </excludes>
@@ -162,169 +298,8 @@
                 <version>2.9.1</version>
             </plugin>    
         </plugins>
-    </build>
-    <dependencies>
-        <dependency>
-            <groupId>com.sun.jersey</groupId>
-            <artifactId>jersey-servlet</artifactId>
-            <version>${jersey.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.sun.jersey</groupId>
-            <artifactId>jersey-json</artifactId>
-            <version>${jersey.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.sun.jersey</groupId>
-            <artifactId>jersey-client</artifactId>
-            <version>${jersey.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.sun.jersey.jersey-test-framework</groupId>
-            <artifactId>jersey-test-framework-grizzly2</artifactId>
-            <version>${jersey.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.sun.jersey.contribs</groupId>
-            <artifactId>jersey-spring</artifactId>
-            <version>${jersey.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.springframework</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>com.sun.jersey.contribs</groupId>
-            <artifactId>jersey-multipart</artifactId>
-            <version>${jersey.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jmock</groupId>
-            <artifactId>jmock-junit4</artifactId>
-            <version>2.5.1</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-jdbc</artifactId>
-            <version>${spring.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-web</artifactId>
-            <version>${spring.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.hsqldb</groupId>
-            <artifactId>hsqldb</artifactId>
-            <version>2.2.9</version>
-            <scope>test</scope>
-            <classifier>jdk5</classifier>
-        </dependency>
-        <dependency>
-            <groupId>commons-dbcp</groupId>
-            <artifactId>commons-dbcp</artifactId>
-            <version>1.4</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-test</artifactId>
-            <version>${spring.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>2.2</version>
-        </dependency>
-        <dependency>
-            <groupId>postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-            <version>8.4-702.jdbc4</version>
-        </dependency>
-        <!-- <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-core</artifactId>
-            <version>${spring.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-config</artifactId>
-            <version>${spring.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-web</artifactId>
-            <version>${spring.version}</version> 
-        </dependency> -->
-        <dependency>
-            <groupId>cglib</groupId>
-            <artifactId>cglib</artifactId>
-            <version>2.2.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>${slf4j.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>de.mpg.mpgaai</groupId>
-            <artifactId>mpgaai-shhaa</artifactId>
-            <version>1.0.3</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>commons-logging</groupId>
-                    <artifactId>commons-logging</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-    </dependencies>
-    
-    <profiles>
-        <profile>
-            <id>lux16</id>
-            <properties>
-                <serviceRootUrl>http://lux16.mpi.nl/ds/webannotator/</serviceRootUrl>
-                <!-- Will be inserted in context.xml -->
-                <shibLI>http://lux16.mpi.nl/Shibboleth.sso/Login</shibLI>
-                <!-- Shibboleth login URI for SHHAA -->
-                <shibLO>http://lux16.mpi.nl/Shibboleth.sso/Logout</shibLO>
-                <!-- Shibboleth logout URI for SHHAA -->
-                <webXmlPath>src/main/webapp/WEB-INF/web-shib.xml</webXmlPath>
-                <!-- web.xml for shibboleth authentication -->
-            </properties>
-        </profile>
-        
-        <profile>
-            <id>lux17</id>
-            <properties>
-                <serviceRootUrl>http://lux17.mpi.nl/ds/webannotator/</serviceRootUrl>
-                <!-- Will be inserted in context.xml -->
-                <shibLI>http://lux17.mpi.nl/Shibboleth.sso/Login</shibLI>
-                <!-- Shibboleth login URI for SHHAA -->
-                <shibLO>http://lux17.mpi.nl/Shibboleth.sso/Logout</shibLO>
-                <!-- Shibboleth logout URI for SHHAA -->
-                <webXmlPath>src/main/webapp/WEB-INF/web-shib.xml</webXmlPath>
-                <!-- web.xml for shibboleth authentication -->
-            </properties>
-        </profile>
-        
-        <profile>
-            <id>localhost</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <properties>
-                <serviceRootUrl>localhost:8080/annotator-backend/api/</serviceRootUrl>
-                <webXmlPath>src/main/webapp/WEB-INF/web.xml</webXmlPath>
-            </properties>
-        </profile>
-    </profiles>
-        
+    </build>      
+           
     <properties>
         <jersey.version>1.17.1</jersey.version>
         <spring.version>3.2.0.RELEASE</spring.version>
