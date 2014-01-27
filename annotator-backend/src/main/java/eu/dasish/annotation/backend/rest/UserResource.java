@@ -218,6 +218,32 @@ public class UserResource {
             return null;
         }
     }
+    
+    @PUT
+    @Produces(MediaType.TEXT_PLAIN)
+    @Path("{externalId}/account/{accountType}")
+    public String updateUserAccount(@PathParam("externalId") String externalId, @PathParam("accountType") String accountType) throws IOException {
+        String remoteUser = httpServletRequest.getRemoteUser();
+        Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
+        if (remoteUserID != null) {
+            if (dbIntegrityService.getTypeOfUserAccount(remoteUserID).equals(admin)) {
+                dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
+                final boolean updated = dbIntegrityService.updateAccount(UUID.fromString(externalId), accountType);
+                if (updated) {
+                    return "The account was updated to "+dbIntegrityService.getTypeOfUserAccount(dbIntegrityService.getUserInternalIdentifier(UUID.fromString(externalId)));
+                } else {
+                    httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "The account was not updated.");
+                    return "The account was not updated.";
+                }
+            } else {
+                httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, "The logged-in user does not have admin rights to update an account type in the database");
+                return null;
+            }
+        } else {
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged-in user is not found in the database");
+            return null;
+        }
+    }
 
     @DELETE
     @Path("{userId}")
@@ -275,4 +301,6 @@ public class UserResource {
     private boolean ifLoggedIn(Number userID) {
         return httpServletRequest.getRemoteUser().equals(dbIntegrityService.getUserRemoteID(userID));
     }
+    
+    
 }
