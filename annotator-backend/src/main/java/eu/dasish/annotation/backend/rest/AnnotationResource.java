@@ -511,6 +511,51 @@ public class AnnotationResource {
             return null;
         }
     }
+    
+    @DELETE
+    @Produces(MediaType.TEXT_PLAIN)
+    @Path("{annotationId: " + BackendConstants.regExpIdentifier + "}/user/{userId}/delete")
+    public String deleteUsersPermission(@PathParam("annotationId") String annotationId, @PathParam("userId") String userId) throws IOException {
+        dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
+        int deletedRows = 0;
+        try {
+            final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(annotationId));
+            String remoteUser = httpServletRequest.getRemoteUser();
+            Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
+            if (remoteUserID != null) {
+                if (annotationID != null) {
+                    if (isOwner(remoteUserID, annotationID)) {
+                        Number userID = dbIntegrityService.getUserInternalIdentifier(UUID.fromString(userId));
+                        if (userID != null) {
+                            deletedRows = dbIntegrityService.updateAnnotationPrincipalPermission(annotationID, userID, null);
+
+                        } else {
+                            loggerServer.debug(httpServletResponse.SC_NOT_FOUND + ": the user external identifier " + userId + " is not found the the databse.");
+                            httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, "The user external identifier " + userId + " is not found the the databse.");
+
+                        }
+                    } else {
+                        loggerServer.debug(httpServletResponse.SC_UNAUTHORIZED + "The logged-in user cannot change the access rights on this annotation because (s)he is  not its owner.");
+                        httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, "The logged-in user cannot change the access rights on this annotation because (s)he is  not its owner.");
+
+                    }
+                } else {
+                    loggerServer.debug(HttpServletResponse.SC_NOT_FOUND + ": The annotation with the given id " + annotationId + " is not found in the database");
+                    httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The annotation with the given id  " + annotationId + "  is not found in the database.");
+
+                }
+            } else {
+                loggerServer.debug(httpServletResponse.SC_NOT_FOUND + ": the logged-in user is not found in the database");
+                httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged-in user is not found in the database.");
+
+            }
+        } catch (IllegalArgumentException e) {
+            loggerServer.debug(HttpServletResponse.SC_BAD_REQUEST + ": Illegal argument UUID " + annotationId);
+            httpServletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST, "Illegal argument UUID " + annotationId);
+
+        }
+        return (deletedRows + " is deleted.");
+    }
 /////////////////////////////////////////
 
     private ResponseBody makeAnnotationResponseEnvelope(Number annotationID) {

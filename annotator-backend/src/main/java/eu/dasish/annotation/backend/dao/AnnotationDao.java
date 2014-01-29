@@ -225,6 +225,8 @@ public interface AnnotationDao extends ResourceDao{
     */
     public int deleteAnnotationPrincipalPermissions(Number annotationID);
     
+    public int deleteAnnotationPrincipalPermission(Number annotationID, Number userID);
+    
     /*
      * HELPERS 
      */
