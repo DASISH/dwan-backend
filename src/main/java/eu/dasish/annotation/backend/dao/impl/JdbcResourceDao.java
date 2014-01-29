@@ -140,9 +140,10 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     public Number getInternalIDFromURI(String uri) {
         String externalID = stringURItoExternalID(uri);
         try {
-            return getInternalID(UUID.fromString(externalID));
+            UUID externalUUID = UUID.fromString(externalID);
+            return getInternalID(externalUUID);
         } catch (IllegalArgumentException e) {
-            _logger.debug("Got a non valid external ID (not an UUID) " + externalID + " from uri " + uri);
+            _logger.debug(externalID + " is not a valid <uuid>.  Therefore, I expect that it is a temporary idendifier of a new resource that is not yet in the database and return null.");
             return null;
         }
     }
@@ -236,7 +237,12 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
 
     @Override
     public String stringURItoExternalID(String stringURI) {
-        return stringURI.substring(_serviceURI.length());
+        if (stringURI.length() > _serviceURI.length()) {
+            return stringURI.substring(_serviceURI.length());
+        } else {
+            logger.debug(stringURI + " does not have the form <service url>/<isentifier>, therefore I return the input value.");
+            return stringURI;
+        }
     }
 
     ////////////////////////////

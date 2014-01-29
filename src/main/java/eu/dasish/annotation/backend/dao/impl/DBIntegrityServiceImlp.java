@@ -377,7 +377,12 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
 
     @Override
     public int updateAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission) {
+        if (permission != null) {
         return annotationDao.updateAnnotationPrincipalPermission(annotationID, userID, permission);
+        }
+        else {
+            return annotationDao.deleteAnnotationPrincipalPermission(annotationID, userID);
+        }
     }
 
     @Override
