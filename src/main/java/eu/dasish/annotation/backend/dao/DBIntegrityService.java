@@ -86,7 +86,7 @@ public interface DBIntegrityService{
     * -- owned by "owner",
     * -- created after time-samp "after and before time-stamp "before".
     */
-    List<Number> getFilteredAnnotationIDs(String link, String text, Number inloggedUserID, String[] accessModes, String namespace, Timestamp after, Timestamp before);
+    List<Number> getFilteredAnnotationIDs(String link, String text, Number inloggedUserID, String[] accessModes, String namespace, String after, String before);
     
     AnnotationInfoList getAllAnnotationInfos();
     
@@ -108,7 +108,7 @@ public interface DBIntegrityService{
     * -- created after time-samp "after and before time-stamp "before".
      */
     AnnotationInfoList getFilteredAnnotationInfos(String word, String text, Number inloggedUserID, String[] accessModes, String namespace, UUID
-            ownerID, Timestamp after, Timestamp before);
+            ownerID, String after, String before);
 
     /**
      * 

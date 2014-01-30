@@ -347,14 +347,15 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         
         
              
-        Timestamp after = new Timestamp(0); 
-        Timestamp before = new Timestamp(System.currentTimeMillis());  
+        final String after = (new Timestamp(0)).toString();
+        final String before = (new Timestamp(System.currentTimeMillis())).toString();
+ 
         List<Number> result_4 = jdbcAnnotationDao.getFilteredAnnotationIDs(annotationIDs, "some html", null, after, before);        
         assertEquals(2, result_4.size());
         assertEquals(2, result_4.get(0));
         assertEquals(3, result_2.get(1));
         
-        Timestamp after_1 = new Timestamp(System.currentTimeMillis()); // no annotations added after "now"       
+        final String after_1 = (new Timestamp(System.currentTimeMillis())).toString();// no annotations added after "now"       
         List<Number> result_5 = jdbcAnnotationDao.getFilteredAnnotationIDs(annotationIDs, "some html", null, after_1, null);        
         assertEquals(0, result_5.size());
         

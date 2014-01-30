@@ -165,7 +165,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
 
     ////////////////////////////////////////////////////////////////////////
     @Override
-    public List<Number> getFilteredAnnotationIDs(List<Number> annotationIDs, String text, String namespace, Timestamp after, Timestamp before) {
+    public List<Number> getFilteredAnnotationIDs(List<Number> annotationIDs, String text, String namespace, String after, String before) {
 
         StringBuilder sql = new StringBuilder("SELECT DISTINCT ");
         sql.append(annotation_id).append(" FROM ").append(annotationTableName).append(" WHERE TRUE ");
@@ -185,13 +185,13 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
 
 
         if (after != null) {
-            sql.append(" AND ").append(last_modified).append("  > :after");
-            params.put("after", after);
+            sql.append(" AND ").append(last_modified).append("  > :afterTimestamp");
+            params.put("afterTimestamp", Timestamp.valueOf(after));
         }
 
         if (before != null) {
-            sql.append(" AND ").append(last_modified).append("  < :before");
-            params.put("before", before);
+            sql.append(" AND ").append(last_modified).append("  < :beforeTimestamp");
+            params.put("beforeTimestamp", Timestamp.valueOf(before));
         }
 
         if (text != null) {
