@@ -199,8 +199,8 @@ public class AnnotationResource {
             @QueryParam("access") String permission,
             @QueryParam("namespace") String namespace,
             @QueryParam("owner") String ownerExternalId,
-            @QueryParam("after") Timestamp after,
-            @QueryParam("before") Timestamp before) throws IOException {
+            @QueryParam("after") String after,
+            @QueryParam("before") String before) throws IOException {
 
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         String remoteUser = httpServletRequest.getRemoteUser();

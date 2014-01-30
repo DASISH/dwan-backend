@@ -295,8 +295,8 @@ public class DBIntegrityServiceTest {
         mockAnnotationIDs2.add(2);
         mockAnnotationIDs2.add(3);
         
-        final Timestamp after = new Timestamp(0);
-        final Timestamp before = new Timestamp(System.currentTimeMillis());
+        final String after = (new Timestamp(0)).toString();
+        final String before = (new Timestamp(System.currentTimeMillis())).toString();
 
         final List<Number> mockRetval = new ArrayList<Number>();
         mockRetval.add(3);
@@ -392,8 +392,8 @@ public class DBIntegrityServiceTest {
 
         final String text = "some html";
         final UUID ownerUUID = UUID.fromString(TestBackendConstants._TEST_USER_4_EXT_ID);
-        final Timestamp after = new Timestamp(0);
-        final Timestamp before = new Timestamp(System.currentTimeMillis());
+        final String after = (new Timestamp(0)).toString();
+        final String before = (new Timestamp(System.currentTimeMillis())).toString();
 
         final List<Number> mockAnnotIDs = new ArrayList<Number>();
         mockAnnotIDs.add(3);

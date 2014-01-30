@@ -65,7 +65,7 @@ public interface AnnotationDao extends ResourceDao{
      * -- added to the database between "before" and "after" time-dates.
      * 
      */
-    public List<Number> getFilteredAnnotationIDs(List<Number> annotationIDs, String text, String namespace, Timestamp after, Timestamp before);
+    public List<Number> getFilteredAnnotationIDs(List<Number> annotationIDs, String text, String namespace, String after, String before);
      
     public List<Number> getAllAnnotationIDs();
     
