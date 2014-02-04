@@ -46,6 +46,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     // joint tablenames
     final static protected String notebooksAnnotationsTableName = "notebooks_annotations";
     final static protected String permissionsTableName = "annotations_principals_permissions";
+    final static protected String notebookPermissionsTableName = "notebooks_principals_permissions";
     final static protected String annotationsTargetsTableName = "annotations_targets";
     final static protected String targetsCachedRepresentationsTableName = "targets_cached_representations";
     // base string constants: field Names
@@ -57,6 +58,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     final static protected String notebook_id = "notebook_id";
     final static protected String target_id = "target_id";
     final static protected String external_id = "external_id";
+    final static protected String owner_id = "owner_id";
     final static protected String headline = "headline";
     final static protected String body_text = "body_text";
     final static protected String body_mimetype = "body_mimetype";
@@ -219,6 +221,14 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
             return rs.getInt(principal_id);
         }
     };
+    
+    protected final RowMapper<Number> ownerIDRowMapper = new RowMapper<Number>() {
+        @Override
+        public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
+            return rs.getInt(owner_id);
+        }
+    };
+    
     protected final RowMapper<Number> notebookOwnerIDRowMapper = new RowMapper<Number>() {
         @Override
         public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
