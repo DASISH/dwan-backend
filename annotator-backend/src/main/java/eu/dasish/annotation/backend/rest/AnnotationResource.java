@@ -209,8 +209,7 @@ public class AnnotationResource {
             try {
                 UUID ownerExternalUUID = (ownerExternalId != null) ? UUID.fromString(ownerExternalId) : null;
                 String access = (permission != null) ? permission : default_permission;
-                final AnnotationInfoList annotationInfoList = dbIntegrityService.getFilteredAnnotationInfos(link, text, userID, makeAccessModeChain(access), namespace, ownerExternalUUID, after, before);
-                logger.info("getFilteredAnnotations method: OK");
+                final AnnotationInfoList annotationInfoList = dbIntegrityService.getFilteredAnnotationInfos(ownerExternalUUID, link, text, userID, this.makeAccessModeChain(access), namespace, after, before);
                 return new ObjectFactory().createAnnotationInfoList(annotationInfoList);
             } catch (IllegalArgumentException e) {
                 loggerServer.debug(HttpServletResponse.SC_BAD_REQUEST + ": Illegal argument UUID " + ownerExternalId);
@@ -276,7 +275,7 @@ public class AnnotationResource {
             Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
             if (userID != null) {
                 if (annotationID != null) {
-                    if (isOwner(userID, annotationID)) {
+                    if (userID.equals(dbIntegrityService.getAnnotationOwner(annotationID))) {
                         int[] resultDelete = dbIntegrityService.deleteAnnotation(annotationID);
                         String result = Integer.toString(resultDelete[0]);
                         logger.info("deleteAnnotation method: OK");
@@ -341,13 +340,6 @@ public class AnnotationResource {
             return null;
         }
 
-        List<UserWithPermission> permissions = annotation.getPermissions().getUserWithPermission();
-        String ownerURI = annotation.getOwnerRef();
-        if (!ownerIsListed(ownerURI, permissions)) {
-            loggerServer.debug(httpServletResponse.SC_CONFLICT + "Wrong request body: the  owner URI's is not listed in the list of permissions as 'owner'. Correct the request and resend.");
-            httpServletResponse.sendError(HttpServletResponse.SC_CONFLICT, "Wrong request body: the  owner URI's is not listed in the list of permissions as 'owner'. Correct the request and resend.");
-            return null;
-        }
 
         try {
             final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(externalIdentifier));
@@ -355,8 +347,8 @@ public class AnnotationResource {
                 String remoteUser = httpServletRequest.getRemoteUser();
                 Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
                 if (userID != null) {
-                    if (isOwner(userID, annotationID)) {
-                        int updatedRows = dbIntegrityService.updateUsersAnnotation(userID, annotation);
+                    if (userID.equals(dbIntegrityService.getAnnotationOwner(annotationID))) {
+                        int updatedRows = dbIntegrityService.updateAnnotation(annotation);
                         return new ObjectFactory().createResponseBody(makeAnnotationResponseEnvelope(annotationID));
 
                     } else {
@@ -435,7 +427,7 @@ public class AnnotationResource {
                     try {
                         final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(annotationExternalId));
                         if (annotationID != null) {
-                            if (isOwner(remoteUserID, annotationID)) {
+                            if (userID.equals(dbIntegrityService.getAnnotationOwner(annotationID))) {
                                 int result = (dbIntegrityService.getPermission(annotationID, userID) != null)
                                         ? dbIntegrityService.updateAnnotationPrincipalPermission(annotationID, userID, permission)
                                         : dbIntegrityService.addAnnotationPrincipalPermission(annotationID, userID, permission);
@@ -487,7 +479,7 @@ public class AnnotationResource {
             Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
             if (remoteUserID != null) {
                 if (annotationID != null) {
-                    if (isOwner(remoteUserID, annotationID)) {
+                    if (remoteUserID.equals(dbIntegrityService.getAnnotationOwner(annotationID))) {
                         int updatedRows = dbIntegrityService.updatePermissions(annotationID, permissions);
                         return new ObjectFactory().createResponseBody(makePermissionResponseEnvelope(annotationID));
                     } else {
@@ -511,7 +503,7 @@ public class AnnotationResource {
             return null;
         }
     }
-    
+
     @DELETE
     @Produces(MediaType.TEXT_PLAIN)
     @Path("{annotationId: " + BackendConstants.regExpIdentifier + "}/user/{userId}/delete")
@@ -524,7 +516,7 @@ public class AnnotationResource {
             Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
             if (remoteUserID != null) {
                 if (annotationID != null) {
-                    if (isOwner(remoteUserID, annotationID)) {
+                    if (remoteUserID.equals(dbIntegrityService.getAnnotationOwner(annotationID))) {
                         Number userID = dbIntegrityService.getUserInternalIdentifier(UUID.fromString(userId));
                         if (userID != null) {
                             deletedRows = dbIntegrityService.updateAnnotationPrincipalPermission(annotationID, userID, null);
@@ -604,27 +596,25 @@ public class AnnotationResource {
     }
 
     private boolean canRead(Number userID, Number annotationID) {
+        if (userID.equals(dbIntegrityService.getAnnotationOwner(annotationID))) {
+            return true;
+        }
+
         final Permission permission = dbIntegrityService.getPermission(annotationID, userID);
         if (permission != null) {
-            return (permission.value().equals(Permission.OWNER.value()) || permission.value().equals(Permission.WRITER.value()) || permission.value().equals(Permission.READER.value()));
+            return (permission.value().equals(Permission.WRITER.value()) || permission.value().equals(Permission.READER.value()));
         } else {
             return false;
         }
     }
 
     private boolean canWrite(Number userID, Number annotationID) {
-        final Permission permission = dbIntegrityService.getPermission(annotationID, userID);
-        if (permission != null) {
-            return (permission.value().equals(Permission.OWNER.value()) || permission.value().equals(Permission.WRITER.value()));
-        } else {
-            return false;
+        if (userID.equals(dbIntegrityService.getAnnotationOwner(annotationID))) {
+            return true;
         }
-    }
-
-    private boolean isOwner(Number userID, Number annotationID) {
         final Permission permission = dbIntegrityService.getPermission(annotationID, userID);
         if (permission != null) {
-            return (permission.value().equals(Permission.OWNER.value()));
+            return (permission.value().equals(Permission.WRITER.value()));
         } else {
             return false;
         }
@@ -632,42 +622,25 @@ public class AnnotationResource {
 
     private String[] makeAccessModeChain(String accessMode) {
         if (accessMode != null) {
-            if (accessMode.contains(Permission.OWNER.value())) {
+            if (accessMode.equals(Permission.READER.value())) {
                 String[] result = new String[1];
-                result[0] = accessMode;
+                result[0] = Permission.READER.value();
                 return result;
             } else {
                 if (accessMode.equals(Permission.WRITER.value())) {
                     String[] result = new String[2];
-                    result[0] = Permission.WRITER.value();
-                    result[1] = Permission.OWNER.value();
+                    result[0] = Permission.READER.value();
+                    result[1] = Permission.WRITER.value();
                     return result;
                 } else {
-                    if (accessMode.equals(Permission.READER.value())) {
-                        String[] result = new String[3];
-                        result[0] = Permission.READER.value();
-                        result[1] = Permission.WRITER.value();
-                        result[2] = Permission.OWNER.value();
-                        return result;
-                    } else {
-                        logger.error("Invalide access " + accessMode);
-                        return null;
-                    }
-
+                    logger.error("Invalide access " + accessMode);
+                    return null;
                 }
+
             }
 
         } else {
             return null;
         }
-    }
-
-    private boolean ownerIsListed(String uri, List<UserWithPermission> permissions) {
-        for (UserWithPermission permissionPair : permissions) {
-            if (permissionPair.getRef().equals(uri) && permissionPair.getPermission().equals(Permission.OWNER)) {
-                return true;
-            }
-        }
-        return false;
     }
 }

@@ -160,13 +160,11 @@ public class AnnotationsTest extends JerseyTest {
         assertEquals(testAnnotation.getBody().getTextBody().getBody(), entity.getBody().getTextBody().getBody());
         assertEquals(testAnnotation.getHeadline(), entity.getHeadline());
         assertEquals(testAnnotation.getOwnerRef(), entity.getOwnerRef());
-        assertEquals(3, entity.getPermissions().getUserWithPermission().size());
-        assertEquals("owner", entity.getPermissions().getUserWithPermission().get(0).getPermission().value());        
-        assertEquals(resource().getURI()+"users/"+TestBackendConstants._TEST_USER_3_EXT_ID, entity.getPermissions().getUserWithPermission().get(0).getRef()); 
-        assertEquals("writer", entity.getPermissions().getUserWithPermission().get(1).getPermission().value());
-        assertEquals(resource().getURI()+"users/"+TestBackendConstants._TEST_USER_4_EXT_ID, entity.getPermissions().getUserWithPermission().get(1).getRef()); 
-        assertEquals("reader", entity.getPermissions().getUserWithPermission().get(2).getPermission().value()); 
-        assertEquals(resource().getURI()+"users/"+TestBackendConstants._TEST_USER_5_EXT_ID, entity.getPermissions().getUserWithPermission().get(2).getRef()); 
+        assertEquals(2, entity.getPermissions().getUserWithPermission().size());
+        assertEquals("writer", entity.getPermissions().getUserWithPermission().get(0).getPermission().value());
+        assertEquals(resource().getURI()+"users/"+TestBackendConstants._TEST_USER_4_EXT_ID, entity.getPermissions().getUserWithPermission().get(0).getRef()); 
+        assertEquals("reader", entity.getPermissions().getUserWithPermission().get(1).getPermission().value()); 
+        assertEquals(resource().getURI()+"users/"+TestBackendConstants._TEST_USER_5_EXT_ID, entity.getPermissions().getUserWithPermission().get(1).getRef()); 
         assertEquals(2, entity.getTargets().getTargetInfo().size());
         assertEquals(resource().getURI().toString()+"targets/"+TestBackendConstants._TEST_Target_1_EXT_ID, entity.getTargets().getTargetInfo().get(0).getRef());
         assertEquals(resource().getURI().toString()+"targets/"+TestBackendConstants._TEST_Target_2_EXT_ID, entity.getTargets().getTargetInfo().get(1).getRef());
@@ -232,9 +230,8 @@ public class AnnotationsTest extends JerseyTest {
         assertEquals(annotationToAdd.getBody().getTextBody().getBody(), entityA.getBody().getTextBody().getBody());
         assertEquals(annotationToAdd.getBody().getTextBody().getMimeType(), entityA.getBody().getTextBody().getMimeType());
         assertEquals(annotationToAdd.getHeadline(), entityA.getHeadline());
-        assertEquals(1, entityA.getPermissions().getUserWithPermission().size());
-        assertEquals("owner", entityA.getPermissions().getUserWithPermission().get(0).getPermission().value());
-        assertEquals(annotationToAdd.getOwnerRef(), entityA.getPermissions().getUserWithPermission().get(0).getRef());
+        assertEquals(0, entityA.getPermissions().getUserWithPermission().size());
+        assertEquals(annotationToAdd.getOwnerRef(), entityA.getOwnerRef());
         assertEquals(annotationToAdd.getTargets().getTargetInfo().get(0).getLink(), entityA.getTargets().getTargetInfo().get(0).getLink());
         // new ref is generated
         //assertEquals(annotationToAdd.getTargets().getTargetInfo().get(0).getRef(), entityA.getTargets().getTargetInfo().get(0).getRef());

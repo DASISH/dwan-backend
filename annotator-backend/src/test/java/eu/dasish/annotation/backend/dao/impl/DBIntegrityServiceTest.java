@@ -318,14 +318,14 @@ public class DBIntegrityServiceTest {
                 will(returnValue(mockAnnotationIDs2));
 
                
-                oneOf(annotationDao).getFilteredAnnotationIDs(mockAnnotationIDs1, "some html", null, after, before);
+                oneOf(annotationDao).getFilteredAnnotationIDs(mockAnnotationIDs1, null, "some html", null, after, before);
                 will(returnValue(mockRetval));
 
             }
         });
 
 
-        List result = dbIntegrityService.getFilteredAnnotationIDs(word, "some html", 3, accessModes, null, after, before);
+        List result = dbIntegrityService.getFilteredAnnotationIDs(null, word, "some html", 3, accessModes, null, after, before);
         assertEquals(1, result.size());
         assertEquals(3, result.get(0));
     }
@@ -429,7 +429,7 @@ public class DBIntegrityServiceTest {
                 will(returnValue(mockAnnotationIDs2));
                
                
-                oneOf(annotationDao).getFilteredAnnotationIDs(mockAnnotationIDs1, text, null, after, before);
+                oneOf(annotationDao).getFilteredAnnotationIDs(mockAnnotationIDs1, 4, text, null, after, before);
                 will(returnValue(mockAnnotIDs));
                 
                 
@@ -457,7 +457,7 @@ public class DBIntegrityServiceTest {
         });
        
       
-        AnnotationInfoList result = dbIntegrityService.getFilteredAnnotationInfos(word, text, 3, accessModes, null, ownerUUID, after, before);
+        AnnotationInfoList result = dbIntegrityService.getFilteredAnnotationInfos(ownerUUID, word, text, 3, accessModes, null, after, before);
         assertEquals(1, result.getAnnotationInfo().size()); 
         AnnotationInfo resultAnnotInfo = result.getAnnotationInfo().get(0);
         assertEquals(mockAnnotInfo.getHeadline(), resultAnnotInfo.getHeadline());
@@ -673,7 +673,7 @@ public class DBIntegrityServiceTest {
 
         mockeryDao.checking(new Expectations() {
             {
-                oneOf(annotationDao).addAnnotation(testAnnotation);
+                oneOf(annotationDao).addAnnotation(testAnnotation, 5);
                 will(returnValue(6)); // the next free number is 6
 
                 //  expectations for addTargetsForannotation
@@ -688,8 +688,7 @@ public class DBIntegrityServiceTest {
                 oneOf(annotationDao).updateAnnotationBody(6, testAnnotation.getBody().getTextBody().getBody(), testAnnotation.getBody().getTextBody().getMimeType(), false);
                 will(returnValue(1)); // the DB update will be called at perform anyway, even if the body is not changed (can be optimized)
 
-                oneOf(annotationDao).addAnnotationPrincipalPermission(6, 5, Permission.OWNER);
-                will(returnValue(1));
+               
             }
         });
 

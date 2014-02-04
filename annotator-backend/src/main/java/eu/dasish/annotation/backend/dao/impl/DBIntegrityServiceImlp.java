@@ -39,21 +39,16 @@ import eu.dasish.annotation.schema.Target;
 import eu.dasish.annotation.schema.TargetInfo;
 import eu.dasish.annotation.schema.User;
 import eu.dasish.annotation.schema.UserWithPermission;
-import java.io.IOException;
 import java.io.InputStream;
 import java.lang.Number;
-import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import javax.xml.parsers.ParserConfigurationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
@@ -150,11 +145,16 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
             }
             result.setTargets(sis);
 
-            result.setPermissions(getPermissionsForAnnotation(annotationID));
+            result.setPermissions(this.getPermissionsForAnnotation(annotationID));
             return result;
         } else {
             return null;
         }
+    }
+    
+    @Override
+    public Number getAnnotationOwner(Number annotationID) {
+        return annotationDao.getOwner(annotationID);
     }
 
     ///////////////////////////////////////////////////
@@ -185,7 +185,7 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
 
     ////////////////////////////////////////////////////////////////////////
     @Override
-    public List<Number> getFilteredAnnotationIDs(String link, String text, Number inloggedUserID, String[] accessModes, String namespace, String after, String before) {
+    public List<Number> getFilteredAnnotationIDs(UUID ownerId, String link, String text, Number inloggedUserID, String[] accessModes, String namespace, String after, String before) {
 
         if (accessModes == null) {
             return null;
@@ -199,7 +199,8 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
             annotationIDs.retainAll(annotationIDsForTargets);
         }
 
-        return annotationDao.getFilteredAnnotationIDs(annotationIDs, text, namespace, after, before);
+        Number ownerID = (ownerId != null) ? userDao.getInternalID(ownerId) : null;
+        return annotationDao.getFilteredAnnotationIDs(annotationIDs, ownerID, text, namespace, after, before);
     }
 
     @Override
@@ -254,20 +255,16 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     }
 
     @Override
-    public AnnotationInfoList getFilteredAnnotationInfos(String word, String text, Number inloggedUserID, String[] accessModes, String namespace, UUID owner, String after, String before) {
-        List<Number> annotationIDs = getFilteredAnnotationIDs(word, text, inloggedUserID, accessModes, namespace, after, before);
-        Number givenOwnerID = (owner != null) ? userDao.getInternalID(owner) : null;
+    public AnnotationInfoList getFilteredAnnotationInfos(UUID ownerId, String word, String text, Number inloggedUserID, String[] accessModes, String namespace, String after, String before) {
+        List<Number> annotationIDs = this.getFilteredAnnotationIDs(ownerId, word, text, inloggedUserID, accessModes, namespace, after, before);
         if (annotationIDs != null) {
             AnnotationInfoList result = new AnnotationInfoList();
             for (Number annotationID : annotationIDs) {
-                Number ownerID = annotationDao.getOwner(annotationID);
-                if ((owner == null) || ownerID.equals(givenOwnerID)) {
-                    ReferenceList targets = getAnnotationTargets(annotationID);
-                    AnnotationInfo annotationInfo = annotationDao.getAnnotationInfoWithoutTargets(annotationID);
-                    annotationInfo.setTargets(targets);
-                    annotationInfo.setOwnerRef(userDao.getURIFromInternalID(ownerID));
-                    result.getAnnotationInfo().add(annotationInfo);
-                }
+                AnnotationInfo annotationInfo = annotationDao.getAnnotationInfoWithoutTargets(annotationID);
+                annotationInfo.setTargets(this.getAnnotationTargets(annotationID));
+                annotationInfo.setOwnerRef(userDao.getURIFromInternalID(annotationDao.getOwner(annotationID)));
+                result.getAnnotationInfo().add(annotationInfo);
+
             }
 
             return result;
@@ -378,9 +375,8 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     @Override
     public int updateAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission) {
         if (permission != null) {
-        return annotationDao.updateAnnotationPrincipalPermission(annotationID, userID, permission);
-        }
-        else {
+            return annotationDao.updateAnnotationPrincipalPermission(annotationID, userID, permission);
+        } else {
             return annotationDao.deleteAnnotationPrincipalPermission(annotationID, userID);
         }
     }
@@ -411,8 +407,8 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     // TODO: optimize (not chnaged targets should not be deleted)
     // TODO: unit test
     @Override
-    public int updateUsersAnnotation(Number userID, Annotation annotation) {
-        int updatedAnnotations = annotationDao.updateAnnotation(annotation);
+    public int updateAnnotation(Annotation annotation) {
+        int updatedAnnotations = annotationDao.updateAnnotation(annotation, userDao.getInternalIDFromURI(annotation.getOwnerRef()));
         Number annotationID = annotationDao.getInternalIDFromURI(annotation.getURI());
         int deletedTargets = annotationDao.deleteAllAnnotationTarget(annotationID);
         int deletedPrinsipalsPermissions = annotationDao.deleteAnnotationPrincipalPermissions(annotationID);
@@ -462,15 +458,14 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     }
 
     @Override
-    public Number addUsersAnnotation(Number userID, Annotation annotation) {
-        Number annotationID = annotationDao.addAnnotation(annotation);
+    public Number addUsersAnnotation(Number ownerID, Annotation annotation) {
+        Number annotationID = annotationDao.addAnnotation(annotation, ownerID);
         int affectedAnnotRows = addTargets(annotation, annotationID);
         if (annotation.getPermissions() != null) {
             if (annotation.getPermissions().getUserWithPermission() != null) {
-                int addedPrincipalsPermissions = addPrincipalsPermissions(annotation.getPermissions().getUserWithPermission(), annotationID);
+                int addedPrincipalsPermissions = this.addPrincipalsPermissions(annotation.getPermissions().getUserWithPermission(), annotationID);
             }
         }
-        int affectedPermissions = annotationDao.addAnnotationPrincipalPermission(annotationID, userID, Permission.OWNER);
         return annotationID;
     }
 
@@ -525,7 +520,7 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         result[1] = 0;
         List<Number> cachedIDs = targetDao.getCachedRepresentations(TargetID);
         for (Number cachedID : cachedIDs) {
-            int[] currentResult = deleteCachedRepresentationOfTarget(TargetID, cachedID);
+            int[] currentResult = this.deleteCachedRepresentationOfTarget(TargetID, cachedID);
             result[0] = result[0] + currentResult[0];
             result[1] = result[1] + currentResult[1];
         }
@@ -542,7 +537,7 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         result[3] = 0;
         if (targetIDs != null) {
             for (Number targetID : targetIDs) {
-                deleteAllCachedRepresentationsOfTarget(targetID);
+                this.deleteAllCachedRepresentationsOfTarget(targetID);
                 result[3] = result[3] + targetDao.deleteTarget(targetID);
 
             }

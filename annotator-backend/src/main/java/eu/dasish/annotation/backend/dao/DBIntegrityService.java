@@ -86,7 +86,7 @@ public interface DBIntegrityService{
     * -- owned by "owner",
     * -- created after time-samp "after and before time-stamp "before".
     */
-    List<Number> getFilteredAnnotationIDs(String link, String text, Number inloggedUserID, String[] accessModes, String namespace, String after, String before);
+    List<Number> getFilteredAnnotationIDs(UUID ownerId, String link, String text, Number inloggedUserID, String[] accessModes, String namespace, String after, String before);
     
     AnnotationInfoList getAllAnnotationInfos();
     
@@ -107,8 +107,7 @@ public interface DBIntegrityService{
     * -- owned by "owner",
     * -- created after time-samp "after and before time-stamp "before".
      */
-    AnnotationInfoList getFilteredAnnotationInfos(String word, String text, Number inloggedUserID, String[] accessModes, String namespace, UUID
-            ownerID, String after, String before);
+    AnnotationInfoList getFilteredAnnotationInfos(UUID ownerId, String word, String text, Number inloggedUserID, String[] accessModes, String namespace, String after, String before);
 
     /**
      * 
@@ -161,6 +160,8 @@ public interface DBIntegrityService{
      */
     Annotation getAnnotation(Number annotationID);
     
+    Number getAnnotationOwner(Number annotationID);
+    
      /**
      * 
      * @param annotationID
@@ -169,6 +170,7 @@ public interface DBIntegrityService{
      */
     ReferenceList getAnnotationTargets(Number annotationID);
     
+   
     
     /**
      * 
@@ -243,11 +245,10 @@ public interface DBIntegrityService{
     
     /**
      * 
-     * @param userID
      * @param annotation
      * @return 1 of the annotation if it is updated
      */
-    int updateUsersAnnotation(Number userID, Annotation annotation);
+    int updateAnnotation(Annotation annotation);
     
      
     
@@ -312,7 +313,7 @@ public interface DBIntegrityService{
      * calls "addTargetsForAnnotation" 
      * @throws SQLException 
      */
-    Number addUsersAnnotation(Number userID, Annotation annotation);
+    Number addUsersAnnotation(Number ownerID, Annotation annotation);
     
     /**
      * 

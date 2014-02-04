@@ -103,7 +103,7 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
     public void testDeleteAnnotationPrinciplePermissions() throws SQLException{
         System.out.println("test deleteAllAnnotationTargets");
         int result = jdbcAnnotationDao.deleteAnnotationPrincipalPermissions(2);
-        assertEquals(3, result);
+        assertEquals(2, result);
         assertEquals(0, jdbcAnnotationDao.deleteAnnotationPrincipalPermissions(2));
     }
     
@@ -271,7 +271,7 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         assertEquals(null, annotationToAdd.getURI());
         assertEquals(null, annotationToAdd.getLastModified());
         
-        Number newAnnotationID = jdbcAnnotationDao.addAnnotation(annotationToAdd);
+        Number newAnnotationID = jdbcAnnotationDao.addAnnotation(annotationToAdd, 5);
         assertEquals(6, newAnnotationID);
         
         // checking
@@ -334,13 +334,13 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         annotationIDs.add(2);
         annotationIDs.add(3);
         
-        List<Number> result_1 = jdbcAnnotationDao.getFilteredAnnotationIDs(annotationIDs, null, null, null, null);        
+        List<Number> result_1 = jdbcAnnotationDao.getFilteredAnnotationIDs(annotationIDs, null, null, null, null, null);        
         assertEquals(2, result_1.size());
         assertEquals(2, result_1.get(0));
         assertEquals(3, result_1.get(1));
         
        
-        List<Number> result_2 = jdbcAnnotationDao.getFilteredAnnotationIDs(annotationIDs, "some html", null, null, null);        
+        List<Number> result_2 = jdbcAnnotationDao.getFilteredAnnotationIDs(annotationIDs, null, "some html", null, null, null);        
         assertEquals(2, result_2.size());
         assertEquals(2, result_2.get(0));
         assertEquals(3, result_2.get(1));
@@ -350,13 +350,12 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         final String after = (new Timestamp(0)).toString();
         final String before = (new Timestamp(System.currentTimeMillis())).toString();
  
-        List<Number> result_4 = jdbcAnnotationDao.getFilteredAnnotationIDs(annotationIDs, "some html", null, after, before);        
-        assertEquals(2, result_4.size());
-        assertEquals(2, result_4.get(0));
-        assertEquals(3, result_2.get(1));
+        List<Number> result_4 = jdbcAnnotationDao.getFilteredAnnotationIDs(annotationIDs, 4, "some html", null, after, before);        
+        assertEquals(1, result_4.size());
+        assertEquals(3, result_4.get(0));
         
         final String after_1 = (new Timestamp(System.currentTimeMillis())).toString();// no annotations added after "now"       
-        List<Number> result_5 = jdbcAnnotationDao.getFilteredAnnotationIDs(annotationIDs, "some html", null, after_1, null);        
+        List<Number> result_5 = jdbcAnnotationDao.getFilteredAnnotationIDs(annotationIDs, 4, "some html", null, after_1, null);        
         assertEquals(0, result_5.size());
         
         
@@ -372,10 +371,9 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
     public void testRetrievePermissions (){
         System.out.println("test Permissions");
         List<Map<Number, String>> result = jdbcAnnotationDao.getPermissions(2);
-        assertEquals(3, result.size());
-        assertEquals("owner", result.get(0).get(3));
-        assertEquals("writer", result.get(1).get(4));
-        assertEquals("reader", result.get(2).get(5));
+        assertEquals(2, result.size());
+        assertEquals("writer", result.get(0).get(4));
+        assertEquals("reader", result.get(1).get(5));
         
         
     }

@@ -115,8 +115,8 @@ public class AnnotationResourceTest {
                 oneOf(mockDbIntegrityService).getTypeOfUserAccount(3);
                 will(returnValue("developer"));
                 
-                oneOf(mockDbIntegrityService).getPermission(2, 3);
-                will(returnValue(Permission.OWNER));  
+                oneOf(mockDbIntegrityService).getAnnotationOwner(2);
+                will(returnValue(3));  
                 
                 oneOf(mockDbIntegrityService).getAnnotation(2);                
                 will(returnValue(expectedAnnotation));
@@ -151,7 +151,7 @@ public class AnnotationResourceTest {
                
               
                 oneOf(mockDbIntegrityService).getUserInternalIDFromRemoteID("twan");
-                will(returnValue(3)); 
+                will(returnValue(5)); 
                 
                 oneOf(mockDbIntegrityService).setServiceURI(with(any(String.class)));
                 will(doAll());
@@ -160,8 +160,8 @@ public class AnnotationResourceTest {
                 will(returnValue(5)); 
                 
                
-                oneOf(mockDbIntegrityService).getPermission(5, 3);
-                will(returnValue(Permission.OWNER));  
+                oneOf(mockDbIntegrityService).getAnnotationOwner(5);
+                will(returnValue(5));  
                 
                 oneOf(mockDbIntegrityService).deleteAnnotation(5);
                 will(returnValue(mockDelete));

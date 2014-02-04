@@ -141,9 +141,9 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
 
         StringBuilder sql = new StringBuilder("SELECT ");
         sql.append(annotation_id).append(" FROM ").append(permissionsTableName).append(" WHERE ").
-                append(principal_id).append("  = ").append(userID.toString()).append(" AND ").
+                append(principal_id).append("  = ?").append(" AND ").
                 append(permission).append("  IN ").append(values);
-        return getSimpleJdbcTemplate().query(sql.toString(), internalIDRowMapper);
+        return getSimpleJdbcTemplate().query(sql.toString(), internalIDRowMapper, userID);
     }
 
     private String stringsToValuesString(String[] strings) {
@@ -165,7 +165,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
 
     ////////////////////////////////////////////////////////////////////////
     @Override
-    public List<Number> getFilteredAnnotationIDs(List<Number> annotationIDs, String text, String namespace, String after, String before) {
+    public List<Number> getFilteredAnnotationIDs(List<Number> annotationIDs, Number ownerID, String text, String namespace, String after, String before) {
 
         StringBuilder sql = new StringBuilder("SELECT DISTINCT ");
         sql.append(annotation_id).append(" FROM ").append(annotationTableName).append(" WHERE TRUE ");
@@ -183,7 +183,11 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         String values = makeListOfValues(annotationIDs);
         sql.append(" AND ").append(annotation_id).append(" IN ").append(values);
 
-
+        if (ownerID != null) {
+            sql.append(" AND ").append(owner_id).append("  = :ownerId");
+            params.put("ownerId", ownerID);
+        }
+        
         if (after != null) {
             sql.append(" AND ").append(last_modified).append("  > :afterTimestamp");
             params.put("afterTimestamp", Timestamp.valueOf(after));
@@ -333,12 +337,13 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
             return null;
         }
         StringBuilder sql = new StringBuilder("SELECT ");
-        sql.append(principal_id).append(" FROM ").append(permissionsTableName).append(" WHERE ").
-                append(permission).append("= 'owner' AND ").
+        sql.append(owner_id).append(" FROM ").append(annotationTableName).append(" WHERE ").
                 append(annotation_id).append("= ? LIMIT  1");
-        List<Number> respond = getSimpleJdbcTemplate().query(sql.toString(), principalIDRowMapper, annotationID);
+        List<Number> respond = getSimpleJdbcTemplate().query(sql.toString(), ownerIDRowMapper, annotationID);
         return (respond.isEmpty() ? null : respond.get(0));
     }
+    
+    
 
     /////////////////////////////
     @Override
@@ -385,11 +390,12 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
 
     // TODO Unit test
     @Override
-    public int updateAnnotation(Annotation annotation) {
+    public int updateAnnotation(Annotation annotation, Number newOwnerID) {
 
         String[] body = retrieveBodyComponents(annotation.getBody());
         String externalID = stringURItoExternalID(annotation.getURI());
         Map<String, Object> params = new HashMap<String, Object>();
+        params.put("owner", newOwnerID);
         params.put("bodyText", body[0]);
         params.put("bodyMimeType", body[1]);
         params.put("headline", annotation.getHeadline());
@@ -399,6 +405,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
 
         StringBuilder sql = new StringBuilder("UPDATE ");
         sql.append(annotationTableName).append(" SET ").
+                append(owner_id).append("=  :owner ,").
                 append(body_text).append("=  :bodyText ,").
                 append(body_mimetype).append("= :bodyMimeType ,").
                 append(headline).append("=  :headline ,").
@@ -451,7 +458,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
 
     //////////// ADDERS ////////////////////////
     @Override
-    public Number addAnnotation(Annotation annotation) {
+    public Number addAnnotation(Annotation annotation, Number ownerID) {
 
         String[] body = retrieveBodyComponents(annotation.getBody());
 
@@ -464,15 +471,16 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         UUID externalID = UUID.randomUUID();
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("externalId", externalID.toString());
+        params.put("owner", ownerID);
         params.put("headline", annotation.getHeadline());
         params.put("bodyText", body[0]);
         params.put("bodyMimeType", body[1]);
         params.put("isXml", annotation.getBody().getXmlBody() != null);
 
         StringBuilder sql = new StringBuilder("INSERT INTO ");
-        sql.append(annotationTableName).append("(").append(external_id);
+        sql.append(annotationTableName).append("(").append(external_id).append(",").append(owner_id);
         sql.append(",").append(headline).append(",").append(body_text).append(",").append(body_mimetype).append(",").append(is_xml).
-                append(" ) VALUES (:externalId, :headline, :bodyText, :bodyMimeType, :isXml)");
+                append(" ) VALUES (:externalId, :owner, :headline, :bodyText, :bodyMimeType, :isXml)");
         int affectedRows = getSimpleJdbcTemplate().update(sql.toString(), params);
         return ((affectedRows > 0) ? getInternalID(externalID) : null);
     }

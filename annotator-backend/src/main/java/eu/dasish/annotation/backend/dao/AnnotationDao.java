@@ -65,7 +65,7 @@ public interface AnnotationDao extends ResourceDao{
      * -- added to the database between "before" and "after" time-dates.
      * 
      */
-    public List<Number> getFilteredAnnotationIDs(List<Number> annotationIDs, String text, String namespace, String after, String before);
+    public List<Number> getFilteredAnnotationIDs(List<Number> annotationIDs, Number ownerID, String text, String namespace, String after, String before);
      
     public List<Number> getAllAnnotationIDs();
     
@@ -162,7 +162,7 @@ public interface AnnotationDao extends ResourceDao{
      * @return  the internal ID of the added annotation, if it is added, or null otherwise.
      **/
     
-    public Number addAnnotation(Annotation annotation);
+    public Number addAnnotation(Annotation annotation, Number newOwnerID);
  
      
     /////// UPDATERS //////////////////
@@ -178,7 +178,7 @@ public interface AnnotationDao extends ResourceDao{
      * @return # of updated rows in "annotation" table after updating the annotation. Should return 1 if update  happens
      * @throws SQLException 
      */
-    public int updateAnnotation(Annotation annotation);
+    public int updateAnnotation(Annotation annotation, Number ownerID);
     
     
      /**

@@ -50,15 +50,16 @@ CREATE TABLE principal (
 CREATE TABLE notebook (
     notebook_id SERIAL UNIQUE NOT NULL,
     external_id text UNIQUE NOT NULL,
+    owner_id integer REFERENCES principal(principal_id),
     last_modified timestamp default current_timestamp AT TIME ZONE 'UTC',
-    title text,
-    owner_id integer NOT NULL
+    title text
 );
 
 
 CREATE TABLE annotation (
     annotation_id SERIAL UNIQUE NOT NULL, 
     external_id text UNIQUE NOT NULL,
+    owner_id integer REFERENCES principal(principal_id),
     last_modified timestamp default current_timestamp AT TIME ZONE 'UTC',
     headline text,
     body_text text,
@@ -118,7 +119,6 @@ CREATE TABLE targets_cached_representations (
 
 
 
-
 CREATE TABLE annotations_principals_permissions (
 annotation_id integer REFERENCES annotation(annotation_id),
 principal_id integer REFERENCES principal(principal_id),
@@ -126,24 +126,27 @@ permission_  text REFERENCES permission_(permission_mode),
 unique(annotation_id, principal_id)
 );
 
+CREATE TABLE notebooks_principals_permissions (
+notebook_id integer REFERENCES notebook(notebook_id),
+principal_id integer REFERENCES principal(principal_id),
+permission_  text REFERENCES permission_(permission_mode),
+unique(notebook_id, principal_id)
+);
+
 
 ---------------------------------------------------------------------------------------------
-ALTER TABLE ONLY annotation
-    ADD CONSTRAINT annotation_primary_key PRIMARY KEY (annotation_id);
+-- ALTER TABLE ONLY annotation
+    -- ADD CONSTRAINT annotation_primary_key PRIMARY KEY (annotation_id);
 
-ALTER TABLE ONLY notebooks_annotations
-   ADD CONSTRAINT pk_notebooks_annotations PRIMARY KEY (notebook_id, annotation_id);
+-- ALTER TABLE ONLY notebooks_annotations
+   -- ADD CONSTRAINT pk_notebooks_annotations PRIMARY KEY (notebook_id, annotation_id);
 
 
-CREATE INDEX fki_annotation_owner_principal_id ON annotation USING btree (owner_id);
+-- ALTER TABLE ONLY annotation
+ -- ADD CONSTRAINT fk_annotation_owner_principal_id FOREIGN KEY (owner_id) REFERENCES principal(principal_id);
 
-CREATE INDEX fki_owner_id_principal_id ON notebook USING btree (owner_id);
-
-ALTER TABLE ONLY annotation
- ADD CONSTRAINT fk_annotation_owner_principal_id FOREIGN KEY (owner_id) REFERENCES principal(principal_id);
-
-ALTER TABLE ONLY notebook
-   ADD CONSTRAINT fk_notebook_owner_id_principal_id FOREIGN KEY (owner_id) REFERENCES principal(principal_id);
+-- ALTER TABLE ONLY notebook
+   -- ADD CONSTRAINT fk_notebook_owner_id_principal_id FOREIGN KEY (owner_id) REFERENCES principal(principal_id);
 
  --ALTER TABLE ONLY notebooks_annotations
  --   ADD CONSTRAINT fk_notebooks_annotations_annotation_id FOREIGN KEY (annotation_id) REFERENCES annotation(annotation_id);
