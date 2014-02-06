@@ -51,7 +51,7 @@ CREATE TABLE notebook (
     notebook_id SERIAL UNIQUE NOT NULL,
     external_id text UNIQUE NOT NULL,
     owner_id integer REFERENCES principal(principal_id),
-    last_modified timestamp default current_timestamp AT TIME ZONE 'UTC',
+    last_modified timestamp default (current_timestamp AT TIME ZONE 'UTC'),
     title text
 );
 
@@ -60,7 +60,7 @@ CREATE TABLE annotation (
     annotation_id SERIAL UNIQUE NOT NULL, 
     external_id text UNIQUE NOT NULL,
     owner_id integer REFERENCES principal(principal_id),
-    last_modified timestamp default current_timestamp AT TIME ZONE 'UTC',
+    last_modified timestamp default (current_timestamp AT TIME ZONE 'UTC'),
     headline text,
     body_text text,
     body_mimetype text,
@@ -72,7 +72,7 @@ CREATE TABLE annotation (
 CREATE TABLE target (
     target_id SERIAL UNIQUE NOT NULL,
     external_id text UNIQUE NOT NULL,
-    last_modified timestamp default current_timestamp AT TIME ZONE 'UTC',
+    last_modified timestamp default (current_timestamp AT TIME ZONE 'UTC'),
     link_uri text, 
     version text,
     fragment_descriptor text
@@ -84,7 +84,7 @@ CREATE TABLE cached_representation (
     mime_type text,
     tool text,
     type_ text, 
-    file_ blob 
+    file_ bytea 
 );
 
 

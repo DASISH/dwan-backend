@@ -197,14 +197,14 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest{
 //        setMockeryNotebookOne(); 
 //        List<ReTargetREF> testList = jdbcNotebookDao.getAnnotationREFsOfNotebook(3);
 //        assertEquals(2, testList.size());        
-//        assertEquals(TestBackendConstants._TEST_SERVLET_URI_annotations+TestBackendConstants._TEST_ANNOT_2_EXT, testList.get(0).getRef());
-//        assertEquals(TestBackendConstants._TEST_SERVLET_URI_annotations+TestBackendConstants._TEST_ANNOT_3_EXT, testList.get(1).getRef());
+//        assertEquals(TestBackendConstants._TEST_SERVLET_URI_annotations+"00000000-0000-0000-0000-000000000021", testList.get(0).getRef());
+//        assertEquals(TestBackendConstants._TEST_SERVLET_URI_annotations+"00000000-0000-0000-0000-000000000022", testList.get(1).getRef());
 //        
 //        // test Two
 //        setMockeryNotebookTwo(); 
 //        List<ReTargetREF> testListTwo = jdbcNotebookDao.getAnnotationREFsOfNotebook(4);
 //        assertEquals(1, testListTwo.size());        
-//        assertEquals(TestBackendConstants._TEST_SERVLET_URI_annotations+TestBackendConstants._TEST_ANNOT_4_EXT, testListTwo.get(0).getRef());
+//        assertEquals(TestBackendConstants._TEST_SERVLET_URI_annotations+"00000000-0000-0000-0000-000000000023", testListTwo.get(0).getRef());
 //        
 //        // test Three  "empty" 
 //        setMockeryNotebookThreeEmpty();         
@@ -232,14 +232,14 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest{
 //        setMockeryNotebookOne(); 
 //        AnnotationList annotations = jdbcNotebookDao.getAnnotations(3);
 //        assertEquals(2, annotations.getAnnotation().size());        
-//        assertEquals(TestBackendConstants._TEST_SERVLET_URI_annotations+TestBackendConstants._TEST_ANNOT_2_EXT, annotations.getAnnotation().get(0).getRef());
-//        assertEquals(TestBackendConstants._TEST_SERVLET_URI_annotations+TestBackendConstants._TEST_ANNOT_3_EXT, annotations.getAnnotation().get(1).getRef());
+//        assertEquals(TestBackendConstants._TEST_SERVLET_URI_annotations+"00000000-0000-0000-0000-000000000021", annotations.getAnnotation().get(0).getRef());
+//        assertEquals(TestBackendConstants._TEST_SERVLET_URI_annotations+"00000000-0000-0000-0000-000000000022", annotations.getAnnotation().get(1).getRef());
 //        
 //        // test Two
 //        setMockeryNotebookTwo(); 
 //        AnnotationList annotationsTwo = jdbcNotebookDao.getAnnotations(4);
 //        assertEquals(1, annotationsTwo.getAnnotation().size());        
-//        assertEquals(TestBackendConstants._TEST_SERVLET_URI_annotations+TestBackendConstants._TEST_ANNOT_4_EXT, annotationsTwo.getAnnotation().get(0).getRef());
+//        assertEquals(TestBackendConstants._TEST_SERVLET_URI_annotations+"00000000-0000-0000-0000-000000000023", annotationsTwo.getAnnotation().get(0).getRef());
 //        
 //        // test Three  "empty" list of annotations
 //        // according to dasish.xsd if an Annotation is created then its list of annotations must contain at least one element!
@@ -304,16 +304,16 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest{
 //        mockery.checking(new Expectations() {
 //            {
 //              oneOf(annotationDao).getExternalID(2);
-//              will(returnValue(UUID.fromString(TestBackendConstants._TEST_ANNOT_2_EXT)));
+//              will(returnValue(UUID.fromString("00000000-0000-0000-0000-000000000021")));
 //              
 //              oneOf(annotationDao).getExternalID(3);
-//              will(returnValue(UUID.fromString(TestBackendConstants._TEST_ANNOT_3_EXT)));
+//              will(returnValue(UUID.fromString("00000000-0000-0000-0000-000000000022")));
 //            }
 //        }); 
 //        
 //        List<UUID> resultOne= jdbcNotebookDao.getAnnotationExternalIDs(UUID.fromString(TestBackendConstants._TEST_NOTEBOOK_3_EXT));
-//        assertEquals(TestBackendConstants._TEST_ANNOT_2_EXT, resultOne.get(0).toString());
-//        assertEquals(TestBackendConstants._TEST_ANNOT_3_EXT, resultOne.get(1).toString());
+//        assertEquals("00000000-0000-0000-0000-000000000021", resultOne.get(0).toString());
+//        assertEquals("00000000-0000-0000-0000-000000000022", resultOne.get(1).toString());
 //        
 //        
 //      
@@ -330,9 +330,9 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest{
 //    
 //    private void setMockeryNotebookOne(){        
 //        ReTargetREF testRefOne = new ReTargetREF();
-//        testRefOne.setRef(TestBackendConstants._TEST_SERVLET_URI_annotations+TestBackendConstants._TEST_ANNOT_2_EXT);
+//        testRefOne.setRef(TestBackendConstants._TEST_SERVLET_URI_annotations+"00000000-0000-0000-0000-000000000021");
 //        ReTargetREF testRefTwo = new ReTargetREF();
-//        testRefTwo.setRef(TestBackendConstants._TEST_SERVLET_URI_annotations+TestBackendConstants._TEST_ANNOT_3_EXT);
+//        testRefTwo.setRef(TestBackendConstants._TEST_SERVLET_URI_annotations+"00000000-0000-0000-0000-000000000022");
 //        final List<ReTargetREF> testResult = Arrays.asList(new ReTargetREF[] {testRefOne, testRefTwo});
 //        
 //        mockery.checking(new Expectations() {
@@ -345,7 +345,7 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest{
 //
 //     private void setMockeryNotebookTwo(){ 
 //        ReTargetREF testRef = new ReTargetREF();
-//        testRef.setRef(String.valueOf(TestBackendConstants._TEST_SERVLET_URI_annotations+TestBackendConstants._TEST_ANNOT_4_EXT));
+//        testRef.setRef(String.valueOf(TestBackendConstants._TEST_SERVLET_URI_annotations+"00000000-0000-0000-0000-000000000023"));
 //        final List<ReTargetREF> testResultTwo = Arrays.asList(new ReTargetREF[] {testRef});
 //        
 //        mockery.checking(new Expectations() {

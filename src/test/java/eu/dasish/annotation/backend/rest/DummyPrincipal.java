@@ -28,7 +28,7 @@ import java.security.Principal;
 public final class DummyPrincipal implements Principal {
 
     public static final DummyPrincipal DUMMY_ADMIN_PRINCIPAL = new DummyPrincipal("JUnit.Admin@test.com");
-    public static final DummyPrincipal DUMMY_PRINCIPAL = new DummyPrincipal("JUnit@test.com");
+    public static final DummyPrincipal DUMMY_PRINCIPAL = new DummyPrincipal("olhsha@mpi.nl");
     public static final UserCredentials DUMMY_CREDENTIALS = new UserCredentials(DUMMY_PRINCIPAL) {
 
 	@Override

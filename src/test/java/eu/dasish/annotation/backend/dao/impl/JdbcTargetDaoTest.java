@@ -80,7 +80,7 @@ public class JdbcTargetDaoTest extends JdbcResourceDaoTest {
         System.out.println("getExternalID");
         Number internalID = 1;
         UUID result = jdbcTargetDao.getExternalID(internalID);
-        assertEquals(TestBackendConstants._TEST_Target_1_EXT_ID, result.toString());
+        assertEquals("00000000-0000-0000-0000-000000000031", result.toString());
     }
 
     /**
@@ -89,7 +89,7 @@ public class JdbcTargetDaoTest extends JdbcResourceDaoTest {
     @Test
     public void testGetInternalId() {
         System.out.println("getInternalId");
-        UUID externalID = UUID.fromString(TestBackendConstants._TEST_Target_1_EXT_ID);
+        UUID externalID = UUID.fromString("00000000-0000-0000-0000-000000000031");
         Number expResult = 1;
         Number result = jdbcTargetDao.getInternalID(externalID);
         assertEquals(expResult, result);
@@ -103,7 +103,7 @@ public class JdbcTargetDaoTest extends JdbcResourceDaoTest {
     public void testGetInternalIDFRomURI() {
         System.out.println("test getInternalIDFromURI");
         jdbcTargetDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_Targets);
-        String uri = TestBackendConstants._TEST_SERVLET_URI_Targets+TestBackendConstants._TEST_Target_1_EXT_ID;
+        String uri = TestBackendConstants._TEST_SERVLET_URI_Targets+"00000000-0000-0000-0000-000000000031";
         Number result = jdbcTargetDao.getInternalIDFromURI(uri);
         assertEquals(1, result.intValue());
     }
@@ -117,9 +117,9 @@ public class JdbcTargetDaoTest extends JdbcResourceDaoTest {
         System.out.println("getTarget");
         jdbcTargetDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_Targets);
         Target result = jdbcTargetDao.getTarget(1);
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI_Targets+TestBackendConstants._TEST_Target_1_EXT_ID, result.getURI());
-        assertEquals(TestBackendConstants._TEST_Target_1_LINK+"#"+TestBackendConstants._TEST_Target_1_FRAGMENT, result.getLink());
-        assertEquals(TestBackendConstants._TEST_Target_1_VERSION, result.getVersion());
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI_Targets+"00000000-0000-0000-0000-000000000031", result.getURI());
+        assertEquals("http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia"+"#"+"de_Opdracht", result.getLink());
+        assertEquals("version 1.0", result.getVersion());
         // TODO :add time stamp test
         
     }
@@ -163,16 +163,16 @@ public class JdbcTargetDaoTest extends JdbcResourceDaoTest {
         System.out.println("addTarget");
 
         Target freshTarget = new Target();
-        freshTarget.setLink(TestBackendConstants._TEST_Target_1_LINK+"#Het_ontwerp");
-        freshTarget.setVersion(TestBackendConstants._TEST_Target_1_VERSION);
+        freshTarget.setLink("http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia"+"#Het_ontwerp");
+        freshTarget.setVersion("version 1.0");
         freshTarget.setLastModified(null);
         
         Number result = jdbcTargetDao.addTarget(freshTarget);
         assertEquals(8, result);
         // detailed checking
         Target addedTarget = jdbcTargetDao.getTarget(result);
-        assertEquals(TestBackendConstants._TEST_Target_1_LINK+"#Het_ontwerp", addedTarget.getLink());
-        assertEquals(TestBackendConstants._TEST_Target_1_VERSION, addedTarget.getVersion());
+        assertEquals("http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia"+"#Het_ontwerp", addedTarget.getLink());
+        assertEquals("version 1.0", addedTarget.getVersion());
         assertTrue(addedTarget.getURI().startsWith(TestBackendConstants._TEST_SERVLET_URI_Targets));
     }
 
@@ -188,12 +188,12 @@ public class JdbcTargetDaoTest extends JdbcResourceDaoTest {
         test.add(2);
         List<TargetInfo> result = jdbcTargetDao.getTargetInfos(test);
         assertEquals(2, result.size());
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI_Targets+TestBackendConstants._TEST_Target_1_EXT_ID, result.get(0).getRef());
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI_Targets+TestBackendConstants._TEST_Target_2_EXT_ID, result.get(1).getRef());
-        assertEquals(TestBackendConstants._TEST_Target_1_VERSION, result.get(0).getVersion());
-        assertEquals(TestBackendConstants._TEST_Target_2_VERSION, result.get(1).getVersion());
-        assertEquals(TestBackendConstants._TEST_Target_1_LINK+"#"+TestBackendConstants._TEST_Target_1_FRAGMENT, result.get(0).getLink());
-        assertEquals(TestBackendConstants._TEST_Target_2_LINK+"#Vroege_werk", result.get(1).getLink());
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI_Targets+"00000000-0000-0000-0000-000000000031", result.get(0).getRef());
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI_Targets+"00000000-0000-0000-0000-000000000032", result.get(1).getRef());
+        assertEquals("version 1.0", result.get(0).getVersion());
+        assertEquals("version 1.1", result.get(1).getVersion());
+        assertEquals("http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia"+"#"+"de_Opdracht", result.get(0).getLink());
+        assertEquals("http://nl.wikipedia.org/wiki/Antoni_Gaud%C3%AD"+"#Vroege_werk", result.get(1).getLink());
 
     }
 

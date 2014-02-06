@@ -115,7 +115,7 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
 
         String emailCriterion = user.getEMail().toLowerCase();
         StringBuilder sqlTargets = new StringBuilder("SELECT ");
-        sqlTargets.append(principal_id).append(" FROM ").append(principalTableName).append(" WHERE ").append(e_mail).append("= ? LIMIT 1");
+        sqlTargets.append(principal_id).append(" FROM ").append(principalTableName).append(" WHERE ").append("LOWER(").append(e_mail).append(")= ? LIMIT 1");
         List<Number> resultTargets = getSimpleJdbcTemplate().query(sqlTargets.toString(), principalIDRowMapper, emailCriterion);
         if (resultTargets.size() > 0) {
             return true;

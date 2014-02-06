@@ -90,15 +90,15 @@ public class DBIntegrityServiceTest {
     
     public void testGetAnnotationInternalIdentifier() {
         System.out.println("getAnnotationInternalIdentifier");
-        final UUID externalID = UUID.fromString(TestBackendConstants._TEST_ANNOT_2_EXT);
+        final UUID externalID = UUID.fromString("00000000-0000-0000-0000-000000000021");
 
         mockeryDao.checking(new Expectations() {
             {
                 oneOf(annotationDao).getInternalID(externalID);
-                will(returnValue(2));
+                will(returnValue(1));
             }
         });
-        assertEquals(2, dbIntegrityService.getAnnotationInternalIdentifier(externalID));
+        assertEquals(1, dbIntegrityService.getAnnotationInternalIdentifier(externalID));
     }
 
     /**
@@ -109,15 +109,15 @@ public class DBIntegrityServiceTest {
     
     public void testGetAnnotationExternalIdentifier() {
         System.out.println("getAnnotationExternalIdentifier");
-        final UUID externalID = UUID.fromString(TestBackendConstants._TEST_ANNOT_2_EXT);
+        final UUID externalID = UUID.fromString("00000000-0000-0000-0000-000000000021");
 
         mockeryDao.checking(new Expectations() {
             {
-                oneOf(annotationDao).getExternalID(2);
+                oneOf(annotationDao).getExternalID(1);
                 will(returnValue(externalID));
             }
         });
-        assertEquals(TestBackendConstants._TEST_ANNOT_2_EXT, dbIntegrityService.getAnnotationExternalIdentifier(2).toString());
+        assertEquals("00000000-0000-0000-0000-000000000021", dbIntegrityService.getAnnotationExternalIdentifier(1).toString());
     }
 
     /**
@@ -129,15 +129,15 @@ public class DBIntegrityServiceTest {
     public void testGetUserInternalIdentifier() {
         System.out.println("getUserInternalIdentifier");
 
-        final UUID externalID = UUID.fromString(TestBackendConstants._TEST_USER_5_EXT_ID);
+        final UUID externalID = UUID.fromString("00000000-0000-0000-0000-000000000111");
 
         mockeryDao.checking(new Expectations() {
             {
                 oneOf(userDao).getInternalID(externalID);
-                will(returnValue(5));
+                will(returnValue(1));
             }
         });
-        assertEquals(5, dbIntegrityService.getUserInternalIdentifier(externalID));
+        assertEquals(1, dbIntegrityService.getUserInternalIdentifier(externalID));
     }
 
     /**
@@ -148,15 +148,15 @@ public class DBIntegrityServiceTest {
     
     public void testGetUserExternalIdentifier() {
         System.out.println("getUserExternalIdentifier");
-        final UUID externalID = UUID.fromString(TestBackendConstants._TEST_USER_5_EXT_ID);
+        final UUID externalID = UUID.fromString("00000000-0000-0000-0000-000000000111");
 
         mockeryDao.checking(new Expectations() {
             {
-                oneOf(userDao).getExternalID(5);
+                oneOf(userDao).getExternalID(1);
                 will(returnValue(externalID));
             }
         });
-        assertEquals(TestBackendConstants._TEST_USER_5_EXT_ID, dbIntegrityService.getUserExternalIdentifier(5).toString());
+        assertEquals("00000000-0000-0000-0000-000000000111", dbIntegrityService.getUserExternalIdentifier(1).toString());
     }
 
     /**
@@ -167,9 +167,9 @@ public class DBIntegrityServiceTest {
         System.out.println("test getAnnotation");
 
         final Annotation mockAnnotation = new Annotation();// corresponds to the annotation # 2
-        mockAnnotation.setURI(TestBackendConstants._TEST_SERVLET_URI_annotations +TestBackendConstants._TEST_ANNOT_2_EXT);
-        mockAnnotation.setHeadline(TestBackendConstants._TEST_ANNOT_2_HEADLINE);
-        XMLGregorianCalendar mockTimeStamp = DatatypeFactory.newInstance().newXMLGregorianCalendar(TestBackendConstants._TEST_ANNOT_2_TIME_STAMP);
+        mockAnnotation.setURI(TestBackendConstants._TEST_SERVLET_URI_annotations +"00000000-0000-0000-0000-000000000021");
+        mockAnnotation.setHeadline("Sagrada Famiglia");
+        XMLGregorianCalendar mockTimeStamp = DatatypeFactory.newInstance().newXMLGregorianCalendar("2013-08-12T09:25:00.383000Z");
         mockAnnotation.setLastModified(mockTimeStamp);
         mockAnnotation.setOwnerRef("3");
 
@@ -177,7 +177,7 @@ public class DBIntegrityServiceTest {
         TextBody textBody = new AnnotationBody.TextBody();
         mockBody.setTextBody(textBody);
         textBody.setMimeType("text/plain");
-        textBody.setBody(TestBackendConstants._TEST_ANNOT_2_BODY);
+        textBody.setBody("<html><body>some html 1</body></html>");
         mockAnnotation.setBody(mockBody);
         mockAnnotation.setTargets(null);
 
@@ -187,14 +187,14 @@ public class DBIntegrityServiceTest {
         mockTargetIDs.add(2);
 
         final Target mockTargetOne = new Target();
-        mockTargetOne.setLink(TestBackendConstants._TEST_Target_1_LINK);
-        mockTargetOne.setURI(TestBackendConstants._TEST_SERVLET_URI_Targets +TestBackendConstants._TEST_Target_1_EXT_ID);
-        mockTargetOne.setVersion(TestBackendConstants._TEST_Target_1_EXT_ID);
+        mockTargetOne.setLink("http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia");
+        mockTargetOne.setURI(TestBackendConstants._TEST_SERVLET_URI_Targets +"00000000-0000-0000-0000-000000000031");
+        mockTargetOne.setVersion("00000000-0000-0000-0000-000000000031");
 
         final Target mockTargetTwo = new Target();
-        mockTargetTwo.setLink(TestBackendConstants._TEST_Target_2_LINK);
-        mockTargetTwo.setURI(TestBackendConstants._TEST_SERVLET_URI_Targets +TestBackendConstants._TEST_Target_2_EXT_ID);
-        mockTargetTwo.setVersion(TestBackendConstants._TEST_Target_2_EXT_ID);
+        mockTargetTwo.setLink("http://nl.wikipedia.org/wiki/Antoni_Gaud%C3%AD");
+        mockTargetTwo.setURI(TestBackendConstants._TEST_SERVLET_URI_Targets +"00000000-0000-0000-0000-000000000032");
+        mockTargetTwo.setVersion("00000000-0000-0000-0000-000000000032");
 
         final List<Map<Number, String>> listMap = new ArrayList<Map<Number, String>>();
         Map<Number, String> map3 = new HashMap<Number, String>();
@@ -207,9 +207,9 @@ public class DBIntegrityServiceTest {
         map5.put(5, "reader");
         listMap.add(map5);
 
-        final String uri3 = TestBackendConstants._TEST_SERVLET_URI_users +TestBackendConstants._TEST_USER_3_EXT_ID;
-        final String uri4 = TestBackendConstants._TEST_SERVLET_URI_users +TestBackendConstants._TEST_USER_4_EXT_ID;
-        final String uri5 = TestBackendConstants._TEST_SERVLET_URI_users +TestBackendConstants._TEST_USER_5_EXT_ID;
+        final String uri3 = TestBackendConstants._TEST_SERVLET_URI_users +"00000000-0000-0000-0000-000000000111";
+        final String uri4 = TestBackendConstants._TEST_SERVLET_URI_users +"00000000-0000-0000-0000-000000000112";
+        final String uri5 = TestBackendConstants._TEST_SERVLET_URI_users +"00000000-0000-0000-0000-000000000113";
 
         
         mockeryDao.checking(new Expectations() {
@@ -249,12 +249,12 @@ public class DBIntegrityServiceTest {
         });
 
         Annotation result = dbIntegrityService.getAnnotation(2);
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI_annotations+TestBackendConstants._TEST_ANNOT_2_EXT, result.getURI());
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI_annotations+"00000000-0000-0000-0000-000000000021", result.getURI());
         assertEquals("text/plain", result.getBody().getTextBody().getMimeType());
-        assertEquals(TestBackendConstants._TEST_ANNOT_2_BODY, result.getBody().getTextBody().getBody());
-        assertEquals(TestBackendConstants._TEST_ANNOT_2_HEADLINE, result.getHeadline());
-        assertEquals(TestBackendConstants._TEST_ANNOT_2_TIME_STAMP, result.getLastModified().toString());
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI_users+TestBackendConstants._TEST_USER_3_EXT_ID, result.getOwnerRef());
+        assertEquals("<html><body>some html 1</body></html>", result.getBody().getTextBody().getBody());
+        assertEquals("Sagrada Famiglia", result.getHeadline());
+        assertEquals("2013-08-12T09:25:00.383000Z", result.getLastModified().toString());
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI_users+"00000000-0000-0000-0000-000000000111", result.getOwnerRef());
 
         assertEquals(mockTargetOne.getLink(), result.getTargets().getTargetInfo().get(0).getLink());
         assertEquals(mockTargetOne.getURI(), result.getTargets().getTargetInfo().get(0).getRef());
@@ -344,18 +344,18 @@ public class DBIntegrityServiceTest {
                 will(returnValue(TargetIDs));
 
                 oneOf(targetDao).getURIFromInternalID(1);
-                will(returnValue(TestBackendConstants._TEST_SERVLET_URI_Targets+TestBackendConstants._TEST_Target_1_EXT_ID));
+                will(returnValue(TestBackendConstants._TEST_SERVLET_URI_Targets+"00000000-0000-0000-0000-000000000031"));
 
                 oneOf(targetDao).getURIFromInternalID(2);
-                will(returnValue(TestBackendConstants._TEST_SERVLET_URI_Targets+TestBackendConstants._TEST_Target_2_EXT_ID));
+                will(returnValue(TestBackendConstants._TEST_SERVLET_URI_Targets+"00000000-0000-0000-0000-000000000032"));
 
             }
         });
        
         ReferenceList result = dbIntegrityService.getAnnotationTargets(annotationID);
         assertEquals(2, result.getRef().size());
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI_Targets+TestBackendConstants._TEST_Target_1_EXT_ID, result.getRef().get(0));
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI_Targets+TestBackendConstants._TEST_Target_2_EXT_ID, result.getRef().get(1));
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI_Targets+"00000000-0000-0000-0000-000000000031", result.getRef().get(0));
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI_Targets+"00000000-0000-0000-0000-000000000032", result.getRef().get(1));
         
     }
     
@@ -391,7 +391,7 @@ public class DBIntegrityServiceTest {
 
 
         final String text = "some html";
-        final UUID ownerUUID = UUID.fromString(TestBackendConstants._TEST_USER_4_EXT_ID);
+        final UUID ownerUUID = UUID.fromString("00000000-0000-0000-0000-000000000112");
         final String after = (new Timestamp(0)).toString();
         final String before = (new Timestamp(System.currentTimeMillis())).toString();
 
@@ -400,8 +400,8 @@ public class DBIntegrityServiceTest {
         
         final AnnotationInfo mockAnnotInfo = new AnnotationInfo();
         
-        mockAnnotInfo.setHeadline(TestBackendConstants._TEST_ANNOT_3_HEADLINE);        
-        mockAnnotInfo.setRef(TestBackendConstants._TEST_SERVLET_URI_annotations + TestBackendConstants._TEST_ANNOT_3_EXT);
+        mockAnnotInfo.setHeadline("Gaudi");        
+        mockAnnotInfo.setRef(TestBackendConstants._TEST_SERVLET_URI_annotations + "00000000-0000-0000-0000-000000000022");
         
         final List<Number> TargetIDs = new ArrayList<Number>();
         TargetIDs.add(2);
@@ -450,7 +450,7 @@ public class DBIntegrityServiceTest {
                 
                 
                 oneOf(targetDao).getURIFromInternalID(2);
-                will(returnValue(TestBackendConstants._TEST_SERVLET_URI_Targets +TestBackendConstants._TEST_Target_2_EXT_ID));
+                will(returnValue(TestBackendConstants._TEST_SERVLET_URI_Targets +"00000000-0000-0000-0000-000000000032"));
               
                
             }
@@ -461,9 +461,9 @@ public class DBIntegrityServiceTest {
         assertEquals(1, result.getAnnotationInfo().size()); 
         AnnotationInfo resultAnnotInfo = result.getAnnotationInfo().get(0);
         assertEquals(mockAnnotInfo.getHeadline(), resultAnnotInfo.getHeadline());
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI_users +TestBackendConstants._TEST_USER_4_EXT_ID, resultAnnotInfo.getOwnerRef());
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI_users +"00000000-0000-0000-0000-000000000112", resultAnnotInfo.getOwnerRef());
         assertEquals(mockAnnotInfo.getRef(),result.getAnnotationInfo().get(0).getRef() );
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI_Targets +TestBackendConstants._TEST_Target_2_EXT_ID, resultAnnotInfo.getTargets().getRef().get(0));
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI_Targets +"00000000-0000-0000-0000-000000000032", resultAnnotInfo.getTargets().getRef().get(0));
           
     }
     
@@ -584,9 +584,9 @@ public class DBIntegrityServiceTest {
         
         // test 1: adding an existing Target
         TargetInfo testTargetOne = new TargetInfo();
-        testTargetOne.setLink(TestBackendConstants._TEST_Target_1_LINK);
-        testTargetOne.setRef(TestBackendConstants._TEST_SERVLET_URI_Targets + TestBackendConstants._TEST_Target_1_EXT_ID);
-        testTargetOne.setVersion(TestBackendConstants._TEST_Target_2_VERSION );
+        testTargetOne.setLink("http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia");
+        testTargetOne.setRef(TestBackendConstants._TEST_SERVLET_URI_Targets + "00000000-0000-0000-0000-000000000031");
+        testTargetOne.setVersion("version 1.1");
         final List<TargetInfo> mockTargetListOne = new ArrayList<TargetInfo>();
         mockTargetListOne.add(testTargetOne);
 
@@ -627,7 +627,7 @@ public class DBIntegrityServiceTest {
         TargetInfo testTargetTwo = new TargetInfo();
         final String tempTargetID = UUID.randomUUID().toString();
         testTargetTwo.setRef(TestBackendConstants._TEST_SERVLET_URI_Targets + tempTargetID);
-        testTargetTwo.setLink(TestBackendConstants._TEST_NEW_Target_LINK);
+        testTargetTwo.setLink("http://www.sagradafamilia.cat/docs_instit/historia.php");
         testTargetTwo.setVersion("version 1.0");
         final List<TargetInfo> mockTargetListTwo = new ArrayList<TargetInfo>();
         mockTargetListTwo.add(testTargetTwo);

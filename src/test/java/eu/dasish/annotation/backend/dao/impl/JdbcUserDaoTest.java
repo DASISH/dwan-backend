@@ -74,10 +74,10 @@ public class JdbcUserDaoTest extends JdbcResourceDaoTest {
      */
     @Test
     public void testGetInternalID() {
-        Number testOne = jdbcUserDao.getInternalID(UUID.fromString(TestBackendConstants._TEST_USER_3_EXT_ID));
+        Number testOne = jdbcUserDao.getInternalID(UUID.fromString("00000000-0000-0000-0000-000000000113"));
         assertEquals(3, testOne.intValue());
 
-        Number testTwo = jdbcUserDao.getInternalID(UUID.fromString(TestBackendConstants._TEST_USER_XXX_EXT_ID));
+        Number testTwo = jdbcUserDao.getInternalID(UUID.fromString("00000000-0000-0000-0000-000000000ccc"));
         assertEquals(null, testTwo);
 
     }
@@ -88,7 +88,7 @@ public class JdbcUserDaoTest extends JdbcResourceDaoTest {
     @Test
     public void testGetExternalID() {
         UUID testOne = jdbcUserDao.getExternalID(3);
-        assertEquals(TestBackendConstants._TEST_USER_3_EXT_ID, testOne.toString());
+        assertEquals("00000000-0000-0000-0000-000000000113", testOne.toString());
 
         UUID testTwo = jdbcUserDao.getExternalID(null);
         assertEquals(null, testTwo);
@@ -98,11 +98,10 @@ public class JdbcUserDaoTest extends JdbcResourceDaoTest {
     public void testGetUser() {
         System.out.println("test getUser");
         jdbcUserDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_users);
-        Number internalID = 1;
-        User result = jdbcUserDao.getUser(internalID);
-        assertEquals("a user", result.getDisplayName());
-        assertEquals("a.user@gmail.com", result.getEMail());
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI_users+TestBackendConstants._TEST_UID_1_, result.getURI());
+        User result = jdbcUserDao.getUser(1);
+        assertEquals("Twan", result.getDisplayName());
+        assertEquals("Twan.Goosen@mpi.nl", result.getEMail());
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI_users+"00000000-0000-0000-0000-000000000111", result.getURI());
     }
 
     @Test
@@ -117,7 +116,7 @@ public class JdbcUserDaoTest extends JdbcResourceDaoTest {
         freshUser.setEMail(freshUserEmail);
 
         Number result = jdbcUserDao.addUser(freshUser, "secret X");
-        assertEquals(7, result.intValue());
+        assertEquals(11, result.intValue());
         User addedUser = jdbcUserDao.getUser(result);
         assertEquals(freshUserName, addedUser.getDisplayName());
         assertEquals(freshUserEmail, addedUser.getEMail());
@@ -129,18 +128,18 @@ public class JdbcUserDaoTest extends JdbcResourceDaoTest {
         System.out.println("test deleteUser");
         jdbcUserDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_users);
 
-        int result = jdbcUserDao.deleteUser(6);
+        int result = jdbcUserDao.deleteUser(10);
         assertEquals(1, result);
-        User check = jdbcUserDao.getUser(6);
+        User check = jdbcUserDao.getUser(10);
         assertTrue(null==check);
     }
     
     
     @Test
     public void testUserIsInUse(){
-        assertTrue(jdbcUserDao.userIsInUse(2));
-        assertTrue(jdbcUserDao.userIsInUse(5));
-        assertFalse(jdbcUserDao.userIsInUse(6));
+        assertTrue(jdbcUserDao.userIsInUse(1));
+        assertTrue(jdbcUserDao.userIsInUse(3));
+        assertFalse(jdbcUserDao.userIsInUse(10));
     }
 
     @Test
@@ -155,7 +154,7 @@ public class JdbcUserDaoTest extends JdbcResourceDaoTest {
 
         User user = new User();
         user.setDisplayName("Olha");
-        user.setEMail("olhsha@mpi.nl");
+        user.setEMail("Olha.Shakaravska@mpi.nl");
         assertTrue(jdbcUserDao.userExists(user));
 
     }

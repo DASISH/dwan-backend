@@ -85,7 +85,7 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest {
     public void testGetExternalId() {
         System.out.println("getExternalId");
         Number internalID = 1;
-        UUID expResult = UUID.fromString(TestBackendConstants._TEST_CACHED_REPRESENTATION_1_EXT_ID_);
+        UUID expResult = UUID.fromString("00000000-0000-0000-0000-000000000051");
         UUID result = jdbcCachedRepresentationDao.getExternalID(internalID);
         assertEquals(expResult, result);
     }
@@ -97,7 +97,7 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest {
     @Test
     public void testGetInternalId() {
         System.out.println("test getInternalID");
-        UUID externalID = UUID.fromString(TestBackendConstants._TEST_CACHED_REPRESENTATION_1_EXT_ID_);
+        UUID externalID = UUID.fromString("00000000-0000-0000-0000-000000000051");
         Number result = jdbcCachedRepresentationDao.getInternalID(externalID);
         assertEquals(1, result.intValue());
     }
@@ -111,7 +111,7 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest {
     public void testGetInternalIDFRomURI() {
         System.out.println("test getInternalIDFromURI");
         jdbcCachedRepresentationDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_cached);
-        String uri = TestBackendConstants._TEST_SERVLET_URI_cached +TestBackendConstants._TEST_CACHED_REPRESENTATION_1_EXT_ID_;
+        String uri = TestBackendConstants._TEST_SERVLET_URI_cached +"00000000-0000-0000-0000-000000000051";
         Number result = jdbcCachedRepresentationDao.getInternalIDFromURI(uri);
         assertEquals(1, result.intValue());
     }
@@ -127,11 +127,11 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest {
 
         jdbcCachedRepresentationDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_cached);
         CachedRepresentationInfo result = jdbcCachedRepresentationDao.getCachedRepresentationInfo(1);
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI_cached + TestBackendConstants._TEST_CACHED_REPRESENTATION_1_EXT_ID_, result.getURI());
-        assertEquals(TestBackendConstants._TEST_CACHED_REPRESENTATION_1_MIME_TYPE_, result.getMimeType());
-        assertEquals(TestBackendConstants._TEST_CACHED_REPRESENTATION_1_TOOL_, result.getTool());
-        assertEquals(TestBackendConstants._TEST_CACHED_REPRESENTATION_1_TYPE_, result.getType());
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI_cached +TestBackendConstants._TEST_CACHED_REPRESENTATION_1_EXT_ID_, result.getURI());
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI_cached + "00000000-0000-0000-0000-000000000051", result.getURI());
+        assertEquals("text/html", result.getMimeType());
+        assertEquals("latex", result.getTool());
+        assertEquals("text", result.getType());
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI_cached +"00000000-0000-0000-0000-000000000051", result.getURI());
     }
 
     /**
