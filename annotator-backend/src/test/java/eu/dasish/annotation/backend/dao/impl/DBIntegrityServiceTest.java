@@ -166,12 +166,12 @@ public class DBIntegrityServiceTest {
     public void testGetAnnotation() throws Exception {
         System.out.println("test getAnnotation");
 
-        final Annotation mockAnnotation = new Annotation();// corresponds to the annotation # 2
+        final Annotation mockAnnotation = new Annotation();// corresponds to the annotation # 1
         mockAnnotation.setURI(TestBackendConstants._TEST_SERVLET_URI_annotations +"00000000-0000-0000-0000-000000000021");
         mockAnnotation.setHeadline("Sagrada Famiglia");
         XMLGregorianCalendar mockTimeStamp = DatatypeFactory.newInstance().newXMLGregorianCalendar("2013-08-12T09:25:00.383000Z");
         mockAnnotation.setLastModified(mockTimeStamp);
-        mockAnnotation.setOwnerRef("3");
+        mockAnnotation.setOwnerRef(TestBackendConstants._TEST_SERVLET_URI_annotations +"00000000-0000-0000-0000-000000000111");
 
         AnnotationBody mockBody = new AnnotationBody();
         TextBody textBody = new AnnotationBody.TextBody();
@@ -189,41 +189,38 @@ public class DBIntegrityServiceTest {
         final Target mockTargetOne = new Target();
         mockTargetOne.setLink("http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia");
         mockTargetOne.setURI(TestBackendConstants._TEST_SERVLET_URI_Targets +"00000000-0000-0000-0000-000000000031");
-        mockTargetOne.setVersion("00000000-0000-0000-0000-000000000031");
+        mockTargetOne.setVersion("version 1.0");
 
         final Target mockTargetTwo = new Target();
         mockTargetTwo.setLink("http://nl.wikipedia.org/wiki/Antoni_Gaud%C3%AD");
         mockTargetTwo.setURI(TestBackendConstants._TEST_SERVLET_URI_Targets +"00000000-0000-0000-0000-000000000032");
-        mockTargetTwo.setVersion("00000000-0000-0000-0000-000000000032");
+        mockTargetTwo.setVersion("version 1.1");
 
         final List<Map<Number, String>> listMap = new ArrayList<Map<Number, String>>();
+        Map<Number, String> map2 = new HashMap<Number, String>();
+        map2.put(2, "writer");
+        listMap.add(map2);
         Map<Number, String> map3 = new HashMap<Number, String>();
-        map3.put(3, "owner");
+        map3.put(3, "reader");
         listMap.add(map3);
-        Map<Number, String> map4 = new HashMap<Number, String>();
-        map4.put(4, "writer");
-        listMap.add(map4);
-        Map<Number, String> map5 = new HashMap<Number, String>();
-        map5.put(5, "reader");
-        listMap.add(map5);
 
-        final String uri3 = TestBackendConstants._TEST_SERVLET_URI_users +"00000000-0000-0000-0000-000000000111";
-        final String uri4 = TestBackendConstants._TEST_SERVLET_URI_users +"00000000-0000-0000-0000-000000000112";
-        final String uri5 = TestBackendConstants._TEST_SERVLET_URI_users +"00000000-0000-0000-0000-000000000113";
+        final String uri1 = TestBackendConstants._TEST_SERVLET_URI_users +"00000000-0000-0000-0000-000000000111";
+        final String uri2 = TestBackendConstants._TEST_SERVLET_URI_users +"00000000-0000-0000-0000-000000000112";
+        final String uri3 = TestBackendConstants._TEST_SERVLET_URI_users +"00000000-0000-0000-0000-000000000113";
 
         
         mockeryDao.checking(new Expectations() {
             {
-                oneOf(annotationDao).getAnnotationWithoutTargetsAndPermissions(2);
+                oneOf(annotationDao).getAnnotationWithoutTargetsAndPermissions(1);
                 will(returnValue(mockAnnotation));
                 
-                 oneOf(annotationDao).getOwner(2);
-                will(returnValue(3));
+                oneOf(annotationDao).getOwner(1);
+                will(returnValue(1));
 
-                oneOf(userDao).getURIFromInternalID(3);
-                will(returnValue(uri3));
+                oneOf(userDao).getURIFromInternalID(1);
+                will(returnValue(uri1));
                 
-                oneOf(annotationDao).retrieveTargetIDs(2);
+                oneOf(annotationDao).retrieveTargetIDs(1);
                 will(returnValue(mockTargetIDs));
 
                 oneOf(targetDao).getTarget(1);
@@ -234,21 +231,18 @@ public class DBIntegrityServiceTest {
 
                 /// getPermissionsForAnnotation
 
-                oneOf(annotationDao).getPermissions(2);
+                oneOf(annotationDao).getPermissions(1);
                 will(returnValue(listMap));
+
+                oneOf(userDao).getURIFromInternalID(2);
+                will(returnValue(uri2));
 
                 oneOf(userDao).getURIFromInternalID(3);
                 will(returnValue(uri3));
-
-                oneOf(userDao).getURIFromInternalID(4);
-                will(returnValue(uri4));
-
-                 oneOf(userDao).getURIFromInternalID(5);
-                will(returnValue(uri5));
             }
         });
 
-        Annotation result = dbIntegrityService.getAnnotation(2);
+        Annotation result = dbIntegrityService.getAnnotation(1);
         assertEquals(TestBackendConstants._TEST_SERVLET_URI_annotations+"00000000-0000-0000-0000-000000000021", result.getURI());
         assertEquals("text/plain", result.getBody().getTextBody().getMimeType());
         assertEquals("<html><body>some html 1</body></html>", result.getBody().getTextBody().getBody());
@@ -263,14 +257,11 @@ public class DBIntegrityServiceTest {
         assertEquals(mockTargetTwo.getURI(), result.getTargets().getTargetInfo().get(1).getRef());
         assertEquals(mockTargetTwo.getVersion(), result.getTargets().getTargetInfo().get(1).getVersion());
 
-        assertEquals(Permission.OWNER, result.getPermissions().getUserWithPermission().get(0).getPermission());
-        assertEquals(uri3, result.getPermissions().getUserWithPermission().get(0).getRef());
+        assertEquals(Permission.WRITER, result.getPermissions().getUserWithPermission().get(0).getPermission());
+        assertEquals(uri2, result.getPermissions().getUserWithPermission().get(0).getRef());
 
-        assertEquals(Permission.WRITER, result.getPermissions().getUserWithPermission().get(1).getPermission());
-        assertEquals(uri4, result.getPermissions().getUserWithPermission().get(1).getRef());
-
-        assertEquals(Permission.READER, result.getPermissions().getUserWithPermission().get(2).getPermission());
-        assertEquals(uri5, result.getPermissions().getUserWithPermission().get(2).getRef());
+        assertEquals(Permission.READER, result.getPermissions().getUserWithPermission().get(1).getPermission());
+        assertEquals(uri3, result.getPermissions().getUserWithPermission().get(1).getRef());
     }
 
     /**
@@ -280,26 +271,23 @@ public class DBIntegrityServiceTest {
     public void testGetFilteredAnnotationIDs() {
         System.out.println("test getFilteredAnnotationIDs");
 
-        final String word = "nl.wikipedia.org";
-
         final List<Number> mockTargetIDs = new ArrayList<Number>();
         mockTargetIDs.add(1);
         mockTargetIDs.add(2);
 
         final List<Number> mockAnnotationIDs1 = new ArrayList<Number>();
-        mockAnnotationIDs1.add(3);
-        mockAnnotationIDs1.add(4);
-        mockAnnotationIDs1.add(5);
+        mockAnnotationIDs1.add(1);
+        mockAnnotationIDs1.add(2);
         
         final List<Number> mockAnnotationIDs2 = new ArrayList<Number>();
+        mockAnnotationIDs2.add(1);
         mockAnnotationIDs2.add(2);
-        mockAnnotationIDs2.add(3);
         
         final String after = (new Timestamp(0)).toString();
         final String before = (new Timestamp(System.currentTimeMillis())).toString();
 
         final List<Number> mockRetval = new ArrayList<Number>();
-        mockRetval.add(3);
+        mockRetval.add(1);
         
         final String[] accessModes = new String[2];
         accessModes[0] = "reader";
@@ -307,7 +295,7 @@ public class DBIntegrityServiceTest {
 
         mockeryDao.checking(new Expectations() {
             {
-                oneOf(targetDao).getTargetsReferringTo(word);
+                oneOf(targetDao).getTargetsReferringTo("nl.wikipedia.org");
                 will(returnValue(mockTargetIDs));
 
                 oneOf(annotationDao).getAnnotationIDsForUserWithPermission(3, accessModes);
@@ -318,29 +306,28 @@ public class DBIntegrityServiceTest {
                 will(returnValue(mockAnnotationIDs2));
 
                
-                oneOf(annotationDao).getFilteredAnnotationIDs(mockAnnotationIDs1, null, "some html", null, after, before);
+                oneOf(annotationDao).getFilteredAnnotationIDs(mockAnnotationIDs1, null, "some html 1", null, after, before);
                 will(returnValue(mockRetval));
 
             }
         });
 
 
-        List result = dbIntegrityService.getFilteredAnnotationIDs(null, word, "some html", 3, accessModes, null, after, before);
+        List result = dbIntegrityService.getFilteredAnnotationIDs(null, "nl.wikipedia.org", "some html 1", 3, accessModes, null, after, before);
         assertEquals(1, result.size());
-        assertEquals(3, result.get(0));
+        assertEquals(1, result.get(0));
     }
 
     @Test
     
     public void testGetAnnotationTargets() throws SQLException{
         System.out.println("test getAnnotationTargets");
-        final Number annotationID = 2;
         final List<Number> TargetIDs = new ArrayList<Number>();
         TargetIDs.add(1);
         TargetIDs.add(2);
         mockeryDao.checking(new Expectations() {
             {
-                oneOf(annotationDao).retrieveTargetIDs(annotationID);
+                oneOf(annotationDao).retrieveTargetIDs(1);
                 will(returnValue(TargetIDs));
 
                 oneOf(targetDao).getURIFromInternalID(1);
@@ -352,7 +339,7 @@ public class DBIntegrityServiceTest {
             }
         });
        
-        ReferenceList result = dbIntegrityService.getAnnotationTargets(annotationID);
+        ReferenceList result = dbIntegrityService.getAnnotationTargets(1);
         assertEquals(2, result.getRef().size());
         assertEquals(TestBackendConstants._TEST_SERVLET_URI_Targets+"00000000-0000-0000-0000-000000000031", result.getRef().get(0));
         assertEquals(TestBackendConstants._TEST_SERVLET_URI_Targets+"00000000-0000-0000-0000-000000000032", result.getRef().get(1));
@@ -374,38 +361,34 @@ public class DBIntegrityServiceTest {
     public void testGetFilteredAnnotationInfos() throws SQLException{
         System.out.println("test getetFilteredAnnotationInfos");
         
-        final String word = "nl.wikipedia.org";
-
         final List<Number> mockTargetIDs = new ArrayList<Number>();
         mockTargetIDs.add(1);
         mockTargetIDs.add(2);
 
         final List<Number> mockAnnotationIDs1 = new ArrayList<Number>();
-        mockAnnotationIDs1.add(3);
-        mockAnnotationIDs1.add(4);
-        mockAnnotationIDs1.add(5);
+        mockAnnotationIDs1.add(1);
+        mockAnnotationIDs1.add(2);
         
         final List<Number> mockAnnotationIDs2 = new ArrayList<Number>();
+        mockAnnotationIDs2.add(1);
         mockAnnotationIDs2.add(2);
-        mockAnnotationIDs2.add(3);
 
-
-        final String text = "some html";
-        final UUID ownerUUID = UUID.fromString("00000000-0000-0000-0000-000000000112");
+        final UUID ownerUUID = UUID.fromString("00000000-0000-0000-0000-000000000111");
         final String after = (new Timestamp(0)).toString();
         final String before = (new Timestamp(System.currentTimeMillis())).toString();
 
         final List<Number> mockAnnotIDs = new ArrayList<Number>();
-        mockAnnotIDs.add(3);
+        mockAnnotIDs.add(1);
         
         final AnnotationInfo mockAnnotInfo = new AnnotationInfo();
         
-        mockAnnotInfo.setHeadline("Gaudi");        
-        mockAnnotInfo.setRef(TestBackendConstants._TEST_SERVLET_URI_annotations + "00000000-0000-0000-0000-000000000022");
+        mockAnnotInfo.setHeadline("Sagrada Famiglia");        
+        mockAnnotInfo.setRef(TestBackendConstants._TEST_SERVLET_URI_annotations + "00000000-0000-0000-0000-000000000021");
+        mockAnnotInfo.setOwnerRef(TestBackendConstants._TEST_SERVLET_URI_users +"00000000-0000-0000-0000-000000000111");
         
-        final List<Number> TargetIDs = new ArrayList<Number>();
-        TargetIDs.add(2);
-        
+        final List<Number> targetIDs = new ArrayList<Number>();
+        targetIDs.add(1);
+        targetIDs.add(2);
         
         final String[] accessModes = new String[2];
         accessModes[0] = "reader";
@@ -414,40 +397,41 @@ public class DBIntegrityServiceTest {
         mockeryDao.checking(new Expectations() {
             {
                 oneOf(userDao).getInternalID(ownerUUID);
-                will(returnValue(4));
+                will(returnValue(1));
                 
                 oneOf(annotationDao).getAnnotationIDsForUserWithPermission(3, accessModes);
                 will(returnValue(mockAnnotationIDs1));
-
-                
               
                 // getFilteredAnnotationIds
-                oneOf(targetDao).getTargetsReferringTo(word);
+                oneOf(targetDao).getTargetsReferringTo("nl.wikipedia.org");
                 will(returnValue(mockTargetIDs));
                 
                 oneOf(annotationDao).retrieveAnnotationList(mockTargetIDs);
                 will(returnValue(mockAnnotationIDs2));
                
                
-                oneOf(annotationDao).getFilteredAnnotationIDs(mockAnnotationIDs1, 4, text, null, after, before);
+                oneOf(annotationDao).getFilteredAnnotationIDs(mockAnnotationIDs1, 1, "some html 1", null, after, before);
                 will(returnValue(mockAnnotIDs));
                 
                 
 //                ///////////////////////////////////
 //                
-                oneOf(annotationDao).getAnnotationInfoWithoutTargets(3);
+                oneOf(annotationDao).getAnnotationInfoWithoutTargets(1);
                 will(returnValue(mockAnnotInfo));
                 
-                oneOf(annotationDao).getOwner(3);
-                will(returnValue(4));
+                oneOf(annotationDao).getOwner(1);
+                will(returnValue(1));
                 
-                oneOf(userDao).getURIFromInternalID(4);
-                will(returnValue(TestBackendConstants._TEST_SERVLET_URI_users+"00000000-0000-0000-0000-000000000112"));
+                oneOf(userDao).getURIFromInternalID(1);
+                will(returnValue(TestBackendConstants._TEST_SERVLET_URI_users+"00000000-0000-0000-0000-000000000111"));
                 
                 ////
-                oneOf(annotationDao).retrieveTargetIDs(3);
-                will(returnValue(TargetIDs));
+                oneOf(annotationDao).retrieveTargetIDs(1);
+                will(returnValue(targetIDs));
                 
+                oneOf(targetDao).getURIFromInternalID(1);
+                will(returnValue(TestBackendConstants._TEST_SERVLET_URI_Targets +"00000000-0000-0000-0000-000000000031"));
+              
                 
                 oneOf(targetDao).getURIFromInternalID(2);
                 will(returnValue(TestBackendConstants._TEST_SERVLET_URI_Targets +"00000000-0000-0000-0000-000000000032"));
@@ -457,23 +441,24 @@ public class DBIntegrityServiceTest {
         });
        
       
-        AnnotationInfoList result = dbIntegrityService.getFilteredAnnotationInfos(ownerUUID, word, text, 3, accessModes, null, after, before);
+        AnnotationInfoList result = dbIntegrityService.getFilteredAnnotationInfos(ownerUUID, "nl.wikipedia.org", "some html 1", 3, accessModes, null, after, before);
         assertEquals(1, result.getAnnotationInfo().size()); 
         AnnotationInfo resultAnnotInfo = result.getAnnotationInfo().get(0);
         assertEquals(mockAnnotInfo.getHeadline(), resultAnnotInfo.getHeadline());
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI_users +"00000000-0000-0000-0000-000000000112", resultAnnotInfo.getOwnerRef());
+        assertEquals(mockAnnotInfo.getRef(), resultAnnotInfo.getRef());
+        assertEquals(mockAnnotInfo.getOwnerRef(), resultAnnotInfo.getOwnerRef());
         assertEquals(mockAnnotInfo.getRef(),result.getAnnotationInfo().get(0).getRef() );
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI_Targets +"00000000-0000-0000-0000-000000000032", resultAnnotInfo.getTargets().getRef().get(0));
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI_Targets +"00000000-0000-0000-0000-000000000031", resultAnnotInfo.getTargets().getRef().get(0));
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI_Targets +"00000000-0000-0000-0000-000000000032", resultAnnotInfo.getTargets().getRef().get(1));
           
     }
     
     @Test    
     public void testGetTargetsWithNoCachedRepresentation(){
         System.out.println("test getTargetsWithNoCachedRepresentation");
-        final Number annotationID = 4;
-        final List<Number> TargetIDs = new ArrayList<Number>();
-        TargetIDs.add(5);
-        TargetIDs.add(7);
+        final List<Number> targetIDs = new ArrayList<Number>();
+        targetIDs.add(5);
+        targetIDs.add(7);
         
         final List<Number> cachedIDs5 = new ArrayList<Number>();
         cachedIDs5.add(7);
@@ -483,8 +468,8 @@ public class DBIntegrityServiceTest {
         
         mockeryDao.checking(new Expectations() {
             {
-                oneOf(annotationDao).retrieveTargetIDs(annotationID);
-                will(returnValue(TargetIDs));
+                oneOf(annotationDao).retrieveTargetIDs(3);
+                will(returnValue(targetIDs));
 
                 oneOf(targetDao).getCachedRepresentations(5);
                 will(returnValue(cachedIDs5));
@@ -498,7 +483,7 @@ public class DBIntegrityServiceTest {
             }
         });
         
-        List<String> result = dbIntegrityService.getTargetsWithNoCachedRepresentation(annotationID);
+        List<String> result = dbIntegrityService.getTargetsWithNoCachedRepresentation(3);
         assertEquals(1, result.size());
         assertEquals("00000000-0000-0000-0000-000000000037", result.get(0)); // Target number 7 has no cached
     }
@@ -509,8 +494,8 @@ public class DBIntegrityServiceTest {
      * Test of addCachedForVersion method, of class DBIntegrityServiceImlp.
      */
     @Test    
-    public void testAddCachedForVersion() throws SerialException, SQLException {
-        System.out.println("addCachedForVersion");
+    public void testAddCached() throws SerialException, SQLException {
+        System.out.println("addCached");
         String mime = "text/html";
         String type = "text";
         String tool = "latex";
@@ -524,8 +509,7 @@ public class DBIntegrityServiceTest {
         String blobString = "aaa";
         byte[] blobBytes = blobString.getBytes();
         final ByteArrayInputStream newCachedBlob = new ByteArrayInputStream(blobBytes);
-        final Number newCachedID = 8;
-        final Number versionID = 1;
+        
         mockeryDao.checking(new Expectations() {
             {
 
@@ -533,19 +517,19 @@ public class DBIntegrityServiceTest {
                 will(returnValue(null));
 
                 oneOf(cachedRepresentationDao).addCachedRepresentation(newCachedInfo, newCachedBlob);
-                will(returnValue(newCachedID));
+                will(returnValue(8));
 
-                one(targetDao).addTargetCachedRepresentation(versionID, newCachedID, "#(1,2)");
+                one(targetDao).addTargetCachedRepresentation(1, 8, "#(1,2)");
                 will(returnValue(1));
 
             }
         });
 
 
-        Number[] result = dbIntegrityService.addCachedForTarget(versionID, "#(1,2)", newCachedInfo, newCachedBlob);
+        Number[] result = dbIntegrityService.addCachedForTarget(1, "#(1,2)", newCachedInfo, newCachedBlob);
         assertEquals(2, result.length);
         assertEquals(1, result[0]);
-        assertEquals(newCachedID, result[1]);
+        assertEquals(8, result[1]);
     }
 
     /**
@@ -563,30 +547,11 @@ public class DBIntegrityServiceTest {
     public void testAddTargetsForAnnotation() throws Exception {
         System.out.println("test addTargetsForAnnotation");
 
-//        @Override
-//        public Map<String, String> addTargetsForAnnotation(Number annotationID, List<TargetInfo> Targets) throws SQLException {
-//        Map<String, String> result = new HashMap<String, String>();
-//        Number TargetIDRunner;
-//        for (TargetInfo TargetInfo : Targets) {
-//            TargetIDRunner = TargetDao.getInternalIDFromURI(TargetInfo.getRef());
-//            if (TargetIDRunner != null) {
-//                int affectedRows = annotationDao.addAnnotationTarget(annotationID, TargetIDRunner);
-//            } else {
-//                Target newTarget = createFreshTarget(TargetInfo);
-//                Number TargetID = TargetDao.addTarget(newTarget);
-//                String TargetTemporaryID = TargetDao.stringURItoExternalID(TargetInfo.getRef());
-//                result.put(TargetTemporaryID, TargetDao.getExternalID(TargetID).toString());
-//                int affectedRows = annotationDao.addAnnotationTarget(annotationID, TargetID);
-//            }
-//        }
-//        return result;
-//    }
-        
-        // test 1: adding an existing Target
+        // test 1: adding an existing target
         TargetInfo testTargetOne = new TargetInfo();
         testTargetOne.setLink("http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia");
         testTargetOne.setRef(TestBackendConstants._TEST_SERVLET_URI_Targets + "00000000-0000-0000-0000-000000000031");
-        testTargetOne.setVersion("version 1.1");
+        testTargetOne.setVersion("version 1.0");
         final List<TargetInfo> mockTargetListOne = new ArrayList<TargetInfo>();
         mockTargetListOne.add(testTargetOne);
 
@@ -595,34 +560,14 @@ public class DBIntegrityServiceTest {
                 oneOf(targetDao).getInternalIDFromURI(mockTargetListOne.get(0).getRef());
                 will(returnValue(1));
 
-                oneOf(annotationDao).addAnnotationTarget(1, 1);
+                oneOf(annotationDao).addAnnotationTarget(4, 1);
                 will(returnValue(1));
             }
         });
 
-        Map<String, String> result = dbIntegrityService.addTargetsForAnnotation(1, mockTargetListOne);
+        Map<String, String> result = dbIntegrityService.addTargetsForAnnotation(4, mockTargetListOne);
         assertEquals(0, result.size());
         
-        //        @Override
-//        public Map<String, String> addTargetsForAnnotation(Number annotationID, List<TargetInfo> Targets) throws SQLException {
-//        Map<String, String> result = new HashMap<String, String>();
-//        Number TargetIDRunner;
-//        for (TargetInfo TargetInfo : Targets) {
-//            TargetIDRunner = TargetDao.getInternalIDFromURI(TargetInfo.getRef());
-//            if (TargetIDRunner != null) {
-//                int affectedRows = annotationDao.addAnnotationTarget(annotationID, TargetIDRunner);
-//            } else {
-//                Target newTarget = createFreshTarget(TargetInfo);
-//                Number TargetID = TargetDao.addTarget(newTarget);
-//                String TargetTemporaryID = TargetDao.stringURItoExternalID(TargetInfo.getRef());
-//                result.put(TargetTemporaryID, TargetDao.getExternalID(TargetID).toString());
-//                int affectedRows = annotationDao.addAnnotationTarget(annotationID, TargetID);
-//            }
-//        }
-//        return result;
-//    }
-        
-
         // test 2: adding a new Target
         TargetInfo testTargetTwo = new TargetInfo();
         final String tempTargetID = UUID.randomUUID().toString();
@@ -673,27 +618,27 @@ public class DBIntegrityServiceTest {
 
         mockeryDao.checking(new Expectations() {
             {
-                oneOf(annotationDao).addAnnotation(testAnnotation, 5);
-                will(returnValue(6)); // the next free number is 6
+                oneOf(annotationDao).addAnnotation(testAnnotation, 3);
+                will(returnValue(5)); // the next free number is 5
 
                 //  expectations for addTargetsForannotation
-                oneOf(targetDao).getInternalIDFromURI(with(aNonNull(String.class)));
+                oneOf(targetDao).getInternalIDFromURI(TestBackendConstants._TEST_SERVLET_URI_Targets + "00000000-0000-0000-0000-000000000031");
                 will(returnValue(1));
 
-                oneOf(annotationDao).addAnnotationTarget(6, 1);
+                oneOf(annotationDao).addAnnotationTarget(5, 1);
                 will(returnValue(1));
 
                 ///////////
 
-                oneOf(annotationDao).updateAnnotationBody(6, testAnnotation.getBody().getTextBody().getBody(), testAnnotation.getBody().getTextBody().getMimeType(), false);
+                oneOf(annotationDao).updateAnnotationBody(5, testAnnotation.getBody().getTextBody().getBody(), testAnnotation.getBody().getTextBody().getMimeType(), false);
                 will(returnValue(1)); // the DB update will be called at perform anyway, even if the body is not changed (can be optimized)
 
                
             }
         });
 
-        Number result = dbIntegrityService.addUsersAnnotation(5, testAnnotation);
-        assertEquals(6, result);
+        Number result = dbIntegrityService.addUsersAnnotation(3, testAnnotation);
+        assertEquals(5, result);
     }
 
     @Test
@@ -702,24 +647,24 @@ public class DBIntegrityServiceTest {
         System.out.println("test addUser");
         final User freshUser = new User();
         freshUser.setDisplayName("Guilherme");
-        freshUser.setEMail("guisil@mpi.nl");
+        freshUser.setEMail("Guilherme.Silva@mpi.nl");
         mockeryDao.checking(new Expectations() {
             {
                 oneOf(userDao).userExists(freshUser);
                 will(returnValue(false));
 
-                oneOf(userDao).addUser(freshUser, "xx");
-                will(returnValue(7));
+                oneOf(userDao).addUser(freshUser, "guisil@mpi.nl");
+                will(returnValue(11));
             }
         });
 
 
-        assertEquals(7, dbIntegrityService.addUser(freshUser, "xx").intValue());
+        assertEquals(11, dbIntegrityService.addUser(freshUser, "guisil@mpi.nl").intValue());
 
         /// user already exists
         final User user = new User();
         freshUser.setDisplayName("Olha");
-        freshUser.setEMail("olhsha@mpi.nl");
+        freshUser.setEMail("Olha.Shakaravska@mpi.nl");
         mockeryDao.checking(new Expectations() {
             {
                 oneOf(userDao).userExists(user);
@@ -728,7 +673,7 @@ public class DBIntegrityServiceTest {
             }
         });
 
-        assertTrue(null == dbIntegrityService.addUser(user, "yy"));
+        assertTrue(null == dbIntegrityService.addUser(user, "olhsha@mpi.nl"));
     }
 
     //////////////////// DELETERS ////////////////
@@ -739,21 +684,21 @@ public class DBIntegrityServiceTest {
 
         mockeryDao.checking(new Expectations() {
             {
-                oneOf(userDao).deleteUser(2);
+                oneOf(userDao).deleteUser(1);
                 will(returnValue(0));
 
-                oneOf(userDao).deleteUser(5);
+                oneOf(userDao).deleteUser(3);
                 will(returnValue(0));
 
-                oneOf(userDao).deleteUser(6);
+                oneOf(userDao).deleteUser(10);
                 will(returnValue(1));
 
             }
         });
 
-        assertEquals(0, dbIntegrityService.deleteUser(2));
-        assertEquals(0, dbIntegrityService.deleteUser(5));
-        assertEquals(1, dbIntegrityService.deleteUser(6));
+        assertEquals(0, dbIntegrityService.deleteUser(1));
+        assertEquals(0, dbIntegrityService.deleteUser(3));
+        assertEquals(1, dbIntegrityService.deleteUser(10));
     }
 
     /**
@@ -834,16 +779,16 @@ public class DBIntegrityServiceTest {
 
         mockeryDao.checking(new Expectations() {
             {
-                oneOf(annotationDao).deleteAnnotationPrincipalPermissions(3);
-                will(returnValue(3));
+                oneOf(annotationDao).deleteAnnotationPrincipalPermissions(2);
+                will(returnValue(2));
 
-                oneOf(annotationDao).retrieveTargetIDs(3);
+                oneOf(annotationDao).retrieveTargetIDs(2);
                 will(returnValue(mockTargetIDs));                
               
-                oneOf(annotationDao).deleteAllAnnotationTarget(3);
+                oneOf(annotationDao).deleteAllAnnotationTarget(2);
                 will(returnValue(1));
 
-                oneOf(annotationDao).deleteAnnotation(3);
+                oneOf(annotationDao).deleteAnnotation(2);
                 will(returnValue(1));
                 
                 oneOf(targetDao).getCachedRepresentations(2);
@@ -861,10 +806,10 @@ public class DBIntegrityServiceTest {
                
             }
         });
-        int[] result = dbIntegrityService.deleteAnnotation(3);// the Target will be deleted because it is not referred by any annotation
+        int[] result = dbIntegrityService.deleteAnnotation(2);// the Target will be deleted because it is not referred by any annotation
         assertEquals(4, result.length);
         assertEquals(1, result[0]); // annotation 3 is deleted
-        assertEquals(3, result[1]); // 3 rows in "annotation principal permissions are deleted"
+        assertEquals(2, result[1]); // 2 rows in "annotation principal permissions are deleted"
         assertEquals(1, result[2]);  // row (3,2) in "annotations_Targets" is deleted
         assertEquals(1, result[3]); //  Target 3 is deleted 
     }
