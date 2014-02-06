@@ -69,6 +69,7 @@ INSERT INTO annotations_targets (annotation_id, target_id) VALUES (4, 4); -- Tar
 INSERT INTO annotations_targets (annotation_id, target_id) VALUES (3, 5); 
 INSERT INTO annotations_targets (annotation_id, target_id) VALUES (3, 7); 
 
+-- HSQL ---
 INSERT INTO cached_representation (external_id, mime_type, tool, type_, file_) VALUES ('00000000-0000-0000-0000-000000000051', 'text/html', 'latex', 'text', X'1001'); --1
 INSERT INTO cached_representation (external_id, mime_type, tool, type_, file_) VALUES ('00000000-0000-0000-0000-000000000052', 'text/html', 'vi', 'text', X'1002'); -- 2
 INSERT INTO cached_representation (external_id, mime_type, tool, type_, file_) VALUES ('00000000-0000-0000-0000-000000000053', 'image/png', 'screenshooter', 'image', X'1003'); -- 3
@@ -77,15 +78,23 @@ INSERT INTO cached_representation (external_id, mime_type, tool, type_, file_) V
 INSERT INTO cached_representation (external_id, mime_type, tool, type_, file_) VALUES ('00000000-0000-0000-0000-000000000056', 'text/plain', 'some tool', 'text', X'1006'); --6  not used
 INSERT INTO cached_representation (external_id, mime_type, tool, type_, file_) VALUES ('00000000-0000-0000-0000-000000000057', 'text/html', 'some tool 2', 'text', X'1007'); --7 
 
+ -- PostgreSQL --
+-- INSERT INTO cached_representation (external_id, mime_type, tool, type_) VALUES ('00000000-0000-0000-0000-000000000051', 'image/png', 'some tool 1', 'image'); --1
+-- INSERT INTO cached_representation (external_id, mime_type, tool, type_) VALUES ('00000000-0000-0000-0000-000000000052', 'image/png', 'some tool 2', 'image'); -- 2
+-- INSERT INTO cached_representation (external_id, mime_type, tool, type_) VALUES ('00000000-0000-0000-0000-000000000053', 'image/png', 'some tool 3', 'image'); -- 3
+-- INSERT INTO cached_representation (external_id, mime_type, tool, type_) VALUES ('00000000-0000-0000-0000-000000000054', 'image/png', 'some tool 4', 'image'); --4 
+-- INSERT INTO cached_representation (external_id, mime_type, tool, type_) VALUES ('00000000-0000-0000-0000-000000000055', 'image/png', 'some tool 5', 'image'); --5 
+-- INSERT INTO cached_representation (external_id, mime_type, tool, type_) VALUES ('00000000-0000-0000-0000-000000000056', 'image/png', 'some tool 6', 'image'); --6  not used
+-- INSERT INTO cached_representation (external_id, mime_type, tool, type_) VALUES ('00000000-0000-0000-0000-000000000057', 'image/png', 'some tool 7', 'image'); --7 
 
 
 
-INSERT INTO targets_cached_representations (target_id,  cached_representation_id, fragment_descriptor_in_cached) VALUES (1, 1, '#1');
-INSERT INTO targets_cached_representations (target_id,  cached_representation_id, fragment_descriptor_in_cached) VALUES (1, 2, '#2');
-INSERT INTO targets_cached_representations (target_id,  cached_representation_id, fragment_descriptor_in_cached) VALUES (2, 3, '#11');
-INSERT INTO targets_cached_representations (target_id,  cached_representation_id, fragment_descriptor_in_cached) VALUES (3, 4, '#12');
-INSERT INTO targets_cached_representations (target_id,  cached_representation_id, fragment_descriptor_in_cached) VALUES (4, 5, '#01');
-INSERT INTO targets_cached_representations (target_id,  cached_representation_id, fragment_descriptor_in_cached) VALUES (5, 7, '#02');
+INSERT INTO targets_cached_representations (target_id,  cached_representation_id, fragment_descriptor_in_cached) VALUES (1, 1, 'De Opdracht');
+INSERT INTO targets_cached_representations (target_id,  cached_representation_id, fragment_descriptor_in_cached) VALUES (1, 2, '(0,0)');
+INSERT INTO targets_cached_representations (target_id,  cached_representation_id, fragment_descriptor_in_cached) VALUES (2, 3, 'Vroeger Werk');
+INSERT INTO targets_cached_representations (target_id,  cached_representation_id, fragment_descriptor_in_cached) VALUES (3, 4, 'Spain');
+INSERT INTO targets_cached_representations (target_id,  cached_representation_id, fragment_descriptor_in_cached) VALUES (4, 5, '(1,1)');
+INSERT INTO targets_cached_representations (target_id,  cached_representation_id, fragment_descriptor_in_cached) VALUES (5, 7, '(0,1)');
 
 
 ---- PERMISSIONS --------------------------------------------------------------------------------------------
