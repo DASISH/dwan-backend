@@ -79,7 +79,7 @@ public class AnnotationResourceTest {
     
     public AnnotationResourceTest() { 
         mockRequest = new MockHttpServletRequest();
-        mockRequest.setRemoteUser("twan");
+        mockRequest.setRemoteUser("olhsha@mpi.nl");
         
     }
         
@@ -90,7 +90,7 @@ public class AnnotationResourceTest {
     @Test
     public void testGetAnnotation() throws SQLException, JAXBException, Exception {
         System.out.println("getAnnotation");
-        final String externalIDstring= TestBackendConstants._TEST_ANNOT_2_EXT;
+        final String externalIDstring= "00000000-0000-0000-0000-000000000021";
         final Annotation expectedAnnotation = (new TestInstances(TestBackendConstants._TEST_SERVLET_URI)).getAnnotationOne();       
         annotationResource.setHttpServletRequest(mockRequest);        
         annotationResource.setUriInfo(mockUriInfo);       
@@ -106,7 +106,7 @@ public class AnnotationResourceTest {
                 oneOf(mockDbIntegrityService).setServiceURI(with(any(String.class)));
                 will(doAll());
                 
-                oneOf(mockDbIntegrityService).getUserInternalIDFromRemoteID("twan");
+                oneOf(mockDbIntegrityService).getUserInternalIDFromRemoteID("olhsha@mpi.nl");
                 will(returnValue(3)); 
                 
                 oneOf(mockDbIntegrityService).getAnnotationInternalIdentifier(with(any(UUID.class)));                
@@ -138,7 +138,7 @@ public class AnnotationResourceTest {
         final int[] mockDelete = new int[4];
         mockDelete[0]=1; // # deleted annotations
         mockDelete[3]=1; // # deleted annotation_prinipal_permissions
-        mockDelete[2]=2; // # deleted  annotations_target_Targets, (5,3), (5,4)
+        mockDelete[2]=2; // # deleted  annotations_target_Targets, (4,3), (4,4)
         mockDelete[3]=1; // # deletd Targets, 4
         
         annotationResource.setHttpServletRequest(mockRequest);
@@ -150,26 +150,26 @@ public class AnnotationResourceTest {
                will(returnValue(URI.create("http://localhost:8080/annotator-backend/api/"))); 
                
               
-                oneOf(mockDbIntegrityService).getUserInternalIDFromRemoteID("twan");
-                will(returnValue(5)); 
+                oneOf(mockDbIntegrityService).getUserInternalIDFromRemoteID("olhsha@mpi.nl");
+                will(returnValue(3)); 
                 
                 oneOf(mockDbIntegrityService).setServiceURI(with(any(String.class)));
                 will(doAll());
                 
                 oneOf(mockDbIntegrityService).getAnnotationInternalIdentifier(with(aNonNull(UUID.class)));              
-                will(returnValue(5)); 
+                will(returnValue(4)); 
                 
                
-                oneOf(mockDbIntegrityService).getAnnotationOwner(5);
-                will(returnValue(5));  
+                oneOf(mockDbIntegrityService).getAnnotationOwner(4);
+                will(returnValue(3));  
                 
-                oneOf(mockDbIntegrityService).deleteAnnotation(5);
+                oneOf(mockDbIntegrityService).deleteAnnotation(4);
                 will(returnValue(mockDelete));
             }
         });
         
        
-        String result = annotationResource.deleteAnnotation(TestBackendConstants._TEST_ANNOT_5_EXT);
+        String result = annotationResource.deleteAnnotation("00000000-0000-0000-0000-000000000024");
         assertEquals("1 annotation(s) deleted.", result);
     }
     
@@ -186,7 +186,7 @@ public class AnnotationResourceTest {
         TargetInfoList TargetInfoList = new TargetInfoList();
         annotationToAdd.setTargets(TargetInfoList);
         annotationToAdd.setOwnerRef(null);      
-        annotationToAdd.setLastModified(DatatypeFactory.newInstance().newXMLGregorianCalendar(TestBackendConstants._TEST_ANNOT_2_TIME_STAMP));
+        annotationToAdd.setLastModified(DatatypeFactory.newInstance().newXMLGregorianCalendar("2013-08-12T09:25:00.383000Z"));
         annotationToAdd.setHeadline("headline");
         annotationToAdd.setTargets(TargetInfoList);
         
@@ -208,7 +208,7 @@ public class AnnotationResourceTest {
         
         final Annotation addedAnnotation = (new ObjectFactory()).createAnnotation(annotationToAdd).getValue();
         addedAnnotation.setURI("http://localhost:8080/annotator-backend/api/annotations/"+UUID.randomUUID().toString());
-        addedAnnotation.setOwnerRef("http://localhost:8080/annotator-backend/api/users/"+TestBackendConstants._TEST_USER_3_EXT_ID);
+        addedAnnotation.setOwnerRef("http://localhost:8080/annotator-backend/api/users/"+"00000000-0000-0000-0000-000000000111");
      
         annotationResource.setHttpServletRequest(mockRequest); 
         annotationResource.setUriInfo(mockUriInfo); 
@@ -222,7 +222,7 @@ public class AnnotationResourceTest {
                 oneOf(mockDbIntegrityService).setServiceURI(with(any(String.class)));
                 will(doAll());
                 
-                oneOf(mockDbIntegrityService).getUserInternalIDFromRemoteID("twan");
+                oneOf(mockDbIntegrityService).getUserInternalIDFromRemoteID("olhsha@mpi.nl");
                 will(returnValue(3));
                 
              

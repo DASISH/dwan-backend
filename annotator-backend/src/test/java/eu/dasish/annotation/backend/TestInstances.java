@@ -41,23 +41,23 @@ public class TestInstances {
     
     
     private Annotation makeAnnotationOne(String baseURI){
-        Annotation result = makeAnnotation(baseURI, TestBackendConstants._TEST_ANNOT_2_BODY, TestBackendConstants._TEST_BODY_MIMETYPE_HTML, TestBackendConstants._TEST_ANNOT_2_HEADLINE, TestBackendConstants._TEST_USER_3_EXT_ID);
+        Annotation result = makeAnnotation(baseURI, "<html><body>some html 1</body></html>", "text/html", "Sagrada Famiglia", "00000000-0000-0000-0000-000000000111");
         try {
-        result.setLastModified(DatatypeFactory.newInstance().newXMLGregorianCalendar(TestBackendConstants._TEST_ANNOT_2_TIME_STAMP));
+        result.setLastModified(DatatypeFactory.newInstance().newXMLGregorianCalendar("2013-08-12T09:25:00.383000Z"));
         } catch (DatatypeConfigurationException dce) {
-            System.out.println("wrongly-formatted test timestamp "+TestBackendConstants._TEST_ANNOT_2_TIME_STAMP);
+            System.out.println("wrongly-formatted test timestamp "+"2013-08-12T09:25:00.383000Z");
             result.setLastModified(null);
         }
         return result;
     }
     
     private Annotation makeAnnotationToAdd(String baseURI){
-       Annotation result = makeAnnotation(baseURI, TestBackendConstants._TEST_ANNOT_TO_ADD_BODY, TestBackendConstants._TEST_BODY_MIMETYPE_TEXT, TestBackendConstants._TEST_ANNOT_TO_ADD_HEADLINE, TestBackendConstants._TEST_USER_3_EXT_ID);
+       Annotation result = makeAnnotation(baseURI, "<html><body>some html 1</body></html>", "text/plain", "Annotation to add to test DAO", "00000000-0000-0000-0000-000000000111");
        
        TargetInfo TargetInfo =  new TargetInfo();
-       TargetInfo.setLink(TestBackendConstants._TEST_Target_1_LINK);
-       TargetInfo.setRef(TestBackendConstants._TEST_Target_1_EXT_ID);
-       TargetInfo.setVersion(TestBackendConstants._TEST_Target_1_VERSION); 
+       TargetInfo.setLink("http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia");
+       TargetInfo.setRef("00000000-0000-0000-0000-000000000031");
+       TargetInfo.setVersion("version 1.0"); 
        
        TargetInfoList targetInfos =  new TargetInfoList();
        targetInfos.getTargetInfo().add(TargetInfo);

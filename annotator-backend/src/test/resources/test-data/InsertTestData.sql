@@ -20,64 +20,54 @@
 -- Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 --
 
-INSERT INTO principal (principal_name, external_id, remote_id, e_mail, account) VALUES ('a user', '00000000-0000-0000-0000-000000000003', 'a1', 'a.user@gmail.com', 'user'); -- 1
-INSERT INTO principal (principal_name, external_id, remote_id, e_mail, account) VALUES ('b user', '00000000-0000-0000-0000-000000000004', 'b2', 'b.user@gmail.com', 'user');-- 2
+INSERT INTO principal (principal_name, external_id, remote_id, e_mail, account) VALUES ('Twan', '00000000-0000-0000-0000-000000000111', 'twagoo@mpi.nl', 'Twan.Goosen@mpi.nl', 'developer'); --1 
+INSERT INTO principal (principal_name, external_id, remote_id, e_mail, account) VALUES ('Peter', '00000000-0000-0000-0000-000000000112', 'petwit@mpi.nl', 'Peter.Withers@mpi.nl', 'developer'); -- 2
+INSERT INTO principal (principal_name, external_id, remote_id, e_mail, account) VALUES ('Olha', '00000000-0000-0000-0000-000000000113', 'olhsha@mpi.nl', 'Olha.Shakaravska@mpi.nl', 'admin'); -- 3
+INSERT INTO principal (principal_name, external_id, remote_id, e_mail, account) VALUES ('Eric', '00000000-0000-0000-0000-000000000114', 'ericauser@mpi.nl', 'Eric.Auer@mpi.nl', 'developer'); -- 4
+INSERT INTO principal (principal_name, external_id, remote_id, e_mail, account) VALUES ('Daan', '00000000-0000-0000-0000-000000000115', 'broeder@mpi.ml', 'Daan.Broeder@mpi.nl', 'developer'); --5 
+INSERT INTO principal (principal_name, external_id, remote_id, e_mail, account) VALUES ('Menzo', '00000000-0000-0000-0000-000000000116', 'menwin@mpi.nl', 'Menzo.Windhouwer@mpi.nl', 'developer'); -- 6
+INSERT INTO principal (principal_name, external_id, remote_id, e_mail, account) VALUES ('Przemek', '00000000-0000-0000-0000-000000000117', 'przlen@mpi,nl', 'Przemek.Lenkiewicz@mpi.nl', 'user'); -- 7
+INSERT INTO principal (principal_name, external_id, remote_id, e_mail, account) VALUES ('Stephanie', '00000000-0000-0000-0000-000000000118', 'gusrotst@gu.se', 'stephanie.roth@gu.se', 'developer'); -- 8
+INSERT INTO principal (principal_name, external_id, remote_id, e_mail, account) VALUES ('Olof', '00000000-0000-0000-0000-000000000119', 'gusolsol@gu.se', 'olof.olsson.2@gu.se', 'developer'); -- 9
+INSERT INTO principal (principal_name, external_id, remote_id, e_mail, account) VALUES ('Willem', '00000000-0000-0000-0000-000000000220', 'wilelb@mpi.nl', 'Willem.Elbers@mpi.nl', 'developer'); -- 10
 
-INSERT INTO notebook (title, owner_id, external_id) VALUES ('a notebook', 2, '00000000-0000-0000-0000-000000000001'); -- 1 
--- INSERT INTO notebook (title, owner_id, external_id) VALUES ('a notebook', 1, 1);
 
-INSERT INTO annotation (owner_id, headline, body_text, body_mimetype, external_id, is_xml) VALUES (1, 'a headline', '<html><body>some html</body></html>', 'text/html' , '00000000-0000-0000-0000-000000000005', false); --1 
+INSERT INTO notebook (title, owner_id, external_id) VALUES ('Notebook 3', 1, '00000000-0000-0000-0000-000000000011'); -- 1
+INSERT INTO notebook (title, owner_id, external_id) VALUES ('Notebook 4', 2, '00000000-0000-0000-0000-000000000012'); --2
+INSERT INTO notebook (title, owner_id, external_id) VALUES ('Notebook 5', 3, '00000000-0000-0000-0000-000000000013'); --3
+INSERT INTO notebook (title, owner_id, external_id) VALUES ('Notebook 6', 3, '00000000-0000-0000-0000-000000000014'); --4
 
-INSERT INTO notebook (title, owner_id, external_id) VALUES ('a second notebook', 2, '00000000-0000-0000-0000-000000000002'); --2
--- INSERT INTO notebook (title, owner_id, external_id) VALUES ('a second notebook', 1, 2);
+INSERT INTO annotation (owner_id, headline,body_text, body_mimetype, external_id, last_modified, is_xml) VALUES (1, 'Sagrada Famiglia','<html><body>some html 1</body></html>', 'text/html' , '00000000-0000-0000-0000-000000000021', '2013-08-12 09:25:00.383', false); --1
+INSERT INTO annotation (owner_id, headline,body_text, body_mimetype, external_id, is_xml) VALUES (2, 'Gaudi','<html><body>some html 2</body></html>', 'text/html' , '00000000-0000-0000-0000-000000000022',false); --2
+INSERT INTO annotation (owner_id, headline,body_text, body_mimetype, external_id, is_xml) VALUES (3, 'Art Nuveau','some plain text', 'text/plain' , '00000000-0000-0000-0000-000000000023', false); --3
+INSERT INTO annotation (owner_id, headline,body_text, body_mimetype, external_id, is_xml) VALUES (3, 'Annotation to delete','<html><body>some html 4</body></html>', 'text/html' , '00000000-0000-0000-0000-000000000024',false); --4
+
+
+
 INSERT INTO notebooks_annotations (notebook_id,annotation_id) VALUES (1,1);
-INSERT INTO notebooks_annotations (notebook_id,annotation_id) VALUES (2,1);
-
-
--- Test data for jdbcAnnotationDao --
-
-INSERT INTO principal (principal_name, external_id, remote_id, e_mail, account) VALUES ('Twan', '00000000-0000-0000-0000-000000000111', 'x3', 'twagoo@mpi.nl', 'developer'); --3 
-INSERT INTO principal (principal_name, external_id, remote_id, e_mail, account) VALUES ('Peter', '00000000-0000-0000-0000-000000000112', 'y4', 'Peter.Withers@mpi.nl', 'developer'); -- 4
-INSERT INTO principal (principal_name, external_id, remote_id, e_mail, account) VALUES ('Olha', '00000000-0000-0000-0000-000000000113', 'JUnit@test.com', 'olhsha@mpi.nl', 'admin'); -- 5
-INSERT INTO principal (principal_name, external_id, remote_id, e_mail, account) VALUES ('Eric', '00000000-0000-0000-0000-000000000114', 'v6', 'eriaue@mpi.nl', 'developer'); -- 6
-
-
-INSERT INTO notebook (title, owner_id, external_id) VALUES ('Notebook 3', 3, '00000000-0000-0000-0000-000000000011'); -- 3
-INSERT INTO notebook (title, owner_id, external_id) VALUES ('Notebook 4', 4, '00000000-0000-0000-0000-000000000012'); --4
-INSERT INTO notebook (title, owner_id, external_id) VALUES ('Notebook 5', 5, '00000000-0000-0000-0000-000000000013'); --5
-INSERT INTO notebook (title, owner_id, external_id) VALUES ('Notebook 6', 5, '00000000-0000-0000-0000-000000000014'); --6
-
-INSERT INTO annotation (owner_id, headline,body_text, body_mimetype, external_id, last_modified, is_xml) VALUES (3, 'Sagrada Famiglia','<html><body>some html 1</body></html>', 'text/html' , '00000000-0000-0000-0000-000000000021', '2013-08-12 09:25:00.383', false); --2
-INSERT INTO annotation (owner_id, headline,body_text, body_mimetype, external_id, is_xml) VALUES (4, 'Gaudi','<html><body>some html 2</body></html>', 'text/html' , '00000000-0000-0000-0000-000000000022',false); --3
-INSERT INTO annotation (owner_id, headline,body_text, body_mimetype, external_id, is_xml) VALUES (5, 'Art Nuveau','some plain text', 'text/plain' , '00000000-0000-0000-0000-000000000023', false); --4
-INSERT INTO annotation (owner_id, headline,body_text, body_mimetype, external_id, is_xml) VALUES (5, 'Annotation to delete','<html><body>some html 4</body></html>', 'text/html' , '00000000-0000-0000-0000-000000000024',false); --5
-
-
-
-INSERT INTO notebooks_annotations (notebook_id,annotation_id) VALUES (3,2);
-INSERT INTO notebooks_annotations (notebook_id,annotation_id) VALUES (3,3);
-INSERT INTO notebooks_annotations (notebook_id,annotation_id) VALUES (4,4);
-INSERT INTO notebooks_annotations (notebook_id,annotation_id) VALUES (5,4);
+INSERT INTO notebooks_annotations (notebook_id,annotation_id) VALUES (1,2);
+INSERT INTO notebooks_annotations (notebook_id,annotation_id) VALUES (2,3);
+INSERT INTO notebooks_annotations (notebook_id,annotation_id) VALUES (4,3);
 
 
 INSERT INTO target (external_id, link_uri, version, fragment_descriptor) VALUES ('00000000-0000-0000-0000-000000000031', 'http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia', 'version 1.0', 'de_Opdracht'); -- 1
-INSERT INTO target (external_id, link_uri, version, fragment_descriptor) VALUES ('00000000-0000-0000-0000-000000000032', 'http://nl.wikipedia.org/wiki/Antoni_Gaud%C3%AD', 'version 1.0', 'Vroege_werk'); --2
+INSERT INTO target (external_id, link_uri, version, fragment_descriptor) VALUES ('00000000-0000-0000-0000-000000000032', 'http://nl.wikipedia.org/wiki/Antoni_Gaud%C3%AD', 'version 1.1', 'Vroege_werk'); --2
 INSERT INTO target (external_id, link_uri, version, fragment_descriptor) VALUES ('00000000-0000-0000-0000-000000000033', 'http://en.wikipedia.org/wiki/Art_Nouveau', 'june 1013', 'Spain'); --3
 INSERT INTO target (external_id, link_uri, version, fragment_descriptor) VALUES ('00000000-0000-0000-0000-000000000034', '???', 'back up', '1111'); --4
 INSERT INTO target (external_id, link_uri, version, fragment_descriptor) VALUES ('00000000-0000-0000-0000-000000000035', '???', 'back up', '111111'); --5
 INSERT INTO target (external_id, link_uri, version, fragment_descriptor) VALUES ('00000000-0000-0000-0000-000000000036', '???', 'version 2.0', '1111111'); --6 not used by any annotation
-INSERT INTO target (external_id, link_uri, version, fragment_descriptor) VALUES ('00000000-0000-0000-0000-000000000037', '???', 'version 2.0', '11111111');
+INSERT INTO target (external_id, link_uri, version, fragment_descriptor) VALUES ('00000000-0000-0000-0000-000000000037', '???', 'version 2.0', '11111111'); --7
 
 
 
-INSERT INTO annotations_targets (annotation_id, target_id) VALUES (2, 1); 
-INSERT INTO annotations_targets (annotation_id, target_id) VALUES (2, 2);
-INSERT INTO annotations_targets (annotation_id, target_id) VALUES (3, 2); 
-INSERT INTO annotations_targets (annotation_id, target_id) VALUES (4, 3); 
-INSERT INTO annotations_targets (annotation_id, target_id) VALUES (5, 3); -- Target 3 should not be deleted when annot 5 is deleted
-INSERT INTO annotations_targets (annotation_id, target_id) VALUES (5, 4); -- Target 4 to be deleted when annot 5 is deleted
-INSERT INTO annotations_targets (annotation_id, target_id) VALUES (4, 5); 
-INSERT INTO annotations_targets (annotation_id, target_id) VALUES (4, 7); 
+INSERT INTO annotations_targets (annotation_id, target_id) VALUES (1, 1); 
+INSERT INTO annotations_targets (annotation_id, target_id) VALUES (1, 2);
+INSERT INTO annotations_targets (annotation_id, target_id) VALUES (2, 2); 
+INSERT INTO annotations_targets (annotation_id, target_id) VALUES (3, 3); 
+INSERT INTO annotations_targets (annotation_id, target_id) VALUES (4, 3); -- Target 3 should not be deleted when annot 4 is deleted
+INSERT INTO annotations_targets (annotation_id, target_id) VALUES (4, 4); -- Target 4 to be deleted when annot 4 is deleted
+INSERT INTO annotations_targets (annotation_id, target_id) VALUES (3, 5); 
+INSERT INTO annotations_targets (annotation_id, target_id) VALUES (3, 7); 
 
 INSERT INTO cached_representation (external_id, mime_type, tool, type_, file_) VALUES ('00000000-0000-0000-0000-000000000051', 'text/html', 'latex', 'text', X'1001'); --1
 INSERT INTO cached_representation (external_id, mime_type, tool, type_, file_) VALUES ('00000000-0000-0000-0000-000000000052', 'text/html', 'vi', 'text', X'1002'); -- 2
@@ -98,25 +88,22 @@ INSERT INTO targets_cached_representations (target_id,  cached_representation_id
 INSERT INTO targets_cached_representations (target_id,  cached_representation_id, fragment_descriptor_in_cached) VALUES (5, 7, '#02');
 
 
-
-
-
 ---- PERMISSIONS --------------------------------------------------------------------------------------------
 
 
 INSERT INTO permission_(permission_mode) VALUES ('writer');
 INSERT INTO permission_(permission_mode) VALUES ('reader');
 
-INSERT INTO annotations_principals_permissions (annotation_id, principal_id, permission_) VALUES (2, 4, 'writer');
-INSERT INTO annotations_principals_permissions (annotation_id, principal_id, permission_) VALUES (2, 5, 'reader');
+INSERT INTO annotations_principals_permissions (annotation_id, principal_id, permission_) VALUES (1, 2, 'writer');
+INSERT INTO annotations_principals_permissions (annotation_id, principal_id, permission_) VALUES (1, 3, 'reader');
 
-INSERT INTO annotations_principals_permissions (annotation_id, principal_id, permission_) VALUES (3, 3, 'reader');
-INSERT INTO annotations_principals_permissions (annotation_id, principal_id, permission_) VALUES (3, 5, 'writer');
+INSERT INTO annotations_principals_permissions (annotation_id, principal_id, permission_) VALUES (2, 1, 'reader');
+INSERT INTO annotations_principals_permissions (annotation_id, principal_id, permission_) VALUES (2, 3, 'writer');
 
-INSERT INTO annotations_principals_permissions (annotation_id, principal_id, permission_) VALUES (4, 3, 'reader');
-INSERT INTO annotations_principals_permissions (annotation_id, principal_id, permission_) VALUES (4, 4, 'reader');
+INSERT INTO annotations_principals_permissions (annotation_id, principal_id, permission_) VALUES (3, 1, 'reader');
+INSERT INTO annotations_principals_permissions (annotation_id, principal_id, permission_) VALUES (3, 2, 'reader');
 
-INSERT INTO annotations_principals_permissions (annotation_id, principal_id, permission_) VALUES (5, 4, 'writer');
-INSERT INTO annotations_principals_permissions (annotation_id, principal_id, permission_) VALUES (5, 3, 'writer');
+INSERT INTO annotations_principals_permissions (annotation_id, principal_id, permission_) VALUES (4, 2, 'writer');
+INSERT INTO annotations_principals_permissions (annotation_id, principal_id, permission_) VALUES (4, 1, 'writer');
 -- checking integrity control:
 -- INSERT INTO annotations_principals_permissions (annotation_id, principal_id, permission_) VALUES (5, 5, 'reader');

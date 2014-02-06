@@ -159,8 +159,8 @@ public class NotebookResourceTest {
 //    public void testGetAllAnnotations() {
 //        System.out.println("test getAllAnnotations");        
 //        final String externalID= TestBackendConstants._TEST_NOTEBOOK_3_EXT; 
-//        final UUID aIdOne= UUID.fromString(TestBackendConstants._TEST_ANNOT_2_EXT);
-//        final UUID aIdTwo= UUID.fromString(TestBackendConstants._TEST_ANNOT_3_EXT);
+//        final UUID aIdOne= UUID.fromString("00000000-0000-0000-0000-000000000021");
+//        final UUID aIdTwo= UUID.fromString("00000000-0000-0000-0000-000000000022");
 //        final List<UUID> annotationIds = new ArrayList<UUID>();
 //        annotationIds.add(aIdOne);
 //        annotationIds.add(aIdTwo);
