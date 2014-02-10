@@ -109,14 +109,11 @@ public class AnnotationResourceTest {
                 oneOf(mockDbIntegrityService).getUserInternalIDFromRemoteID("olhsha@mpi.nl");
                 will(returnValue(3)); 
                 
+                oneOf(mockDbIntegrityService).canRead(3, 2);
+                will(returnValue(true)); 
+                
                 oneOf(mockDbIntegrityService).getAnnotationInternalIdentifier(with(any(UUID.class)));                
                 will(returnValue(2)); 
-                
-                oneOf(mockDbIntegrityService).getTypeOfUserAccount(3);
-                will(returnValue("developer"));
-                
-                oneOf(mockDbIntegrityService).getAnnotationOwner(2);
-                will(returnValue(3));  
                 
                 oneOf(mockDbIntegrityService).getAnnotation(2);                
                 will(returnValue(expectedAnnotation));

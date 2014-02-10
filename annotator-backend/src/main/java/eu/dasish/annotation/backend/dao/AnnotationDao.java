@@ -50,23 +50,18 @@ public interface AnnotationDao extends ResourceDao{
      */
     public Annotation getAnnotationWithoutTargetsAndPermissions(Number annotationID);
     
-    
-     /**
-     * 
-     * @param annotationIDs: the list of annotationID-s from which the resulting annotations are to be selected.
-     * @param text: the text which the resulting annotations' bodies must contain.* @param namespace TODO: do not know what to do with it 
-     * @param ownerID: the resulting annotations are owned by the owner "ownerID".
-     * @param after: the resulting annotations must have timestamp later than "after".
-     * @param before: the resulting annotations must have timestamp earlier than "before".
-     * @return the sub-list of internal annotation identifiers from the list "internalIDs" for annotations 
-     * -- bodies of which contain the "text", 
-     * -- to which inlogged user has "access", 
-     * -- owned by "owner", 
-     * -- added to the database between "before" and "after" time-dates.
-     * 
-     */
-    public List<Number> getFilteredAnnotationIDs(List<Number> annotationIDs, Number ownerID, String text, String namespace, String after, String before);
+      
+    public List<Number> getFilteredAnnotationIDs(Number ownerID, String text, String namespace, String after, String before);
      
+  
+    public List<Number> getAnnotationIDsForUserWithPermission(Number userID, String acess);
+    
+    
+    public List<Number> getAnnotationIDsForTargets(List<Number> TargetIDs);   
+    
+    /*
+     * Use inly in the debugging mode to acces all the existing annotations.
+     */
     public List<Number> getAllAnnotationIDs();
     
        /**
@@ -84,13 +79,9 @@ public interface AnnotationDao extends ResourceDao{
      */
     public List<String> getAnnotationREFs(List<Number> annotationIDs); 
     
-    /**
-     * 
-     * @param TargetIDs
-     * @return the list of annotationdIDs of the annotations which target Targets are from "TargetIDs" list.
-     */
-    public List<Number> retrieveAnnotationList(List<Number> TargetIDs);
    
+    
+    
     
        /**
      * 
@@ -116,8 +107,6 @@ public interface AnnotationDao extends ResourceDao{
      * @return permission of the userID w.r.t. annotationID, or null if the permission is not given
      */ 
     public Permission  getPermission(Number annotationID, Number userID);
-    
-    public List<Number> getAnnotationIDsForUserWithPermission(Number userID, String[] permissionStrings);
     
     
     /**

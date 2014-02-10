@@ -95,6 +95,10 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     final static protected String cachedRepresentationStar = cachedRepresentationTableName + ".*";
     final static protected String targetStar = targetTableName + ".*";
     final static protected String principalStar = principalTableName + ".*";
+    
+    ////////////////////////////////
+    
+   
     ///////////////////////////////////////////////////
     protected String internalIdName = null;
     protected String resourceTableName = null;

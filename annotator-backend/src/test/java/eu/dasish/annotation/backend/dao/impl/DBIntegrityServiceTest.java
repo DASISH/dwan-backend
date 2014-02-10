@@ -277,7 +277,6 @@ public class DBIntegrityServiceTest {
 
         final List<Number> mockAnnotationIDs1 = new ArrayList<Number>();
         mockAnnotationIDs1.add(1);
-        mockAnnotationIDs1.add(2);
         
         final List<Number> mockAnnotationIDs2 = new ArrayList<Number>();
         mockAnnotationIDs2.add(1);
@@ -289,31 +288,28 @@ public class DBIntegrityServiceTest {
         final List<Number> mockRetval = new ArrayList<Number>();
         mockRetval.add(1);
         
-        final String[] accessModes = new String[2];
-        accessModes[0] = "reader";
-        accessModes[1] = "writer";
-
+       
         mockeryDao.checking(new Expectations() {
             {
                 oneOf(targetDao).getTargetsReferringTo("nl.wikipedia.org");
                 will(returnValue(mockTargetIDs));
+                
+                oneOf(annotationDao).getAnnotationIDsForTargets(mockTargetIDs);
+                will(returnValue(mockAnnotationIDs2));                
+               
+                oneOf(annotationDao).getFilteredAnnotationIDs(null, "some html 1", null, after, before);
+                will(returnValue(mockAnnotationIDs1));
 
-                oneOf(annotationDao).getAnnotationIDsForUserWithPermission(3, accessModes);
+                oneOf(annotationDao).getAnnotationIDsForUserWithPermission(3, "reader");
                 will(returnValue(mockAnnotationIDs1));
 
                 
-                oneOf(annotationDao).retrieveAnnotationList(mockTargetIDs);
-                will(returnValue(mockAnnotationIDs2));
-
-               
-                oneOf(annotationDao).getFilteredAnnotationIDs(mockAnnotationIDs1, null, "some html 1", null, after, before);
-                will(returnValue(mockRetval));
 
             }
         });
 
 
-        List result = dbIntegrityService.getFilteredAnnotationIDs(null, "nl.wikipedia.org", "some html 1", 3, accessModes, null, after, before);
+        List result = dbIntegrityService.getFilteredAnnotationIDs(null, "nl.wikipedia.org", "some html 1", 3, "reader", null, after, before);
         assertEquals(1, result.size());
         assertEquals(1, result.get(0));
     }
@@ -367,7 +363,6 @@ public class DBIntegrityServiceTest {
 
         final List<Number> mockAnnotationIDs1 = new ArrayList<Number>();
         mockAnnotationIDs1.add(1);
-        mockAnnotationIDs1.add(2);
         
         final List<Number> mockAnnotationIDs2 = new ArrayList<Number>();
         mockAnnotationIDs2.add(1);
@@ -390,30 +385,26 @@ public class DBIntegrityServiceTest {
         targetIDs.add(1);
         targetIDs.add(2);
         
-        final String[] accessModes = new String[2];
-        accessModes[0] = "reader";
-        accessModes[1] = "writer";
+       
         
         mockeryDao.checking(new Expectations() {
             {
-                oneOf(userDao).getInternalID(ownerUUID);
+                oneOf(userDao).getInternalID(ownerUUID); 
                 will(returnValue(1));
                 
-                oneOf(annotationDao).getAnnotationIDsForUserWithPermission(3, accessModes);
-                will(returnValue(mockAnnotationIDs1));
-              
-                // getFilteredAnnotationIds
                 oneOf(targetDao).getTargetsReferringTo("nl.wikipedia.org");
                 will(returnValue(mockTargetIDs));
                 
-                oneOf(annotationDao).retrieveAnnotationList(mockTargetIDs);
-                will(returnValue(mockAnnotationIDs2));
+                oneOf(annotationDao).getAnnotationIDsForTargets(mockTargetIDs);
+                will(returnValue(mockAnnotationIDs2));                
                
+                oneOf(annotationDao).getFilteredAnnotationIDs(1, "some html 1", null, after, before);
+                will(returnValue(mockAnnotationIDs1));
+
+                oneOf(annotationDao).getAnnotationIDsForUserWithPermission(3, "reader");
+                will(returnValue(mockAnnotationIDs1));
+
                
-                oneOf(annotationDao).getFilteredAnnotationIDs(mockAnnotationIDs1, 1, "some html 1", null, after, before);
-                will(returnValue(mockAnnotIDs));
-                
-                
 //                ///////////////////////////////////
 //                
                 oneOf(annotationDao).getAnnotationInfoWithoutTargets(1);
@@ -441,7 +432,7 @@ public class DBIntegrityServiceTest {
         });
        
       
-        AnnotationInfoList result = dbIntegrityService.getFilteredAnnotationInfos(ownerUUID, "nl.wikipedia.org", "some html 1", 3, accessModes, null, after, before);
+        AnnotationInfoList result = dbIntegrityService.getFilteredAnnotationInfos(ownerUUID, "nl.wikipedia.org", "some html 1", 3, "reader", null, after, before);
         assertEquals(1, result.getAnnotationInfo().size()); 
         AnnotationInfo resultAnnotInfo = result.getAnnotationInfo().get(0);
         assertEquals(mockAnnotInfo.getHeadline(), resultAnnotInfo.getHeadline());

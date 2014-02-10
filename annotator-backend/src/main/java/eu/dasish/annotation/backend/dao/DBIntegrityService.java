@@ -86,7 +86,7 @@ public interface DBIntegrityService{
     * -- owned by "owner",
     * -- created after time-samp "after and before time-stamp "before".
     */
-    List<Number> getFilteredAnnotationIDs(UUID ownerId, String link, String text, Number inloggedUserID, String[] accessModes, String namespace, String after, String before);
+    List<Number> getFilteredAnnotationIDs(UUID ownerId, String link, String text, Number inloggedUserID, String access, String namespace, String after, String before);
     
     AnnotationInfoList getAllAnnotationInfos();
     
@@ -107,7 +107,7 @@ public interface DBIntegrityService{
     * -- owned by "owner",
     * -- created after time-samp "after and before time-stamp "before".
      */
-    AnnotationInfoList getFilteredAnnotationInfos(UUID ownerId, String word, String text, Number inloggedUserID, String[] accessModes, String namespace, String after, String before);
+    AnnotationInfoList getFilteredAnnotationInfos(UUID ownerId, String word, String text, Number inloggedUserID,  String access, String namespace, String after, String before);
 
     /**
      * 
@@ -235,6 +235,10 @@ public interface DBIntegrityService{
     
     
     public String getTypeOfUserAccount(Number userID);
+    
+    public boolean canRead(Number userID, Number annotationID);
+            
+    public boolean canWrite(Number userID, Number annotationID);        
     
     /**
      * UPDATERS
