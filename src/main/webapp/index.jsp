@@ -48,10 +48,10 @@
         <b>All output xml-s are valid w.r.t. the schema</b><br>
         GET <a href="api/users/00000000-0000-0000-0000-0000000000112">api/users/00000000-0000-0000-0000-0000000000112</a> <br> 
         GET <a href="api/users/00000000-0000-0000-0000-0000000000112/current">api/users/00000000-0000-0000-0000-0000000000112/current</a>  !Problem: how to ask the servlet if the given user is logged in, may be by some other running somewhere client<br> 
-        GET <a href="api/users/info?email=twagoo@mpi.nl">api/users/info?email=twagoo@mpi.nl</a>  <br>
+        GET <a href="api/users/info?email=Twan.Goosen@mpi.nl">api/users/info?email=Twan.Goosen@mpi.nl</a>  <br>
         GET <a href="api/annotations?link=Sagrada">api/annotations/info?link=Sagrada</a>  <br>
         GET <a href="api/annotations?link=Gaud">api/annotations/info?link=Gaud</a>  <br>
-        GET <a href="api/annotations?after=2014-01-28 15:57:58.046908&before=2014-01-30 10:08:16.213186">api/annotations?after=2014-01-28 15:57:58.046908&before=2014-01-30 10:08:16.213186</a> <br>
+        GET <a href="api/annotations?after=2014-02-04 15:57:58.046908&before=2014-02-06 10:08:16.213186">api/annotations?after=2014-02-04 15:57:58.046908&before=2014-02-06 10:08:16.213186</a> <br>
         !Comment: What is "namespace" query parameter? Must be implemented and tested <br>
         GET <a href="api/annotations/00000000-0000-0000-0000-000000000021">api/annotations/00000000-0000-0000-0000-000000000021</a>  </br>
         GET <a href="api/annotations/00000000-0000-0000-0000-000000000021/targets">api/annotations/00000000-0000-0000-0000-000000000021/targets</a>  </br>

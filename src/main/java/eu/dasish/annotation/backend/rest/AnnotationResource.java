@@ -82,7 +82,7 @@ public class AnnotationResource {
     private Providers providers;
     @Context
     private ServletContext context;
-    final String default_permission = "reader";
+    
     private final Logger logger = LoggerFactory.getLogger(AnnotationResource.class);
     public static final Logger loggerServer = LoggerFactory.getLogger(HttpServletResponse.class);
     final private String admin = "admin";
@@ -122,7 +122,7 @@ public class AnnotationResource {
                 String remoteUser = httpServletRequest.getRemoteUser();
                 final Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
                 if (userID != null) {
-                    if (dbIntegrityService.getTypeOfUserAccount(userID).equals(admin) || canRead(userID, annotationID)) {
+                    if (dbIntegrityService.canRead(userID, annotationID)) {
                         final Annotation annotation = dbIntegrityService.getAnnotation(annotationID);
                         JAXBElement<Annotation> rootElement = new ObjectFactory().createAnnotation(annotation);
                         return rootElement;
@@ -163,7 +163,7 @@ public class AnnotationResource {
                 String remoteUser = httpServletRequest.getRemoteUser();
                 final Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
                 if (userID != null) {
-                    if (dbIntegrityService.getTypeOfUserAccount(userID).equals(admin) || canRead(userID, annotationID)) {
+                    if (dbIntegrityService.canRead(userID, annotationID)) {
                         final ReferenceList TargetList = dbIntegrityService.getAnnotationTargets(annotationID);
                         logger.info("getAnnotationTargets method: OK");
                         return new ObjectFactory().createTargetList(TargetList);
@@ -196,7 +196,7 @@ public class AnnotationResource {
     @Transactional(readOnly = true)
     public JAXBElement<AnnotationInfoList> getFilteredAnnotations(@QueryParam("link") String link,
             @QueryParam("text") String text,
-            @QueryParam("access") String permission,
+            @QueryParam("access") String access,
             @QueryParam("namespace") String namespace,
             @QueryParam("owner") String ownerExternalId,
             @QueryParam("after") String after,
@@ -208,8 +208,8 @@ public class AnnotationResource {
         if (userID != null) {
             try {
                 UUID ownerExternalUUID = (ownerExternalId != null) ? UUID.fromString(ownerExternalId) : null;
-                String access = (permission != null) ? permission : default_permission;
-                final AnnotationInfoList annotationInfoList = dbIntegrityService.getFilteredAnnotationInfos(ownerExternalUUID, link, text, userID, this.makeAccessModeChain(access), namespace, after, before);
+                
+                final AnnotationInfoList annotationInfoList = dbIntegrityService.getFilteredAnnotationInfos(ownerExternalUUID, link, text, userID, access, namespace, after, before);
                 return new ObjectFactory().createAnnotationInfoList(annotationInfoList);
             } catch (IllegalArgumentException e) {
                 loggerServer.debug(HttpServletResponse.SC_BAD_REQUEST + ": Illegal argument UUID " + ownerExternalId);
@@ -237,7 +237,7 @@ public class AnnotationResource {
             Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
             if (userID != null) {
                 if (annotationID != null) {
-                    if (dbIntegrityService.getTypeOfUserAccount(userID).equals(admin) || canRead(userID, annotationID)) {
+                    if (dbIntegrityService.canRead(userID, annotationID)) {
                         final UserWithPermissionList permissionList = dbIntegrityService.getPermissionsForAnnotation(annotationID);
                         logger.debug("getAnnotationPermissions method: OK");
                         return new ObjectFactory().createPermissionList(permissionList);
@@ -275,7 +275,7 @@ public class AnnotationResource {
             Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
             if (userID != null) {
                 if (annotationID != null) {
-                    if (userID.equals(dbIntegrityService.getAnnotationOwner(annotationID))) {
+                    if (userID.equals(dbIntegrityService.getAnnotationOwner(annotationID)) || dbIntegrityService.getTypeOfUserAccount(userID).equals(admin)) {
                         int[] resultDelete = dbIntegrityService.deleteAnnotation(annotationID);
                         String result = Integer.toString(resultDelete[0]);
                         logger.info("deleteAnnotation method: OK");
@@ -347,7 +347,7 @@ public class AnnotationResource {
                 String remoteUser = httpServletRequest.getRemoteUser();
                 Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
                 if (userID != null) {
-                    if (userID.equals(dbIntegrityService.getAnnotationOwner(annotationID))) {
+                    if (userID.equals(dbIntegrityService.getAnnotationOwner(annotationID)) || dbIntegrityService.getTypeOfUserAccount(userID).equals(admin)) {
                         int updatedRows = dbIntegrityService.updateAnnotation(annotation);
                         return new ObjectFactory().createResponseBody(makeAnnotationResponseEnvelope(annotationID));
 
@@ -386,7 +386,7 @@ public class AnnotationResource {
             Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
             if (userID != null) {
                 if (annotationID != null) {
-                    if (canWrite(userID, annotationID)) {
+                    if (dbIntegrityService.canWrite(userID, annotationID)) {
                         int updatedRows = dbIntegrityService.updateAnnotationBody(annotationID, annotationBody);
                         return new ObjectFactory().createResponseBody(makeAnnotationResponseEnvelope(annotationID));
                     } else {
@@ -427,7 +427,7 @@ public class AnnotationResource {
                     try {
                         final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(annotationExternalId));
                         if (annotationID != null) {
-                            if (userID.equals(dbIntegrityService.getAnnotationOwner(annotationID))) {
+                            if (remoteUserID.equals(dbIntegrityService.getAnnotationOwner(annotationID)) || dbIntegrityService.getTypeOfUserAccount(remoteUserID).equals(admin)) {
                                 int result = (dbIntegrityService.getPermission(annotationID, userID) != null)
                                         ? dbIntegrityService.updateAnnotationPrincipalPermission(annotationID, userID, permission)
                                         : dbIntegrityService.addAnnotationPrincipalPermission(annotationID, userID, permission);
@@ -479,7 +479,7 @@ public class AnnotationResource {
             Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
             if (remoteUserID != null) {
                 if (annotationID != null) {
-                    if (remoteUserID.equals(dbIntegrityService.getAnnotationOwner(annotationID))) {
+                    if (remoteUserID.equals(dbIntegrityService.getAnnotationOwner(annotationID)) || dbIntegrityService.getTypeOfUserAccount(remoteUserID).equals(admin)) {
                         int updatedRows = dbIntegrityService.updatePermissions(annotationID, permissions);
                         return new ObjectFactory().createResponseBody(makePermissionResponseEnvelope(annotationID));
                     } else {
@@ -516,7 +516,7 @@ public class AnnotationResource {
             Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
             if (remoteUserID != null) {
                 if (annotationID != null) {
-                    if (remoteUserID.equals(dbIntegrityService.getAnnotationOwner(annotationID))) {
+                    if (remoteUserID.equals(dbIntegrityService.getAnnotationOwner(annotationID)) || dbIntegrityService.getTypeOfUserAccount(remoteUserID).equals(admin)) {
                         Number userID = dbIntegrityService.getUserInternalIdentifier(UUID.fromString(userId));
                         if (userID != null) {
                             deletedRows = dbIntegrityService.updateAnnotationPrincipalPermission(annotationID, userID, null);
@@ -595,52 +595,4 @@ public class AnnotationResource {
         }
     }
 
-    private boolean canRead(Number userID, Number annotationID) {
-        if (userID.equals(dbIntegrityService.getAnnotationOwner(annotationID))) {
-            return true;
-        }
-
-        final Permission permission = dbIntegrityService.getPermission(annotationID, userID);
-        if (permission != null) {
-            return (permission.value().equals(Permission.WRITER.value()) || permission.value().equals(Permission.READER.value()));
-        } else {
-            return false;
-        }
-    }
-
-    private boolean canWrite(Number userID, Number annotationID) {
-        if (userID.equals(dbIntegrityService.getAnnotationOwner(annotationID))) {
-            return true;
-        }
-        final Permission permission = dbIntegrityService.getPermission(annotationID, userID);
-        if (permission != null) {
-            return (permission.value().equals(Permission.WRITER.value()));
-        } else {
-            return false;
-        }
-    }
-
-    private String[] makeAccessModeChain(String accessMode) {
-        if (accessMode != null) {
-            if (accessMode.equals(Permission.READER.value())) {
-                String[] result = new String[1];
-                result[0] = Permission.READER.value();
-                return result;
-            } else {
-                if (accessMode.equals(Permission.WRITER.value())) {
-                    String[] result = new String[2];
-                    result[0] = Permission.READER.value();
-                    result[1] = Permission.WRITER.value();
-                    return result;
-                } else {
-                    logger.error("Invalide access " + accessMode);
-                    return null;
-                }
-
-            }
-
-        } else {
-            return null;
-        }
-    }
 }

@@ -77,7 +77,7 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
     @Override
     public User getUserByInfo(String eMail) {
         StringBuilder sql = new StringBuilder("SELECT ");
-        sql.append(principalStar).append(" FROM ").append(principalTableName).append(" WHERE ").append(e_mail).append("= ? LIMIT 1");
+        sql.append(principalStar).append(" FROM ").append(principalTableName).append(" WHERE ").append("LOWER(").append(e_mail).append(")").append("= ? LIMIT 1");
         List<User> result = getSimpleJdbcTemplate().query(sql.toString(), userRowMapper, eMail.toLowerCase());
         return (!result.isEmpty() ? result.get(0) : null);
     }
@@ -197,7 +197,7 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("externalId", newExternalIdentifier);
         params.put("principalName", user.getDisplayName());
-        params.put("email", user.getEMail().toLowerCase());
+        params.put("email", user.getEMail());
         params.put("remoteID", remoteID);
         params.put("accountType", this.user);
         StringBuilder sql = new StringBuilder("INSERT INTO ");
@@ -260,7 +260,7 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
         Number principalID = this.getInternalIDFromURI(user.getURI());
         StringBuilder sql = new StringBuilder("UPDATE ");
         sql.append(principalTableName).append(" SET ").
-                append(e_mail).append("= '").append(user.getEMail().toLowerCase()).append("',").
+                append(e_mail).append("= '").append(user.getEMail()).append("',").
                 append(principal_name).append("= '").append(user.getDisplayName()).append("' ").
                 append(" WHERE ").append(principal_id).append("= ?");
         int affectedRows = getSimpleJdbcTemplate().update(sql.toString(), principalID);

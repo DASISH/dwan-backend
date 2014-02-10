@@ -64,6 +64,8 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     TargetDao targetDao;
     @Autowired
     AnnotationDao annotationDao;
+    
+    final static protected String admin = "admin";
     private static final Logger logger = LoggerFactory.getLogger(AnnotationResource.class);
     //////////////////////////////////
 
@@ -151,7 +153,7 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
             return null;
         }
     }
-    
+
     @Override
     public Number getAnnotationOwner(Number annotationID) {
         return annotationDao.getOwner(annotationID);
@@ -185,22 +187,57 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
 
     ////////////////////////////////////////////////////////////////////////
     @Override
-    public List<Number> getFilteredAnnotationIDs(UUID ownerId, String link, String text, Number inloggedUserID, String[] accessModes, String namespace, String after, String before) {
+    public List<Number> getFilteredAnnotationIDs(UUID ownerId, String link, String text, Number inloggedUserID, String access, String namespace, String after, String before) {
 
-        if (accessModes == null) {
+        Number ownerID = (ownerId != null) ? userDao.getInternalID(ownerId) : null;
+        if (ownerID != null) {
+            if ("owner".equals(access) && !inloggedUserID.equals(ownerID)) {
+                logger.info("The inlogged user cannot be the owner of the annotations owned by " + ownerId.toString());
+                return null;
+            }
+        }
+
+        //filtering on tables "target" and "annotations_targets"
+        List<Number> annotationIDsForTargets = null;
+        if (link != null) {
+            List<Number> targetIDs = targetDao.getTargetsReferringTo(link);
+            annotationIDsForTargets = annotationDao.getAnnotationIDsForTargets(targetIDs);
+            if (annotationIDsForTargets == null) {
+                logger.info("There are no annotations for the targets referring to " + link + ".");
+                return null;
+            }
+        }
+
+        // filtering in the table "annotation"
+        if (ownerID == null && "owner".equals(access)) {
+            ownerID = inloggedUserID;
+        }
+        List<Number> annotationIDs = annotationDao.getFilteredAnnotationIDs(ownerID, text, namespace, after, before);
+        if (annotationIDs != null) {
+            if (annotationIDsForTargets != null) {
+                annotationIDs.retainAll(annotationIDsForTargets);
+            } else {
+                // nothing to filter on link == null
+            }
+        } else {
+            logger.info("There are no annotations for the given filters on the annotation table.");
             return null;
         }
 
-        List<Number> annotationIDs = annotationDao.getAnnotationIDsForUserWithPermission(inloggedUserID, accessModes);
-
-        if (link != null) {
-            List<Number> targetIDs = targetDao.getTargetsReferringTo(link);
-            List<Number> annotationIDsForTargets = annotationDao.retrieveAnnotationList(targetIDs);
-            annotationIDs.retainAll(annotationIDsForTargets);
+        // filtering on table "annotations_principals_permissions"
+        if ("reader".equals(access) || "writer".equals(access)) {
+            // owner != inloggedUser
+            List<Number> annotationIDsPermission = annotationDao.getAnnotationIDsForUserWithPermission(inloggedUserID, access);
+            if (annotationIDsPermission != null) {
+                annotationIDs.retainAll(annotationIDsPermission);
+            } else {
+                logger.info("There are no annotations for which the inlogged user has access " + access);
+                return null;
+            }
+        } else {
+            // inloggedUser == owner
         }
-
-        Number ownerID = (ownerId != null) ? userDao.getInternalID(ownerId) : null;
-        return annotationDao.getFilteredAnnotationIDs(annotationIDs, ownerID, text, namespace, after, before);
+        return annotationIDs;
     }
 
     @Override
@@ -255,8 +292,8 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     }
 
     @Override
-    public AnnotationInfoList getFilteredAnnotationInfos(UUID ownerId, String word, String text, Number inloggedUserID, String[] accessModes, String namespace, String after, String before) {
-        List<Number> annotationIDs = this.getFilteredAnnotationIDs(ownerId, word, text, inloggedUserID, accessModes, namespace, after, before);
+    public AnnotationInfoList getFilteredAnnotationInfos(UUID ownerId, String word, String text, Number inloggedUserID, String access, String namespace, String after, String before) {
+        List<Number> annotationIDs = this.getFilteredAnnotationIDs(ownerId, word, text, inloggedUserID, access, namespace, after, before);
         if (annotationIDs != null) {
             AnnotationInfoList result = new AnnotationInfoList();
             for (Number annotationID : annotationIDs) {
@@ -364,6 +401,33 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     @Override
     public String getTypeOfUserAccount(Number userID) {
         return userDao.getTypeOfUserAccount(userID);
+    }
+    
+    @Override
+    public boolean canRead(Number userID, Number annotationID) {
+        if (userID.equals(annotationDao.getOwner(annotationID)) || userDao.getTypeOfUserAccount(userID).equals(admin)) {
+            return true;
+        }
+
+        final Permission permission = annotationDao.getPermission(annotationID, userID);
+        if (permission != null) {
+            return (permission.value().equals(Permission.WRITER.value()) || permission.value().equals(Permission.READER.value()));
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public boolean canWrite(Number userID, Number annotationID) {
+        if (userID.equals(annotationDao.getOwner(annotationID)) || userDao.getTypeOfUserAccount(userID).equals(admin)) {
+            return true;
+        }
+        final Permission permission = annotationDao.getPermission(annotationID, userID);
+        if (permission != null) {
+            return (permission.value().equals(Permission.WRITER.value()));
+        } else {
+            return false;
+        }
     }
 
     ///// UPDATERS /////////////////

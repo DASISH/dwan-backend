@@ -296,7 +296,7 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         List<Number> targets = new ArrayList<Number>();
         targets.add(1);
         targets.add(2);
-        List<Number> result = jdbcAnnotationDao.retrieveAnnotationList(targets);
+        List<Number> result = jdbcAnnotationDao.getAnnotationIDsForTargets(targets);
         assertEquals (2, result.size());
         assertEquals(1, result.get(0));
         assertEquals(2, result.get(1));
@@ -325,38 +325,24 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
     @Test    
     public void testGetFilteredAnnotationIDs(){
         System.out.println(" test getFilteredAnnotationIDs");
-        
-        
-        //////////////////////////////////////////
-        // TEST 1 
-        //final String link = "nl.wikipedia.org";
-        final List<Number> annotationIDs = new ArrayList<Number>();
-        annotationIDs.add(1);
-        annotationIDs.add(2);
-        
-        List<Number> result_1 = jdbcAnnotationDao.getFilteredAnnotationIDs(annotationIDs, null, null, null, null, null);        
-        assertEquals(2, result_1.size());
+       
+        List<Number> result_1 = jdbcAnnotationDao.getFilteredAnnotationIDs(null, "some html", null, null, null);        
+        assertEquals(3, result_1.size());
         assertEquals(1, result_1.get(0));
         assertEquals(2, result_1.get(1));
-        
-       
-        List<Number> result_2 = jdbcAnnotationDao.getFilteredAnnotationIDs(annotationIDs, null, "some html", null, null, null);        
-        assertEquals(2, result_2.size());
-        assertEquals(1, result_2.get(0));
-        assertEquals(2, result_2.get(1));
-        
+        assertEquals(4, result_1.get(2));
         
              
         final String after = (new Timestamp(0)).toString();
         final String before = (new Timestamp(System.currentTimeMillis())).toString();
  
-        List<Number> result_4 = jdbcAnnotationDao.getFilteredAnnotationIDs(annotationIDs, 1, "some html", null, after, before);        
-        assertEquals(1, result_4.size());
-        assertEquals(1, result_4.get(0));
+        List<Number> result_2 = jdbcAnnotationDao.getFilteredAnnotationIDs(1, "some html", null, after, before);        
+        assertEquals(1, result_2.size());
+        assertEquals(1, result_2.get(0));
         
         final String after_1 = (new Timestamp(System.currentTimeMillis())).toString();// no annotations added after "now"       
-        List<Number> result_5 = jdbcAnnotationDao.getFilteredAnnotationIDs(annotationIDs, 4, "some html", null, after_1, null);        
-        assertEquals(0, result_5.size());
+        List<Number> result_3 = jdbcAnnotationDao.getFilteredAnnotationIDs(4, "some html", null, after_1, null);        
+        assertEquals(0, result_3.size());
         
         
     }
