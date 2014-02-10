@@ -19,11 +19,9 @@ package eu.dasish.annotation.backend.dao;
 
 
 import eu.dasish.annotation.schema.Permission;
-import eu.dasish.annotation.schema.ReferenceList;
 import eu.dasish.annotation.schema.Notebook;
 import eu.dasish.annotation.schema.NotebookInfo;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * Created on : Jun 12, 2013, 1:40:09 PM
@@ -47,6 +45,10 @@ public interface NotebookDao extends ResourceDao {
     // Returns a list of notebook Ids for the notebooks for which the given user "userID" is the owner.
     List<Number> getOwnerNotebookIDs(Number userID);
     
+    public List<Number> getPrincipalIDsWithPermission(Number notebookID, Permission permission);
+    
+    
+    
     /**
      * 
      * @param notebookID
@@ -54,6 +56,7 @@ public interface NotebookDao extends ResourceDao {
      */
     NotebookInfo getNotebookInfo(Number notebookID);
     
+   
     /**
      * 
      * @param notebookID
@@ -61,66 +64,54 @@ public interface NotebookDao extends ResourceDao {
      */
     Notebook getNotebookWithoutAnnotationsAndPermissions(Number notebookID);
     
-
-    // Returns the list of all notebooks owned by the current logged user.
-    //List<Notebook> getUsersNotebooks(UUID userID);
-
+    //? Which type shul be orderedby? 
+    /**
+     * 
+     * @param maximumAnnotations
+     * @param startannotation
+     * @param orderedBy
+     * @param orederingMode if true then descending, if falset hen ascending
+     * @return 
+     */
+    List<Number> getAnnotations(int maximumAnnotations, int startannotation, String orderedBy, boolean orderingMode);
     
-      // Returns the list of annotation Id-s  for the notebook id.
-    //public List<Number> getAnnotationIDs(Number notebookID);
+    /**
+     * 
+     * UPDATERS 
+     * 
+     * 
+     */
     
-      /*Returns the list of annotation info-s  for the notebook id.
-    /List<AnnotationInfo> getAnnotationInfosOfNotebook(Number notebookID); */   
     
-      // Returns the list of annotations Id-s  for the notebook id.
-    //public List<String> getAnnotationREFsOfNotebook(Number notebookID);
-    
-    // Returns the Annotations object for the notebook id.
-    //public ReferenceList getAnnotations(Number notebookID);
     
     /**
      * 
      * @param notebookID
-     * @return the Notebook information (title, owner (?), time_stamp(?), amount of annotations(?), their headlines (?) // TODO: discuss changing in the schema
-     * user in getting the metadata of a notebook
+     * @return true if updated, false otherwise. Logs the reason if the notebook is not updated.
      */
-    //NotebookInfo getNotebookInfo(Number notebookID);
-    
-  
+    boolean updateNotebookMetadata(Number notebookID);
     
      /**
-     * @param notebookId
-     * @return returns the externalIds of the annotations contained in the notebookId
+     * 
+     * ADDERS
+     * 
+     * 
      */
-    //List<UUID> getAnnotationExternalIDs(UUID notebookId);
+    
+    Number createNotebook(Notebook notebook);
+    
+    boolean addAnnotationToNotebook(Number noteboookId, Number AnnotationID);
+    
     
     
     /**
      * 
-     *  ADDERS 
-     */
-    
-    // Creates a new notebook and returns the _nid_ of the created Notebook
-    //UUID addNotebook(UUID userID, String title);
-
-      // Adds an annotation _aid_ to the list of annotations of _nid_.
-    //public int addAnnotation(UUID notebookId, UUID annotationId);
-    
-   
-    
-   /**
-    * 
-    * DELETE 
-    * 
-    */
-    
-    // Delete _nid_. Annotations stay, they just lose connection to _nid_.<br>
-    // returns the number of records deleted
-    //public int deleteNotebook(UUID notebookId);
-    /**
+     * DELETERS (ADDER)
      * 
-     * @param annotationID
-     * @return removes the rows with annotationID from notebooks_annotations table
+     * 
      */
-    //int removeAnnotation(Number annotationID);
+    
+    boolean deleteannotationFromNotebook(Number notebookID, Number annotationID);
+    
+    boolean deleteNotebook(Number notebookID);
 }

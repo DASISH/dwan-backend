@@ -38,75 +38,80 @@ import javax.xml.datatype.XMLGregorianCalendar;
  *
  * @author Peter Withers <peter.withers@mpi.nl>
  */
-
 // TODO: not updated fully yet. 
-
 public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
 
 //    @Autowired
 //    private AnnotationDao jdbcAnnotationDao;
-
     public JdbcNotebookDao(DataSource dataSource) {
-        setDataSource(dataSource);        
+        setDataSource(dataSource);
         internalIdName = notebook_id;
         resourceTableName = notebookTableName;
     }
 
     /// GETTERS /////////
-    
     ////////////////////////////////////////////////
     @Override
-    public List<Number> getNotebookIDs(Number  userID, Permission acessMode) {
+    public List<Number> getNotebookIDs(Number userID, Permission acessMode) {
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("principalID", userID);
         params.put("accessMode", acessMode.value());
-        String sql = "SELECT " + notebook_id + " FROM " + notebookPermissionsTableName +" WHERE " + principalPrincipal_id + " = :principalID" + " AND " + permission + " = :accessMode";
+        String sql = "SELECT " + notebook_id + " FROM " + notebookPermissionsTableName + " WHERE " + principalPrincipal_id + " = :principalID" + " AND " + permission + " = :accessMode";
         return getSimpleJdbcTemplate().query(sql, internalIDRowMapper, params);
     }
-    
-     ////////////////////////////////////////////////
+
+    ////////////////////////////////////////////////
     @Override
-    public List<Number> getOwnerNotebookIDs(Number  userID) {
-        String sql = "SELECT " + notebook_id + " FROM " + notebookTableName +" WHERE " + owner_id + " = ?";
+    public List<Number> getOwnerNotebookIDs(Number userID) {
+        String sql = "SELECT " + notebook_id + " FROM " + notebookTableName + " WHERE " + owner_id + " = ?";
         return getSimpleJdbcTemplate().query(sql, internalIDRowMapper, userID);
     }
-    
-    
-    
+
+  
+
+    @Override
+    public List<Number> getPrincipalIDsWithPermission(Number notebookID, Permission permission) {
+         if (notebookID == null) {
+            return null;
+        }         
+        Map<String, Object> params= new HashMap<String, Object>();
+        params.put("notebookID", notebookID);
+        params.put("permission", permission.value());
+        
+        String sql = "SELECT  " + owner_id + " FROM " + notebookPermissionsTableName + " WHERE " + notebook_id +" = :notebookID AND " +this.permission + " = :permission";
+        return getSimpleJdbcTemplate().query(sql, principalIDRowMapper, params);
+       
+    }
+
     @Override
     public NotebookInfo getNotebookInfo(Number notebookID) {
         if (notebookID == null) {
             return null;
         }
         String sql = "SELECT  " + notebookExternal_id + "," + notebookTitle + " FROM " + notebookTableName + " where " + notebook_id + " = ? LIMIT 1";
-        List<NotebookInfo> result = getSimpleJdbcTemplate().query(sql, notebookInfoRowMapper, notebookID.toString());
+        List<NotebookInfo> result = getSimpleJdbcTemplate().query(sql, notebookInfoRowMapper, notebookID);
         return (!result.isEmpty() ? result.get(0) : null);
     }
-    
     private final RowMapper<NotebookInfo> notebookInfoRowMapper = new RowMapper<NotebookInfo>() {
         @Override
         public NotebookInfo mapRow(ResultSet rs, int rowNumber) throws SQLException {
             NotebookInfo notebookInfo = new NotebookInfo();
-            notebookInfo.setRef(externalIDtoURI(rs.getString(external_id))); 
+            notebookInfo.setRef(externalIDtoURI(rs.getString(external_id)));
             notebookInfo.setTitle(rs.getString(title));
             return notebookInfo;
         }
     };
-    
-    
+
     @Override
     public Notebook getNotebookWithoutAnnotationsAndPermissions(Number notebookID) {
         if (notebookID == null) {
             return null;
         }
-        String sql = "SELECT  " + notebookExternal_id + "," + notebookTitle + "," + last_modified +" FROM " + notebookTableName + " where " + notebook_id + " = ? LIMIT 1";
+        String sql = "SELECT  " + notebookExternal_id + "," + notebookTitle + "," + last_modified + " FROM " + notebookTableName + " where " + notebook_id + " = ? LIMIT 1";
         List<Notebook> result = getSimpleJdbcTemplate().query(sql, notebookRowMapper, notebookID);
         return (!result.isEmpty() ? result.get(0) : null);
     }
-    
-   
-    
-       private final RowMapper<Notebook> notebookRowMapper = new RowMapper<Notebook>() {
+    private final RowMapper<Notebook> notebookRowMapper = new RowMapper<Notebook>() {
         @Override
         public Notebook mapRow(ResultSet rs, int rowNumber) throws SQLException {
             Notebook notebook = new Notebook();
@@ -123,135 +128,64 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
             return notebook;
         }
     };
-
-//    @Override
-//    public UUID addNotebook(UUID userID, String title) {
-//        try {
-//            final UUID externalIdentifier = UUID.randomUUID();
-//            String sql = "INSERT INTO " + notebookTableName + " (" + external_id + ", " + this.title + "," + notebookOwner_id + ") VALUES (:notebookId, :title, (SELECT " + principal_id + " FROM " + principalTableName + " WHERE " + principalExternal_id + " = :userID))";
-//            Map<String, Object> params = new HashMap<String, Object>();
-//            params.put("notebookId", externalIdentifier.toString());
-//            params.put("userID", userID.toString());
-//            params.put("title", title);
-//            final int updatedRowCount = getSimpleJdbcTemplate().update(sql, params);
-//            return externalIdentifier;
-//        } catch (DataAccessException exception) {
-//            throw exception;
-//        }
-//    }
     
- 
-
-    // returns the number of affected annotations
-//    @Override
-//    public int deleteNotebook(UUID notebookId) {
-//        String sql1 = "DELETE FROM " + notebooksAnnotationsTableName + " where " + notebook_id + "= (SELECT " + notebook_id + " FROM " + notebookTableName + " WHERE " + external_id + " = ?)";
-//        String sql2 = "DELETE FROM notebook where external_id = ?";
-//        int affectedAnnotations = getSimpleJdbcTemplate().update(sql1, notebookId.toString());
-//        int affectedNotebooks = getSimpleJdbcTemplate().update(sql2, notebookId.toString());
-//        return affectedAnnotations;
-//    }
-
-//    @Override
-//    public int addAnnotation(UUID notebookId, UUID annotationId) {
-//        try {
-//            SimpleJdbcInsert notebookInsert = new SimpleJdbcInsert(getDataSource()).withTableName(notebooksAnnotationsTableName);
-//            Map<String, Object> params = new HashMap<String, Object>();
-//            params.put(notebook_id, notebookId);
-//            params.put(annotation_id, annotationId);
-//            int rowsAffected = notebookInsert.execute(params);
-//            return rowsAffected;
-//        } catch (DataAccessException exception) {
-//            throw exception;
-//        }
-//    }
-
-    ////////////////////////////////////////////////////////////////////////
-    /**
-     *
-     * @param notebookID
-     * @return the list of annotation-ids belonging to the notebook with
-     * notebookId returns null if notebookId is null or is not in the DB TODO:
-     * do we need to return null here? using an additional check.
-     */
-//    @Override
-//    public List<Number> getAnnotationIDs(Number notebookID) {
-//        StringBuilder sql = new StringBuilder("SELECT DISTINCT ");
-//        sql.append(notebooksAnnotationsTableNameAnnotation_id).append("  FROM ").append(notebooksAnnotationsTableName).append(" where ").append(notebook_id).append(" = ?");
-//        return getSimpleJdbcTemplate().query(sql.toString(), annotationIDRowMapper, notebookID);
-//    }
-  
-    //////////////////////////////////////////////////
-    /**
-     *
-     * @param notebookID
-     * @return the list of annotation-infos of the annotations from notebookID;
-     * if notebook not in the DB or null returns null if the notebook contains
-     * no annotations returns an empty list
-     *
-     *
-     * @Override public List<AnnotationInfo> getAnnotationInfosOfNotebook(Number
-     * notebookID) { return
-     * jdbcAnnotationDao.getAnnotationInfos(getAnnotationIDs(notebookID)); }
-     */
-    //////////////////////////////////////////////
-    /**
-     *
-     * @param notebookID
-     * @return the list of annotation References from the notebookID returns
-     * null if notebookID == null or it does not exists in the DB
-     */
-//    @Override
-//    public List<String> getAnnotationREFsOfNotebook(Number notebookID) {
-//        return null; //jdbcAnnotationDao.getAnnotationREFs(getAnnotationIDs(notebookID));
-//    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    /**
-     *
-     * @param notebookID
-     * @return the Annotations (as a list of references) from the notebookID *
-     * returns null if notebookID == null, or it does not exists in th DB, or
-     * the list of annotations is empty, or something wrong happened when
-     * extracting annotations from the notebook (according to dasish.xsd if an
-     * Annotation is created then its list of annotations must contain at least
-     * one element!)
-     *
-     */
-//    @Override
-//    public ReferenceList getAnnotations(Number notebookID) {
-//        if (notebookID == null) {
-//            return null;
-//        }
-//        ReferenceList result = new ReferenceList();
-//        result.getRef().addAll(getAnnotationREFsOfNotebook(notebookID));
-//        return result;
-//
-//    }
-
-    ///////////////////////////////////////////////////
-   
-   
     
-    //////////////////////////////////////////////////////////////////
-//    @Override
-//    public List<UUID> getAnnotationExternalIDs(UUID notebookId) {
-//        List<Number> internalIds = getAnnotationIDs(getInternalID(notebookId));
-//        if (internalIds == null) {
-//            return null;
-//        }
-//        List<UUID> annotationIds = new ArrayList<UUID>();
-////        for (Number internalId : internalIds) {
-////            annotationIds.add(jdbcAnnotationDao.getExternalID(internalId));
-////        }
-//        return annotationIds;
-//    }
-
-    ////////////////////////////////////////////////////////////
-//    @Override
-//    public int removeAnnotation(Number annotationID) {
-//        String sqlNotebooks = "DELETE FROM " + notebooksAnnotationsTableName + " where " + annotation_id + " = ?";
-//        int affectedNotebooks = getSimpleJdbcTemplate().update(sqlNotebooks, annotationID);
-//        return affectedNotebooks;
-//    }
+    @Override
+    public List<Number> getAnnotations(int maximumAnnotations, int startannotation, String orderedBy, boolean orderingMode){
+        return null;
+    }
+    
+    
+       /**
+     * 
+     * UPDATERS 
+     * 
+     * 
+     */
+    
+    
+    
+    /**
+     * 
+     * @param notebookID
+     * @return true if updated, false otherwise. Logs the reason if the notebook is not updated.
+     */
+    @Override
+    public boolean updateNotebookMetadata(Number notebookID){
+        return false;
+    }
+     /**
+     * 
+     * ADDERS
+     * 
+     * 
+     */
+    
+    @Override
+    public Number createNotebook(Notebook notebook){
+        return null;
+    }
+    
+    @Override
+    public boolean addAnnotationToNotebook(Number noteboookId, Number AnnotationID){
+        return false;
+    }
+    
+    
+    /**
+     * 
+     * DELETERS (ADDER)
+     * 
+     * 
+     */
+    
+    @Override
+    public boolean deleteannotationFromNotebook(Number notebookID, Number annotationID){
+        return false;
+    }
+    
+    @Override
+    public boolean deleteNotebook(Number notebookID){
+        return false;
+    }
 }
