@@ -27,11 +27,14 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import javax.sql.DataSource;
 import org.springframework.jdbc.core.RowMapper;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created on : Jun 14, 2013, 3:27:04 PM
@@ -41,8 +44,8 @@ import javax.xml.datatype.XMLGregorianCalendar;
 // TODO: not updated fully yet. 
 public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
 
-//    @Autowired
-//    private AnnotationDao jdbcAnnotationDao;
+    private final Logger loggerNotebookDao = LoggerFactory.getLogger(JdbcNotebookDao.class);
+
     public JdbcNotebookDao(DataSource dataSource) {
         setDataSource(dataSource);
         internalIdName = notebook_id;
@@ -51,45 +54,96 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
 
     /// GETTERS /////////
     ////////////////////////////////////////////////
+    ////////////////////////////////////////////////
     @Override
-    public List<Number> getNotebookIDs(Number userID, Permission acessMode) {
+    public Number getOwner(Number notebookID) {
+        if (notebookID == null) {
+            loggerNotebookDao.debug("notebookID: " + nullArgument);
+            return null;
+        }
+        StringBuilder sql = new StringBuilder("SELECT ");
+        sql.append(owner_id).append(" FROM ").append(notebookTableName).append(" WHERE ").
+                append(notebook_id).append(" = ?");
+        List<Number> result = getSimpleJdbcTemplate().query(sql.toString(), principalIDRowMapper, notebookID);
+        if (result.isEmpty()) {
+            return null;
+        } else {
+            return result.get(0);
+        }
+    }
+
+    @Override
+    public List<Number> getNotebookIDs(Number principalID, Permission permission) {
+
+        if (principalID == null) {
+            loggerNotebookDao.debug("princiaplID: " + nullArgument);
+            return null;
+        }
+
+        if (permission == null) {
+            loggerNotebookDao.debug("permission: " + nullArgument);
+            return null;
+        }
+
         Map<String, Object> params = new HashMap<String, Object>();
-        params.put("principalID", userID);
-        params.put("accessMode", acessMode.value());
-        String sql = "SELECT " + notebook_id + " FROM " + notebookPermissionsTableName + " WHERE " + principalPrincipal_id + " = :principalID" + " AND " + permission + " = :accessMode";
-        return getSimpleJdbcTemplate().query(sql, internalIDRowMapper, params);
+        params.put("principalID", principalID);
+        params.put("accessMode", permission.value());
+        StringBuilder sql = new StringBuilder("SELECT ");
+        sql.append(notebook_id).append(" FROM ").append(notebookPermissionsTableName).append(" WHERE ").
+                append(principal_id).append(" = :principalID AND ").append(permission).append(" = :accessMode");
+        return getSimpleJdbcTemplate().query(sql.toString(), internalIDRowMapper, params);
     }
 
     ////////////////////////////////////////////////
     @Override
-    public List<Number> getOwnerNotebookIDs(Number userID) {
-        String sql = "SELECT " + notebook_id + " FROM " + notebookTableName + " WHERE " + owner_id + " = ?";
-        return getSimpleJdbcTemplate().query(sql, internalIDRowMapper, userID);
-    }
+    public List<Number> getNotebookIDsOwnedBy(Number principalID) {
 
-  
+        if (principalID == null) {
+            loggerNotebookDao.debug("principalID: " + nullArgument);
+            return null;
+        }
+
+        StringBuilder sql = new StringBuilder("SELECT ");
+        sql.append(notebook_id).append(" FROM ").append(notebookTableName).append(" WHERE ").
+                append(owner_id).append(" = ?");
+        return getSimpleJdbcTemplate().query(sql.toString(), internalIDRowMapper, principalID);
+    }
 
     @Override
     public List<Number> getPrincipalIDsWithPermission(Number notebookID, Permission permission) {
-         if (notebookID == null) {
+        if (notebookID == null) {
+            loggerNotebookDao.debug("notebookID: " + nullArgument);
             return null;
-        }         
-        Map<String, Object> params= new HashMap<String, Object>();
+        }
+
+        if (permission == null) {
+            loggerNotebookDao.debug("permission: " + nullArgument);
+            return null;
+        }
+        Map<String, Object> params = new HashMap<String, Object>();
         params.put("notebookID", notebookID);
-        params.put("permission", permission.value());
-        
-        String sql = "SELECT  " + owner_id + " FROM " + notebookPermissionsTableName + " WHERE " + notebook_id +" = :notebookID AND " +this.permission + " = :permission";
-        return getSimpleJdbcTemplate().query(sql, principalIDRowMapper, params);
-       
+        params.put("accessMode", permission.value());
+
+        StringBuilder sql = new StringBuilder("SELECT ");
+        sql.append(principal_id).append(" FROM ").append(notebookPermissionsTableName).append(" WHERE ").
+                append(notebook_id).append(" = :notebookID AND ").append(this.permission).append(" = :accessMode");
+
+        return getSimpleJdbcTemplate().query(sql.toString(), principalIDRowMapper, params);
+
     }
 
     @Override
-    public NotebookInfo getNotebookInfo(Number notebookID) {
+    public NotebookInfo getNotebookInfoWithoutOwner(Number notebookID) {
         if (notebookID == null) {
+            loggerNotebookDao.debug("notebookID: " + nullArgument);
             return null;
         }
-        String sql = "SELECT  " + notebookExternal_id + "," + notebookTitle + " FROM " + notebookTableName + " where " + notebook_id + " = ? LIMIT 1";
-        List<NotebookInfo> result = getSimpleJdbcTemplate().query(sql, notebookInfoRowMapper, notebookID);
+
+        StringBuilder sql = new StringBuilder("SELECT ");
+        sql.append(external_id).append(" , ").append(title).
+                append(" FROM ").append(notebookTableName).append(" WHERE ").
+                append(notebook_id).append(" = :notebookID");
+        List<NotebookInfo> result = getSimpleJdbcTemplate().query(sql.toString(), notebookInfoRowMapper, notebookID);
         return (!result.isEmpty() ? result.get(0) : null);
     }
     private final RowMapper<NotebookInfo> notebookInfoRowMapper = new RowMapper<NotebookInfo>() {
@@ -103,12 +157,16 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
     };
 
     @Override
-    public Notebook getNotebookWithoutAnnotationsAndPermissions(Number notebookID) {
+    public Notebook getNotebookWithoutAnnotationsAndPermissionsAndOwner(Number notebookID) {
         if (notebookID == null) {
+            loggerNotebookDao.debug("notebookID: " + nullArgument);
             return null;
         }
-        String sql = "SELECT  " + notebookExternal_id + "," + notebookTitle + "," + last_modified + " FROM " + notebookTableName + " where " + notebook_id + " = ? LIMIT 1";
-        List<Notebook> result = getSimpleJdbcTemplate().query(sql, notebookRowMapper, notebookID);
+        StringBuilder sql = new StringBuilder("SELECT ");
+        sql.append(external_id).append(" , ").append(title).append(" , ").append(last_modified).
+                append(" FROM ").append(notebookTableName).append(" WHERE ").
+                append(notebook_id).append(" = :notebookID");
+        List<Notebook> result = getSimpleJdbcTemplate().query(sql.toString(), notebookRowMapper, notebookID);
         return (!result.isEmpty() ? result.get(0) : null);
     }
     private final RowMapper<Notebook> notebookRowMapper = new RowMapper<Notebook>() {
@@ -128,64 +186,330 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
             return notebook;
         }
     };
-    
-    
+
     @Override
-    public List<Number> getAnnotations(int maximumAnnotations, int startannotation, String orderedBy, boolean orderingMode){
-        return null;
+    public List<Number> getAnnotations(Number notebookID) {
+
+        if (notebookID == null) {
+            loggerNotebookDao.debug("notebookID: " + nullArgument);
+            return null;
+        }
+
+        StringBuilder sql = new StringBuilder("SELECT ");
+        sql.append(annotation_id).
+                append(" FROM ").append(notebooksAnnotationsTableName).append(" WHERE ").
+                append(notebook_id).append(" = :notebookID");
+        return getSimpleJdbcTemplate().query(sql.toString(), annotationIDRowMapper, notebookID);
+
     }
-    
-    
-       /**
-     * 
-     * UPDATERS 
-     * 
-     * 
-     */
-    
-    
-    
+
     /**
-     * 
+     *
+     * UPDATERS
+     *
+     *
+     */
+    /**
+     *
      * @param notebookID
-     * @return true if updated, false otherwise. Logs the reason if the notebook is not updated.
+     * @return true if updated, false otherwise. Logs the reason if the notebook
+     * is not updated.
      */
     @Override
-    public boolean updateNotebookMetadata(Number notebookID){
-        return false;
+    public boolean updateNotebookMetadata(Number notebookID, String title, Number ownerID) {
+
+        if (notebookID == null) {
+            loggerNotebookDao.debug("notebookID: " + nullArgument);
+            return false;
+        }
+
+        if (title == null) {
+            loggerNotebookDao.debug("title: " + nullArgument);
+            return false;
+        }
+
+        if (ownerID == null) {
+            loggerNotebookDao.debug("ownerID: " + nullArgument);
+            return false;
+        }
+
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("notebookID", notebookID);
+        params.put("title", title);
+        params.put("owner", ownerID);
+
+        StringBuilder sql = new StringBuilder("UPDATE ");
+        sql.append(notebookTableName).append(" SET ").
+                append(last_modified).append("=  default,").
+                append(this.title).append("= :title, ").
+                append(owner_id).append("= :owner").
+                append(" WHERE ").append(notebook_id).append("= :notebookID");
+        int affectedRows = getSimpleJdbcTemplate().update(sql.toString(), params);
+        if (affectedRows <= 0) {
+            logger.info("For some reason no rows in the table notebooks were updated. ");
+            return false;
+        } else {
+            if (affectedRows > 1) {
+                logger.info("For some reason more than 1 row in the table notebooks were updated. that's strange.");
+                return true;
+            } else {
+                return true;
+            }
+        }
     }
-     /**
-     * 
-     * ADDERS
-     * 
-     * 
-     */
     
     @Override
-    public Number createNotebook(Notebook notebook){
-        return null;
+    public boolean setOwner(Number notebookID, Number ownerID) {
+
+        if (notebookID == null) {
+            loggerNotebookDao.debug("notebookID: " + nullArgument);
+            return false;
+        }
+
+        if (ownerID == null) {
+            loggerNotebookDao.debug("ownerID: " + nullArgument);
+            return false;
+        }
+
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("notebookID", notebookID);
+        params.put("ownerID", ownerID);
+
+        StringBuilder sql = new StringBuilder("UPDATE ");
+        sql.append(notebookTableName).append(" SET ").
+                append(last_modified).append("=  default,").
+                append(owner_id).append("= :ownerID").
+                append(" WHERE ").append(notebook_id).append("= :notebookID");
+        int affectedRows = getSimpleJdbcTemplate().update(sql.toString(), params);
+        if (affectedRows <= 0) {
+            logger.info("For some reason no rows in the table notebooks were updated. ");
+            return false;
+        } else {
+            if (affectedRows > 1) {
+                logger.info("For some reason more than 1 row in the table notebooks were updated. that's strange.");
+                return true;
+            } else {
+                return true;
+            }
+        }
     }
-    
+
     @Override
-    public boolean addAnnotationToNotebook(Number noteboookId, Number AnnotationID){
-        return false;
+    public boolean updateUserPermissionForNotebook(Number notebookID, Number principalID, Permission permission) {
+
+        if (notebookID == null) {
+            loggerNotebookDao.debug("notebookID: " + nullArgument);
+            return false;
+        }
+
+        if (principalID == null) {
+            loggerNotebookDao.debug("principalID: " + nullArgument);
+            return false;
+        }
+
+        if (permission == null) {
+            loggerNotebookDao.debug("permission: " + nullArgument);
+            return false;
+        }
+
+
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("notebookID", notebookID);
+        params.put("principalID", principalID);
+        params.put("permission", permission.value());
+
+        StringBuilder sql = new StringBuilder("UPDATE ");
+        sql.append(notebookPermissionsTableName).append(" SET ").
+                append(notebook_id).append("= :notebookID, ").
+                append(principal_id).append("= :principalID").
+                append(this.permission).append("= :permission").
+                append(" WHERE ").append(notebook_id).append("= :notebookID");
+        int affectedRows = getSimpleJdbcTemplate().update(sql.toString(), params);
+        if (affectedRows <= 0) {
+            logger.info("For some reason no rows in the table notebooks-permissions were updated. ");
+            return false;
+        } else {
+            if (affectedRows > 1) {
+                logger.info("For some reason more than 1 row in the table notebooks-permissions were updated. that's strange.");
+                return true;
+            } else {
+                return true;
+            }
+        }
     }
-    
-    
+
     /**
-     * 
-     * DELETERS (ADDER)
-     * 
-     * 
+     *
+     * ADDERS
+     *
+     *
      */
-    
     @Override
-    public boolean deleteannotationFromNotebook(Number notebookID, Number annotationID){
-        return false;
+    public Number createNotebookWithoutPermissionsAndAnnotations(Notebook notebook, Number ownerID) {
+        if (notebook == null) {
+            loggerNotebookDao.debug("notebook: " + nullArgument);
+            return null;
+        }
+
+        if (ownerID == null) {
+            loggerNotebookDao.debug("ownerID: " + nullArgument);
+            return null;
+        }
+
+        UUID externalID = UUID.randomUUID();
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("externalId", externalID.toString());
+        params.put("owner", ownerID);
+        params.put("title", notebook.getTitle());
+
+        StringBuilder sql = new StringBuilder("INSERT INTO ");
+        sql.append(notebookTableName).append("(").append(external_id).append(",").append(owner_id);
+        sql.append(",").append(title).
+                append(" ) VALUES (:externalId, :owner, :title)");
+        int affectedRows = getSimpleJdbcTemplate().update(sql.toString(), params);
+        return ((affectedRows > 0) ? getInternalID(externalID) : null);
     }
-    
+
     @Override
-    public boolean deleteNotebook(Number notebookID){
-        return false;
+    public boolean addAnnotationToNotebook(Number notebookID, Number annotationID) {
+
+        if (notebookID == null) {
+            loggerNotebookDao.debug("notebookID: " + nullArgument);
+            return false;
+        }
+
+        if (annotationID == null) {
+            loggerNotebookDao.debug("annotationID: " + nullArgument);
+            return false;
+        }
+
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("notebookID", notebookID);
+        params.put("annotationID", annotationID);
+
+        StringBuilder sql = new StringBuilder("INSERT INTO ");
+        sql.append(notebooksAnnotationsTableName).append("(").append(notebook_id).append(",").append(annotation_id);
+        sql.append(",").append(" ) VALUES (:notebookID, :annotationID)");
+        int affectedRows = getSimpleJdbcTemplate().update(sql.toString(), params);
+        return (affectedRows > 0);
+    }
+
+    @Override
+    public boolean addPermissionToNotebook(Number notebookID, Number principalID, Permission permission) {
+        if (notebookID == null) {
+            loggerNotebookDao.debug("notebookID: " + nullArgument);
+            return false;
+        }
+
+        if (principalID == null) {
+            loggerNotebookDao.debug("principalID: " + nullArgument);
+            return false;
+        }
+
+        if (permission == null) {
+            loggerNotebookDao.debug("premission: " + nullArgument);
+            return false;
+        }
+
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("notebookID", notebookID);
+        params.put("principalID", principalID);
+        params.put("permission", permission.value());
+
+        StringBuilder sql = new StringBuilder("INSERT INTO ");
+        sql.append(notebookPermissionsTableName).append("(").append(notebook_id).append(",").append(principal_id);
+        sql.append(",").append(this.permission).
+                append(" ) VALUES (:notebookID, :principalID, :permission)");
+        int affectedRows = getSimpleJdbcTemplate().update(sql.toString(), params);
+        return (affectedRows > 0);
+    }
+
+    /**
+     *
+     * DELETERS
+     *
+     *
+     */
+    @Override
+    public boolean deleteAnnotationFromNotebook(Number notebookID, Number annotationID) {
+        if (notebookID != null) {
+            if (annotationID != null) {
+                Map<String, Number> params = new HashMap();
+                params.put("notebookID", notebookID);
+                params.put("annotationID", annotationID);
+                StringBuilder sql = new StringBuilder("DELETE FROM ");
+                sql.append(notebooksAnnotationsTableName).append(" WHERE ").append(notebook_id).append(" = :notebookID AND ").
+                        append(annotation_id).append(" = :annotationID");
+                int affectedRows = getSimpleJdbcTemplate().update(sql.toString(), params);
+                return (affectedRows > 0);
+            } else {
+                loggerNotebookDao.debug("annotationID: " + nullArgument);
+                return false;
+            }
+        } else {
+            loggerNotebookDao.debug("notebookID: " + nullArgument);
+            return false;
+        }
+    }
+
+    @Override
+    public boolean deleteNotebookPrincipalPermission(Number notebookID, Number principalID) {
+        if (notebookID != null) {
+            if (principalID != null) {
+                Map<String, Number> params = new HashMap();
+                params.put("notebookID", notebookID);
+                params.put("principalID", principalID);
+                StringBuilder sqlPermissions = new StringBuilder("DELETE FROM ");
+                sqlPermissions.append(notebookPermissionsTableName).append(" WHERE ").append(notebook_id).append(" = :notebookID AND ").
+                        append(principal_id).append(" = :principalID");
+                int affectedRows = getSimpleJdbcTemplate().update(sqlPermissions.toString(), params);
+                return (affectedRows > 0);
+            } else {
+                loggerNotebookDao.debug("principalID: " + nullArgument);
+                return false;
+            }
+        } else {
+            loggerNotebookDao.debug("notebookID: " + nullArgument);
+            return false;
+        }
+    }
+
+    @Override
+    public boolean deleteAllAnnotationsFromNotebook(Number notebookID) {
+        if (notebookID != null) {
+            StringBuilder sql = new StringBuilder("DELETE FROM ");
+            sql.append(notebooksAnnotationsTableName).append(" WHERE ").append(notebook_id).append(" = ? ");
+            int affectedRows = getSimpleJdbcTemplate().update(sql.toString(), notebookID);
+            return (affectedRows > 0);
+        } else {
+            loggerNotebookDao.debug("notebookID: " + nullArgument);
+            return false;
+        }
+    }
+
+    @Override
+    public boolean deleteAllPermissionsForNotebook(Number notebookID) {
+        if (notebookID != null) {
+            StringBuilder sqlPermissions = new StringBuilder("DELETE FROM ");
+            sqlPermissions.append(notebookPermissionsTableName).append(" WHERE ").append(notebook_id).append(" = ? ");
+            int affectedRows = getSimpleJdbcTemplate().update(sqlPermissions.toString(), notebookID);
+            return (affectedRows > 0);
+        } else {
+            loggerNotebookDao.debug("notebookID: " + nullArgument);
+            return false;
+        }
+    }
+
+    @Override
+    public boolean deleteNotebook(Number notebookID) {
+        if (notebookID != null) {
+            StringBuilder sql = new StringBuilder("DELETE FROM ");
+            sql.append(notebookTableName).append(" WHERE ").append(notebook_id).append(" = ? ");
+            int affectedRows = getSimpleJdbcTemplate().update(sql.toString(), notebookID);
+            return (affectedRows > 0);
+        } else {
+            loggerNotebookDao.debug("notebookID: " + nullArgument);
+            return false;
+        }
     }
 }

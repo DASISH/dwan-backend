@@ -98,8 +98,8 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
         };
 
         StringBuilder sqlNotebooks = new StringBuilder("SELECT ");
-        sqlNotebooks.append(notebookOwner_id).append(" FROM ").append(notebookTableName).append(" WHERE ").append(notebookOwner_id).append("= ? LIMIT 1");
-        List<Number> resultNotebooks = getSimpleJdbcTemplate().query(sqlNotebooks.toString(), notebookOwnerIDRowMapper, userID);
+        sqlNotebooks.append(owner_id).append(" FROM ").append(notebookTableName).append(" WHERE ").append(owner_id).append("= ? LIMIT 1");
+        List<Number> resultNotebooks = getSimpleJdbcTemplate().query(sqlNotebooks.toString(), ownerIDRowMapper, userID);
         if (resultNotebooks.size() > 0) {
             return true;
         };

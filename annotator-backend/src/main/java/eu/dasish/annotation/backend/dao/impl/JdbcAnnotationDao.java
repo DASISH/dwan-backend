@@ -66,7 +66,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         if (annotationID != null) {
             StringBuilder sql = new StringBuilder("SELECT DISTINCT ");
             sql.append(target_id).append(" FROM ").append(annotationsTargetsTableName).append(" WHERE ").append(annotation_id).append("= ?");
-            return getSimpleJdbcTemplate().query(sql.toString(), TargetIDRowMapper, annotationID);
+            return getSimpleJdbcTemplate().query(sql.toString(), targetIDRowMapper, annotationID);
         } else {
             loggerAnnotationDao.debug(nullArgument);
             return null;
@@ -93,8 +93,6 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         }
     };
 
-    
-    
     @Override
     public Permission getPermission(Number annotationID, Number userID) {
         if (annotationID == null) {
@@ -127,9 +125,6 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         }
     };
 
-   
-    
-    
     ////////////////////////////////////////////////////////////////////////
     @Override
     public List<Number> getFilteredAnnotationIDs(Number ownerID, String text, String namespace, String after, String before) {
@@ -142,7 +137,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
             sql.append(" AND ").append(owner_id).append("  = :ownerId");
             params.put("ownerId", ownerID);
         }
-        
+
         if (after != null) {
             sql.append(" AND ").append(last_modified).append("  > :afterTimestamp");
             params.put("afterTimestamp", Timestamp.valueOf(after));
@@ -160,31 +155,27 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         return getSimpleJdbcTemplate().query(sql.toString(), internalIDRowMapper, params);
     }
 
-     ///////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////
     @Override
     public List<Number> getAnnotationIDsForUserWithPermission(Number userID, String access) {
-       
+
         if (userID == null) {
             loggerAnnotationDao.debug("userID: " + nullArgument);
             return null;
         }
-        
+
         if (access == null) {
             logger.info("The access argument is null. I assign it a default value 'reader'.");
             access = "reader";
         }
 
-        
+
         StringBuilder sql = new StringBuilder("SELECT ");
         sql.append(annotation_id).append(" FROM ").append(permissionsTableName).append(" WHERE ").
                 append(principal_id).append("  = ?").append(" AND ").
                 append(permission).append("  = ").append(access);
         return getSimpleJdbcTemplate().query(sql.toString(), internalIDRowMapper, userID);
     }
-
-    
-  
-    
 
     //////////////////////////////
     @Override
@@ -202,10 +193,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         query.append(values);
         return getSimpleJdbcTemplate().query(query.toString(), internalIDRowMapper);
     }
-    
-    
-    
-    
+
     /////////////////////////////////////////
     @Override
     public List<Number> getAllAnnotationIDs() {
@@ -214,6 +202,35 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         return getSimpleJdbcTemplate().query(sql.toString(), internalIDRowMapper);
     }
 
+    @Override
+    public List<Number> sublistOrderedAnnotationIDs(List<Number> annotationIDs, int offset, int limit, String orderedBy, String direction) {
+        if (annotationIDs == null) {
+            return null;
+        }
+
+        if (annotationIDs.isEmpty()) {
+            return annotationIDs;
+        }
+
+        
+        String values = makeListOfValues(annotationIDs);
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("offset", offset);
+        params.put("limit", limit);
+
+        StringBuilder query = new StringBuilder("SELECT DISTINCT ");
+        query.append(annotation_id).append(" FROM ").append(annotationsTargetsTableName).append(" WHERE ").append(annotation_id).append(" IN ");
+        query.append(values).append(" ORDER BY ").append(orderedBy);
+
+        if (limit > -1) {
+            query.append(direction).append(" LIMIT :limit ");
+        }
+
+        query.append(" OFFSET :offset ");
+        return getSimpleJdbcTemplate().query(query.toString(), internalIDRowMapper, params);
+    }
+
+    //////////////////////////////////////////////////////////////////////
     @Override
     public AnnotationInfo getAnnotationInfoWithoutTargets(Number annotationID) {
         if (annotationID == null) {
@@ -264,7 +281,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
 
         String values = makeListOfValues(annotationIDs);
         StringBuilder sql = new StringBuilder("SELECT DISTINCT ");
-        sql.append(external_id).append(" FROM ").append(annotationTableName).append(" WHERE ").append(annotationAnnotation_id).append("  IN ").append(values);
+        sql.append(external_id).append(" FROM ").append(annotationTableName).append(" WHERE ").append(annotation_id).append("  IN ").append(values);
         return getSimpleJdbcTemplate().query(sql.toString(), annotationREFRowMapper);
     }
     private final RowMapper<String> annotationREFRowMapper = new RowMapper<String>() {
@@ -282,7 +299,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
             return null;
         }
         StringBuilder sql = new StringBuilder("SELECT ");
-        sql.append(annotationStar).append(" FROM ").append(annotationTableName).append(" WHERE ").append(annotationAnnotation_id).append("= ? LIMIT  1");
+        sql.append(annotationStar).append(" FROM ").append(annotationTableName).append(" WHERE ").append(annotation_id).append("= ? LIMIT  1");
         List<Annotation> respond = getSimpleJdbcTemplate().query(sql.toString(), annotationRowMapper, annotationID);
         return (respond.isEmpty() ? null : respond.get(0));
     }
@@ -326,8 +343,6 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         List<Number> respond = getSimpleJdbcTemplate().query(sql.toString(), ownerIDRowMapper, annotationID);
         return (respond.isEmpty() ? null : respond.get(0));
     }
-    
-    
 
     /////////////////////////////
     @Override
@@ -341,7 +356,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
 
         StringBuilder sqlTargets = new StringBuilder("SELECT ");
         sqlTargets.append(target_id).append(" FROM ").append(annotationsTargetsTableName).append(" WHERE ").append(annotation_id).append("= ? LIMIT 1");
-        List<Number> resultTargets = getSimpleJdbcTemplate().query(sqlTargets.toString(), TargetIDRowMapper, annotationID);
+        List<Number> resultTargets = getSimpleJdbcTemplate().query(sqlTargets.toString(), targetIDRowMapper, annotationID);
         if (resultTargets.size() > 0) {
             return true;
         }
@@ -448,7 +463,12 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
 
         if (annotation == null) {
             loggerAnnotationDao.debug("annotation: " + nullArgument);
-            return 0;
+            return null;
+        }
+        
+        if (ownerID == null) {
+            loggerAnnotationDao.debug("ownerID: " + nullArgument);
+            return null;
         }
 
         // generate a new annotation ID 
@@ -574,8 +594,8 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
                 params.put("userId", userID);
                 StringBuilder sqlPermissions = new StringBuilder("DELETE FROM ");
                 sqlPermissions.append(permissionsTableName).append(" WHERE ").append(annotation_id).append(" = :annotationId AND ").
-                append(principal_id).append(" = :userId");                
-                return getSimpleJdbcTemplate().update(sqlPermissions.toString(), params);  
+                        append(principal_id).append(" = :userId");
+                return getSimpleJdbcTemplate().update(sqlPermissions.toString(), params);
             } else {
                 loggerAnnotationDao.debug("userID: " + nullArgument);
                 return 0;

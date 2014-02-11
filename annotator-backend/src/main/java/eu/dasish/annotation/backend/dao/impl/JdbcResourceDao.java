@@ -81,17 +81,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     final static protected String is_xml = "is_xml";
     final static protected String fragment_descriptor = "fragment_descriptor";
     final static protected String fragment_descriptor_in_cached = "fragment_descriptor_in_cached";
-    // derived string constants: table+field names 
     final static protected String annotationStar = annotationTableName + ".*";
-    final static protected String annotationAnnotation_id = annotationTableName + "." + annotation_id;
-    final static protected String annotationExternal_id = annotationTableName + "." + external_id;
-    final static protected String notebookStar = notebookTableName + ".*";
-    final static protected String notebookNotebook_id = notebookTableName + "." + notebook_id;
-    final static protected String notebookTitle = notebookTableName + "." + title;
-    final static protected String notebookExternal_id = notebookTableName + "." + external_id;
-    final static protected String notebooksAnnotationsTableNameAnnotation_id = notebooksAnnotationsTableName + "." + annotation_id;
-    final static protected String principalPrincipal_id = principalTableName + "." + principal_id;
-    final static protected String principalExternal_id = principalTableName + "." + external_id;
     final static protected String cachedRepresentationStar = cachedRepresentationTableName + ".*";
     final static protected String targetStar = targetTableName + ".*";
     final static protected String principalStar = principalTableName + ".*";
@@ -201,7 +191,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
             return rs.getInt(cached_representation_id);
         }
     };
-    protected final RowMapper<Number> TargetIDRowMapper = new RowMapper<Number>() {
+    protected final RowMapper<Number> targetIDRowMapper = new RowMapper<Number>() {
         @Override
         public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
             return rs.getInt(target_id);
@@ -233,12 +223,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
         }
     };
     
-    protected final RowMapper<Number> notebookOwnerIDRowMapper = new RowMapper<Number>() {
-        @Override
-        public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            return rs.getInt(notebookOwner_id);
-        }
-    };
+
 
     @Override
     public String externalIDtoURI(String externalID) {

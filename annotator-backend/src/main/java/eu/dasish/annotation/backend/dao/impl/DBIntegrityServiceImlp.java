@@ -21,6 +21,7 @@ import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.dao.AnnotationDao;
 import eu.dasish.annotation.backend.dao.CachedRepresentationDao;
 import eu.dasish.annotation.backend.dao.DBIntegrityService;
+import eu.dasish.annotation.backend.dao.NotebookDao;
 import eu.dasish.annotation.backend.dao.TargetDao;
 import eu.dasish.annotation.backend.dao.UserDao;
 import eu.dasish.annotation.backend.rest.AnnotationResource;
@@ -31,6 +32,9 @@ import eu.dasish.annotation.schema.AnnotationInfoList;
 import eu.dasish.annotation.schema.CachedRepresentationFragment;
 import eu.dasish.annotation.schema.CachedRepresentationFragmentList;
 import eu.dasish.annotation.schema.CachedRepresentationInfo;
+import eu.dasish.annotation.schema.Notebook;
+import eu.dasish.annotation.schema.NotebookInfo;
+import eu.dasish.annotation.schema.NotebookInfoList;
 import eu.dasish.annotation.schema.TargetInfoList;
 import eu.dasish.annotation.schema.Permission;
 import eu.dasish.annotation.schema.UserWithPermissionList;
@@ -64,7 +68,8 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     TargetDao targetDao;
     @Autowired
     AnnotationDao annotationDao;
-    
+    @Autowired
+    NotebookDao notebookDao;
     final static protected String admin = "admin";
     private static final Logger logger = LoggerFactory.getLogger(AnnotationResource.class);
     //////////////////////////////////
@@ -402,7 +407,7 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     public String getTypeOfUserAccount(Number userID) {
         return userDao.getTypeOfUserAccount(userID);
     }
-    
+
     @Override
     public boolean canRead(Number userID, Number annotationID) {
         if (userID.equals(annotationDao.getOwner(annotationID)) || userDao.getTypeOfUserAccount(userID).equals(admin)) {
@@ -428,6 +433,78 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         } else {
             return false;
         }
+    }
+
+    /// notebooks ///
+    @Override
+    public NotebookInfoList getNotebooks(Number prinipalID, Permission permission) {
+        NotebookInfoList result = new NotebookInfoList();
+        List<Number> notebookIDs = notebookDao.getNotebookIDs(prinipalID, permission);
+        for (Number notebookID : notebookIDs) {
+            NotebookInfo notebookInfo = notebookDao.getNotebookInfoWithoutOwner(notebookID);
+            Number ownerID = notebookDao.getOwner(notebookID);
+            notebookInfo.setOwnerRef(userDao.getURIFromInternalID(ownerID));
+            result.getNotebookInfo().add(notebookInfo);
+        }
+
+        return result;
+    }
+
+    @Override
+    public NotebookInfoList getNotebooksOwnedBy(Number principalID) {
+        NotebookInfoList result = new NotebookInfoList();
+        List<Number> notebookIDs = notebookDao.getNotebookIDsOwnedBy(principalID);
+        String ownerRef = userDao.getURIFromInternalID(principalID);
+        for (Number notebookID : notebookIDs) {
+            NotebookInfo notebookInfo = notebookDao.getNotebookInfoWithoutOwner(notebookID);
+            notebookInfo.setOwnerRef(ownerRef);
+            result.getNotebookInfo().add(notebookInfo);
+        }
+
+        return result;
+    }
+
+    @Override
+    public List<UUID> getPrincipals(Number notebookID, Permission permission) {
+        List<UUID> result = new ArrayList<UUID>();
+        List<Number> principalIDs = notebookDao.getPrincipalIDsWithPermission(notebookID, permission);
+        for (Number principalID : principalIDs) {
+            UUID uuid = userDao.getExternalID(principalID);
+            result.add(uuid);
+        }
+        return result;
+    }
+
+    @Override
+    public NotebookInfo getNotebookInfo(Number notebookID) {
+        NotebookInfo result = notebookDao.getNotebookInfoWithoutOwner(notebookID);
+        result.setOwnerRef(userDao.getURIFromInternalID(notebookDao.getOwner(notebookID)));
+        return result;
+    }
+
+    /////////////////////////////////////////////////////////////
+    @Override
+    public List<UUID> getAnnotationsForNotebook(Number notebookID, int startAnnotation, int maximumAnnotations, String orderedBy, boolean desc) {
+        List<Number> annotationIDs = notebookDao.getAnnotations(notebookID);
+
+        if (startAnnotation < -1) {
+            logger.info("Variable's startAnnotation value " + startAnnotation + " is invalid. I will return null.");
+            return null;
+        }
+
+        if (maximumAnnotations < -1) {
+            logger.info("Variable's maximumAnnotations value " + maximumAnnotations + " is invalid. I will return null.");
+            return null;
+        }
+
+        int offset = (startAnnotation > 0) ? startAnnotation - 1 : 0;
+        String direction = desc ? " DESC " : " ASC ";
+        List<Number> selectedAnnotIDs = annotationDao.sublistOrderedAnnotationIDs(annotationIDs, offset, maximumAnnotations, orderedBy, direction);
+        List<UUID> annotationUUIDs = new ArrayList<UUID>();
+        for (Number annotationID : selectedAnnotIDs) {
+            annotationUUIDs.add(annotationDao.getExternalID(annotationID));
+        }
+        return annotationUUIDs;
     }
 
     ///// UPDATERS /////////////////
@@ -488,6 +565,23 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         return annotationDao.updateAnnotationBody(internalID, body[0], body[1], annotationBody.getXmlBody() != null);
     }
 
+    @Override
+    public Number updateUser(User user) {
+        return userDao.updateUser(user);
+    }
+    /// notebooks ///
+
+    @Override
+    public boolean updateNotebookMetadata(Number notebookID, NotebookInfo upToDateNotebookInfo) {
+        Number ownerID = userDao.getInternalIDFromURI(upToDateNotebookInfo.getOwnerRef());
+        return notebookDao.updateNotebookMetadata(notebookID, upToDateNotebookInfo.getTitle(), ownerID);
+    }
+
+    @Override
+    public boolean addAnnotationToNotebook(Number notebookID, Number annotationID) {
+        return notebookDao.addAnnotationToNotebook(notebookID, annotationID);
+    }
+
     /////////////// ADDERS  /////////////////////////////////
     @Override
     public Number[] addCachedForTarget(Number targetID, String fragmentDescriptor, CachedRepresentationInfo cachedInfo, InputStream cachedBlob) {
@@ -534,11 +628,6 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     }
 
     @Override
-    public Number updateUser(User user) {
-        return userDao.updateUser(user);
-    }
-
-    @Override
     public Number addUser(User user, String remoteID) {
         if (userDao.userExists(user)) {
             return null;
@@ -550,6 +639,27 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     @Override
     public int addAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission) {
         return annotationDao.addAnnotationPrincipalPermission(annotationID, userID, permission);
+    }
+    
+    //////////// notebooks //////
+
+    @Override
+    public Number createNotebook(Notebook notebook, Number ownerID) {
+        Number notebookID = notebookDao.createNotebookWithoutPermissionsAndAnnotations(notebook, ownerID);
+        boolean updateOwner = notebookDao.setOwner(notebookID, ownerID);
+        List<UserWithPermission> permissions = notebook.getPermissions().getUserWithPermission();
+        for (UserWithPermission principalPermission : permissions) {
+            Number principalID = userDao.getInternalIDFromURI(principalPermission.getRef());
+            Permission permission = principalPermission.getPermission();
+            boolean updatePermissions = notebookDao.addPermissionToNotebook(notebookID, principalID, permission);
+        }
+        return notebookID;
+    }
+
+    @Override
+    public boolean createAnnotationInNotebook(Number notebookID, Annotation annotation, Number ownerID) {
+        Number newAnnotationID = this.addUsersAnnotation(ownerID, annotation);
+        return notebookDao.addAnnotationToNotebook(notebookID, newAnnotationID);
     }
 
     ////////////// DELETERS //////////////////
@@ -607,6 +717,13 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
             }
         }
         return result;
+    }
+    
+    @Override
+    public boolean deleteNotebook(Number notebookID) {
+        boolean deletePermissions = notebookDao.deleteAllPermissionsForNotebook(notebookID);
+        boolean deleteAnnotations = notebookDao.deleteAllAnnotationsFromNotebook(notebookID);
+        return notebookDao.deleteNotebook(notebookID);
     }
 
     ////////////// HELPERS ////////////////////

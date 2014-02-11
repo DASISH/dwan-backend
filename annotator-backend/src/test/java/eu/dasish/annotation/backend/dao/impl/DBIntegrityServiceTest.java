@@ -21,6 +21,7 @@ import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.TestInstances;
 import eu.dasish.annotation.backend.dao.AnnotationDao;
 import eu.dasish.annotation.backend.dao.CachedRepresentationDao;
+import eu.dasish.annotation.backend.dao.NotebookDao;
 import eu.dasish.annotation.backend.dao.TargetDao;
 import eu.dasish.annotation.backend.dao.UserDao;
 import eu.dasish.annotation.schema.Annotation;
@@ -61,6 +62,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration({"/spring-test-config/dataSource.xml", "/spring-test-config/mockeryDao.xml", "/spring-test-config/mockAnnotationDao.xml",
     "/spring-test-config/mockUserDao.xml", "/spring-test-config/mockTargetDao.xml", "/spring-test-config/mockCachedRepresentationDao.xml", 
+    "/spring-test-config/mockNotebookDao.xml",
     "/spring-config/dbIntegrityService.xml"})
 public class DBIntegrityServiceTest {
 
@@ -76,6 +78,9 @@ public class DBIntegrityServiceTest {
     private TargetDao targetDao;
     @Autowired
     private AnnotationDao annotationDao;
+    @Autowired
+    private NotebookDao notebookDao;
+    
     TestInstances testInstances = new TestInstances(TestBackendConstants._TEST_SERVLET_URI);
 
     public DBIntegrityServiceTest() {

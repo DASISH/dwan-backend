@@ -64,6 +64,8 @@ public interface AnnotationDao extends ResourceDao{
      */
     public List<Number> getAllAnnotationIDs();
     
+    public List<Number> sublistOrderedAnnotationIDs(List<Number> annotationIDs, int offset, int limit, String orderedBy, String desc);
+    
        /**
      * unit test is missing
      * @param annotationIDs
