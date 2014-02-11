@@ -118,7 +118,7 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
         
         StringBuilder sql = new StringBuilder("SELECT ");
         sql.append(target_id).append(" FROM ").append(targetsCachedRepresentationsTableName).append(" WHERE ").append(cached_representation_id).append("= ? LIMIT 1");
-        List<Number> result = getSimpleJdbcTemplate().query(sql.toString(), TargetIDRowMapper, cachedID);
+        List<Number> result = getSimpleJdbcTemplate().query(sql.toString(), targetIDRowMapper, cachedID);
         if (result != null) {
             return (!result.isEmpty());
         } else {

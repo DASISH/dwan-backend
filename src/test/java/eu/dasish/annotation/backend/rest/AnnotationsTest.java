@@ -88,7 +88,7 @@ public class AnnotationsTest extends JerseyTest {
     private String getApplicationContextFile() {
 	// sorry for the duplication, but JerseyTest is not aware of
 	// @ContextConfiguration
-	return "classpath:spring-config/componentscan.xml, classpath:spring-config/annotationDao.xml, classpath:spring-config/userDao.xml, classpath:spring-config/targetDao.xml, classpath:spring-config/cachedRepresentationDao.xml, classpath:spring-config/dbIntegrityService.xml, classpath:spring-config/jaxbMarshallerFactory.xml, classpath:spring-test-config/dataSource.xml";
+	return "classpath:spring-config/componentscan.xml, classpath:spring-config/notebookDao.xml, classpath:spring-config/annotationDao.xml, classpath:spring-config/userDao.xml, classpath:spring-config/targetDao.xml, classpath:spring-config/cachedRepresentationDao.xml, classpath:spring-config/dbIntegrityService.xml, classpath:spring-config/jaxbMarshallerFactory.xml, classpath:spring-test-config/dataSource.xml";
     }
     
     

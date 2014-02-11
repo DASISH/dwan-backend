@@ -22,6 +22,7 @@ import eu.dasish.annotation.schema.Permission;
 import eu.dasish.annotation.schema.Notebook;
 import eu.dasish.annotation.schema.NotebookInfo;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Created on : Jun 12, 2013, 1:40:09 PM
@@ -38,14 +39,17 @@ public interface NotebookDao extends ResourceDao {
      * 
      * GETTERS 
      * 
-     */
-    // Returns a list of notebook Ids for the notebooks for which the given user "userID' has "permission" access.
-    List<Number> getNotebookIDs(Number userID, Permission acessMode);
+  **/
+    
+    Number getOwner(Number notebookID);
+    
+    List<Number> getNotebookIDs(Number principalID, Permission acessMode);
     
     // Returns a list of notebook Ids for the notebooks for which the given user "userID" is the owner.
-    List<Number> getOwnerNotebookIDs(Number userID);
+    List<Number> getNotebookIDsOwnedBy(Number principaID);
     
     public List<Number> getPrincipalIDsWithPermission(Number notebookID, Permission permission);
+    
     
     
     
@@ -54,7 +58,7 @@ public interface NotebookDao extends ResourceDao {
      * @param notebookID
      * @return the notebook info for the notebook with notebookID
      */
-    NotebookInfo getNotebookInfo(Number notebookID);
+    NotebookInfo getNotebookInfoWithoutOwner(Number notebookID);
     
    
     /**
@@ -62,18 +66,10 @@ public interface NotebookDao extends ResourceDao {
      * @param notebookID
      * @return notebook metadata for the notebook with notebookID
      */
-    Notebook getNotebookWithoutAnnotationsAndPermissions(Number notebookID);
+    Notebook getNotebookWithoutAnnotationsAndPermissionsAndOwner(Number notebookID);
     
-    //? Which type shul be orderedby? 
-    /**
-     * 
-     * @param maximumAnnotations
-     * @param startannotation
-     * @param orderedBy
-     * @param orederingMode if true then descending, if falset hen ascending
-     * @return 
-     */
-    List<Number> getAnnotations(int maximumAnnotations, int startannotation, String orderedBy, boolean orderingMode);
+   
+    List<Number> getAnnotations(Number notebookID);
     
     /**
      * 
@@ -89,7 +85,11 @@ public interface NotebookDao extends ResourceDao {
      * @param notebookID
      * @return true if updated, false otherwise. Logs the reason if the notebook is not updated.
      */
-    boolean updateNotebookMetadata(Number notebookID);
+    boolean updateNotebookMetadata(Number notebookID, String title, Number ownerID);
+    
+    boolean setOwner(Number notebookID, Number ownerID);
+    
+    boolean updateUserPermissionForNotebook(Number notebookID, Number principalID, Permission permission);
     
      /**
      * 
@@ -98,20 +98,28 @@ public interface NotebookDao extends ResourceDao {
      * 
      */
     
-    Number createNotebook(Notebook notebook);
+    public Number createNotebookWithoutPermissionsAndAnnotations(Notebook notebook, Number ownerID);
     
-    boolean addAnnotationToNotebook(Number noteboookId, Number AnnotationID);
+    boolean addAnnotationToNotebook(Number notebookID, Number annotationID);
+    
+    boolean addPermissionToNotebook(Number notebookID, Number userID, Permission permission);
     
     
     
     /**
      * 
-     * DELETERS (ADDER)
+     * DELETERS 
      * 
      * 
      */
     
-    boolean deleteannotationFromNotebook(Number notebookID, Number annotationID);
+    boolean deleteAnnotationFromNotebook(Number notebookID, Number annotationID);
+    
+    boolean deleteAllAnnotationsFromNotebook(Number notebookID);
+    
+    boolean deleteNotebookPrincipalPermission(Number notebookID, Number principalID);
+    
+    boolean deleteAllPermissionsForNotebook(Number notebookID);
     
     boolean deleteNotebook(Number notebookID);
 }
