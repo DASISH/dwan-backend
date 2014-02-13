@@ -70,7 +70,7 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
     private final RowMapper<Target> targetRowMapper = new RowMapper<Target>() {
         @Override
         public Target mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            XMLGregorianCalendar xmlDate = timeStampToXMLGregorianCalendar(rs);
+            XMLGregorianCalendar xmlDate = timeStampToXMLGregorianCalendar(rs.getString(last_modified));
             Target result =
                     constructTarget(rs.getString(external_id), rs.getString(link_uri), rs.getString(version), xmlDate, rs.getString(fragment_descriptor));
             return result;

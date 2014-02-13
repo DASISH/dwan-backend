@@ -64,7 +64,7 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
         StringBuilder sql = new StringBuilder("SELECT ");
         sql.append(owner_id).append(" FROM ").append(notebookTableName).append(" WHERE ").
                 append(notebook_id).append(" = ?");
-        List<Number> result = getSimpleJdbcTemplate().query(sql.toString(), principalIDRowMapper, notebookID);
+        List<Number> result = getSimpleJdbcTemplate().query(sql.toString(), ownerIDRowMapper, notebookID);
         if (result.isEmpty()) {
             return null;
         } else {
@@ -90,7 +90,7 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
         params.put("accessMode", permission.value());
         StringBuilder sql = new StringBuilder("SELECT ");
         sql.append(notebook_id).append(" FROM ").append(notebookPermissionsTableName).append(" WHERE ").
-                append(principal_id).append(" = :principalID AND ").append(permission).append(" = :accessMode");
+                append(principal_id).append(" = :principalID AND ").append(this.permission).append(" = :accessMode");
         return getSimpleJdbcTemplate().query(sql.toString(), internalIDRowMapper, params);
     }
 
@@ -174,14 +174,7 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
         public Notebook mapRow(ResultSet rs, int rowNumber) throws SQLException {
             Notebook notebook = new Notebook();
             notebook.setTitle(rs.getString(title));
-            GregorianCalendar calendar = new GregorianCalendar();
-            calendar.setTime(rs.getTimestamp(last_modified));
-            try {
-                XMLGregorianCalendar gregorianCalendar = DatatypeFactory.newInstance().newXMLGregorianCalendar(calendar);
-                notebook.setLastModified(gregorianCalendar);
-            } catch (DatatypeConfigurationException exception) {
-                throw new SQLException(exception);
-            }
+            notebook.setLastModified(timeStampToXMLGregorianCalendar(rs.getString(last_modified)));
             notebook.setURI(externalIDtoURI(rs.getString(external_id)));
             return notebook;
         }
@@ -320,10 +313,9 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
 
         StringBuilder sql = new StringBuilder("UPDATE ");
         sql.append(notebookPermissionsTableName).append(" SET ").
-                append(notebook_id).append("= :notebookID, ").
-                append(principal_id).append("= :principalID").
-                append(this.permission).append("= :permission").
-                append(" WHERE ").append(notebook_id).append("= :notebookID");
+                append(this.permission).append("= :permission ").
+                append(" WHERE ").append(notebook_id).append("= :notebookID AND ").
+                append(principal_id).append("= :principalID");
         int affectedRows = getSimpleJdbcTemplate().update(sql.toString(), params);
         if (affectedRows <= 0) {
             logger.info("For some reason no rows in the table notebooks-permissions were updated. ");
@@ -389,7 +381,7 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
 
         StringBuilder sql = new StringBuilder("INSERT INTO ");
         sql.append(notebooksAnnotationsTableName).append("(").append(notebook_id).append(",").append(annotation_id);
-        sql.append(",").append(" ) VALUES (:notebookID, :annotationID)");
+        sql.append(" ) VALUES (:notebookID, :annotationID)");
         int affectedRows = getSimpleJdbcTemplate().update(sql.toString(), params);
         return (affectedRows > 0);
     }

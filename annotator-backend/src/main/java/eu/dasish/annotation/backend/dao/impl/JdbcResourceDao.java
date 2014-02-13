@@ -85,10 +85,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     final static protected String cachedRepresentationStar = cachedRepresentationTableName + ".*";
     final static protected String targetStar = targetTableName + ".*";
     final static protected String principalStar = principalTableName + ".*";
-    
     ////////////////////////////////
-    
-   
     ///////////////////////////////////////////////////
     protected String internalIdName = null;
     protected String resourceTableName = null;
@@ -167,7 +164,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     protected final RowMapper<XMLGregorianCalendar> timeStampRowMapper = new RowMapper<XMLGregorianCalendar>() {
         @Override
         public XMLGregorianCalendar mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            return timeStampToXMLGregorianCalendar(rs);
+            return timeStampToXMLGregorianCalendar(rs.getString(last_modified));
         }
     };
 ////////////////// ROW MAPPERS ///////////////////
@@ -215,15 +212,12 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
             return rs.getInt(principal_id);
         }
     };
-    
     protected final RowMapper<Number> ownerIDRowMapper = new RowMapper<Number>() {
         @Override
         public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
             return rs.getInt(owner_id);
         }
     };
-    
-
 
     @Override
     public String externalIDtoURI(String externalID) {
@@ -265,18 +259,14 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     }
 
     /////////////////////////
-    protected XMLGregorianCalendar timeStampToXMLGregorianCalendar(ResultSet rs) {
+    protected XMLGregorianCalendar timeStampToXMLGregorianCalendar(String ts) {
+        String tsAdjusted = ts.replace(' ', 'T') + "Z";
         try {
-            String ts = rs.getString(last_modified).replace(' ', 'T') + "Z";
-            try {
-                return DatatypeFactory.newInstance().newXMLGregorianCalendar(ts);
-            } catch (DatatypeConfigurationException dtce) {
-                _logger.error(" ", dtce);
-                return null;
-            }
-        } catch (SQLException sqle) {
-            _logger.error(" ", sqle);
+            return DatatypeFactory.newInstance().newXMLGregorianCalendar(tsAdjusted);
+        } catch (DatatypeConfigurationException dtce) {
+            _logger.error(" ", dtce);
             return null;
         }
+
     }
 }
