@@ -255,7 +255,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
             AnnotationInfo annotationInfo = new AnnotationInfo();
             annotationInfo.setRef(externalIDtoURI(rs.getString(external_id)));
             annotationInfo.setHeadline(rs.getString(headline));
-            annotationInfo.setLastModified(timeStampToXMLGregorianCalendar(rs));
+            annotationInfo.setLastModified(timeStampToXMLGregorianCalendar(rs.getString(last_modified)));
             return annotationInfo;
         }
     };
@@ -326,7 +326,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
 
             annotation.setTargets(null);
             annotation.setURI(externalIDtoURI(rs.getString(external_id)));
-            annotation.setLastModified(timeStampToXMLGregorianCalendar(rs));
+            annotation.setLastModified(timeStampToXMLGregorianCalendar(rs.getString(last_modified)));
             return annotation;
         }
     };

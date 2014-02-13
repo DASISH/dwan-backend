@@ -32,10 +32,10 @@ INSERT INTO principal (principal_name, external_id, remote_id, e_mail, account) 
 INSERT INTO principal (principal_name, external_id, remote_id, e_mail, account) VALUES ('Willem', '00000000-0000-0000-0000-000000000220', 'wilelb@mpi.nl', 'Willem.Elbers@mpi.nl', 'developer'); -- 10
 
 
-INSERT INTO notebook (title, owner_id, external_id) VALUES ('Notebook 3', 1, '00000000-0000-0000-0000-000000000011'); -- 1
-INSERT INTO notebook (title, owner_id, external_id) VALUES ('Notebook 4', 2, '00000000-0000-0000-0000-000000000012'); --2
-INSERT INTO notebook (title, owner_id, external_id) VALUES ('Notebook 5', 3, '00000000-0000-0000-0000-000000000013'); --3
-INSERT INTO notebook (title, owner_id, external_id) VALUES ('Notebook 6', 3, '00000000-0000-0000-0000-000000000014'); --4
+INSERT INTO notebook (title, owner_id, external_id, last_modified) VALUES ('Notebook 1', 1, '00000000-0000-0000-0000-000000000011', '2013-08-12 09:25:00.383'); -- 1
+INSERT INTO notebook (title, owner_id, external_id) VALUES ('Notebook 2', 2, '00000000-0000-0000-0000-000000000012'); --2
+INSERT INTO notebook (title, owner_id, external_id) VALUES ('Notebook 3', 3, '00000000-0000-0000-0000-000000000013'); --3
+INSERT INTO notebook (title, owner_id, external_id) VALUES ('Notebook 4', 3, '00000000-0000-0000-0000-000000000014'); --4
 
 INSERT INTO annotation (owner_id, headline,body_text, body_mimetype, external_id, last_modified, is_xml) VALUES (1, 'Sagrada Famiglia','<html><body>some html 1</body></html>', 'text/html' , '00000000-0000-0000-0000-000000000021', '2013-08-12 09:25:00.383', false); --1
 INSERT INTO annotation (owner_id, headline,body_text, body_mimetype, external_id, is_xml) VALUES (2, 'Gaudi','<html><body>some html 2</body></html>', 'text/html' , '00000000-0000-0000-0000-000000000022',false); --2
@@ -116,3 +116,16 @@ INSERT INTO annotations_principals_permissions (annotation_id, principal_id, per
 INSERT INTO annotations_principals_permissions (annotation_id, principal_id, permission_) VALUES (4, 1, 'writer');
 -- checking integrity control:
 -- INSERT INTO annotations_principals_permissions (annotation_id, principal_id, permission_) VALUES (5, 5, 'reader');
+
+INSERT INTO notebooks_principals_permissions (notebook_id, principal_id, permission_) VALUES (1, 2, 'writer');
+INSERT INTO notebooks_principals_permissions (notebook_id, principal_id, permission_) VALUES (1, 3, 'reader');
+INSERT INTO notebooks_principals_permissions (notebook_id, principal_id, permission_) VALUES (1, 4, 'writer');
+INSERT INTO notebooks_principals_permissions (notebook_id, principal_id, permission_) VALUES (1, 5, 'reader');
+
+
+INSERT INTO notebooks_principals_permissions (notebook_id, principal_id, permission_) VALUES (2, 1, 'reader');
+INSERT INTO notebooks_principals_permissions (notebook_id, principal_id, permission_) VALUES (2, 3, 'writer');
+
+INSERT INTO notebooks_principals_permissions (notebook_id, principal_id, permission_) VALUES (4, 2, 'writer');
+INSERT INTO notebooks_principals_permissions (notebook_id, principal_id, permission_) VALUES (4, 1, 'writer');
+
