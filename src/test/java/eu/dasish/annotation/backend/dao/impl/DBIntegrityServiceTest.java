@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import javax.sql.rowset.serial.SerialException;
+import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import org.jmock.Expectations;
@@ -824,20 +825,56 @@ public class DBIntegrityServiceTest {
     /**
      * Getters
      */
-    /// notebooks ///
-    //public NotebookInfoList getNotebooks(Number prinipalID, Permission permission);
-//     NotebookInfoList result = new NotebookInfoList();
-//        List<Number> notebookIDs = notebookDao.getNotebookIDs(prinipalID, permission);
-//        for (Number notebookID : notebookIDs) {
-//            NotebookInfo notebookInfo = notebookDao.getNotebookInfoWithoutOwner(notebookID);
-//            Number ownerID = notebookDao.getOwner(notebookID);
-//            notebookInfo.setOwnerRef(userDao.getURIFromInternalID(ownerID));
-//            result.getNotebookInfo().add(notebookInfo);
-//        }
-//
-//        return result;
+   
+//     public Number getNotebookInternalIdentifier(UUID externalIdentifier){
+//        return notebookDao.getInternalID(externalIdentifier);
+//    }
+    
     @Test
-    public void testGetNotebooks() {
+    public void testGetNotebookInternalIdentifier() {
+        
+        final UUID mockUUID = UUID.fromString("00000000-0000-0000-0000-000000000021");
+        
+        mockeryDao.checking(new Expectations() {
+            {
+                oneOf(notebookDao).getInternalID(mockUUID);
+                will(returnValue(1));
+            }
+        });
+
+       assertEquals(1, dbIntegrityService.getNotebookInternalIdentifier(mockUUID));
+    
+    }  
+       
+    
+    
+//    public NotebookInfoList getNotebooks(Number principalID, String permission) {
+//        NotebookInfoList result = new NotebookInfoList();
+//        if (permission.equalsIgnoreCase("reader") || permission.equalsIgnoreCase("writer")) {
+//            List<Number> notebookIDs = notebookDao.getNotebookIDs(principalID, Permission.fromValue(permission));
+//            for (Number notebookID : notebookIDs) {
+//                NotebookInfo notebookInfo = notebookDao.getNotebookInfoWithoutOwner(notebookID);
+//                Number ownerID = notebookDao.getOwner(notebookID);
+//                notebookInfo.setOwnerRef(userDao.getURIFromInternalID(ownerID));
+//                result.getNotebookInfo().add(notebookInfo);
+//            }
+//        } else {
+//            if (permission.equalsIgnoreCase("owner")) {
+//                List<Number> notebookIDs = notebookDao.getNotebookIDsOwnedBy(principalID);
+//                String ownerRef = userDao.getURIFromInternalID(principalID);
+//                for (Number notebookID : notebookIDs) {
+//                    NotebookInfo notebookInfo = notebookDao.getNotebookInfoWithoutOwner(notebookID);
+//                    notebookInfo.setOwnerRef(ownerRef);
+//                    result.getNotebookInfo().add(notebookInfo);
+//                }
+//            } else {
+//                return null;
+//            }
+//        }
+//        return result;
+//    }
+    @Test
+    public void testGetNotebooksReaderBranch() {
 
         final List<Number> mockNotebookIDs = new ArrayList<Number>();
         mockNotebookIDs.add(1);
@@ -863,31 +900,15 @@ public class DBIntegrityServiceTest {
             }
         });
 
-        NotebookInfoList result = dbIntegrityService.getNotebooks(3, Permission.READER);
+        NotebookInfoList result = dbIntegrityService.getNotebooks(3, "reader");
         assertEquals("00000000-0000-0000-0000-000000000011", result.getNotebookInfo().get(0).getRef());
         assertEquals("00000000-0000-0000-0000-000000000111", result.getNotebookInfo().get(0).getOwnerRef());
         assertEquals("Notebook 1", result.getNotebookInfo().get(0).getTitle());
 
     }
 
-    ;
-    
-
-    /*public NotebookInfoList getNotebooksOwnedBy(Number principalID){
-        NotebookInfoList result = new NotebookInfoList();
-        List<Number> notebookIDs = notebookDao.getNotebookIDsOwnedBy(principalID);
-        String ownerRef = userDao.getURIFromInternalID(principalID);
-        for (Number notebookID : notebookIDs) {
-            NotebookInfo notebookInfo = notebookDao.getNotebookInfoWithoutOwner(notebookID);
-            notebookInfo.setOwnerRef(ownerRef);
-            result.getNotebookInfo().add(notebookInfo);
-        }
-
-        return result;
-    }*/
-    
     @Test
-    public void testGetNotebooksOwnedBy() {
+    public void testGetNotebooksOwnerBranch() {
 
         final List<Number> mockNotebookIDs = new ArrayList<Number>();
         mockNotebookIDs.add(3);
@@ -918,7 +939,7 @@ public class DBIntegrityServiceTest {
             }
         });
 
-        NotebookInfoList result = dbIntegrityService.getNotebooksOwnedBy(3);
+        NotebookInfoList result = dbIntegrityService.getNotebooks(3, "owner");
         assertEquals("00000000-0000-0000-0000-000000000013", result.getNotebookInfo().get(0).getRef());
         assertEquals("00000000-0000-0000-0000-000000000113", result.getNotebookInfo().get(0).getOwnerRef());
         assertEquals("Notebook 3", result.getNotebookInfo().get(0).getTitle());
@@ -928,89 +949,180 @@ public class DBIntegrityServiceTest {
 
     }
 
-    ;
+//    public ReferenceList getNotebooksOwnedBy(Number principalID) {
+//        ReferenceList result = new ReferenceList();
+//        List<Number> notebookIDs = notebookDao.getNotebookIDsOwnedBy(principalID);
+//        for (Number notebookID : notebookIDs) {
+//            String reference = notebookDao.getURIFromInternalID(notebookID);
+//            result.getRef().add(reference);
+//        }
+//        return result;
+//    }
+    @Test
+    public void testGetNotebooksOwnedBy() {
 
+        final List<Number> mockNotebookIDs = new ArrayList<Number>();
+        mockNotebookIDs.add(3);
+        mockNotebookIDs.add(4);
+
+        mockeryDao.checking(new Expectations() {
+            {
+                oneOf(notebookDao).getNotebookIDsOwnedBy(3);
+                will(returnValue(mockNotebookIDs));
+
+                oneOf(notebookDao).getURIFromInternalID(3);
+                will(returnValue(TestBackendConstants._TEST_SERVLET_URI_notebooks + "00000000-0000-0000-0000-000000000013"));
+
+                oneOf(notebookDao).getURIFromInternalID(4);
+                will(returnValue(TestBackendConstants._TEST_SERVLET_URI_notebooks + "00000000-0000-0000-0000-000000000014"));
+
+            }
+        });
+
+        ReferenceList result = dbIntegrityService.getNotebooksOwnedBy(3);
+        assertEquals(2, result.getRef().size());
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI_notebooks + "00000000-0000-0000-0000-000000000013", result.getRef().get(0));
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI_notebooks + "00000000-0000-0000-0000-000000000014", result.getRef().get(1));
+    }
 
     /*
-     public List<UUID> getPrincipals(Number notebookID, Permission permission) {
-        List<UUID> result = new ArrayList<UUID>();
-        List<Number> principalIDs = notebookDao.getPrincipalIDsWithPermission(notebookID, permission);
+     public ReferenceList getPrincipals(Number notebookID, String permission) {
+        ReferenceList result = new ReferenceList();
+        List<Number> principalIDs = notebookDao.getPrincipalIDsWithPermission(notebookID, Permission.fromValue(permission));
         for (Number principalID : principalIDs) {
-            UUID uuid = userDao.getExternalID(principalID);
-            result.add(uuid);
+            String reference = userDao.getURIFromInternalID(principalID);
+            result.getRef().add(reference);
         }
         return result;
-    }*/
-    
+    }
+     }*/
     @Test
     public void testGetPrincipals() {
         final List<Number> mockPrincipalIDs = new ArrayList<Number>();
         mockPrincipalIDs.add(2);
         mockPrincipalIDs.add(4);
-
-        final NotebookInfo mockNotebookInfo = new NotebookInfo();
-        mockNotebookInfo.setRef("00000000-0000-0000-0000-000000000011");
-        mockNotebookInfo.setTitle("Notebook 1");
-
+        
         mockeryDao.checking(new Expectations() {
             {
                 oneOf(notebookDao).getPrincipalIDsWithPermission(1, Permission.WRITER);
                 will(returnValue(mockPrincipalIDs));
 
-                oneOf(userDao).getExternalID(2);
-                will(returnValue(UUID.fromString("00000000-0000-0000-0000-000000000112")));
-                
-                 oneOf(userDao).getExternalID(4);
-                will(returnValue(UUID.fromString("00000000-0000-0000-0000-000000000114")));
-                
+                oneOf(userDao).getURIFromInternalID(2);
+                will(returnValue("serviceURI/users/00000000-0000-0000-0000-000000000112"));
+
+                oneOf(userDao).getURIFromInternalID(4);
+                will(returnValue("serviceURI/users/00000000-0000-0000-0000-000000000114"));
+
 
             }
         });
 
-        List<UUID> result = dbIntegrityService.getPrincipals(1, Permission.WRITER);
-        assertEquals("00000000-0000-0000-0000-000000000112", result.get(0).toString());
-        assertEquals("00000000-0000-0000-0000-000000000114", result.get(1).toString());
+        ReferenceList result = dbIntegrityService.getPrincipals(1, "writer");
+        assertEquals("serviceURI/users/00000000-0000-0000-0000-000000000112", result.getRef().get(0).toString());
+        assertEquals("serviceURI/users/00000000-0000-0000-0000-000000000114", result.getRef().get(1).toString());
 
     }
-    
-    
-//    public NotebookInfo getNotebookInfo(Number notebookID) {
-//        NotebookInfo result = notebookDao.getNotebookInfoWithoutOwner(notebookID);
+
+//   @Override
+//    public Notebook getNotebook(Number notebookID) {
+//        Notebook result = notebookDao.getNotebookWithoutAnnotationsAndPermissionsAndOwner(notebookID);
+//
 //        result.setOwnerRef(userDao.getURIFromInternalID(notebookDao.getOwner(notebookID)));
+//
+//        ReferenceList annotations = new ReferenceList();
+//        List<Number> annotationIDs = notebookDao.getAnnotations(notebookID);
+//        for (Number annotationID : annotationIDs) {
+//            annotations.getRef().add(annotationDao.getURIFromInternalID(annotationID));
+//        }
+//        result.setAnnotations(annotations);
+//
+//        UserWithPermissionList ups = new UserWithPermissionList();
+//        List<Permission> permissions = new ArrayList<Permission>();
+//        permissions.add(Permission.READER);
+//        permissions.add(Permission.WRITER);
+//        for (Permission permission : permissions) {
+//            List<Number> users = notebookDao.getPrincipalIDsWithPermission(notebookID, permission);
+//            if (users != null) {
+//                for (Number user : users) {
+//                    UserWithPermission up = new UserWithPermission();
+//                    up.setRef(userDao.getURIFromInternalID(user));
+//                    up.setPermission(permission);
+//                    ups.getUserWithPermission().add(up);
+//                }
+//            }
+//        }
+//
+//        result.setPermissions(ups);
 //        return result;
 //    }
-    
-  
+
+
     @Test
-    public void testGetNotebookInfo() {
+    public void testGetNotebook() throws DatatypeConfigurationException{
 
-        final NotebookInfo mockNotebookInfo = new NotebookInfo();
-        mockNotebookInfo.setRef("00000000-0000-0000-0000-000000000011");
-        mockNotebookInfo.setTitle("Notebook 1");
-
+        final Notebook mockNotebook = new Notebook();
+        mockNotebook.setURI("serviceURI/notebooks/00000000-0000-0000-0000-000000000012");
+        mockNotebook.setTitle("Notebook 2");
+        mockNotebook.setLastModified(DatatypeFactory.newInstance().newXMLGregorianCalendar("2014-02-12T09:25:00.383000Z"));
+        
+        final List<Number> mockAnnotations = new ArrayList<Number>();
+        mockAnnotations.add(3);
+        
+        final List<Number> mockReaders = new ArrayList<Number>();
+        mockReaders.add(1);
+        
+        final List<Number> mockWriters = new ArrayList<Number>();
+        mockWriters.add(3);
+        
         mockeryDao.checking(new Expectations() {
             {
-                oneOf(notebookDao).getNotebookInfoWithoutOwner(1);
-                will(returnValue(mockNotebookInfo));
-                
-                oneOf(notebookDao).getOwner(1);
-                will(returnValue(1));
+                oneOf(notebookDao).getNotebookWithoutAnnotationsAndPermissionsAndOwner(2);
+                will(returnValue(mockNotebook));
 
+                oneOf(notebookDao).getOwner(2);
+                will(returnValue(2));
+
+                oneOf(userDao).getURIFromInternalID(2);
+                will(returnValue("serviceURI/users/00000000-0000-0000-0000-000000000112"));
+
+                oneOf(notebookDao).getAnnotations(2);
+                will(returnValue(mockAnnotations));
+                
+                oneOf(annotationDao).getURIFromInternalID(3);
+                will(returnValue("serviceURI/annotations/00000000-0000-0000-0000-000000000023"));
+                
+                oneOf(notebookDao).getPrincipalIDsWithPermission(2, Permission.READER);
+                will(returnValue(mockReaders));
+                
                 oneOf(userDao).getURIFromInternalID(1);
-                will(returnValue("00000000-0000-0000-0000-000000000111"));
+                will(returnValue("serviceURI/users/00000000-0000-0000-0000-000000000111"));
+                
+                oneOf(notebookDao).getPrincipalIDsWithPermission(2, Permission.WRITER);
+                will(returnValue(mockWriters));
+                
+                oneOf(userDao).getURIFromInternalID(3);
+                will(returnValue("serviceURI/users/00000000-0000-0000-0000-000000000113"));
+
                 
 
             }
         });
 
-        NotebookInfo result = dbIntegrityService.getNotebookInfo(1);
-        assertEquals("00000000-0000-0000-0000-000000000011", result.getRef());
-        assertEquals("00000000-0000-0000-0000-000000000111", result.getOwnerRef());
-        assertEquals("Notebook 1", result.getTitle());
-
+        Notebook result = dbIntegrityService.getNotebook(2);
+        assertEquals("serviceURI/notebooks/00000000-0000-0000-0000-000000000012", result.getURI());
+        assertEquals("serviceURI/users/00000000-0000-0000-0000-000000000112", result.getOwnerRef());
+        assertEquals("2014-02-12T09:25:00.383000Z", result.getLastModified().toString());
+        assertEquals("Notebook 2", result.getTitle());
+        assertEquals(1, result.getAnnotations().getRef().size());
+        assertEquals("serviceURI/annotations/00000000-0000-0000-0000-000000000023", result.getAnnotations().getRef().get(0));
+        assertEquals(2, result.getPermissions().getUserWithPermission().size());
+        assertEquals("serviceURI/users/00000000-0000-0000-0000-000000000111", result.getPermissions().getUserWithPermission().get(0).getRef());
+        assertEquals("reader", result.getPermissions().getUserWithPermission().get(0).getPermission().value());
+        assertEquals("serviceURI/users/00000000-0000-0000-0000-000000000113", result.getPermissions().getUserWithPermission().get(1).getRef());
+        assertEquals("writer", result.getPermissions().getUserWithPermission().get(1).getPermission().value());
+        
     }
-    
-    
+
 //    public List<UUID> getAnnotationsForNotebook(Number notebookID, int startAnnotation, int maximumAnnotations, String orderedBy, boolean desc) {
 //        List<Number> annotationIDs = notebookDao.getAnnotations(notebookID);
 //
@@ -1033,8 +1145,6 @@ public class DBIntegrityServiceTest {
 //        }
 //        return annotationUUIDs;
 //    }
-    
-    
     @Test
     public void testAnnotationsForNotebook() {
         final List<Number> mockAnnotationIDs = new ArrayList<Number>();
@@ -1045,49 +1155,47 @@ public class DBIntegrityServiceTest {
             {
                 oneOf(notebookDao).getAnnotations(1);
                 will(returnValue(mockAnnotationIDs));
-                
+
                 oneOf(annotationDao).sublistOrderedAnnotationIDs(mockAnnotationIDs, 0, 3, "last_modified", "DESC");
                 will(returnValue(mockAnnotationIDs));
 
-                oneOf(annotationDao).getExternalID(1);
-                will(returnValue(UUID.fromString("00000000-0000-0000-0000-000000000021")));
-                
-                oneOf(annotationDao).getExternalID(2);
-                will(returnValue(UUID.fromString("00000000-0000-0000-0000-000000000022")));
-                
+                oneOf(annotationDao).getURIFromInternalID(1);
+                will(returnValue("serviceURI/annotations/00000000-0000-0000-0000-000000000021"));
+
+                oneOf(annotationDao).getURIFromInternalID(2);
+                will(returnValue("serviceURI/annotations/00000000-0000-0000-0000-000000000022"));
+
+
 
             }
         });
 
-        List<UUID> result = dbIntegrityService.getAnnotationsForNotebook(1, -1, 3, "last_modified", true);
-        assertEquals("00000000-0000-0000-0000-000000000021", result.get(0).toString());
-        assertEquals("00000000-0000-0000-0000-000000000022", result.get(1).toString());
+        ReferenceList result = dbIntegrityService.getAnnotationsForNotebook(1, -1, 3, "last_modified", true);
+        assertEquals(2, result.getRef().size());
+        assertEquals("serviceURI/annotations/00000000-0000-0000-0000-000000000021", result.getRef().get(0).toString());
+        assertEquals("serviceURI/annotations/00000000-0000-0000-0000-000000000022", result.getRef().get(1).toString());
 
     }
-    
-    
+
     /**
- * Updaters
- */
-  
+     * Updaters
+     */
 //    public boolean updateNotebookMetadata(Number notebookID, NotebookInfo upToDateNotebookInfo) {
 //        Number ownerID = userDao.getInternalIDFromURI(upToDateNotebookInfo.getOwnerRef());
 //        return notebookDao.updateNotebookMetadata(notebookID, upToDateNotebookInfo.getTitle(), ownerID);
 //    }
-    
-    
     @Test
-    public void testUpdateNotebookMetadata() {        
-        
-        final NotebookInfo mockNotebookInfo= new NotebookInfo();
-        mockNotebookInfo.setOwnerRef(TestBackendConstants._TEST_SERVLET_URI_users+"00000000-0000-0000-0000-000000000113");
+    public void testUpdateNotebookMetadata() {
+
+        final NotebookInfo mockNotebookInfo = new NotebookInfo();
+        mockNotebookInfo.setOwnerRef(TestBackendConstants._TEST_SERVLET_URI_users + "00000000-0000-0000-0000-000000000113");
         mockNotebookInfo.setTitle("New Title");
 
         mockeryDao.checking(new Expectations() {
             {
-                oneOf(userDao).getInternalIDFromURI(TestBackendConstants._TEST_SERVLET_URI_users+"00000000-0000-0000-0000-000000000113");
+                oneOf(userDao).getInternalIDFromURI(TestBackendConstants._TEST_SERVLET_URI_users + "00000000-0000-0000-0000-000000000113");
                 will(returnValue(3));
-                
+
                 oneOf(notebookDao).updateNotebookMetadata(1, "New Title", 3);
                 will(returnValue(true));
             }
@@ -1095,33 +1203,29 @@ public class DBIntegrityServiceTest {
 
         boolean result = dbIntegrityService.updateNotebookMetadata(1, mockNotebookInfo);
         assertTrue(result);
-    } 
-    
+    }
 
 // 
 //    public boolean addAnnotationToNotebook(Number notebookID, Number annotationID) {
 //        return notebookDao.addAnnotationToNotebook(notebookID, annotationID);
 //    }
-
     @Test
-    public void testAddAnnotationToNotebook() {        
-        
+    public void testAddAnnotationToNotebook() {
+
         mockeryDao.checking(new Expectations() {
             {
-               
+
                 oneOf(notebookDao).addAnnotationToNotebook(1, 3);
                 will(returnValue(true));
             }
         });
 
-        assertTrue(dbIntegrityService.addAnnotationToNotebook(1,3));
-    } 
-    
-    
-/**
- * Adders
- */
+        assertTrue(dbIntegrityService.addAnnotationToNotebook(1, 3));
+    }
 
+    /**
+     * Adders
+     */
 //    public Number createNotebook(Notebook notebook, Number ownerID) {
 //        Number notebookID = notebookDao.createNotebookWithoutPermissionsAndAnnotations(notebook, ownerID);
 //        boolean updateOwner = notebookDao.setOwner(notebookID, ownerID);
@@ -1133,16 +1237,14 @@ public class DBIntegrityServiceTest {
 //        }
 //        return notebookID;
 //    }
-
-    
     @Test
     public void testCreateNotebook() {
-        
+
         final Notebook notebook = new Notebook();
         notebook.setOwnerRef("tmpXXX");
         notebook.setTitle("(Almost) Copy of Notebook 1");
-        notebook.setURI("tmpYYY");        
-        
+        notebook.setURI("tmpYYY");
+
         UserWithPermissionList permissions = new UserWithPermissionList();
         UserWithPermission p1 = new UserWithPermission();
         p1.setPermission(Permission.WRITER);
@@ -1153,27 +1255,27 @@ public class DBIntegrityServiceTest {
         p2.setRef(TestBackendConstants._TEST_SERVLET_URI_users + "00000000-0000-0000-0000-000000000113");
         permissions.getUserWithPermission().add(p2);
         notebook.setPermissions(permissions);
-        
+
         mockeryDao.checking(new Expectations() {
             {
                 oneOf(notebookDao).createNotebookWithoutPermissionsAndAnnotations(notebook, 1);
                 will(returnValue(5));
-                
+
                 oneOf(notebookDao).setOwner(5, 1);
                 will(returnValue(true));
-                
+
                 oneOf(userDao).getInternalIDFromURI(TestBackendConstants._TEST_SERVLET_URI_users + "00000000-0000-0000-0000-000000000112");
                 will(returnValue(2));
-                
+
                 oneOf(userDao).getInternalIDFromURI(TestBackendConstants._TEST_SERVLET_URI_users + "00000000-0000-0000-0000-000000000113");
                 will(returnValue(3));
-                
-               oneOf(notebookDao).addPermissionToNotebook(5, 2, Permission.WRITER);
-               will(returnValue(true));
-                
+
+                oneOf(notebookDao).addPermissionToNotebook(5, 2, Permission.WRITER);
+                will(returnValue(true));
+
                 oneOf(notebookDao).addPermissionToNotebook(5, 3, Permission.READER);
-               will(returnValue(true));
-               
+                will(returnValue(true));
+
             }
         });
 
@@ -1181,20 +1283,16 @@ public class DBIntegrityServiceTest {
         assertEquals(5, result);
 
     }
-      
-    
-    
-    
+
 //    public boolean createAnnotationInNotebook(Number notebookID, Annotation annotation, Number ownerID) {
 //        Number newAnnotationID = this.addUsersAnnotation(ownerID, annotation);
 //        return notebookDao.addAnnotationToNotebook(notebookID, newAnnotationID);
 //    }
-   
     @Test
     public void testCreateAnnotationInNotebook() {
-        
+
         final Annotation testAnnotation = testInstances.getAnnotationToAdd();
-        
+
         mockeryDao.checking(new Expectations() {
             {
                 oneOf(annotationDao).addAnnotation(testAnnotation, 3);
@@ -1211,7 +1309,7 @@ public class DBIntegrityServiceTest {
                 will(returnValue(1)); // the DB update will be called at perform anyway, even if the body is not changed (can be optimized)
 
                 /////////////////////////
-                
+
                 oneOf(notebookDao).addAnnotationToNotebook(1, 5);
                 will(returnValue(true));
             }
@@ -1219,12 +1317,11 @@ public class DBIntegrityServiceTest {
 
         assertTrue(dbIntegrityService.createAnnotationInNotebook(1, testAnnotation, 3));
 
-    }   
+    }
 
-/**
- * Deleters
- */
-    
+    /**
+     * Deleters
+     */
 //      public boolean deleteNotebook(Number notebookID) {
 //        if (notebookDao.deleteAllPermissionsForNotebook(notebookID) || notebookDao.deleteAllAnnotationsFromNotebook(notebookID)) {
 //            return notebookDao.deleteNotebook(notebookID);
@@ -1233,25 +1330,23 @@ public class DBIntegrityServiceTest {
 //        }
 //   
 //   }
-    
     @Test
-    public void testDeleteNotebook() {        
-        
+    public void testDeleteNotebook() {
+
         mockeryDao.checking(new Expectations() {
             {
-               
+
                 oneOf(notebookDao).deleteAllPermissionsForNotebook(1);
                 will(returnValue(true));
-                
+
                 oneOf(notebookDao).deleteAllAnnotationsFromNotebook(1);
                 will(returnValue(true));
-                
+
                 oneOf(notebookDao).deleteNotebook(1);
                 will(returnValue(true));
             }
         });
 
         assertTrue(dbIntegrityService.deleteNotebook(1));
-    } 
-    
+    }
 }

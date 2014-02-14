@@ -239,15 +239,18 @@ public interface DBIntegrityService {
     public boolean canWrite(Number userID, Number annotationID);
 
     /// notebooks ///
-    public NotebookInfoList getNotebooks(Number prinipalID, Permission permission);
+    
+    public Number getNotebookInternalIdentifier(UUID externalIdentifier);
+    
+    public NotebookInfoList getNotebooks(Number prinipalID, String permission);
+    
+    public ReferenceList getNotebooksOwnedBy(Number principalID);
 
-    public NotebookInfoList getNotebooksOwnedBy(Number principalID);
+    public ReferenceList getPrincipals(Number notebookID, String permission);
 
-    public List<UUID> getPrincipals(Number notebookID, Permission permission);
+    public Notebook getNotebook(Number notebookID);
 
-    public NotebookInfo getNotebookInfo(Number notebookID);
-
-    List<UUID> getAnnotationsForNotebook(Number notebookID, int startAnnotation, int maximumAnnotations, String orderedBy, boolean desc);
+    ReferenceList getAnnotationsForNotebook(Number notebookID, int startAnnotation, int maximumAnnotations, String orderedBy, boolean desc);
 
     /**
      * UPDATERS
