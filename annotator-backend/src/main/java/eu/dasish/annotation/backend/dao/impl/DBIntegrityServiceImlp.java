@@ -437,54 +437,96 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
 
     /// notebooks ///
     @Override
-    public NotebookInfoList getNotebooks(Number prinipalID, Permission permission) {
+     public Number getNotebookInternalIdentifier(UUID externalIdentifier){
+        return notebookDao.getInternalID(externalIdentifier);
+    }
+    
+    
+    @Override
+    public NotebookInfoList getNotebooks(Number principalID, String permission) {
         NotebookInfoList result = new NotebookInfoList();
-        List<Number> notebookIDs = notebookDao.getNotebookIDs(prinipalID, permission);
-        for (Number notebookID : notebookIDs) {
-            NotebookInfo notebookInfo = notebookDao.getNotebookInfoWithoutOwner(notebookID);
-            Number ownerID = notebookDao.getOwner(notebookID);
-            notebookInfo.setOwnerRef(userDao.getURIFromInternalID(ownerID));
-            result.getNotebookInfo().add(notebookInfo);
+        if (permission.equalsIgnoreCase("reader") || permission.equalsIgnoreCase("writer")) {
+            List<Number> notebookIDs = notebookDao.getNotebookIDs(principalID, Permission.fromValue(permission));
+            for (Number notebookID : notebookIDs) {
+                NotebookInfo notebookInfo = notebookDao.getNotebookInfoWithoutOwner(notebookID);
+                Number ownerID = notebookDao.getOwner(notebookID);
+                notebookInfo.setOwnerRef(userDao.getURIFromInternalID(ownerID));
+                result.getNotebookInfo().add(notebookInfo);
+            }
+        } else {
+            if (permission.equalsIgnoreCase("owner")) {
+                List<Number> notebookIDs = notebookDao.getNotebookIDsOwnedBy(principalID);
+                String ownerRef = userDao.getURIFromInternalID(principalID);
+                for (Number notebookID : notebookIDs) {
+                    NotebookInfo notebookInfo = notebookDao.getNotebookInfoWithoutOwner(notebookID);
+                    notebookInfo.setOwnerRef(ownerRef);
+                    result.getNotebookInfo().add(notebookInfo);
+                }
+            } else {
+                return null;
+            }
         }
-
         return result;
     }
 
     @Override
-    public NotebookInfoList getNotebooksOwnedBy(Number principalID) {
-        NotebookInfoList result = new NotebookInfoList();
+    public ReferenceList getNotebooksOwnedBy(Number principalID) {
+        ReferenceList result = new ReferenceList();
         List<Number> notebookIDs = notebookDao.getNotebookIDsOwnedBy(principalID);
-        String ownerRef = userDao.getURIFromInternalID(principalID);
         for (Number notebookID : notebookIDs) {
-            NotebookInfo notebookInfo = notebookDao.getNotebookInfoWithoutOwner(notebookID);
-            notebookInfo.setOwnerRef(ownerRef);
-            result.getNotebookInfo().add(notebookInfo);
+            String reference = notebookDao.getURIFromInternalID(notebookID);
+            result.getRef().add(reference);
         }
-
         return result;
     }
 
     @Override
-    public List<UUID> getPrincipals(Number notebookID, Permission permission) {
-        List<UUID> result = new ArrayList<UUID>();
-        List<Number> principalIDs = notebookDao.getPrincipalIDsWithPermission(notebookID, permission);
+    public ReferenceList getPrincipals(Number notebookID, String permission) {
+        ReferenceList result = new ReferenceList();
+        List<Number> principalIDs = notebookDao.getPrincipalIDsWithPermission(notebookID, Permission.fromValue(permission));
         for (Number principalID : principalIDs) {
-            UUID uuid = userDao.getExternalID(principalID);
-            result.add(uuid);
+            String reference = userDao.getURIFromInternalID(principalID);
+            result.getRef().add(reference);
         }
         return result;
     }
 
     @Override
-    public NotebookInfo getNotebookInfo(Number notebookID) {
-        NotebookInfo result = notebookDao.getNotebookInfoWithoutOwner(notebookID);
+    public Notebook getNotebook(Number notebookID) {
+        Notebook result = notebookDao.getNotebookWithoutAnnotationsAndPermissionsAndOwner(notebookID);
+
         result.setOwnerRef(userDao.getURIFromInternalID(notebookDao.getOwner(notebookID)));
+
+        ReferenceList annotations = new ReferenceList();
+        List<Number> annotationIDs = notebookDao.getAnnotations(notebookID);
+        for (Number annotationID : annotationIDs) {
+            annotations.getRef().add(annotationDao.getURIFromInternalID(annotationID));
+        }
+        result.setAnnotations(annotations);
+
+        UserWithPermissionList ups = new UserWithPermissionList();
+        List<Permission> permissions = new ArrayList<Permission>();
+        permissions.add(Permission.READER);
+        permissions.add(Permission.WRITER);
+        for (Permission permission : permissions) {
+            List<Number> users = notebookDao.getPrincipalIDsWithPermission(notebookID, permission);
+            if (users != null) {
+                for (Number user : users) {
+                    UserWithPermission up = new UserWithPermission();
+                    up.setRef(userDao.getURIFromInternalID(user));
+                    up.setPermission(permission);
+                    ups.getUserWithPermission().add(up);
+                }
+            }
+        }
+
+        result.setPermissions(ups);
         return result;
     }
 
     /////////////////////////////////////////////////////////////
     @Override
-    public List<UUID> getAnnotationsForNotebook(Number notebookID, int startAnnotation, int maximumAnnotations, String orderedBy, boolean desc) {
+    public ReferenceList getAnnotationsForNotebook(Number notebookID, int startAnnotation, int maximumAnnotations, String orderedBy, boolean desc) {
         List<Number> annotationIDs = notebookDao.getAnnotations(notebookID);
 
         if (startAnnotation < -1) {
@@ -500,11 +542,11 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         int offset = (startAnnotation > 0) ? startAnnotation - 1 : 0;
         String direction = desc ? "DESC" : "ASC";
         List<Number> selectedAnnotIDs = annotationDao.sublistOrderedAnnotationIDs(annotationIDs, offset, maximumAnnotations, orderedBy, direction);
-        List<UUID> annotationUUIDs = new ArrayList<UUID>();
+        ReferenceList references = new ReferenceList();
         for (Number annotationID : selectedAnnotIDs) {
-            annotationUUIDs.add(annotationDao.getExternalID(annotationID));
+            references.getRef().add(annotationDao.getURIFromInternalID(annotationID));
         }
-        return annotationUUIDs;
+        return references;
     }
 
     ///// UPDATERS /////////////////
@@ -728,7 +770,7 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     }
 
 ////////////// HELPERS ////////////////////
-private Target createFreshTarget(TargetInfo targetInfo) {
+    private Target createFreshTarget(TargetInfo targetInfo) {
         Target target = new Target();
         target.setLink(targetInfo.getLink());
         target.setVersion(targetInfo.getVersion());
