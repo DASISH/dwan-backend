@@ -220,7 +220,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
 
         StringBuilder query = new StringBuilder("SELECT DISTINCT ");
         query.append(annotation_id).append(" FROM ").append(annotationsTargetsTableName).append(" WHERE ").append(annotation_id).append(" IN ");
-        query.append(values).append(" ORDER BY ").append(orderedBy);
+        query.append(values).append(" ORDER BY ").append(orderedBy).append(" ").append(direction).append(" ");
 
         if (limit > -1) {
             query.append(direction).append(" LIMIT :limit ");
