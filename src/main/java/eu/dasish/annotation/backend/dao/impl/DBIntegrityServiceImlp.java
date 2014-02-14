@@ -498,7 +498,7 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         }
 
         int offset = (startAnnotation > 0) ? startAnnotation - 1 : 0;
-        String direction = desc ? " DESC " : " ASC ";
+        String direction = desc ? "DESC" : "ASC";
         List<Number> selectedAnnotIDs = annotationDao.sublistOrderedAnnotationIDs(annotationIDs, offset, maximumAnnotations, orderedBy, direction);
         List<UUID> annotationUUIDs = new ArrayList<UUID>();
         for (Number annotationID : selectedAnnotIDs) {
@@ -640,9 +640,8 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     public int addAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission) {
         return annotationDao.addAnnotationPrincipalPermission(annotationID, userID, permission);
     }
-    
-    //////////// notebooks //////
 
+    //////////// notebooks //////
     @Override
     public Number createNotebook(Notebook notebook, Number ownerID) {
         Number notebookID = notebookDao.createNotebookWithoutPermissionsAndAnnotations(notebook, ownerID);
@@ -718,16 +717,18 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         }
         return result;
     }
-    
+
     @Override
     public boolean deleteNotebook(Number notebookID) {
-        boolean deletePermissions = notebookDao.deleteAllPermissionsForNotebook(notebookID);
-        boolean deleteAnnotations = notebookDao.deleteAllAnnotationsFromNotebook(notebookID);
-        return notebookDao.deleteNotebook(notebookID);
+        if (notebookDao.deleteAllPermissionsForNotebook(notebookID) || notebookDao.deleteAllAnnotationsFromNotebook(notebookID)) {
+            return notebookDao.deleteNotebook(notebookID);
+        } else {
+            return false;
+        }
     }
 
-    ////////////// HELPERS ////////////////////
-    private Target createFreshTarget(TargetInfo targetInfo) {
+////////////// HELPERS ////////////////////
+private Target createFreshTarget(TargetInfo targetInfo) {
         Target target = new Target();
         target.setLink(targetInfo.getLink());
         target.setVersion(targetInfo.getVersion());
