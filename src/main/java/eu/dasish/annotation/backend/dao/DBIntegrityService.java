@@ -244,6 +244,8 @@ public interface DBIntegrityService {
     
     public NotebookInfoList getNotebooks(Number prinipalID, String permission);
     
+    boolean hasAccess(Number notebookID, Number principalID, Permission permission);    
+    
     public ReferenceList getNotebooksOwnedBy(Number principalID);
 
     public ReferenceList getPrincipals(Number notebookID, String permission);

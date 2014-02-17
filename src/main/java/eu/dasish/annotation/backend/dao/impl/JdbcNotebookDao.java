@@ -23,16 +23,12 @@ import eu.dasish.annotation.schema.NotebookInfo;
 import eu.dasish.annotation.schema.Permission;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import javax.sql.DataSource;
 import org.springframework.jdbc.core.RowMapper;
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,6 +67,8 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
             return result.get(0);
         }
     }
+    
+  
 
     @Override
     public List<Number> getNotebookIDs(Number principalID, Permission permission) {

@@ -470,6 +470,16 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     }
 
     @Override
+    public boolean hasAccess(Number notebookID, Number principalID, Permission permission){
+        List<Number> notebookIDs = notebookDao.getNotebookIDs(principalID, permission);
+        if (notebookIDs == null) {
+            return false;
+        } 
+        return notebookIDs.contains(notebookID);
+    }
+    
+    
+    @Override
     public ReferenceList getNotebooksOwnedBy(Number principalID) {
         ReferenceList result = new ReferenceList();
         List<Number> notebookIDs = notebookDao.getNotebookIDsOwnedBy(principalID);
