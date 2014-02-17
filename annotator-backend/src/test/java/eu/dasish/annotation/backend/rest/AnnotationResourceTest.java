@@ -67,8 +67,6 @@ public class AnnotationResourceTest {
     @Autowired
     private Mockery mockeryRest;     
     @Autowired
-    private MockObjectsFactoryRest mockObjectFactory;
-    @Autowired
     private DBIntegrityService mockDbIntegrityService;
     @Autowired
     UriInfo mockUriInfo;    
@@ -80,6 +78,7 @@ public class AnnotationResourceTest {
     public AnnotationResourceTest() { 
         mockRequest = new MockHttpServletRequest();
         mockRequest.setRemoteUser("olhsha@mpi.nl");
+        
         
     }
         

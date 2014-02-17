@@ -984,7 +984,39 @@ public class DBIntegrityServiceTest {
         assertEquals(TestBackendConstants._TEST_SERVLET_URI_notebooks + "00000000-0000-0000-0000-000000000013", result.getRef().get(0));
         assertEquals(TestBackendConstants._TEST_SERVLET_URI_notebooks + "00000000-0000-0000-0000-000000000014", result.getRef().get(1));
     }
+    
+ /*      public boolean hasAccess(Number notebookID, Number principalID, Permission permission){
+        List<Number> notebookIDs = notebookDao.getNotebookIDs(principalID, permission);
+        if (notebookIDs == null) {
+            return false;
+        } 
+        return notebookIDs.contains(notebookID);
+    } */
+    
+    @Test
+    public void testHasAccess() {
 
+        
+        final Permission writer = Permission.fromValue("writer"); 
+        final List<Number> mockNotebookIDwriter = new ArrayList<Number>();
+        mockNotebookIDwriter.add(1);
+        mockNotebookIDwriter.add(4);
+
+        mockeryDao.checking(new Expectations() {
+            {
+                oneOf(notebookDao).getNotebookIDs(2, writer);
+                will(returnValue(mockNotebookIDwriter));
+                
+                oneOf(notebookDao).getNotebookIDs(2, writer);
+                will(returnValue(mockNotebookIDwriter));
+
+            }
+        });
+
+        assertTrue(dbIntegrityService.hasAccess(4, 2, writer));
+        assertFalse(dbIntegrityService.hasAccess(5, 2, writer));
+    }
+    
     /*
      public ReferenceList getPrincipals(Number notebookID, String permission) {
         ReferenceList result = new ReferenceList();

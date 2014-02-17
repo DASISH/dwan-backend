@@ -22,6 +22,7 @@ import eu.dasish.annotation.backend.dao.DBIntegrityService;
 import eu.dasish.annotation.schema.Notebook;
 import eu.dasish.annotation.schema.NotebookInfoList;
 import eu.dasish.annotation.schema.ObjectFactory;
+import eu.dasish.annotation.schema.Permission;
 import eu.dasish.annotation.schema.ReferenceList;
 import java.io.IOException;
 import java.net.URI;
@@ -66,38 +67,32 @@ public class NotebookResource {
     private UriInfo uriInfo;
     @Context
     protected Providers providers;
-    private final Logger logger = LoggerFactory.getLogger(AnnotationResource.class);
     private final Logger loggerServer = LoggerFactory.getLogger(HttpServletResponse.class);
+    private final VerboseOutput verboseOutput = new VerboseOutput(httpServletResponse, loggerServer);
 
     public NotebookResource() {
     }
 
+    // changed w.r.t.the spec, query parameter persmission is added
     @GET
     @Produces(MediaType.APPLICATION_XML)
     @Path("")
     @Transactional(readOnly = true)
     public JAXBElement<NotebookInfoList> getNotebookInfos(@QueryParam("permission") String permissionMode) throws IOException {
-
-        URI baseURI = uriInfo.getBaseUri();
-        String baseURIstr = baseURI.toString();
-        dbIntegrityService.setServiceURI(baseURIstr);
-
+        dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         String remoteUser = httpServletRequest.getRemoteUser();
-        final Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
-        if (userID != null) {
+        final Number principalID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
+        if (principalID != null) {
             if (permissionMode.equalsIgnoreCase("reader") || permissionMode.equalsIgnoreCase("writer") || permissionMode.equalsIgnoreCase("owner")) {
-                NotebookInfoList notebookInfos = dbIntegrityService.getNotebooks(userID, permissionMode);
+                NotebookInfoList notebookInfos = dbIntegrityService.getNotebooks(principalID, permissionMode);
                 return new ObjectFactory().createNotebookInfoList(notebookInfos);
             } else {
-                loggerServer.debug(httpServletResponse.SC_BAD_REQUEST + ": '" + permissionMode + "' is an invalid permission value, which must be either owner, or reader, or writer.");
-                httpServletResponse.sendError(httpServletResponse.SC_BAD_REQUEST, permissionMode + "' is an invalid permission value, which must be either owner, or reader, or writer.");
-                return null;
+                verboseOutput.sendFailureMessage(VerboseOutput.INVALID_PERMISSION_MODE(permissionMode), httpServletResponse.SC_BAD_REQUEST);
             }
         } else {
-            loggerServer.debug(httpServletResponse.SC_NOT_FOUND + ": the logged-in user is not found in the database");
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged-in user is not found in the database");
-            return null;
+            verboseOutput.sendFailureMessage(VerboseOutput.REMOTE_PRINCIPAL_NOT_FOUND, httpServletResponse.SC_NOT_FOUND);
         }
+        return (new ObjectFactory()).createNotebookInfoList(new NotebookInfoList());
     }
 
     @GET
@@ -106,9 +101,7 @@ public class NotebookResource {
     @Transactional(readOnly = true)
     public JAXBElement<ReferenceList> getOwnedNotebooks() throws IOException {
 
-        URI baseURI = uriInfo.getBaseUri();
-        String baseURIstr = baseURI.toString();
-        dbIntegrityService.setServiceURI(baseURIstr);
+        dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
 
         String remoteUser = httpServletRequest.getRemoteUser();
         final Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
@@ -116,38 +109,100 @@ public class NotebookResource {
             ReferenceList references = dbIntegrityService.getNotebooksOwnedBy(userID);
             return new ObjectFactory().createReferenceList(references);
         } else {
-            loggerServer.debug(httpServletResponse.SC_NOT_FOUND + ": the logged-in user is not found in the database");
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged-in user is not found in the database");
-            return null;
+            verboseOutput.sendFailureMessage(VerboseOutput.REMOTE_PRINCIPAL_NOT_FOUND, httpServletResponse.SC_NOT_FOUND);
         }
+        return new ObjectFactory().createReferenceList(new ReferenceList());
     }
 
     @GET
     @Produces(MediaType.APPLICATION_XML)
-    @Path("{notebookid: " + BackendConstants.regExpIdentifier + "}/targets")
+    @Path("{notebookid: " + BackendConstants.regExpIdentifier + "}/{permission}")
     @Transactional(readOnly = true)
-    public JAXBElement<Notebook> getNotebook(@PathParam("notebookid") String externalIdentifier) throws IOException {
+    public JAXBElement<ReferenceList> getPrincipals(@PathParam("notebookid") String externalIdentifier, @PathParam("permission") String permissionMode) throws IOException {
 
-        URI baseURI = uriInfo.getBaseUri();
-        String baseURIstr = baseURI.toString();
-        dbIntegrityService.setServiceURI(baseURIstr);
+        dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
 
         String remoteUser = httpServletRequest.getRemoteUser();
-        final Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
-        if (userID != null) {
+        final Number principalID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
+        if (principalID != null) {
             Number notebookID = dbIntegrityService.getNotebookInternalIdentifier(UUID.fromString(externalIdentifier));
             if (notebookID != null) {
-                Notebook notebook = dbIntegrityService.getNotebook(notebookID);
-                return new ObjectFactory().createNotebook(notebook);
+                if (dbIntegrityService.hasAccess(notebookID, principalID, Permission.fromValue("reader"))) {
+                    ReferenceList principals = dbIntegrityService.getPrincipals(notebookID, permissionMode);
+                    return new ObjectFactory().createReferenceList(principals);
+                } else {
+                    verboseOutput.sendFailureMessage(VerboseOutput.FORBIDDEN_NOTEBOOK_READING(externalIdentifier), HttpServletResponse.SC_FORBIDDEN);
+                }
             } else {
-                loggerServer.debug(HttpServletResponse.SC_NOT_FOUND + ": The notebook with the given id " + externalIdentifier + " is not found in the database");
-                httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The notebook with the given id " + externalIdentifier + " is not found in the database");
-                return null;
+                verboseOutput.sendFailureMessage(VerboseOutput.NOTEBOOK_NOT_FOUND(externalIdentifier), HttpServletResponse.SC_NOT_FOUND);
             }
         } else {
-            loggerServer.debug(httpServletResponse.SC_NOT_FOUND + ": the logged-in user is not found in the database");
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged-in user is not found in the database");
-            return null;
+            verboseOutput.sendFailureMessage(VerboseOutput.REMOTE_PRINCIPAL_NOT_FOUND, HttpServletResponse.SC_NOT_FOUND);
         }
+
+        return new ObjectFactory().createReferenceList(new ReferenceList());
+    }
+
+    // Notebook and NotebookInfo (metadata) schemata may be changed
+    // 1) we do not have information "private notebook" directly in the xml, but we have readers and writers in the schema
+    //so if both are empty then we see that it is private for the owner
+    // or shall we change the scheme? for notebooks
+    // 2) d we need to include the reference list of annotations in teh metadata of the notebook
+    @GET
+    @Produces(MediaType.APPLICATION_XML)
+    @Path("{notebookid: " + BackendConstants.regExpIdentifier + "}/metadata")
+    @Transactional(readOnly = true)
+    public JAXBElement<Notebook> getNotebook(@PathParam("notebookid") String externalIdentifier) throws IOException {
+        dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
+        String remoteUser = httpServletRequest.getRemoteUser();
+        final Number principalID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
+        if (principalID != null) {
+            Number notebookID = dbIntegrityService.getNotebookInternalIdentifier(UUID.fromString(externalIdentifier));
+            if (notebookID != null) {
+                if (dbIntegrityService.hasAccess(notebookID, principalID, Permission.fromValue("reader"))) {
+                    Notebook notebook = dbIntegrityService.getNotebook(notebookID);
+                    return new ObjectFactory().createNotebook(notebook);
+                } else {
+                    verboseOutput.sendFailureMessage(VerboseOutput.FORBIDDEN_NOTEBOOK_READING(externalIdentifier), HttpServletResponse.SC_FORBIDDEN);
+                }
+            } else {
+                verboseOutput.sendFailureMessage(VerboseOutput.NOTEBOOK_NOT_FOUND(externalIdentifier), HttpServletResponse.SC_NOT_FOUND);
+            }
+        } else {
+            verboseOutput.sendFailureMessage(VerboseOutput.REMOTE_PRINCIPAL_NOT_FOUND, HttpServletResponse.SC_NOT_FOUND);
+        }
+        return new ObjectFactory().createNotebook(new Notebook());
+    }
+
+    @GET
+    @Produces(MediaType.APPLICATION_XML)
+    @Path("{notebookid: " + BackendConstants.regExpIdentifier + "}")
+    @Transactional(readOnly = true)
+    public JAXBElement<ReferenceList> getNotebookAnnotations(@PathParam("notebookid") String externalIdentifier,
+            @QueryParam("maximumAnnotations") int maximumAnnotations,
+            @QueryParam("startAnnotation") int startAnnotations,
+            @QueryParam("orderBy") String orderBy,
+            @QueryParam("descending") boolean desc) throws IOException {
+
+        dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
+
+        String remoteUser = httpServletRequest.getRemoteUser();
+        final Number principalID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
+        if (principalID != null) {
+            Number notebookID = dbIntegrityService.getNotebookInternalIdentifier(UUID.fromString(externalIdentifier));
+            if (notebookID != null) {
+                if (dbIntegrityService.hasAccess(notebookID, principalID, Permission.fromValue("reader"))) {
+                    ReferenceList annotations = dbIntegrityService.getAnnotationsForNotebook(notebookID, startAnnotations, maximumAnnotations, orderBy, desc);
+                    return new ObjectFactory().createReferenceList(annotations);
+                } else {
+                    verboseOutput.sendFailureMessage(VerboseOutput.FORBIDDEN_NOTEBOOK_READING(externalIdentifier), HttpServletResponse.SC_FORBIDDEN);
+                }
+            } else {
+                verboseOutput.sendFailureMessage(VerboseOutput.NOTEBOOK_NOT_FOUND(externalIdentifier), HttpServletResponse.SC_NOT_FOUND);
+            }
+        } else {
+            verboseOutput.sendFailureMessage(VerboseOutput.REMOTE_PRINCIPAL_NOT_FOUND, HttpServletResponse.SC_NOT_FOUND);
+        }
+        return new ObjectFactory().createReferenceList(new ReferenceList());
     }
 }
