@@ -51,7 +51,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 @Path("/debug")
 public class DebugResource {
-   @Autowired
+
+    @Autowired
     private DBIntegrityService dbIntegrityService;
     @Context
     private HttpServletRequest httpServletRequest;
@@ -59,15 +60,14 @@ public class DebugResource {
     private HttpServletResponse httpServletResponse;
     @Context
     private UriInfo uriInfo;
-    
     @Context
     private ServletContext context;
-    
     final String default_permission = "reader";
-    private final Logger logger = LoggerFactory.getLogger(DebugResource.class);
+    public static final Logger loggerServer = LoggerFactory.getLogger(HttpServletResponse.class);
+    private final VerboseOutput verboseOutput = new VerboseOutput(httpServletResponse, loggerServer);
     private final String admin = "admin";
-    private final String developer = "developer"; 
-    
+    private final String developer = "developer";
+
     @GET
     @Produces(MediaType.TEXT_XML)
     @Path("annotations")
@@ -82,14 +82,12 @@ public class DebugResource {
                 final AnnotationInfoList annotationInfoList = dbIntegrityService.getAllAnnotationInfos();
                 return new ObjectFactory().createAnnotationInfoList(annotationInfoList);
             } else {
-                httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "The logged-in user is neither developer nor admin, and therefore cannot perform this request.");
-                return null;
+                verboseOutput.DEVELOPER_RIGHTS_EXPECTED();
             }
         } else {
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged-in user is not found in the database");
-            return null;
+            verboseOutput.REMOTE_PRINCIPAL_NOT_FOUND(remoteUser);
         }
-
+        return new ObjectFactory().createAnnotationInfoList(new AnnotationInfoList());
     }
 
     @GET
@@ -97,9 +95,22 @@ public class DebugResource {
     @Path("/logDatabase/{n}")
     @Transactional(readOnly = true)
     public String getDasishBackendLog(@PathParam("n") int n) throws IOException {
-        return logFile("eu.dasish.annotation.backend.logDatabaseLocation", n);
+        dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
+        String remoteUser = httpServletRequest.getRemoteUser();
+        Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
+        if (userID != null) {
+            String typeOfAccount = dbIntegrityService.getTypeOfUserAccount(userID);
+            if (typeOfAccount.equals(admin) || typeOfAccount.equals(developer)) {
+                return logFile("eu.dasish.annotation.backend.logDatabaseLocation", n);
+            } else {
+                verboseOutput.DEVELOPER_RIGHTS_EXPECTED();
+            }
+        } else {
+            verboseOutput.REMOTE_PRINCIPAL_NOT_FOUND(remoteUser);
+        }
+        return " ";
     }
-    
+
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     @Path("/remoteID")
@@ -107,17 +118,29 @@ public class DebugResource {
     public String getLoggedInRemoteID() throws IOException {
         return httpServletRequest.getRemoteUser();
     }
-    
+
     /////
-    
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     @Path("/logServer/{n}")
     @Transactional(readOnly = true)
     public String getDasishServerLog(@PathParam("n") int n) throws IOException {
-        return logFile("eu.dasish.annotation.backend.logServerLocation", n);
+        String remoteUser = httpServletRequest.getRemoteUser();
+        Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
+        if (userID != null) {
+            String typeOfAccount = dbIntegrityService.getTypeOfUserAccount(userID);
+            if (typeOfAccount.equals(admin) || typeOfAccount.equals(developer)) {
+                return logFile("eu.dasish.annotation.backend.logServerLocation", n);
+            } else {
+                verboseOutput.DEVELOPER_RIGHTS_EXPECTED();
+            }
+        } else {
+            verboseOutput.REMOTE_PRINCIPAL_NOT_FOUND(remoteUser);
+        }
+        return " ";
+
     }
-    
+
     //////////////////////////////////
     @PUT
     @Produces(MediaType.TEXT_XML)
@@ -133,47 +156,30 @@ public class DebugResource {
                 final boolean update = dbIntegrityService.updateAccount(UUID.fromString(userId), account);
                 return (update ? "The account is updated" : "The account is not updated, see the log.");
             } else {
-                httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "The logged-in user is not admin, and therefore cannot perform this request.");
-                return null;
+                verboseOutput.ADMIN_RIGHTS_EXPECTED();
             }
         } else {
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged-in user is not found in the database");
-            return null;
+            verboseOutput.REMOTE_PRINCIPAL_NOT_FOUND(remoteUser);
         }
-
+        return " ";
     }
 
     ///////////////////////////////////////////////////
-    private String logFile(String location, int n) throws IOException{
-       dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
-        String remoteUser = httpServletRequest.getRemoteUser();
-        Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
-        if (userID != null) {
-            String typeOfAccount = dbIntegrityService.getTypeOfUserAccount(userID);
-            if (typeOfAccount.equals(admin) || typeOfAccount.equals(developer)) {
-                BufferedReader reader = new BufferedReader(new FileReader(context.getInitParameter(location)));
-                List<String> lines = new ArrayList<String>();
-                StringBuilder result = new StringBuilder();
-                int i = 0;
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    lines.add(line);
-                    i++;
-                }
-                // want to read the last n rows, i.e. the rows (i-1), (i-1-1),...,(i-1-(n-1))
-                int last = (i > n) ? (i - n) : 0;
-                for (int j = i - 1; j >= last; j--) {
-                    result.append(lines.get(j)).append("\n");
-                }
-                return result.toString();
-
-            } else {
-                httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "The logged-in user is neither developer nor admin, and therefore cannot perform this request.");
-                return null;
-            }
-        } else {
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged-in user is not found in the database");
-            return null;
-        } 
+    private String logFile(String location, int n) throws IOException {
+        BufferedReader reader = new BufferedReader(new FileReader(context.getInitParameter(location)));
+        List<String> lines = new ArrayList<String>();
+        StringBuilder result = new StringBuilder();
+        int i = 0;
+        String line;
+        while ((line = reader.readLine()) != null) {
+            lines.add(line);
+            i++;
+        }
+        // want to read the last n rows, i.e. the rows (i-1), (i-1-1),...,(i-1-(n-1))
+        int last = (i > n) ? (i - n) : 0;
+        for (int j = i - 1; j >= last; j--) {
+            result.append(lines.get(j)).append("\n");
+        }
+        return result.toString();
     }
 }

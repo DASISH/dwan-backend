@@ -61,8 +61,10 @@ public class CachedRepresentationResource {
     private HttpServletResponse httpServletResponse;
     @Context
     private UriInfo uriInfo;
-    private final Logger logger = LoggerFactory.getLogger(CachedRepresentationResource.class);
-
+    public static final Logger loggerServer = LoggerFactory.getLogger(HttpServletResponse.class);
+    private final VerboseOutput verboseOutput = new VerboseOutput(httpServletResponse, loggerServer);
+    
+    
     public void setHttpRequest(HttpServletRequest request) {
         this.httpServletRequest = request;
     }
@@ -85,20 +87,16 @@ public class CachedRepresentationResource {
                     final CachedRepresentationInfo cachedInfo = dbIntegrityService.getCachedRepresentationInfo(cachedID);
                     return new ObjectFactory().createCashedRepresentationInfo(cachedInfo);
                 } else {
-                    AnnotationResource.loggerServer.debug(httpServletResponse.SC_NOT_FOUND + ": The cached representation with the given id is not found in the database");
-                    httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The cached representation with the given id is not found in the database");
-                    return null;
+                    verboseOutput.CACHED_REPRESENTATION_NOT_FOUND(externalId);
                 }
             } catch (IllegalArgumentException e) {
-                AnnotationResource.loggerServer.debug(HttpServletResponse.SC_BAD_REQUEST + ": Illegal argument UUID " + externalId);
-                httpServletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST, "Illegal argument UUID " + externalId);
-                return null;
+                 verboseOutput.ILLEGAL_UUID(externalId);
             }
         } else {
-            AnnotationResource.loggerServer.debug(httpServletResponse.SC_NOT_FOUND + ": the logged-in user is not found in the database");
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged in user is not found in the database");
-            return null;
+            verboseOutput.REMOTE_PRINCIPAL_NOT_FOUND(remoteUser);
         }
+        
+        return new ObjectFactory().createCashedRepresentationInfo(new CachedRepresentationInfo());
     }
 
     @GET
@@ -118,19 +116,15 @@ public class CachedRepresentationResource {
                     BufferedImage result = ImageIO.read(dbRespond);
                     return result;
                 } else {
-                    AnnotationResource.loggerServer.debug(httpServletResponse.SC_NOT_FOUND + "The cached representation with the given id is not found in the database");
-                    httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The cached representation  with the given id   " + externalId + " is not found in the database");
-                    return null;
+                    verboseOutput.ANNOTATION_NOT_FOUND(externalId);
                 }
             } catch (IllegalArgumentException e) {
-                AnnotationResource.loggerServer.debug(HttpServletResponse.SC_BAD_REQUEST + ": Illegal argument UUID " + externalId);
-                httpServletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST, "Illegal argument UUID " + externalId);
-                return null;
+                 verboseOutput.ILLEGAL_UUID(externalId);
             }
         } else {
-            AnnotationResource.loggerServer.debug(httpServletResponse.SC_NOT_FOUND + ": the logged-in user is not found in the database");
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged-in user is not found in the database");
-            return null;
+            verboseOutput.REMOTE_PRINCIPAL_NOT_FOUND(remoteUser);
         }
+        
+         return null;
     }
 }
