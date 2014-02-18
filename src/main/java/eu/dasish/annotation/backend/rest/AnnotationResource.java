@@ -121,17 +121,16 @@ public class AnnotationResource {
                         final Annotation annotation = dbIntegrityService.getAnnotation(annotationID);
                         return new ObjectFactory().createAnnotation(annotation);
                     } else {
-                        verboseOutput.sendFailureMessage(VerboseOutput.FORBIDDEN_ANNOTATION_READING(externalIdentifier), HttpServletResponse.SC_FORBIDDEN);
+                        verboseOutput.FORBIDDEN_ANNOTATION_READING(externalIdentifier);
                     }
                 } else {
-                    verboseOutput.sendFailureMessage(VerboseOutput.REMOTE_PRINCIPAL_NOT_FOUND, httpServletResponse.SC_NOT_FOUND);
-
+                    verboseOutput.REMOTE_PRINCIPAL_NOT_FOUND(remoteUser);
                 }
             } else {
-                verboseOutput.sendFailureMessage(VerboseOutput.ANNOTATION_NOT_FOUND(externalIdentifier), HttpServletResponse.SC_NOT_FOUND);
+                verboseOutput.ANNOTATION_NOT_FOUND(externalIdentifier);
             }
         } catch (IllegalArgumentException e) {
-            verboseOutput.sendFailureMessage(VerboseOutput.ILLEGAL_UUID(externalIdentifier), HttpServletResponse.SC_BAD_REQUEST);
+            verboseOutput.ILLEGAL_UUID(externalIdentifier);
         }
         return new ObjectFactory().createAnnotation(new Annotation());
     }
@@ -153,18 +152,18 @@ public class AnnotationResource {
                         final ReferenceList TargetList = dbIntegrityService.getAnnotationTargets(annotationID);
                         return new ObjectFactory().createTargetList(TargetList);
                     } else {
-                        verboseOutput.sendFailureMessage(VerboseOutput.FORBIDDEN_ANNOTATION_READING(externalIdentifier), HttpServletResponse.SC_FORBIDDEN);
+                        verboseOutput.FORBIDDEN_ANNOTATION_READING(externalIdentifier);
                     }
                 } else {
-                    verboseOutput.sendFailureMessage(VerboseOutput.REMOTE_PRINCIPAL_NOT_FOUND, httpServletResponse.SC_NOT_FOUND);
+                    verboseOutput.REMOTE_PRINCIPAL_NOT_FOUND(remoteUser);
 
                 }
             } else {
-                verboseOutput.sendFailureMessage(VerboseOutput.ANNOTATION_NOT_FOUND(externalIdentifier), HttpServletResponse.SC_NOT_FOUND);
+                verboseOutput.ANNOTATION_NOT_FOUND(externalIdentifier);
 
             }
         } catch (IllegalArgumentException e) {
-            verboseOutput.sendFailureMessage(VerboseOutput.ILLEGAL_UUID(externalIdentifier), HttpServletResponse.SC_BAD_REQUEST);
+            verboseOutput.ILLEGAL_UUID(externalIdentifier);
         }
         return new ObjectFactory().createTargetList(new ReferenceList());
     }
@@ -192,10 +191,10 @@ public class AnnotationResource {
                 final AnnotationInfoList annotationInfoList = dbIntegrityService.getFilteredAnnotationInfos(ownerExternalUUID, link, text, userID, access, namespace, after, before);
                 return new ObjectFactory().createAnnotationInfoList(annotationInfoList);
             } catch (IllegalArgumentException e) {
-                verboseOutput.sendFailureMessage(VerboseOutput.ILLEGAL_UUID(ownerExternalId), HttpServletResponse.SC_BAD_REQUEST);
+                verboseOutput.ILLEGAL_UUID(ownerExternalId);
             }
         } else {
-            verboseOutput.sendFailureMessage(VerboseOutput.REMOTE_PRINCIPAL_NOT_FOUND, httpServletResponse.SC_NOT_FOUND);
+            verboseOutput.REMOTE_PRINCIPAL_NOT_FOUND(remoteUser);
 
         }
         return new ObjectFactory().createAnnotationInfoList(new AnnotationInfoList());
@@ -218,17 +217,17 @@ public class AnnotationResource {
                         final UserWithPermissionList permissionList = dbIntegrityService.getPermissionsForAnnotation(annotationID);
                         return new ObjectFactory().createPermissionList(permissionList);
                     } else {
-                        verboseOutput.sendFailureMessage(VerboseOutput.FORBIDDEN_ANNOTATION_READING(externalIdentifier), HttpServletResponse.SC_FORBIDDEN);
+                        verboseOutput.FORBIDDEN_ANNOTATION_READING(externalIdentifier);
                     }
                 } else {
-                    verboseOutput.sendFailureMessage(VerboseOutput.ANNOTATION_NOT_FOUND(externalIdentifier), HttpServletResponse.SC_NOT_FOUND);
+                    verboseOutput.ANNOTATION_NOT_FOUND(externalIdentifier);
                 }
             } else {
-                verboseOutput.sendFailureMessage(VerboseOutput.REMOTE_PRINCIPAL_NOT_FOUND, httpServletResponse.SC_NOT_FOUND);
+                verboseOutput.REMOTE_PRINCIPAL_NOT_FOUND(remoteUser);
 
             }
         } catch (IllegalArgumentException e) {
-            verboseOutput.sendFailureMessage(VerboseOutput.ILLEGAL_UUID(externalIdentifier), HttpServletResponse.SC_BAD_REQUEST);
+            verboseOutput.ILLEGAL_UUID(externalIdentifier);
         }
         return new ObjectFactory().createUserWithPermissionList(new UserWithPermissionList());
     }
@@ -250,19 +249,19 @@ public class AnnotationResource {
                         String result = Integer.toString(resultDelete[0]);
                         return result + " annotation(s) deleted.";
                     } else {
-                        verboseOutput.sendFailureMessage(VerboseOutput.FORBIDDEN_ANNOTATION_WRITING(externalIdentifier) + " Only a principal with 'owner' access can delete the annotation.", HttpServletResponse.SC_FORBIDDEN);
+                        verboseOutput.FORBIDDEN_ANNOTATION_WRITING(externalIdentifier);
 
                     }
                 } else {
-                    verboseOutput.sendFailureMessage(VerboseOutput.ANNOTATION_NOT_FOUND(externalIdentifier), HttpServletResponse.SC_NOT_FOUND);
+                    verboseOutput.ANNOTATION_NOT_FOUND(externalIdentifier);
                 }
 
             } else {
-                verboseOutput.sendFailureMessage(VerboseOutput.REMOTE_PRINCIPAL_NOT_FOUND, httpServletResponse.SC_NOT_FOUND);
+                verboseOutput.REMOTE_PRINCIPAL_NOT_FOUND(remoteUser);
 
             }
         } catch (IllegalArgumentException e) {
-            verboseOutput.sendFailureMessage(VerboseOutput.ILLEGAL_UUID(externalIdentifier), HttpServletResponse.SC_BAD_REQUEST);
+            verboseOutput.ILLEGAL_UUID(externalIdentifier);
         }
 
         return "Due to the failure no annotation is deleted.";
@@ -282,7 +281,7 @@ public class AnnotationResource {
             Number annotationID = dbIntegrityService.addUsersAnnotation(userID, annotation);
             return new ObjectFactory().createResponseBody(makeAnnotationResponseEnvelope(annotationID));
         } else {
-            verboseOutput.sendFailureMessage(VerboseOutput.REMOTE_PRINCIPAL_NOT_FOUND, httpServletResponse.SC_NOT_FOUND);
+            verboseOutput.REMOTE_PRINCIPAL_NOT_FOUND(remoteUser);
 
         }
         return new ObjectFactory().createResponseBody(new ResponseBody());
@@ -300,7 +299,7 @@ public class AnnotationResource {
         String annotationURI = annotation.getURI();
 
         if (!(path + "annotations/" + externalIdentifier).equals(annotationURI)) {
-            verboseOutput.sendFailureMessage("Wrong request: the annotation identifier   " + externalIdentifier + " and the annotation ID from the request body do not match. Correct the request and resend.", HttpServletResponse.SC_CONFLICT);
+            verboseOutput.IDENTIFIER_MISMATCH(externalIdentifier);
             return new ObjectFactory().createResponseBody(new ResponseBody());
         }
 
@@ -315,16 +314,17 @@ public class AnnotationResource {
                         int updatedRows = dbIntegrityService.updateAnnotation(annotation);
                         return new ObjectFactory().createResponseBody(makeAnnotationResponseEnvelope(annotationID));
                     } else {
-                        verboseOutput.sendFailureMessage(VerboseOutput.FORBIDDEN_PERMISSION_CHANGING(externalIdentifier) + " Permission changing is the part of the full update of the annotation.", HttpServletResponse.SC_FORBIDDEN);
+                        verboseOutput.FORBIDDEN_PERMISSION_CHANGING(externalIdentifier);
+                        loggerServer.debug(" Permission changing is the part of the full update of the annotation.");
                     }
                 } else {
-                    verboseOutput.sendFailureMessage(VerboseOutput.REMOTE_PRINCIPAL_NOT_FOUND, httpServletResponse.SC_NOT_FOUND);
+                    verboseOutput.REMOTE_PRINCIPAL_NOT_FOUND(remoteUser);
                 }
             } else {
-                verboseOutput.sendFailureMessage(VerboseOutput.ANNOTATION_NOT_FOUND(externalIdentifier), HttpServletResponse.SC_NOT_FOUND);
+                verboseOutput.ANNOTATION_NOT_FOUND(externalIdentifier);
             }
         } catch (IllegalArgumentException e) {
-            verboseOutput.sendFailureMessage(VerboseOutput.ILLEGAL_UUID(externalIdentifier), HttpServletResponse.SC_BAD_REQUEST);
+            verboseOutput.ILLEGAL_UUID(externalIdentifier);
         }
         return new ObjectFactory().createResponseBody(new ResponseBody());
     }
@@ -346,17 +346,17 @@ public class AnnotationResource {
                         int updatedRows = dbIntegrityService.updateAnnotationBody(annotationID, annotationBody);
                         return new ObjectFactory().createResponseBody(makeAnnotationResponseEnvelope(annotationID));
                     } else {
-                        verboseOutput.sendFailureMessage(VerboseOutput.FORBIDDEN_ANNOTATION_WRITING(externalIdentifier), HttpServletResponse.SC_FORBIDDEN);
+                        verboseOutput.FORBIDDEN_ANNOTATION_WRITING(externalIdentifier);
                     }
                 } else {
-                    verboseOutput.sendFailureMessage(VerboseOutput.ANNOTATION_NOT_FOUND(externalIdentifier), HttpServletResponse.SC_NOT_FOUND);
+                    verboseOutput.ANNOTATION_NOT_FOUND(externalIdentifier);
                 }
             } else {
-                verboseOutput.sendFailureMessage(VerboseOutput.REMOTE_PRINCIPAL_NOT_FOUND, httpServletResponse.SC_NOT_FOUND);
+                verboseOutput.REMOTE_PRINCIPAL_NOT_FOUND(remoteUser);
 
             }
         } catch (IllegalArgumentException e) {
-            verboseOutput.sendFailureMessage(VerboseOutput.ILLEGAL_UUID(externalIdentifier), HttpServletResponse.SC_BAD_REQUEST);
+            verboseOutput.ILLEGAL_UUID(externalIdentifier);
         }
         return new ObjectFactory().createResponseBody(new ResponseBody());
     }
@@ -384,23 +384,23 @@ public class AnnotationResource {
                                 return result + " rows are updated/added";
 
                             } else {
-                                verboseOutput.sendFailureMessage(VerboseOutput.FORBIDDEN_PERMISSION_CHANGING(annotationExternalId), HttpServletResponse.SC_FORBIDDEN);
+                                verboseOutput.FORBIDDEN_PERMISSION_CHANGING(annotationExternalId);
                             }
                         } else {
-                            verboseOutput.sendFailureMessage(VerboseOutput.ANNOTATION_NOT_FOUND(annotationExternalId), HttpServletResponse.SC_NOT_FOUND);
+                            verboseOutput.ANNOTATION_NOT_FOUND(annotationExternalId);
                         }
                     } catch (IllegalArgumentException e) {
-                        verboseOutput.sendFailureMessage(VerboseOutput.ILLEGAL_UUID(annotationExternalId), HttpServletResponse.SC_BAD_REQUEST);
+                        verboseOutput.ILLEGAL_UUID(annotationExternalId);
                     }
                 } else {
-                    verboseOutput.sendFailureMessage(VerboseOutput.PRINCIPAL_NOT_FOUND(userExternalId), HttpServletResponse.SC_NOT_FOUND);
+                    verboseOutput.PRINCIPAL_NOT_FOUND(userExternalId);
                 }
             } catch (IllegalArgumentException e) {
-                verboseOutput.sendFailureMessage(VerboseOutput.ILLEGAL_UUID(userExternalId), HttpServletResponse.SC_BAD_REQUEST);
+                verboseOutput.ILLEGAL_UUID(userExternalId);
             }
 
         } else {
-            verboseOutput.sendFailureMessage(VerboseOutput.REMOTE_PRINCIPAL_NOT_FOUND, httpServletResponse.SC_NOT_FOUND);
+            verboseOutput.REMOTE_PRINCIPAL_NOT_FOUND(remoteUser);
 
         }
         return "Due to the failure no permissionis updated.";
@@ -422,19 +422,19 @@ public class AnnotationResource {
                         int updatedRows = dbIntegrityService.updatePermissions(annotationID, permissions);
                         return new ObjectFactory().createResponseBody(makePermissionResponseEnvelope(annotationID));
                     } else {
-                        verboseOutput.sendFailureMessage(VerboseOutput.FORBIDDEN_PERMISSION_CHANGING(annotationExternalId), HttpServletResponse.SC_FORBIDDEN);
+                        verboseOutput.FORBIDDEN_PERMISSION_CHANGING(annotationExternalId);
                     }
                 } else {
-                    verboseOutput.sendFailureMessage(VerboseOutput.ANNOTATION_NOT_FOUND(annotationExternalId), HttpServletResponse.SC_NOT_FOUND);
+                    verboseOutput.ANNOTATION_NOT_FOUND(annotationExternalId);
                 }
             } else {
-                verboseOutput.sendFailureMessage(VerboseOutput.REMOTE_PRINCIPAL_NOT_FOUND, httpServletResponse.SC_NOT_FOUND);
+                verboseOutput.REMOTE_PRINCIPAL_NOT_FOUND(remoteUser);
 
             }
             return new ObjectFactory().createResponseBody(new ResponseBody());
 
         } catch (IllegalArgumentException e) {
-            verboseOutput.sendFailureMessage(VerboseOutput.ILLEGAL_UUID(annotationExternalId), HttpServletResponse.SC_BAD_REQUEST);
+            verboseOutput.ILLEGAL_UUID(annotationExternalId);
             return new ObjectFactory().createResponseBody(new ResponseBody());
 
         }
@@ -458,21 +458,21 @@ public class AnnotationResource {
                             deletedRows = dbIntegrityService.updateAnnotationPrincipalPermission(annotationID, userID, null);
 
                         } else {
-                            verboseOutput.sendFailureMessage(VerboseOutput.PRINCIPAL_NOT_FOUND(userId), HttpServletResponse.SC_NOT_FOUND);
+                            verboseOutput.PRINCIPAL_NOT_FOUND(userId);
                         }
                     } else {
-                        verboseOutput.sendFailureMessage(VerboseOutput.FORBIDDEN_PERMISSION_CHANGING(annotationId), HttpServletResponse.SC_FORBIDDEN);
+                        verboseOutput.FORBIDDEN_PERMISSION_CHANGING(annotationId);
 
                     }
                 } else {
-                    verboseOutput.sendFailureMessage(VerboseOutput.ANNOTATION_NOT_FOUND(annotationId), HttpServletResponse.SC_NOT_FOUND);
+                    verboseOutput.ANNOTATION_NOT_FOUND(annotationId);
                 }
             } else {
-                verboseOutput.sendFailureMessage(VerboseOutput.REMOTE_PRINCIPAL_NOT_FOUND, httpServletResponse.SC_NOT_FOUND);
+                verboseOutput.REMOTE_PRINCIPAL_NOT_FOUND(remoteUser);
 
             }
         } catch (IllegalArgumentException e) {
-            verboseOutput.sendFailureMessage(VerboseOutput.ILLEGAL_UUID(annotationId), HttpServletResponse.SC_BAD_REQUEST);
+            verboseOutput.ILLEGAL_UUID(annotationId);
         }
         return (deletedRows + " is deleted.");
     }

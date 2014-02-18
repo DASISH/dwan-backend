@@ -87,10 +87,10 @@ public class NotebookResource {
                 NotebookInfoList notebookInfos = dbIntegrityService.getNotebooks(principalID, permissionMode);
                 return new ObjectFactory().createNotebookInfoList(notebookInfos);
             } else {
-                verboseOutput.sendFailureMessage(VerboseOutput.INVALID_PERMISSION_MODE(permissionMode), httpServletResponse.SC_BAD_REQUEST);
+                verboseOutput.INVALID_PERMISSION_MODE(permissionMode);
             }
         } else {
-            verboseOutput.sendFailureMessage(VerboseOutput.REMOTE_PRINCIPAL_NOT_FOUND, httpServletResponse.SC_NOT_FOUND);
+            verboseOutput.REMOTE_PRINCIPAL_NOT_FOUND(remoteUser);
         }
         return (new ObjectFactory()).createNotebookInfoList(new NotebookInfoList());
     }
@@ -109,7 +109,7 @@ public class NotebookResource {
             ReferenceList references = dbIntegrityService.getNotebooksOwnedBy(userID);
             return new ObjectFactory().createReferenceList(references);
         } else {
-            verboseOutput.sendFailureMessage(VerboseOutput.REMOTE_PRINCIPAL_NOT_FOUND, httpServletResponse.SC_NOT_FOUND);
+            verboseOutput.REMOTE_PRINCIPAL_NOT_FOUND(remoteUser);
         }
         return new ObjectFactory().createReferenceList(new ReferenceList());
     }
@@ -131,13 +131,13 @@ public class NotebookResource {
                     ReferenceList principals = dbIntegrityService.getPrincipals(notebookID, permissionMode);
                     return new ObjectFactory().createReferenceList(principals);
                 } else {
-                    verboseOutput.sendFailureMessage(VerboseOutput.FORBIDDEN_NOTEBOOK_READING(externalIdentifier), HttpServletResponse.SC_FORBIDDEN);
+                    verboseOutput.FORBIDDEN_NOTEBOOK_READING(externalIdentifier);
                 }
             } else {
-                verboseOutput.sendFailureMessage(VerboseOutput.NOTEBOOK_NOT_FOUND(externalIdentifier), HttpServletResponse.SC_NOT_FOUND);
+                verboseOutput.NOTEBOOK_NOT_FOUND(externalIdentifier);
             }
         } else {
-            verboseOutput.sendFailureMessage(VerboseOutput.REMOTE_PRINCIPAL_NOT_FOUND, HttpServletResponse.SC_NOT_FOUND);
+            verboseOutput.REMOTE_PRINCIPAL_NOT_FOUND(remoteUser);
         }
 
         return new ObjectFactory().createReferenceList(new ReferenceList());
@@ -163,13 +163,13 @@ public class NotebookResource {
                     Notebook notebook = dbIntegrityService.getNotebook(notebookID);
                     return new ObjectFactory().createNotebook(notebook);
                 } else {
-                    verboseOutput.sendFailureMessage(VerboseOutput.FORBIDDEN_NOTEBOOK_READING(externalIdentifier), HttpServletResponse.SC_FORBIDDEN);
+                    verboseOutput.FORBIDDEN_NOTEBOOK_READING(externalIdentifier);
                 }
             } else {
-                verboseOutput.sendFailureMessage(VerboseOutput.NOTEBOOK_NOT_FOUND(externalIdentifier), HttpServletResponse.SC_NOT_FOUND);
+                verboseOutput.NOTEBOOK_NOT_FOUND(externalIdentifier);
             }
         } else {
-            verboseOutput.sendFailureMessage(VerboseOutput.REMOTE_PRINCIPAL_NOT_FOUND, HttpServletResponse.SC_NOT_FOUND);
+            verboseOutput.REMOTE_PRINCIPAL_NOT_FOUND(remoteUser);
         }
         return new ObjectFactory().createNotebook(new Notebook());
     }
@@ -195,13 +195,13 @@ public class NotebookResource {
                     ReferenceList annotations = dbIntegrityService.getAnnotationsForNotebook(notebookID, startAnnotations, maximumAnnotations, orderBy, desc);
                     return new ObjectFactory().createReferenceList(annotations);
                 } else {
-                    verboseOutput.sendFailureMessage(VerboseOutput.FORBIDDEN_NOTEBOOK_READING(externalIdentifier), HttpServletResponse.SC_FORBIDDEN);
+                    verboseOutput.FORBIDDEN_NOTEBOOK_READING(externalIdentifier);
                 }
             } else {
-                verboseOutput.sendFailureMessage(VerboseOutput.NOTEBOOK_NOT_FOUND(externalIdentifier), HttpServletResponse.SC_NOT_FOUND);
+                verboseOutput.NOTEBOOK_NOT_FOUND(externalIdentifier);
             }
         } else {
-            verboseOutput.sendFailureMessage(VerboseOutput.REMOTE_PRINCIPAL_NOT_FOUND, HttpServletResponse.SC_NOT_FOUND);
+            verboseOutput.REMOTE_PRINCIPAL_NOT_FOUND(remoteUser);
         }
         return new ObjectFactory().createReferenceList(new ReferenceList());
     }

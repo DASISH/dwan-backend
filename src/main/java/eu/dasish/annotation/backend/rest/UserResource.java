@@ -64,7 +64,9 @@ public class UserResource {
     private HttpServletResponse httpServletResponse;
     @Context
     private UriInfo uriInfo;
-    private final Logger logger = LoggerFactory.getLogger(UserResource.class);
+    public static final Logger loggerServer = LoggerFactory.getLogger(HttpServletResponse.class);
+    private final VerboseOutput verboseOutput = new VerboseOutput(httpServletResponse, loggerServer);
+    
     final private String admin = "admin";
 
     public void setHttpRequest(HttpServletRequest request) {
@@ -89,20 +91,15 @@ public class UserResource {
                     final User user = dbIntegrityService.getUser(userID);
                     return new ObjectFactory().createUser(user);
                 } else {
-                    AnnotationResource.loggerServer.debug(HttpServletResponse.SC_NOT_FOUND + ": The user with the given id " + externalIdentifier + " is not found in the database");
-                    httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The user with the given id   " + externalIdentifier + " is not found in the database");
-                    return null;
+                    verboseOutput.PRINCIPAL_NOT_FOUND(externalIdentifier);
                 }
             } catch (IllegalArgumentException e) {
-                AnnotationResource.loggerServer.debug(HttpServletResponse.SC_BAD_REQUEST + ": Illegal argument UUID " + externalIdentifier);
-                httpServletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST, "Illegal argument UUID " + externalIdentifier);
-                return null;
+                verboseOutput.ILLEGAL_UUID(externalIdentifier);
             }
         } else {
-            AnnotationResource.loggerServer.debug(httpServletResponse.SC_NOT_FOUND + ": the logged-in user is not found in the database");
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged-in user is not found in the database");
-            return null;
+            verboseOutput.REMOTE_PRINCIPAL_NOT_FOUND(remoteUser);
         }
+        return new ObjectFactory().createUser(new User());
     }
 
     @GET
@@ -118,15 +115,12 @@ public class UserResource {
             if (user != null) {
                 return new ObjectFactory().createUser(user);
             } else {
-                AnnotationResource.loggerServer.debug(HttpServletResponse.SC_NOT_FOUND + ": The user with the given info is not found in the database");
-                httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The user with the given info is not found in the database");
-                return null;
+                verboseOutput.PRINCIPAL_NOT_FOUND_BY_INFO(email);
             }
         } else {
-            AnnotationResource.loggerServer.debug(httpServletResponse.SC_NOT_FOUND + ": the logged-in user is not found in the database");
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged-in user is not found in the database");
-            return null;
+            verboseOutput.REMOTE_PRINCIPAL_NOT_FOUND(remoteUser);
         }
+        return new ObjectFactory().createUser(new User()); 
     }
 
     @GET
@@ -146,20 +140,16 @@ public class UserResource {
                     userInfo.setCurrentUser(ifLoggedIn(userID));
                     return new ObjectFactory().createCurrentUserInfo(userInfo);
                 } else {
-                    AnnotationResource.loggerServer.debug(HttpServletResponse.SC_NOT_FOUND + ": The user with the given id " + externalIdentifier + " is not found in the database");
-                    httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The user with the given id   " + externalIdentifier + " is not found in the database");
-                    return null;
+                    verboseOutput.PRINCIPAL_NOT_FOUND(externalIdentifier);
                 }
             } catch (IllegalArgumentException e) {
-                AnnotationResource.loggerServer.debug(HttpServletResponse.SC_BAD_REQUEST + ": Illegal argument UUID " + externalIdentifier);
-                httpServletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST, "Illegal argument UUID " + externalIdentifier);
-                return null;
+                verboseOutput.ILLEGAL_UUID(externalIdentifier);
             }
         } else {
-            AnnotationResource.loggerServer.debug(httpServletResponse.SC_NOT_FOUND + ": the logged-in user is not found in the database");
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged-in user is not found in the database");
-            return null;
+            verboseOutput.REMOTE_PRINCIPAL_NOT_FOUND(remoteUser);
         }
+        
+         return new ObjectFactory().createCurrentUserInfo(new CurrentUserInfo());
     }
 
     @POST
@@ -177,17 +167,15 @@ public class UserResource {
                     final User addedUser = dbIntegrityService.getUser(userID);
                     return new ObjectFactory().createUser(addedUser);
                 } else {
-                    httpServletResponse.sendError(HttpServletResponse.SC_CONFLICT, "The user canot be added to the database, (possibly) because a user with the given e-mail already exist in the database.");
-                    return null;
+                     verboseOutput.PRINCIPAL_IS_NOT_ADDED_TO_DB();
                 }
             } else {
-                httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, "The logged-in user does not have admin rights to add a user to the database");
-                return null;
+                verboseOutput.ADMIN_RIGHTS_EXPECTED();
             }
         } else {
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged-in user is not found in the database");
-            return null;
+            verboseOutput.REMOTE_PRINCIPAL_NOT_FOUND(remoteUser);
         }
+         return new ObjectFactory().createUser(new User());
     }
 
     @PUT
@@ -205,18 +193,16 @@ public class UserResource {
                     final User addedUser = dbIntegrityService.getUser(userID);
                     return new ObjectFactory().createUser(addedUser);
                 } else {
-                    AnnotationResource.loggerServer.debug(HttpServletResponse.SC_NOT_FOUND + ": The user with the given id is not found in the database");
-                    httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The user with the given id  is not found in the database");
-                    return null;
+                    verboseOutput.PRINCIPAL_NOT_FOUND(user.getURI());
                 }
             } else {
-                httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, "The logged-in user does not have admin rights to update a user info in the database");
-                return null;
+                verboseOutput.ADMIN_RIGHTS_EXPECTED();
             }
         } else {
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged-in user is not found in the database");
-            return null;
+            verboseOutput.REMOTE_PRINCIPAL_NOT_FOUND(remoteUser); 
         }
+        
+         return new ObjectFactory().createUser(new User());
     }
     
     @PUT
@@ -232,17 +218,16 @@ public class UserResource {
                 if (updated) {
                     return "The account was updated to "+dbIntegrityService.getTypeOfUserAccount(dbIntegrityService.getUserInternalIdentifier(UUID.fromString(externalId)));
                 } else {
-                    httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "The account was not updated.");
-                    return "The account was not updated.";
+                   verboseOutput.ACCOUNT_IS_NOT_UPDATED(); 
                 }
             } else {
-                httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, "The logged-in user does not have admin rights to update an account type in the database");
-                return null;
+                verboseOutput.ADMIN_RIGHTS_EXPECTED();
             }
         } else {
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged-in user is not found in the database");
-            return null;
+            verboseOutput.REMOTE_PRINCIPAL_NOT_FOUND(remoteUser);
         }
+        
+        return " ";
     }
 
     @DELETE
@@ -258,18 +243,16 @@ public class UserResource {
                     final Integer result = dbIntegrityService.deleteUser(userID);
                     return "There is " + result.toString() + " row deleted";
                 } else {
-                    AnnotationResource.loggerServer.debug(HttpServletResponse.SC_NOT_FOUND + ": The user with the given id " + externalIdentifier + " is not found in the database");
-                    httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The user with the given id   " + externalIdentifier + " is not found in the database");
-                    return null;
+                    verboseOutput.PRINCIPAL_NOT_FOUND(externalIdentifier);
                 }
             } else {
-                httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, "The logged-in user does not have admin rights to update a user info in the database");
-                return null;
+                verboseOutput.ADMIN_RIGHTS_EXPECTED();
             }
         } else {
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged-in user is not found in the database");
-            return null;
+            verboseOutput.REMOTE_PRINCIPAL_NOT_FOUND(remoteUser);
         }
+        
+        return " ";
     }
 
     @DELETE
@@ -285,17 +268,15 @@ public class UserResource {
                     final Integer result = dbIntegrityService.deleteUserSafe(userID);
                     return "There is " + result.toString() + " row deleted";
                 } else {
-                    httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The user with the given id   " + externalIdentifier + " is not found in the database");
-                    return null;
+                    verboseOutput.PRINCIPAL_NOT_FOUND(externalIdentifier);
                 }
             } else {
-                httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, "The logged-in user does not have admin rights to update a user info in the database");
-                return null;
+                verboseOutput.ADMIN_RIGHTS_EXPECTED();
             }
         } else {
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "The logged-in user is not found in the database");
-            return null;
+            verboseOutput.REMOTE_PRINCIPAL_NOT_FOUND(remoteUser);
         }
+        return " ";
     }
 
     private boolean ifLoggedIn(Number userID) {
