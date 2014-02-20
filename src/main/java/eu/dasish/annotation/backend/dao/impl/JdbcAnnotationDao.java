@@ -25,6 +25,8 @@ import eu.dasish.annotation.schema.AnnotationBody.TextBody;
 import eu.dasish.annotation.schema.AnnotationBody.XmlBody;
 import eu.dasish.annotation.schema.AnnotationInfo;
 import eu.dasish.annotation.schema.Permission;
+import eu.dasish.annotation.schema.UserWithPermission;
+import eu.dasish.annotation.schema.UserWithPermissionList;
 import java.lang.String;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -75,7 +77,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
 
     ///////////////////////////////////////////////////////////////////
     @Override
-    public List<Map<Number, String>> getPermissions(Number annotationID) {
+    public List<Map<Number, String>>  getPermissions(Number annotationID) {
         if (annotationID == null) {
             loggerAnnotationDao.debug(nullArgument);
             return null;
@@ -84,15 +86,8 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         sql.append(principal_id).append(",").append(permission).append(" FROM ").append(permissionsTableName).append(" WHERE ").append(annotation_id).append("  = ?");
         return getSimpleJdbcTemplate().query(sql.toString(), principalsPermissionsRowMapper, annotationID);
     }
-    private final RowMapper<Map<Number, String>> principalsPermissionsRowMapper = new RowMapper<Map<Number, String>>() {
-        @Override
-        public Map<Number, String> mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            Map<Number, String> result = new HashMap<Number, String>();
-            result.put(rs.getInt(principal_id), rs.getString(permission));
-            return result;
-        }
-    };
-
+    
+    
     @Override
     public Permission getPermission(Number annotationID, Number userID) {
         if (annotationID == null) {

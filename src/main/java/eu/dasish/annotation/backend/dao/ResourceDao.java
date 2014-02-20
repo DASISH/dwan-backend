@@ -17,6 +17,9 @@
  */
 package eu.dasish.annotation.backend.dao;
 
+
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -28,33 +31,16 @@ public interface ResourceDao {
     
     public void setServiceURI(String serviceURI);
     
-     /**
-     * 
-     * @param externalID
-     * @return internal identifier of the reTarget with externalID, or null if there is no reTarget with this identifier
-     */
+   
     public Number getInternalID(UUID externalId);
     
-    
-     /**
-     * 
-     * @param uri
-     * @return internal identifier of the reTarget with uri, or null if there is no reTarget with this uri
-     */
+  
     public Number getInternalIDFromURI(String uri);
     
-    /**
-     * 
-     * @param internalId
-     * @return the UUID (external ID) of the reTarget with the "internalID".
-     */
+  
     public UUID getExternalID(Number internalId);
     
-    /**
-     * 
-     * @param externalID
-     * @return returns the URI which is a concatenation of the serviceURI and externalID
-     */
+  
     public String externalIDtoURI(String externalID);
     
     /**
@@ -70,4 +56,6 @@ public interface ResourceDao {
      * @return URI string of the resource )of the type set in resourceTableName) with internalID
      */
     public String getURIFromInternalID(Number internalID);
+    
+    public List<Map<Number, String>>  getPermissions(Number resourceID); 
 }

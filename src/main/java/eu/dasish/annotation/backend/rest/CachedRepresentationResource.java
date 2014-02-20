@@ -18,6 +18,7 @@
 package eu.dasish.annotation.backend.rest;
 
 import eu.dasish.annotation.backend.BackendConstants;
+import eu.dasish.annotation.backend.Resource;
 import eu.dasish.annotation.backend.dao.DBIntegrityService;
 import eu.dasish.annotation.schema.CachedRepresentationInfo;
 import eu.dasish.annotation.schema.ObjectFactory;
@@ -82,7 +83,7 @@ public class CachedRepresentationResource {
         if (remoteUserID != null) {
             dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
             try {
-                final Number cachedID = dbIntegrityService.getCachedRepresentationInternalIdentifier(UUID.fromString(externalId));
+                final Number cachedID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalId), Resource.CACHED_REPRESENTATION);
                 if (cachedID != null) {
                     final CachedRepresentationInfo cachedInfo = dbIntegrityService.getCachedRepresentationInfo(cachedID);
                     return new ObjectFactory().createCashedRepresentationInfo(cachedInfo);
@@ -109,7 +110,7 @@ public class CachedRepresentationResource {
         if (remoteUserID != null) {
             dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
             try {
-                final Number cachedID = dbIntegrityService.getCachedRepresentationInternalIdentifier(UUID.fromString(externalId));
+                final Number cachedID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalId), Resource.CACHED_REPRESENTATION);
                 if (cachedID != null) {
                     InputStream dbRespond = dbIntegrityService.getCachedRepresentationBlob(cachedID);
                     ImageIO.setUseCache(false);

@@ -92,13 +92,6 @@ public interface AnnotationDao extends ResourceDao{
      */
     public List<Number> retrieveTargetIDs(Number annotationID);   
     
-   
-       /**
-     * 
-     * @param annotationID
-     * @return all the pairs (user-permission) for "annotationId" from the table annotations_principals permissions.
-     */
-    public List<Map<Number, String>>  getPermissions(Number annotationID);
     
     public Number  getOwner(Number annotationID);
     

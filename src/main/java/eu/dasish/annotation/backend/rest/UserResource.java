@@ -18,6 +18,7 @@
 package eu.dasish.annotation.backend.rest;
 
 import eu.dasish.annotation.backend.BackendConstants;
+import eu.dasish.annotation.backend.Resource;
 import eu.dasish.annotation.backend.dao.DBIntegrityService;
 import eu.dasish.annotation.schema.CurrentUserInfo;
 import eu.dasish.annotation.schema.ObjectFactory;
@@ -86,7 +87,7 @@ public class UserResource {
         if (remoteUserID != null) {
             dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
             try {
-                final Number userID = dbIntegrityService.getUserInternalIdentifier(UUID.fromString(externalIdentifier));
+                final Number userID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.PRINCIPAL);
                 if (userID != null) {
                     final User user = dbIntegrityService.getUser(userID);
                     return new ObjectFactory().createUser(user);
@@ -133,10 +134,10 @@ public class UserResource {
         if (remoteUserID != null) {
             dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
             try {
-                final Number userID = dbIntegrityService.getUserInternalIdentifier(UUID.fromString(externalIdentifier));
+                final Number userID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.PRINCIPAL);
                 if (userID != null) {
                     final CurrentUserInfo userInfo = new CurrentUserInfo();
-                    userInfo.setRef(dbIntegrityService.getUserURI(userID));
+                    userInfo.setRef(dbIntegrityService.getResourceURI(userID, Resource.PRINCIPAL));
                     userInfo.setCurrentUser(ifLoggedIn(userID));
                     return new ObjectFactory().createCurrentUserInfo(userInfo);
                 } else {
@@ -216,7 +217,7 @@ public class UserResource {
                 dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
                 final boolean updated = dbIntegrityService.updateAccount(UUID.fromString(externalId), accountType);
                 if (updated) {
-                    return "The account was updated to "+dbIntegrityService.getTypeOfUserAccount(dbIntegrityService.getUserInternalIdentifier(UUID.fromString(externalId)));
+                    return "The account was updated to "+dbIntegrityService.getTypeOfUserAccount(dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalId), Resource.PRINCIPAL));
                 } else {
                    verboseOutput.ACCOUNT_IS_NOT_UPDATED(); 
                 }
@@ -238,7 +239,7 @@ public class UserResource {
         if (remoteUserID != null) {
             if (dbIntegrityService.getTypeOfUserAccount(remoteUserID).equals(admin)) {
                 dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
-                final Number userID = dbIntegrityService.getUserInternalIdentifier(UUID.fromString(externalIdentifier));
+                final Number userID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.PRINCIPAL);
                 if (userID != null) {
                     final Integer result = dbIntegrityService.deleteUser(userID);
                     return "There is " + result.toString() + " row deleted";
@@ -263,7 +264,7 @@ public class UserResource {
         if (remoteUserID != null) {
             if (dbIntegrityService.getTypeOfUserAccount(remoteUserID).equals(admin)) {
                 dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
-                final Number userID = dbIntegrityService.getUserInternalIdentifier(UUID.fromString(externalIdentifier));
+                final Number userID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.PRINCIPAL);
                 if (userID != null) {
                     final Integer result = dbIntegrityService.deleteUserSafe(userID);
                     return "There is " + result.toString() + " row deleted";

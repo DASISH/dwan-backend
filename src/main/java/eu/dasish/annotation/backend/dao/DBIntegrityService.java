@@ -17,6 +17,7 @@
  */
 package eu.dasish.annotation.backend.dao;
 
+import eu.dasish.annotation.backend.Resource;
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationBody;
 import eu.dasish.annotation.schema.AnnotationInfoList;
@@ -27,6 +28,7 @@ import eu.dasish.annotation.schema.NotebookInfoList;
 import eu.dasish.annotation.schema.Permission;
 import eu.dasish.annotation.schema.UserWithPermissionList;
 import eu.dasish.annotation.schema.ReferenceList;
+import eu.dasish.annotation.schema.ResponseBody;
 import eu.dasish.annotation.schema.Target;
 import eu.dasish.annotation.schema.TargetInfo;
 import eu.dasish.annotation.schema.User;
@@ -43,28 +45,23 @@ import java.util.UUID;
  */
 public interface DBIntegrityService {
 
-    public void setServiceURI(String serviceURI);
+    void setServiceURI(String serviceURI);
+    
 
     /**
      * GETTERS
      */
-    /**
-     *
-     * @param UUID
-     * @return the internal identifier of the annotations with "externalID", or
-     * null if no such annotation.
-     */
-    Number getAnnotationInternalIdentifier(UUID externalID);
+   
+    Number getResourceInternalIdentifier(UUID externalID, Resource resource);
+   
+    Number getResourceInternalIdentifierFromURI(String uri, Resource resource);    
+    
+    UUID getResourceExternalIdentifier(Number resourceID, Resource resource);
+    
+    String getResourceURI(Number resourceID, Resource resource);
+    
+    UserWithPermissionList getPermissions(Number resourceID, Resource resource);
 
-    /**
-     *
-     * @param annotationID
-     * @return the externalID of the annotation with "internalID" or null if
-     * there is no such annotation.
-     */
-    UUID getAnnotationExternalIdentifier(Number annotationID);
-
-    Number getAnnotationInternalIdentifierFromURI(String uri);
 
     /**
      *
@@ -101,45 +98,7 @@ public interface DBIntegrityService {
      */
     AnnotationInfoList getFilteredAnnotationInfos(UUID ownerId, String word, String text, Number inloggedUserID, String access, String namespace, String after, String before);
 
-    /**
-     *
-     * @param userID
-     * @return the external identifier of the user "userID", or null if no such
-     * user.
-     */
-    UUID getUserExternalIdentifier(Number userID);
-
-    /**
-     *
-     * @param externalID
-     * @return the internal identifier of the user with "externalID", or null if
-     * there is no such user.
-     */
-    Number getUserInternalIdentifier(UUID externalID);
-
-    /**
-     *
-     * @param cachedID
-     * @return the external identifier of the cached representation "cachedID",
-     * or null if no such one.
-     */
-    UUID getCachedRepresentationExternalIdentifier(Number cachedID);
-
-    /**
-     *
-     * @param externalID
-     * @return the internal identifier of the cachedRepresentation with
-     * "externalID", or null if there is no such one.
-     */
-    Number getCachedRepresentationInternalIdentifier(UUID externalID);
-
-    Number getTargetInternalIdentifier(UUID externalID);
-
-    String getTargetURI(Number targetID);
-
-    UUID getTargetExternalIdentifier(Number targetID);
-
-    String getUserURI(Number userID);
+   
 
     /**
      *
@@ -180,48 +139,41 @@ public interface DBIntegrityService {
 
     List<String> getUsersWithNoInfo(Number annotationID);
 
+   
     /**
      *
-     * @param annotationID
-     * @return the list of TargetID's for which there is no cached
-     * representation
-     */
-    public UserWithPermissionList getPermissionsForAnnotation(Number annotationID);
-
-    /**
-     *
-     * @param TargetID
+     * @param targetID
      * @return the list of the external version ID-s that refers to the same
      * source (link) as targetID
      */
-    public ReferenceList getTargetsForTheSameLinkAs(Number targetID);
+    ReferenceList getTargetsForTheSameLinkAs(Number targetID);
 
     /**
      *
      * @param cachedID
      * @return BLOB of the cachedID
      */
-    public InputStream getCachedRepresentationBlob(Number cachedID);
+    InputStream getCachedRepresentationBlob(Number cachedID);
 
-    public Target getTarget(Number internalID);
+    Target getTarget(Number internalID);
 
     /**
      *
      * @param userID
      * @return user with "userID"
      */
-    public User getUser(Number userID);
+    User getUser(Number userID);
 
     /**
      *
      * @param eMail
      * @return user with e-mail "eMail"
      */
-    public User getUserByInfo(String eMail);
+    User getUserByInfo(String eMail);
 
-    public String getUserRemoteID(Number internalID);
+    String getUserRemoteID(Number internalID);
 
-    public Number getUserInternalIDFromRemoteID(String remoteID);
+    Number getUserInternalIDFromRemoteID(String remoteID);
 
     /**
      *
@@ -230,34 +182,35 @@ public interface DBIntegrityService {
      * @return permission of the userID w.r.t. annotationID, or null if the
      * permission is not given
      */
-    public Permission getPermission(Number annotationID, Number userID);
+    Permission getPermission(Number annotationID, Number userID);
 
-    public String getTypeOfUserAccount(Number userID);
+    String getTypeOfUserAccount(Number userID);
 
-    public boolean canRead(Number userID, Number annotationID);
+    boolean canRead(Number userID, Number annotationID);
 
-    public boolean canWrite(Number userID, Number annotationID);
+    boolean canWrite(Number userID, Number annotationID);
 
     /// notebooks ///
     
-    public Number getNotebookInternalIdentifier(UUID externalIdentifier);
     
-    public NotebookInfoList getNotebooks(Number prinipalID, String permission);
+    NotebookInfoList getNotebooks(Number prinipalID, String permission);
     
     boolean hasAccess(Number notebookID, Number principalID, Permission permission);    
     
-    public ReferenceList getNotebooksOwnedBy(Number principalID);
+    ReferenceList getNotebooksOwnedBy(Number principalID);
 
-    public ReferenceList getPrincipals(Number notebookID, String permission);
+    ReferenceList getPrincipals(Number notebookID, String permission);
 
-    public Notebook getNotebook(Number notebookID);
+    Notebook getNotebook(Number notebookID);
+    
+    Number getNotebookOwner(Number notebookID);
 
     ReferenceList getAnnotationsForNotebook(Number notebookID, int startAnnotation, int maximumAnnotations, String orderedBy, boolean desc);
 
     /**
      * UPDATERS
      */
-    public boolean updateAccount(UUID userExternalID, String account);
+    boolean updateAccount(UUID userExternalID, String account);
 
     /**
      *
@@ -283,7 +236,7 @@ public interface DBIntegrityService {
      * Sets the "permission" for the "userID" w.r.t. the annotation with
      * "annotationID".
      */
-    public int updateAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission);
+    int updateAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission);
 
     /**
      *
@@ -292,14 +245,14 @@ public interface DBIntegrityService {
      * @return # of rows updated or added in the table
      * annotations_principals_permissions
      */
-    public int updatePermissions(Number annotationID, UserWithPermissionList permissionList);
+    int updatePermissions(Number annotationID, UserWithPermissionList permissionList);
 
-    public Number updateUser(User user);
+    Number updateUser(User user);
 
     /// notebooks ///
-    public boolean updateNotebookMetadata(Number notebookID, NotebookInfo upToDateNotebookInfo);
+    boolean updateNotebookMetadata(Number notebookID, NotebookInfo upToDateNotebookInfo);
 
-    public boolean addAnnotationToNotebook(Number notebookID, Number annotationID);
+    boolean addAnnotationToNotebook(Number notebookID, Number annotationID);
 
     /**
      * ADDERS
@@ -367,7 +320,7 @@ public interface DBIntegrityService {
      * e.g. because it is in use in the table
      * "annotationsPreincipalsPermissions"
      */
-    public int deleteUser(Number userID);
+    int deleteUser(Number userID);
 
     /**
      *
@@ -377,7 +330,7 @@ public interface DBIntegrityService {
      * e.g. because it is in use in the table
      * "annotationsPreincipalsPermissions"
      */
-    public int deleteUserSafe(Number userID);
+    int deleteUserSafe(Number userID);
 
     /**
      *
@@ -414,5 +367,14 @@ public interface DBIntegrityService {
     
     /// notebooks ///
     boolean deleteNotebook(Number notebookID);
+    
+    
+    //////// HELPERS for resources /////
+    ResponseBody makeAnnotationResponseEnvelope(Number annotationID); 
+    
+    ResponseBody makeNotebookResponseEnvelope(Number notebookID); 
+    
+    ResponseBody makePermissionResponseEnvelope(Number resourceID, Resource resource); 
+
     
 }
