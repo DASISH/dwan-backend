@@ -105,7 +105,7 @@ public class VerboseOutput {
     }
     
     private MessageStatus _IDENTIFIER_MISMATCH(String identifier){
-        return new MessageStatus("Wrong request: the annotation identifier   " + identifier + " and the annotation ID from the request body do not match.", HttpServletResponse.SC_BAD_REQUEST);
+        return new MessageStatus("Wrong request: the annotation (notebook) identifier   " + identifier + " and the annotation (notebook) ID from the request body do not match.", HttpServletResponse.SC_BAD_REQUEST);
     }
     
     private MessageStatus _ADMIN_RIGHTS_EXPECTED(){

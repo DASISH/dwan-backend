@@ -20,7 +20,10 @@ package eu.dasish.annotation.backend.dao.impl;
 import eu.dasish.annotation.backend.dao.ResourceDao;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
@@ -150,6 +153,12 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
         }
         return externalIDtoURI(getExternalID(internalID).toString());
     }
+    
+    // override for notebooks and annotations
+    @Override
+    public List<Map<Number, String>>  getPermissions(Number resourceID) {
+       return (new ArrayList<Map<Number, String>>());
+    }
 
     /////////////////////////////////////////////////////
     protected XMLGregorianCalendar retrieveTimeStamp(Number internalID) {
@@ -219,6 +228,16 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
         }
     };
 
+    protected final RowMapper<Map<Number, String>> principalsPermissionsRowMapper = new RowMapper<Map<Number, String>>() {
+        @Override
+        public Map<Number, String> mapRow(ResultSet rs, int rowNumber) throws SQLException {
+            Map<Number, String> result = new HashMap<Number, String>();
+            result.put(rs.getInt(principal_id), rs.getString(permission));
+            return result;
+        }
+    };
+    
+    ////// END ROW MAPPERS /////
     @Override
     public String externalIDtoURI(String externalID) {
         if (_serviceURI != null) {
@@ -269,4 +288,6 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
         }
 
     }
+    
+    
 }

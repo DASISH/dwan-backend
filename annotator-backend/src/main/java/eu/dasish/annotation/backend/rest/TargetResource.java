@@ -20,6 +20,7 @@ package eu.dasish.annotation.backend.rest;
 import com.sun.jersey.multipart.BodyPartEntity;
 import com.sun.jersey.multipart.MultiPart;
 import eu.dasish.annotation.backend.BackendConstants;
+import eu.dasish.annotation.backend.Resource;
 import eu.dasish.annotation.backend.dao.DBIntegrityService;
 import eu.dasish.annotation.schema.CachedRepresentationInfo;
 import eu.dasish.annotation.schema.ObjectFactory;
@@ -90,7 +91,7 @@ public class TargetResource {
         if (remoteUserID != null) {
             dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
             try {
-                final Number targetID = dbIntegrityService.getTargetInternalIdentifier(UUID.fromString(externalIdentifier));
+                final Number targetID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.TARGET);
                 if (targetID != null) {
                     final Target target = dbIntegrityService.getTarget(targetID);
                     return new ObjectFactory().createTarget(target);
@@ -117,7 +118,7 @@ public class TargetResource {
         if (remoteUserID != null) {
             dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
             try {
-                final Number targetID = dbIntegrityService.getTargetInternalIdentifier(UUID.fromString(externalIdentifier));
+                final Number targetID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.TARGET);
                 if (targetID != null) {
                     final ReferenceList siblings = dbIntegrityService.getTargetsForTheSameLinkAs(targetID);
                     return new ObjectFactory().createReferenceList(siblings);
@@ -147,7 +148,7 @@ public class TargetResource {
         if (remoteUserID != null) {
             dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
             try {
-                final Number targetID = dbIntegrityService.getTargetInternalIdentifier(UUID.fromString(targetIdentifier));
+                final Number targetID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(targetIdentifier), Resource.TARGET);
                 if (targetID != null) {
                     CachedRepresentationInfo metadata = multiPart.getBodyParts().get(0).getEntityAs(CachedRepresentationInfo.class);
                     BodyPartEntity bpe = (BodyPartEntity) multiPart.getBodyParts().get(1).getEntity();
@@ -176,9 +177,9 @@ public class TargetResource {
         if (remoteUserID != null) {
             dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
             try {
-                final Number targetID = dbIntegrityService.getTargetInternalIdentifier(UUID.fromString(targetExternalIdentifier));
+                final Number targetID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(targetExternalIdentifier), Resource.TARGET);
                 if (targetID != null) {
-                    final Number cachedID = dbIntegrityService.getCachedRepresentationInternalIdentifier(UUID.fromString(cachedExternalIdentifier));
+                    final Number cachedID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(cachedExternalIdentifier), Resource.CACHED_REPRESENTATION);
                     if (cachedID != null) {
                         int[] resultDelete = dbIntegrityService.deleteCachedRepresentationOfTarget(targetID, cachedID);
                         String result = Integer.toString(resultDelete[0]);

@@ -68,7 +68,19 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
         }
     }
     
-  
+    //////////////////////////////////////////////////
+    @Override
+    public List<Map<Number, String>>  getPermissions(Number notebookID) {
+        if (notebookID == null) {
+            loggerNotebookDao.debug(nullArgument);
+            return null;
+        }
+        StringBuilder sql = new StringBuilder("SELECT ");
+        sql.append(principal_id).append(",").append(permission).append(" FROM ").append(notebookPermissionsTableName).append(" WHERE ").append(notebook_id).append("  = ?");
+        return getSimpleJdbcTemplate().query(sql.toString(), principalsPermissionsRowMapper, notebookID);
+    }
+    
+  /////////////
 
     @Override
     public List<Number> getNotebookIDs(Number principalID, Permission permission) {

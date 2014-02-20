@@ -17,15 +17,20 @@
  */
 package eu.dasish.annotation.backend.dao.impl;
 
+import eu.dasish.annotation.backend.Resource;
 import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.dao.AnnotationDao;
 import eu.dasish.annotation.backend.dao.CachedRepresentationDao;
 import eu.dasish.annotation.backend.dao.DBIntegrityService;
 import eu.dasish.annotation.backend.dao.NotebookDao;
+import eu.dasish.annotation.backend.dao.ResourceDao;
 import eu.dasish.annotation.backend.dao.TargetDao;
 import eu.dasish.annotation.backend.dao.UserDao;
 import eu.dasish.annotation.backend.rest.AnnotationResource;
+import eu.dasish.annotation.schema.Action;
+import eu.dasish.annotation.schema.ActionList;
 import eu.dasish.annotation.schema.Annotation;
+import eu.dasish.annotation.schema.AnnotationActionName;
 import eu.dasish.annotation.schema.AnnotationBody;
 import eu.dasish.annotation.schema.AnnotationInfo;
 import eu.dasish.annotation.schema.AnnotationInfoList;
@@ -37,8 +42,10 @@ import eu.dasish.annotation.schema.NotebookInfo;
 import eu.dasish.annotation.schema.NotebookInfoList;
 import eu.dasish.annotation.schema.TargetInfoList;
 import eu.dasish.annotation.schema.Permission;
+import eu.dasish.annotation.schema.PermissionActionName;
 import eu.dasish.annotation.schema.UserWithPermissionList;
 import eu.dasish.annotation.schema.ReferenceList;
+import eu.dasish.annotation.schema.ResponseBody;
 import eu.dasish.annotation.schema.Target;
 import eu.dasish.annotation.schema.TargetInfo;
 import eu.dasish.annotation.schema.User;
@@ -50,6 +57,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.lang.reflect.Field;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,7 +80,24 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     NotebookDao notebookDao;
     final static protected String admin = "admin";
     private static final Logger logger = LoggerFactory.getLogger(AnnotationResource.class);
+
     //////////////////////////////////
+    private ResourceDao getDao(Resource resource) {
+        switch (resource) {
+            case PRINCIPAL:
+                return userDao;
+            case ANNOTATION:
+                return annotationDao;
+            case TARGET:
+                return targetDao;
+            case CACHED_REPRESENTATION:
+                return cachedRepresentationDao;
+            case NOTEBOOK:
+                return notebookDao;
+            default:
+                return null;
+        }
+    }
 
     @Override
     public void setServiceURI(String serviceURI) {
@@ -80,63 +105,28 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         cachedRepresentationDao.setServiceURI(serviceURI + "cached/");
         targetDao.setServiceURI(serviceURI + "targets/");
         annotationDao.setServiceURI(serviceURI + "annotations/");
-        //notebookDao.setServiceURI(serviceURI+"notebooks/");
+        notebookDao.setServiceURI(serviceURI + "notebooks/");
     }
 
     ///////////// GETTERS //////////////////////////
     @Override
-    public Number getAnnotationInternalIdentifier(UUID externalID) {
-        return annotationDao.getInternalID(externalID);
+    public Number getResourceInternalIdentifier(UUID externalID, Resource resource) {
+        return this.getDao(resource).getInternalID(externalID);
     }
 
     @Override
-    public Number getAnnotationInternalIdentifierFromURI(String uri) {
-        return annotationDao.getInternalIDFromURI(uri);
+    public Number getResourceInternalIdentifierFromURI(String uri, Resource resource) {
+        return this.getDao(resource).getInternalIDFromURI(uri);
     }
 
     @Override
-    public UUID getAnnotationExternalIdentifier(Number annotationID) {
-        return annotationDao.getExternalID(annotationID);
+    public UUID getResourceExternalIdentifier(Number resourceID, Resource resource) {
+        return this.getDao(resource).getExternalID(resourceID);
     }
 
     @Override
-    public Number getTargetInternalIdentifier(UUID externalID) {
-        return targetDao.getInternalID(externalID);
-    }
-
-    @Override
-    public UUID getTargetExternalIdentifier(Number targetID) {
-        return targetDao.getExternalID(targetID);
-    }
-
-    @Override
-    public String getTargetURI(Number targetID) {
-        return targetDao.getURIFromInternalID(targetID);
-    }
-
-    @Override
-    public String getUserURI(Number userID) {
-        return userDao.getURIFromInternalID(userID);
-    }
-
-    @Override
-    public Number getUserInternalIdentifier(UUID externalID) {
-        return userDao.getInternalID(externalID);
-    }
-
-    @Override
-    public UUID getUserExternalIdentifier(Number userID) {
-        return userDao.getExternalID(userID);
-    }
-
-    @Override
-    public Number getCachedRepresentationInternalIdentifier(UUID externalID) {
-        return cachedRepresentationDao.getInternalID(externalID);
-    }
-
-    @Override
-    public UUID getCachedRepresentationExternalIdentifier(Number cachedID) {
-        return cachedRepresentationDao.getExternalID(cachedID);
+    public String getResourceURI(Number resourceID, Resource resource) {
+        return this.getDao(resource).getURIFromInternalID(resourceID);
     }
 
     @Override
@@ -152,7 +142,7 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
             }
             result.setTargets(sis);
 
-            result.setPermissions(this.getPermissionsForAnnotation(annotationID));
+            result.setPermissions(this.getPermissions(annotationID, Resource.ANNOTATION));
             return result;
         } else {
             return null;
@@ -167,30 +157,26 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     ///////////////////////////////////////////////////
     // TODO UNIT tests
     @Override
-    public UserWithPermissionList getPermissionsForAnnotation(Number annotationID) {
-        if (annotationID != null) {
-            List<Map<Number, String>> principalsPermissions = annotationDao.getPermissions(annotationID);
+    public UserWithPermissionList getPermissions(Number resourceID, Resource resource) {
+        if (resourceID != null) {
+            List<Map<Number, String>> principalsPermissions = this.getDao(resource).getPermissions(resourceID);
             UserWithPermissionList result = new UserWithPermissionList();
             List<UserWithPermission> list = result.getUserWithPermission();
             for (Map<Number, String> principalPermission : principalsPermissions) {
-
                 Number[] principal = new Number[1];
                 principalPermission.keySet().toArray(principal);
-
                 UserWithPermission userWithPermission = new UserWithPermission();
                 userWithPermission.setRef(userDao.getURIFromInternalID(principal[0]));
                 userWithPermission.setPermission(Permission.fromValue(principalPermission.get(principal[0])));
-
                 list.add(userWithPermission);
             }
             return result;
-        } else {
-            return null;
-        }
 
+        }
+        return null;
     }
 
-    ////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
     @Override
     public List<Number> getFilteredAnnotationIDs(UUID ownerId, String link, String text, Number inloggedUserID, String access, String namespace, String after, String before) {
 
@@ -435,13 +421,6 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         }
     }
 
-    /// notebooks ///
-    @Override
-     public Number getNotebookInternalIdentifier(UUID externalIdentifier){
-        return notebookDao.getInternalID(externalIdentifier);
-    }
-    
-    
     @Override
     public NotebookInfoList getNotebooks(Number principalID, String permission) {
         NotebookInfoList result = new NotebookInfoList();
@@ -470,15 +449,14 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     }
 
     @Override
-    public boolean hasAccess(Number notebookID, Number principalID, Permission permission){
+    public boolean hasAccess(Number notebookID, Number principalID, Permission permission) {
         List<Number> notebookIDs = notebookDao.getNotebookIDs(principalID, permission);
         if (notebookIDs == null) {
             return false;
-        } 
+        }
         return notebookIDs.contains(notebookID);
     }
-    
-    
+
     @Override
     public ReferenceList getNotebooksOwnedBy(Number principalID) {
         ReferenceList result = new ReferenceList();
@@ -529,9 +507,13 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
                 }
             }
         }
-
         result.setPermissions(ups);
         return result;
+    }
+
+    @Override
+    public Number getNotebookOwner(Number notebookID) {
+        return notebookDao.getOwner(notebookID);
     }
 
     /////////////////////////////////////////////////////////////
@@ -780,6 +762,60 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     }
 
 ////////////// HELPERS ////////////////////
+    ////////////////////////////////////////
+    @Override
+    public ResponseBody makeAnnotationResponseEnvelope(Number annotationID) {
+        ResponseBody result = new ResponseBody();
+        Annotation annotation = this.getAnnotation(annotationID);
+        result.setAnnotation(annotation);
+        List<String> targetsNoCached = this.getTargetsWithNoCachedRepresentation(annotationID);
+        ActionList actionList = new ActionList();
+        result.setActionList(actionList);
+        actionList.getAction().addAll(makeActionList(targetsNoCached, AnnotationActionName.CREATE_CACHED_REPRESENTATION.value()));
+        return result;
+    }
+
+    @Override
+    public ResponseBody makeNotebookResponseEnvelope(Number notebookID) {
+        ResponseBody result = new ResponseBody();
+        result.setPermissions(null);
+        Notebook notebook = this.getNotebook(notebookID);
+        result.setNotebook(notebook);
+        return result;
+    }
+
+    @Override
+    public ResponseBody makePermissionResponseEnvelope(Number resourceID, Resource resource) {
+        ResponseBody result = new ResponseBody();
+        UserWithPermissionList permissions = this.getPermissions(resourceID, resource);
+        result.setPermissions(permissions);
+        List<String> usersWithNoInfo = this.getUsersWithNoInfo(resourceID);
+        ActionList actionList = new ActionList();
+        result.setActionList(actionList);
+        actionList.getAction().addAll(makeActionList(usersWithNoInfo, PermissionActionName.PROVIDE_USER_INFO.value()));
+        return result;
+    }
+
+    private List<Action> makeActionList(List<String> resourceURIs, String message) {
+        if (resourceURIs != null) {
+            if (resourceURIs.isEmpty()) {
+                return (new ArrayList<Action>());
+            } else {
+                List<Action> result = new ArrayList<Action>();
+                for (String resourceURI : resourceURIs) {
+                    Action action = new Action();
+                    result.add(action);
+                    action.setMessage(message);
+                    action.setObject(resourceURI);
+                }
+                return result;
+            }
+        } else {
+            return null;
+        }
+    }
+
+    //// priveee ///
     private Target createFreshTarget(TargetInfo targetInfo) {
         Target target = new Target();
         target.setLink(targetInfo.getLink());

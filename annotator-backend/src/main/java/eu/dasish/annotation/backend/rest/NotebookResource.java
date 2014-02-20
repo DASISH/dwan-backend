@@ -18,19 +18,23 @@
 package eu.dasish.annotation.backend.rest;
 
 import eu.dasish.annotation.backend.BackendConstants;
+import eu.dasish.annotation.backend.Resource;
 import eu.dasish.annotation.backend.dao.DBIntegrityService;
 import eu.dasish.annotation.schema.Notebook;
+import eu.dasish.annotation.schema.NotebookInfo;
 import eu.dasish.annotation.schema.NotebookInfoList;
 import eu.dasish.annotation.schema.ObjectFactory;
 import eu.dasish.annotation.schema.Permission;
 import eu.dasish.annotation.schema.ReferenceList;
+import eu.dasish.annotation.schema.ResponseBody;
 import java.io.IOException;
-import java.net.URI;
 import java.sql.SQLException;
 import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -69,6 +73,7 @@ public class NotebookResource {
     protected Providers providers;
     private final Logger loggerServer = LoggerFactory.getLogger(HttpServletResponse.class);
     private final VerboseOutput verboseOutput = new VerboseOutput(httpServletResponse, loggerServer);
+    private final String admin = "admin";
 
     public NotebookResource() {
     }
@@ -125,7 +130,7 @@ public class NotebookResource {
         String remoteUser = httpServletRequest.getRemoteUser();
         final Number principalID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
         if (principalID != null) {
-            Number notebookID = dbIntegrityService.getNotebookInternalIdentifier(UUID.fromString(externalIdentifier));
+            Number notebookID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.NOTEBOOK);
             if (notebookID != null) {
                 if (dbIntegrityService.hasAccess(notebookID, principalID, Permission.fromValue("reader"))) {
                     ReferenceList principals = dbIntegrityService.getPrincipals(notebookID, permissionMode);
@@ -157,7 +162,7 @@ public class NotebookResource {
         String remoteUser = httpServletRequest.getRemoteUser();
         final Number principalID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
         if (principalID != null) {
-            Number notebookID = dbIntegrityService.getNotebookInternalIdentifier(UUID.fromString(externalIdentifier));
+            Number notebookID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.NOTEBOOK);
             if (notebookID != null) {
                 if (dbIntegrityService.hasAccess(notebookID, principalID, Permission.fromValue("reader"))) {
                     Notebook notebook = dbIntegrityService.getNotebook(notebookID);
@@ -189,7 +194,7 @@ public class NotebookResource {
         String remoteUser = httpServletRequest.getRemoteUser();
         final Number principalID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
         if (principalID != null) {
-            Number notebookID = dbIntegrityService.getNotebookInternalIdentifier(UUID.fromString(externalIdentifier));
+            Number notebookID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.NOTEBOOK);
             if (notebookID != null) {
                 if (dbIntegrityService.hasAccess(notebookID, principalID, Permission.fromValue("reader"))) {
                     ReferenceList annotations = dbIntegrityService.getAnnotationsForNotebook(notebookID, startAnnotations, maximumAnnotations, orderBy, desc);
@@ -205,4 +210,48 @@ public class NotebookResource {
         }
         return new ObjectFactory().createReferenceList(new ReferenceList());
     }
+
+    @PUT
+    @Consumes(MediaType.APPLICATION_XML)
+    @Produces(MediaType.APPLICATION_XML)
+    @Path("{notebookid: " + BackendConstants.regExpIdentifier + "}")
+    public JAXBElement<ResponseBody> updateNotebookInfo(@PathParam("notebookid") String externalIdentifier, NotebookInfo notebookInfo) throws IOException {
+        String path = uriInfo.getBaseUri().toString();
+        dbIntegrityService.setServiceURI(path);
+        String notebookURI = notebookInfo.getRef();
+
+        if (!(path + "notebook/" + externalIdentifier).equals(notebookURI)) {
+            verboseOutput.IDENTIFIER_MISMATCH(externalIdentifier);
+            return new ObjectFactory().createResponseBody(new ResponseBody());
+        }
+
+        try {
+            final Number notebookID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.NOTEBOOK);
+            if (notebookID != null) {
+                String remoteUser = httpServletRequest.getRemoteUser();
+                Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
+                if (userID != null) {
+                    if (userID.equals(dbIntegrityService.getNotebookOwner(notebookID)) || dbIntegrityService.getTypeOfUserAccount(userID).equals(admin)) {
+                        boolean success = dbIntegrityService.updateNotebookMetadata(notebookID, notebookInfo);
+                        if (success) {
+                            return new ObjectFactory().createResponseBody(dbIntegrityService.makeNotebookResponseEnvelope(notebookID));
+                        }
+                    } else {
+                        verboseOutput.FORBIDDEN_PERMISSION_CHANGING(externalIdentifier);
+                        loggerServer.debug(" Ownership changing is the part of the full update of the notebook metadadata.");
+                    }
+                } else {
+                    verboseOutput.REMOTE_PRINCIPAL_NOT_FOUND(remoteUser);
+                }
+            } else {
+                verboseOutput.NOTEBOOK_NOT_FOUND(externalIdentifier);
+            }
+        } catch (IllegalArgumentException e) {
+            verboseOutput.ILLEGAL_UUID(externalIdentifier);
+        }
+        return new ObjectFactory().createResponseBody(new ResponseBody());
+    }
+    
+    
+    
 }

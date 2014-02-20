@@ -18,25 +18,17 @@
 package eu.dasish.annotation.backend.rest;
 
 import eu.dasish.annotation.backend.BackendConstants;
+import eu.dasish.annotation.backend.Resource;
 import eu.dasish.annotation.backend.dao.DBIntegrityService;
 import eu.dasish.annotation.schema.Annotation;
-import eu.dasish.annotation.schema.AnnotationActionName;
-import eu.dasish.annotation.schema.AnnotationInfoList;
-import eu.dasish.annotation.schema.Action;
-import eu.dasish.annotation.schema.ActionList;
 import eu.dasish.annotation.schema.AnnotationBody;
+import eu.dasish.annotation.schema.AnnotationInfoList;
 import eu.dasish.annotation.schema.ObjectFactory;
 import eu.dasish.annotation.schema.Permission;
-import eu.dasish.annotation.schema.PermissionActionName;
 import eu.dasish.annotation.schema.UserWithPermissionList;
 import eu.dasish.annotation.schema.ReferenceList;
 import eu.dasish.annotation.schema.ResponseBody;
-import eu.dasish.annotation.schema.UserWithPermission;
 import java.io.IOException;
-import java.net.URI;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -112,7 +104,7 @@ public class AnnotationResource {
     public JAXBElement<Annotation> getAnnotation(@PathParam("annotationid") String externalIdentifier) throws IOException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         try {
-            final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(externalIdentifier));
+            final Number annotationID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.ANNOTATION);
             if (annotationID != null) {
                 String remoteUser = httpServletRequest.getRemoteUser();
                 final Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
@@ -143,7 +135,7 @@ public class AnnotationResource {
     public JAXBElement<ReferenceList> getAnnotationTargets(@PathParam("annotationid") String externalIdentifier) throws IOException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         try {
-            final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(externalIdentifier));
+            final Number annotationID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.ANNOTATION);
             if (annotationID != null) {
                 String remoteUser = httpServletRequest.getRemoteUser();
                 final Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
@@ -156,7 +148,6 @@ public class AnnotationResource {
                     }
                 } else {
                     verboseOutput.REMOTE_PRINCIPAL_NOT_FOUND(remoteUser);
-
                 }
             } else {
                 verboseOutput.ANNOTATION_NOT_FOUND(externalIdentifier);
@@ -208,13 +199,13 @@ public class AnnotationResource {
     public JAXBElement<UserWithPermissionList> getAnnotationPermissions(@PathParam("annotationid") String externalIdentifier) throws IOException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         try {
-            final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(externalIdentifier));
+            final Number annotationID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.ANNOTATION);
             String remoteUser = httpServletRequest.getRemoteUser();
             Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
             if (userID != null) {
                 if (annotationID != null) {
                     if (dbIntegrityService.canRead(userID, annotationID)) {
-                        final UserWithPermissionList permissionList = dbIntegrityService.getPermissionsForAnnotation(annotationID);
+                        final UserWithPermissionList permissionList = dbIntegrityService.getPermissions(annotationID, Resource.ANNOTATION);
                         return new ObjectFactory().createPermissionList(permissionList);
                     } else {
                         verboseOutput.FORBIDDEN_ANNOTATION_READING(externalIdentifier);
@@ -239,7 +230,7 @@ public class AnnotationResource {
     public String deleteAnnotation(@PathParam("annotationid") String externalIdentifier) throws IOException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         try {
-            final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(externalIdentifier));
+            final Number annotationID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.ANNOTATION);
             String remoteUser = httpServletRequest.getRemoteUser();
             Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
             if (userID != null) {
@@ -279,7 +270,7 @@ public class AnnotationResource {
         Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
         if (userID != null) {
             Number annotationID = dbIntegrityService.addUsersAnnotation(userID, annotation);
-            return new ObjectFactory().createResponseBody(makeAnnotationResponseEnvelope(annotationID));
+            return new ObjectFactory().createResponseBody(dbIntegrityService.makeAnnotationResponseEnvelope(annotationID));
         } else {
             verboseOutput.REMOTE_PRINCIPAL_NOT_FOUND(remoteUser);
 
@@ -305,14 +296,14 @@ public class AnnotationResource {
 
 
         try {
-            final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(externalIdentifier));
+            final Number annotationID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.ANNOTATION);
             if (annotationID != null) {
                 String remoteUser = httpServletRequest.getRemoteUser();
                 Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
                 if (userID != null) {
                     if (userID.equals(dbIntegrityService.getAnnotationOwner(annotationID)) || dbIntegrityService.getTypeOfUserAccount(userID).equals(admin)) {
                         int updatedRows = dbIntegrityService.updateAnnotation(annotation);
-                        return new ObjectFactory().createResponseBody(makeAnnotationResponseEnvelope(annotationID));
+                        return new ObjectFactory().createResponseBody(dbIntegrityService.makeAnnotationResponseEnvelope(annotationID));
                     } else {
                         verboseOutput.FORBIDDEN_PERMISSION_CHANGING(externalIdentifier);
                         loggerServer.debug(" Permission changing is the part of the full update of the annotation.");
@@ -337,14 +328,14 @@ public class AnnotationResource {
         String path = uriInfo.getBaseUri().toString();
         dbIntegrityService.setServiceURI(path);
         try {
-            final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(externalIdentifier));
+            final Number annotationID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.ANNOTATION);
             String remoteUser = httpServletRequest.getRemoteUser();
             Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
             if (userID != null) {
                 if (annotationID != null) {
                     if (dbIntegrityService.canWrite(userID, annotationID)) {
                         int updatedRows = dbIntegrityService.updateAnnotationBody(annotationID, annotationBody);
-                        return new ObjectFactory().createResponseBody(makeAnnotationResponseEnvelope(annotationID));
+                        return new ObjectFactory().createResponseBody(dbIntegrityService.makeAnnotationResponseEnvelope(annotationID));
                     } else {
                         verboseOutput.FORBIDDEN_ANNOTATION_WRITING(externalIdentifier);
                     }
@@ -372,10 +363,10 @@ public class AnnotationResource {
         Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
         if (remoteUserID != null) {
             try {
-                final Number userID = dbIntegrityService.getUserInternalIdentifier(UUID.fromString(userExternalId));
+                final Number userID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(userExternalId), Resource.PRINCIPAL);
                 if (userID != null) {
                     try {
-                        final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(annotationExternalId));
+                        final Number annotationID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(annotationExternalId), Resource.ANNOTATION);
                         if (annotationID != null) {
                             if (remoteUserID.equals(dbIntegrityService.getAnnotationOwner(annotationID)) || dbIntegrityService.getTypeOfUserAccount(remoteUserID).equals(admin)) {
                                 int result = (dbIntegrityService.getPermission(annotationID, userID) != null)
@@ -413,14 +404,14 @@ public class AnnotationResource {
     public JAXBElement<ResponseBody> updatePermissions(@PathParam("annotationid") String annotationExternalId, UserWithPermissionList permissions) throws IOException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         try {
-            final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(annotationExternalId));
+            final Number annotationID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(annotationExternalId), Resource.ANNOTATION);
             String remoteUser = httpServletRequest.getRemoteUser();
             Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
             if (remoteUserID != null) {
                 if (annotationID != null) {
                     if (remoteUserID.equals(dbIntegrityService.getAnnotationOwner(annotationID)) || dbIntegrityService.getTypeOfUserAccount(remoteUserID).equals(admin)) {
                         int updatedRows = dbIntegrityService.updatePermissions(annotationID, permissions);
-                        return new ObjectFactory().createResponseBody(makePermissionResponseEnvelope(annotationID));
+                        return new ObjectFactory().createResponseBody(dbIntegrityService.makePermissionResponseEnvelope(annotationID, Resource.ANNOTATION));
                     } else {
                         verboseOutput.FORBIDDEN_PERMISSION_CHANGING(annotationExternalId);
                     }
@@ -447,13 +438,13 @@ public class AnnotationResource {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         int deletedRows = 0;
         try {
-            final Number annotationID = dbIntegrityService.getAnnotationInternalIdentifier(UUID.fromString(annotationId));
+            final Number annotationID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(annotationId), Resource.ANNOTATION);
             String remoteUser = httpServletRequest.getRemoteUser();
             Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
             if (remoteUserID != null) {
                 if (annotationID != null) {
                     if (remoteUserID.equals(dbIntegrityService.getAnnotationOwner(annotationID)) || dbIntegrityService.getTypeOfUserAccount(remoteUserID).equals(admin)) {
-                        Number userID = dbIntegrityService.getUserInternalIdentifier(UUID.fromString(userId));
+                        Number userID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(userId), Resource.PRINCIPAL);
                         if (userID != null) {
                             deletedRows = dbIntegrityService.updateAnnotationPrincipalPermission(annotationID, userID, null);
 
@@ -476,50 +467,5 @@ public class AnnotationResource {
         }
         return (deletedRows + " is deleted.");
     }
-/////////////////////////////////////////
 
-    private ResponseBody makeAnnotationResponseEnvelope(Number annotationID) {
-        ResponseBody result = new ResponseBody();
-        result.setPermissions(null);
-        Annotation annotation = dbIntegrityService.getAnnotation(annotationID);
-        result.setAnnotation(annotation);
-        List<String> targetsNoCached = dbIntegrityService.getTargetsWithNoCachedRepresentation(annotationID);
-        ActionList actionList = new ActionList();
-        result.setActionList(actionList);
-        actionList.getAction().addAll(makeActionList(targetsNoCached, AnnotationActionName.CREATE_CACHED_REPRESENTATION.value()));
-        return result;
-    }
-
-    /////////////////////////////////////////
-    private ResponseBody makePermissionResponseEnvelope(Number annotationID) {
-        ResponseBody result = new ResponseBody();
-        result.setAnnotation(null);
-        UserWithPermissionList permissions = dbIntegrityService.getPermissionsForAnnotation(annotationID);
-        result.setPermissions(permissions);
-        List<String> usersWithNoInfo = dbIntegrityService.getUsersWithNoInfo(annotationID);
-        ActionList actionList = new ActionList();
-        result.setActionList(actionList);
-        actionList.getAction().addAll(makeActionList(usersWithNoInfo, PermissionActionName.PROVIDE_USER_INFO.value()));
-        return result;
-    }
-
-    // REFACTOR : move to the integrity service all te methods below  
-    private List<Action> makeActionList(List<String> resourceURIs, String message) {
-        if (resourceURIs != null) {
-            if (resourceURIs.isEmpty()) {
-                return (new ArrayList<Action>());
-            } else {
-                List<Action> result = new ArrayList<Action>();
-                for (String resourceURI : resourceURIs) {
-                    Action action = new Action();
-                    result.add(action);
-                    action.setMessage(message);
-                    action.setObject(resourceURI);
-                }
-                return result;
-            }
-        } else {
-            return null;
-        }
-    }
 }

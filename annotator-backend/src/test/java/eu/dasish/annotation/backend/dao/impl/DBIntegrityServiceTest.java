@@ -17,6 +17,7 @@
  */
 package eu.dasish.annotation.backend.dao.impl;
 
+import eu.dasish.annotation.backend.Resource;
 import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.TestInstances;
 import eu.dasish.annotation.backend.dao.AnnotationDao;
@@ -99,15 +100,15 @@ public class DBIntegrityServiceTest {
     @Test
     public void testGetAnnotationInternalIdentifier() {
         System.out.println("getAnnotationInternalIdentifier");
-        final UUID externalID = UUID.fromString("00000000-0000-0000-0000-000000000021");
-
+        final UUID externalID = UUID.fromString("00000000-0000-0000-0000-000000000021");       
+        //dbIntegrityService.setResourceList();
         mockeryDao.checking(new Expectations() {
             {
                 oneOf(annotationDao).getInternalID(externalID);
                 will(returnValue(1));
             }
         });
-        assertEquals(1, dbIntegrityService.getAnnotationInternalIdentifier(externalID));
+        assertEquals(1, dbIntegrityService.getResourceInternalIdentifier(externalID, Resource.ANNOTATION));
     }
 
     /**
@@ -125,7 +126,7 @@ public class DBIntegrityServiceTest {
                 will(returnValue(externalID));
             }
         });
-        assertEquals("00000000-0000-0000-0000-000000000021", dbIntegrityService.getAnnotationExternalIdentifier(1).toString());
+        assertEquals("00000000-0000-0000-0000-000000000021", dbIntegrityService.getResourceExternalIdentifier(1, Resource.ANNOTATION).toString());
     }
 
     /**
@@ -144,7 +145,7 @@ public class DBIntegrityServiceTest {
                 will(returnValue(1));
             }
         });
-        assertEquals(1, dbIntegrityService.getUserInternalIdentifier(externalID));
+        assertEquals(1, dbIntegrityService.getResourceInternalIdentifier(externalID, Resource.PRINCIPAL));
     }
 
     /**
@@ -162,7 +163,7 @@ public class DBIntegrityServiceTest {
                 will(returnValue(externalID));
             }
         });
-        assertEquals("00000000-0000-0000-0000-000000000111", dbIntegrityService.getUserExternalIdentifier(1).toString());
+        assertEquals("00000000-0000-0000-0000-000000000111", dbIntegrityService.getResourceExternalIdentifier(1, Resource.PRINCIPAL).toString());
     }
 
     /**
@@ -842,7 +843,7 @@ public class DBIntegrityServiceTest {
             }
         });
 
-       assertEquals(1, dbIntegrityService.getNotebookInternalIdentifier(mockUUID));
+       assertEquals(1, dbIntegrityService.getResourceInternalIdentifier(mockUUID, Resource.NOTEBOOK));
     
     }  
        

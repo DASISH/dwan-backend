@@ -17,10 +17,12 @@
  */
 package eu.dasish.annotation.backend.rest;
 
+import eu.dasish.annotation.backend.Resource;
 import eu.dasish.annotation.backend.dao.DBIntegrityService;
-import eu.dasish.annotation.backend.MockObjectsFactoryRest;
 import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.TestInstances;
+import eu.dasish.annotation.schema.Action;
+import eu.dasish.annotation.schema.ActionList;
 import eu.dasish.annotation.schema.AnnotationBody;
 import eu.dasish.annotation.schema.AnnotationBody.TextBody;
 import eu.dasish.annotation.schema.TargetInfo;
@@ -29,7 +31,6 @@ import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.ObjectFactory;
 import eu.dasish.annotation.schema.ResponseBody;
 import eu.dasish.annotation.schema.AnnotationActionName;
-import eu.dasish.annotation.schema.Permission;
 import java.io.IOException;
 import java.sql.SQLException;
 import javax.xml.bind.JAXBElement;
@@ -86,6 +87,37 @@ public class AnnotationResourceTest {
     /**
      * Test of getAnnotation method, of class AnnotationResource.
      */
+    
+   /*
+    
+    * public JAXBElement<Annotation> getAnnotation(@PathParam("annotationid") String externalIdentifier) throws IOException {
+        dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
+        try {
+            final Number annotationID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.ANNOTATION);
+            if (annotationID != null) {
+                String remoteUser = httpServletRequest.getRemoteUser();
+                final Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
+                if (userID != null) {
+                    if (dbIntegrityService.canRead(userID, annotationID)) {
+                        final Annotation annotation = dbIntegrityService.getAnnotation(annotationID);
+                        return new ObjectFactory().createAnnotation(annotation);
+                    } else {
+                        verboseOutput.FORBIDDEN_ANNOTATION_READING(externalIdentifier);
+                    }
+                } else {
+                    verboseOutput.REMOTE_PRINCIPAL_NOT_FOUND(remoteUser);
+                }
+            } else {
+                verboseOutput.ANNOTATION_NOT_FOUND(externalIdentifier);
+            }
+        } catch (IllegalArgumentException e) {
+            verboseOutput.ILLEGAL_UUID(externalIdentifier);
+        }
+        return new ObjectFactory().createAnnotation(new Annotation());
+    }
+    * 
+    */
+    
     @Test
     public void testGetAnnotation() throws SQLException, JAXBException, Exception {
         System.out.println("getAnnotation");
@@ -102,17 +134,17 @@ public class AnnotationResourceTest {
                will(returnValue(URI.create("http://localhost:8080/annotator-backend/api/"))); 
                
                
-                oneOf(mockDbIntegrityService).setServiceURI(with(any(String.class)));
+                oneOf(mockDbIntegrityService).setServiceURI("http://localhost:8080/annotator-backend/api/");
                 will(doAll());
+                
+                oneOf(mockDbIntegrityService).getResourceInternalIdentifier(with(aNonNull(UUID.class)), with(aNonNull((Resource.class))));                
+                will(returnValue(2)); 
                 
                 oneOf(mockDbIntegrityService).getUserInternalIDFromRemoteID("olhsha@mpi.nl");
                 will(returnValue(3)); 
                 
                 oneOf(mockDbIntegrityService).canRead(3, 2);
-                will(returnValue(true)); 
-                
-                oneOf(mockDbIntegrityService).getAnnotationInternalIdentifier(with(any(UUID.class)));                
-                will(returnValue(2)); 
+                will(returnValue(true));  
                 
                 oneOf(mockDbIntegrityService).getAnnotation(2);                
                 will(returnValue(expectedAnnotation));
@@ -143,8 +175,7 @@ public class AnnotationResourceTest {
         mockeryRest.checking(new Expectations() {
             {  
                oneOf(mockUriInfo).getBaseUri();
-               will(returnValue(URI.create("http://localhost:8080/annotator-backend/api/"))); 
-               
+               will(returnValue(URI.create("http://localhost:8080/annotator-backend/api/")));                
               
                 oneOf(mockDbIntegrityService).getUserInternalIDFromRemoteID("olhsha@mpi.nl");
                 will(returnValue(3)); 
@@ -152,7 +183,7 @@ public class AnnotationResourceTest {
                 oneOf(mockDbIntegrityService).setServiceURI(with(any(String.class)));
                 will(doAll());
                 
-                oneOf(mockDbIntegrityService).getAnnotationInternalIdentifier(with(aNonNull(UUID.class)));              
+                oneOf(mockDbIntegrityService).getResourceInternalIdentifier(with(aNonNull(UUID.class)), with(aNonNull((Resource.class))));              
                 will(returnValue(4)); 
                 
                
@@ -206,6 +237,15 @@ public class AnnotationResourceTest {
         addedAnnotation.setURI("http://localhost:8080/annotator-backend/api/annotations/"+UUID.randomUUID().toString());
         addedAnnotation.setOwnerRef("http://localhost:8080/annotator-backend/api/users/"+"00000000-0000-0000-0000-000000000111");
      
+        final ResponseBody mockEnvelope = new ResponseBody();
+        final Action action = new Action();
+        final ActionList actionList = new ActionList();
+        mockEnvelope.setAnnotation(addedAnnotation); 
+        mockEnvelope.setActionList(actionList);
+        actionList.getAction().add(action);
+        action.setMessage(AnnotationActionName.CREATE_CACHED_REPRESENTATION.value());
+        action.setObject("http://localhost:8080/annotator-backend/api/targets/00000000-0000-0000-0000-000000000036");
+                
         annotationResource.setHttpServletRequest(mockRequest); 
         annotationResource.setUriInfo(mockUriInfo); 
         
@@ -220,8 +260,7 @@ public class AnnotationResourceTest {
                 
                 oneOf(mockDbIntegrityService).getUserInternalIDFromRemoteID("olhsha@mpi.nl");
                 will(returnValue(3));
-                
-             
+                             
                 oneOf(mockDbIntegrityService).addUsersAnnotation(3, annotationToAdd);
                 will(returnValue(newAnnotationID));
                 
@@ -230,6 +269,9 @@ public class AnnotationResourceTest {
                 
                 oneOf(mockDbIntegrityService).getTargetsWithNoCachedRepresentation(newAnnotationID);
                 will(returnValue(targets));
+                
+                oneOf(mockDbIntegrityService).makeAnnotationResponseEnvelope(newAnnotationID);
+                will(returnValue(mockEnvelope));
                 
           }
         });
