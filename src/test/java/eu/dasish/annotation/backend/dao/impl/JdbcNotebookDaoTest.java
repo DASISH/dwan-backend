@@ -78,19 +78,7 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest {
         assertEquals(expResult, result);
     }
 
-    /**
-     * Test of getPrincipalIDsWithPermission method, of class JdbcNotebookDao.
-     */
-    @Test
-    public void testGetPrincipalIDsWithPermission() {
-        System.out.println("gtest getPrincipalIDsWithPermission");
-        List<Number> expResult = new ArrayList<Number>();
-        expResult.add(2);
-        expResult.add(4);
-        List result = jdbcNotebookDao.getPrincipalIDsWithPermission(1, Permission.WRITER);
-        assertEquals(expResult, result);
-    }
-
+  
     /**
      * Test of getNotebookInfoWithoutOwner method, of class JdbcNotebookDao.
      */
@@ -116,19 +104,7 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest {
         assertEquals("2013-08-12T09:25:00.383000Z", result.getLastModified().toString());
     }
 
-    /**
-     * Test of getAnnotations method, of class JdbcNotebookDao.
-     */
-    @Test
-    public void testGetAnnotations() {
-        System.out.println("test getAnnotations");
-        List<Number> expResult = new ArrayList<Number>();
-        expResult.add(1);
-        expResult.add(2);
-        List<Number> result = jdbcNotebookDao.getAnnotations(1);
-        assertEquals(expResult, result);
-    }
-
+   
     /**
      * Test of updateNotebookMetadata method, of class JdbcNotebookDao.
      */
@@ -160,7 +136,6 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest {
         System.out.println("test updateUserPermissionForNotebook");
         boolean result = jdbcNotebookDao.updateUserPermissionForNotebook(1, 2, Permission.READER);
         assertTrue(result);
-        assertTrue(jdbcNotebookDao.getPrincipalIDsWithPermission(1, Permission.READER).contains(2));
 
         // in the next test the update should fail
         //assertFalse(jdbcNotebookDao.updateUserPermissionForNotebook(1, 2, Permission.OWNER));
@@ -192,7 +167,6 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest {
         System.out.println("test addAnnotationToNotebook");
         boolean result = jdbcNotebookDao.addAnnotationToNotebook(2, 4);
         assertTrue(result);
-        assertTrue(jdbcNotebookDao.getAnnotations(2).contains(4));
     }
 
     /**
@@ -203,7 +177,6 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest {
         System.out.println("test addPermissionToNotebook");
         boolean result = jdbcNotebookDao.addPermissionToNotebook(2, 4, Permission.WRITER);
         assertTrue(result);
-        assertTrue(jdbcNotebookDao.getPrincipalIDsWithPermission(2, Permission.WRITER).contains(4));
     }
 
     /**
@@ -214,7 +187,6 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest {
         System.out.println("test deleteAnnotationFromNotebook");
         boolean result = jdbcNotebookDao.deleteAnnotationFromNotebook(1, 2);
         assertTrue(result);
-        assertFalse(jdbcNotebookDao.getAnnotations(1).contains(2));
     }
 
     /**
@@ -226,8 +198,6 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest {
         System.out.println("deleteNotebookPrincipalPermission");
         boolean result = jdbcNotebookDao.deleteNotebookPrincipalPermission(1, 2);
         assertTrue(result);
-        assertFalse(jdbcNotebookDao.getPrincipalIDsWithPermission(1, Permission.READER).contains(2));
-        assertFalse(jdbcNotebookDao.getPrincipalIDsWithPermission(1, Permission.WRITER).contains(2));
     }
 
     /**
@@ -239,7 +209,6 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest {
         System.out.println("test deleteAllAnnotationsFromNotebook");
         boolean result = jdbcNotebookDao.deleteAllAnnotationsFromNotebook(1);
         assertTrue(result);
-        assertTrue(jdbcNotebookDao.getAnnotations(1).isEmpty());
     }
 
     /**
@@ -250,8 +219,6 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest {
         System.out.println("test deleteAllPermissionsForNotebook");
         boolean result = jdbcNotebookDao.deleteAllPermissionsForNotebook(1);
         assertTrue(result);
-        assertTrue(jdbcNotebookDao.getPrincipalIDsWithPermission(1, Permission.READER).isEmpty());
-        assertTrue(jdbcNotebookDao.getPrincipalIDsWithPermission(1, Permission.WRITER).isEmpty());
     }
 
     /**

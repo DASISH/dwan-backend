@@ -97,19 +97,7 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
         }
     };
 
-    /////////////////////////////////////////
-    @Override
-    public List<Number> getCachedRepresentations(Number targetID) {
-
-        if (targetID == null) {
-            loggerTargetDao.debug("targetID: " + nullArgument);
-            return null;
-        }
-
-        String sql = "SELECT " + cached_representation_id + " FROM " + targetsCachedRepresentationsTableName + " WHERE " + target_id + " = ?";
-        return getSimpleJdbcTemplate().query(sql, cachedIDRowMapper, targetID);
-    }
-
+ 
     @Override
     public Map<Number, String> getCachedRepresentationFragmentPairs(Number targetID) {
 
@@ -186,22 +174,39 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
         return getSimpleJdbcTemplate().query(sql.toString(), internalIDRowMapper, link);
     }
 
-    /////////////////////////////////////////////////
+  
+    
+    
+     //////////////////////////////////////
     @Override
-    public boolean targetIsInUse(Number targetID) {
-        if (targetID == null) {
-            loggerTargetDao.debug("targetID: " + nullArgument);
+    public boolean cachedIsInUse(Number cachedID) {
+        
+        if (cachedID == null) {
+            logger.debug("Cached's Id is null");
             return false;
         }
-
-
-        StringBuilder sqlAnnotations = new StringBuilder("SELECT ");
-        sqlAnnotations.append(annotation_id).append(" FROM ").append(annotationsTargetsTableName).append(" WHERE ").append(target_id).append(" = ? LIMIT 1");
-        List<Number> resultAnnotations = getSimpleJdbcTemplate().query(sqlAnnotations.toString(), annotationIDRowMapper, targetID);
-        if (resultAnnotations == null) {
+        
+        StringBuilder sql = new StringBuilder("SELECT ");
+        sql.append(target_id).append(" FROM ").append(targetsCachedRepresentationsTableName).append(" WHERE ").append(cached_representation_id).append("= ? LIMIT 1");
+        List<Number> result = getSimpleJdbcTemplate().query(sql.toString(), internalIDRowMapper, cachedID);
+        if (result != null) {
+            return (!result.isEmpty());
+        } else {
             return false;
         }
-        return (resultAnnotations.size() > 0);
+    }
+    
+    
+    @Override
+    public List<Number> retrieveTargetIDs(Number annotationID) {
+        if (annotationID != null) {
+            StringBuilder sql = new StringBuilder("SELECT DISTINCT ");
+            sql.append(target_id).append(" FROM ").append(annotationsTargetsTableName).append(" WHERE ").append(annotation_id).append("= ?");
+            return getSimpleJdbcTemplate().query(sql.toString(), internalIDRowMapper, annotationID);
+        } else {
+            loggerTargetDao.debug(nullArgument);
+            return null;
+        }
     }
 
     ///////////////////////// ADDERS /////////////////////////////////
@@ -248,25 +253,21 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
         return getSimpleJdbcTemplate().update(sqlJoint.toString(), paramsJoint);
     }
 
-   
-
-////////////////////// DELETERS ////////////////////////
-    @Override
+  ///////////////////////////////////
+   @Override
     public int deleteTarget(Number internalID) {
         if (internalID == null) {
-            loggerTargetDao.debug("internalID: " + nullArgument);
+            logger.debug("internalID of the target is null.");
             return 0;
         }
         
-        if (targetIsInUse(internalID)) {
-            loggerTargetDao.debug("The target is in use, and cannot be deleted.");
-            return 0;
-        }
+      
         StringBuilder sqlTargetsVersions = new StringBuilder("DELETE FROM ");
         sqlTargetsVersions.append(targetTableName).append(" WHERE ").append(target_id).append(" = ? ");
         return getSimpleJdbcTemplate().update(sqlTargetsVersions.toString(), internalID);
 
     }
+
 
     ///////////////////////////////////////////////////////////////////
     @Override

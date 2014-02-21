@@ -50,10 +50,7 @@ public interface NotebookDao extends ResourceDao {
     // Returns a list of notebook Ids for the notebooks for which the given user "userID" is the owner.
     List<Number> getNotebookIDsOwnedBy(Number principaID);
     
-    public List<Number> getPrincipalIDsWithPermission(Number notebookID, Permission permission);
-    
-    
-    
+   
     
     /**
      * 
@@ -71,7 +68,7 @@ public interface NotebookDao extends ResourceDao {
     Notebook getNotebookWithoutAnnotationsAndPermissionsAndOwner(Number notebookID);
     
    
-    List<Number> getAnnotations(Number notebookID);
+   
     
     /**
      * 

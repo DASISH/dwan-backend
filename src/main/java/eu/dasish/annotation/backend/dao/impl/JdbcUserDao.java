@@ -18,6 +18,7 @@
 package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.dao.UserDao;
+import eu.dasish.annotation.schema.Permission;
 import eu.dasish.annotation.schema.User;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -92,7 +93,7 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
 
         StringBuilder sqlPermissions = new StringBuilder("SELECT ");
         sqlPermissions.append(principal_id).append(" FROM ").append(permissionsTableName).append(" WHERE ").append(principal_id).append("= ? LIMIT 1");
-        List<Number> resultTargets = getSimpleJdbcTemplate().query(sqlPermissions.toString(), principalIDRowMapper, userID);
+        List<Number> resultTargets = getSimpleJdbcTemplate().query(sqlPermissions.toString(), internalIDRowMapper, userID);
         if (resultTargets.size() > 0) {
             return true;
         };
@@ -116,7 +117,7 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
         String emailCriterion = user.getEMail().toLowerCase();
         StringBuilder sqlTargets = new StringBuilder("SELECT ");
         sqlTargets.append(principal_id).append(" FROM ").append(principalTableName).append(" WHERE ").append("LOWER(").append(e_mail).append(")= ? LIMIT 1");
-        List<Number> resultTargets = getSimpleJdbcTemplate().query(sqlTargets.toString(), principalIDRowMapper, emailCriterion);
+        List<Number> resultTargets = getSimpleJdbcTemplate().query(sqlTargets.toString(), internalIDRowMapper, emailCriterion);
         if (resultTargets.size() > 0) {
             return true;
         } else {
@@ -177,6 +178,30 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
             return rs.getString(account);
         }
     };
+    
+    
+    @Override
+    public List<Number> getPrincipalIDsWithPermissionForNotebook(Number notebookID, Permission permission) {
+        if (notebookID == null) {
+            loggerUserDao.debug("notebookID: " + nullArgument);
+            return null;
+        }
+
+        if (permission == null) {
+            loggerUserDao.debug("permission: " + nullArgument);
+            return null;
+        }
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("notebookID", notebookID);
+        params.put("accessMode", permission.value());
+
+        StringBuilder sql = new StringBuilder("SELECT ");
+        sql.append(principal_id).append(" FROM ").append(notebookPermissionsTableName).append(" WHERE ").
+                append(notebook_id).append(" = :notebookID AND ").append(this.permission).append(" = :accessMode");
+
+        return getSimpleJdbcTemplate().query(sql.toString(), internalIDRowMapper, params);
+
+    }
 
     ///////////////////// ADDERS ////////////////////////////
     @Override

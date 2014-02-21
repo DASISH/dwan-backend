@@ -22,6 +22,7 @@ import eu.dasish.annotation.schema.CachedRepresentationInfo;
 import java.io.UnsupportedEncodingException;
 import java.sql.Blob;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.UUID;
 import javax.sql.rowset.serial.SerialBlob;
 import javax.sql.rowset.serial.SerialException;
@@ -134,20 +135,18 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest {
         assertEquals(TestBackendConstants._TEST_SERVLET_URI_cached +"00000000-0000-0000-0000-000000000051", result.getURI());
     }
 
-    /**
-     * Test of getCachedRepresentationBlob method, of class
-     * JdbcCachedRepresentationDao. public CachedRepresentationInfo
-     * getCachedRepresentationInfo(Number internalID);
+ 
+    
+    /* Test of getCachedRepresentationsForTarget method, of class JdbcTargetDao.
      */
-//    @Test
-//    public void testGetCachedRepresentationBlob() throws SQLException, UnsupportedEncodingException {
-//        System.out.println("getCachedRepresentationBlob ");
-//        Blob result = jdbcCachedRepresentationDao.getCachedRepresentationBlob(1);
-//        int lengthBlob = 2;
-//        byte[] resultBytes = result.getBytes(1, lengthBlob);
-//        assertEquals(TestBackendConstants._TEST_CACHED_REPRESENTATION_1_BLOB_BYTE_1, resultBytes[0]);
-//        assertEquals(TestBackendConstants._TEST_CACHED_REPRESENTATION_1_BLOB_BYTE_2, resultBytes[1]);
-//    }
+    @Test
+    public void testGetCachedRepresentations() {
+        System.out.println("test getCachedRepresentationsForTarget");
+        Number TargetID = 1;
+        List<Number> result = jdbcCachedRepresentationDao.getCachedRepresentationsForTarget(TargetID);
+        assertEquals(1, result.get(0));
+        assertEquals(2, result.get(1));
+    }
 
     /**
      * Test of deleteCachedRepresentationInfo method, of class
@@ -155,18 +154,12 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest {
      * deleteCachedRepresentationInfo(Number internalID);
      */
     @Test
-    public void testDeleteCachedRepresentationInfo() {
+    public void testDeleteCachedRepresentation() {
         System.out.println("deleteCachedRepresentationInfo");
         Number internalID = 6; /// deleted because no version refers to it
         int result = jdbcCachedRepresentationDao.deleteCachedRepresentation(internalID);
         assertEquals(1, result);
 
-        int resultTwo = jdbcCachedRepresentationDao.deleteCachedRepresentation(internalID);
-        assertEquals(0, resultTwo);
-
-        Number internalIDDoNotDelete = 5;
-        int resultThree = jdbcCachedRepresentationDao.deleteCachedRepresentation(internalIDDoNotDelete);
-        assertEquals(0, resultThree);
     }
 
     /**

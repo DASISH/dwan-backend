@@ -177,6 +177,8 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
         }
     };
 ////////////////// ROW MAPPERS ///////////////////
+    
+  
     protected final RowMapper<Number> internalIDRowMapper = new RowMapper<Number>() {
         @Override
         public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
@@ -191,36 +193,14 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
             return (UUID.fromString(rs.getString(external_id)));
         }
     };
-    protected final RowMapper<Number> cachedIDRowMapper = new RowMapper<Number>() {
-        @Override
-        public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            return rs.getInt(cached_representation_id);
-        }
-    };
-    protected final RowMapper<Number> targetIDRowMapper = new RowMapper<Number>() {
-        @Override
-        public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            return rs.getInt(target_id);
-        }
-    };
-    protected final RowMapper<Number> annotationIDRowMapper = new RowMapper<Number>() {
-        @Override
-        public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            return rs.getInt(annotation_id);
-        }
-    };
-    protected final RowMapper<Number> notebookIDRowMapper = new RowMapper<Number>() {
-        @Override
-        public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            return rs.getInt(notebook_id);
-        }
-    };
-    protected final RowMapper<Number> principalIDRowMapper = new RowMapper<Number>() {
-        @Override
-        public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            return rs.getInt(principal_id);
-        }
-    };
+    
+
+//    protected final RowMapper<Number> principalIDRowMapper = new RowMapper<Number>() {
+//        @Override
+//        public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
+//            return rs.getInt(principal_id);
+//        }
+//    };
     protected final RowMapper<Number> ownerIDRowMapper = new RowMapper<Number>() {
         @Override
         public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {
@@ -238,6 +218,8 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     };
     
     ////// END ROW MAPPERS /////
+    
+    
     @Override
     public String externalIDtoURI(String externalID) {
         if (_serviceURI != null) {

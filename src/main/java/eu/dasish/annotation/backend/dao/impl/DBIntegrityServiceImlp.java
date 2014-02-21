@@ -79,7 +79,7 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     @Autowired
     NotebookDao notebookDao;
     final static protected String admin = "admin";
-    private static final Logger logger = LoggerFactory.getLogger(AnnotationResource.class);
+    private static final Logger logger = LoggerFactory.getLogger(DBIntegrityServiceImlp.class);
 
     //////////////////////////////////
     private ResourceDao getDao(Resource resource) {
@@ -134,7 +134,7 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         if (annotationID != null) {
             Annotation result = annotationDao.getAnnotationWithoutTargetsAndPermissions(annotationID);
             result.setOwnerRef(userDao.getURIFromInternalID(annotationDao.getOwner(annotationID)));
-            List<Number> targetIDs = annotationDao.retrieveTargetIDs(annotationID);
+            List<Number> targetIDs = targetDao.retrieveTargetIDs(annotationID);
             TargetInfoList sis = new TargetInfoList();
             for (Number targetID : targetIDs) {
                 TargetInfo targetInfo = getTargetInfoFromTarget(targetDao.getTarget(targetID));
@@ -234,7 +234,7 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     @Override
     public ReferenceList getAnnotationTargets(Number annotationID) {
         ReferenceList result = new ReferenceList();
-        List<Number> targetIDs = annotationDao.retrieveTargetIDs(annotationID);
+        List<Number> targetIDs = targetDao.retrieveTargetIDs(annotationID);
         for (Number targetID : targetIDs) {
             result.getRef().add(targetDao.getURIFromInternalID(targetID));
         }
@@ -247,9 +247,9 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
             return null;
         }
         List<String> result = new ArrayList<String>();
-        List<Number> targetIDs = annotationDao.retrieveTargetIDs(annotationID);
+        List<Number> targetIDs = targetDao.retrieveTargetIDs(annotationID);
         for (Number targetID : targetIDs) {
-            List<Number> versions = targetDao.getCachedRepresentations(targetID);
+            List<Number> versions = cachedRepresentationDao.getCachedRepresentationsForTarget(targetID);
             if (versions == null) {
                 result.add(targetDao.getURIFromInternalID(targetID));
             } else {
@@ -292,7 +292,6 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
                 annotationInfo.setTargets(this.getAnnotationTargets(annotationID));
                 annotationInfo.setOwnerRef(userDao.getURIFromInternalID(annotationDao.getOwner(annotationID)));
                 result.getAnnotationInfo().add(annotationInfo);
-
             }
 
             return result;
@@ -420,6 +419,8 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
             return false;
         }
     }
+    
+    ////// noetbooks ///////
 
     @Override
     public NotebookInfoList getNotebooks(Number principalID, String permission) {
@@ -471,7 +472,7 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     @Override
     public ReferenceList getPrincipals(Number notebookID, String permission) {
         ReferenceList result = new ReferenceList();
-        List<Number> principalIDs = notebookDao.getPrincipalIDsWithPermission(notebookID, Permission.fromValue(permission));
+        List<Number> principalIDs = userDao.getPrincipalIDsWithPermissionForNotebook(notebookID, Permission.fromValue(permission));
         for (Number principalID : principalIDs) {
             String reference = userDao.getURIFromInternalID(principalID);
             result.getRef().add(reference);
@@ -486,7 +487,7 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         result.setOwnerRef(userDao.getURIFromInternalID(notebookDao.getOwner(notebookID)));
 
         ReferenceList annotations = new ReferenceList();
-        List<Number> annotationIDs = notebookDao.getAnnotations(notebookID);
+        List<Number> annotationIDs = annotationDao.getAnnotations(notebookID);
         for (Number annotationID : annotationIDs) {
             annotations.getRef().add(annotationDao.getURIFromInternalID(annotationID));
         }
@@ -497,7 +498,7 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         permissions.add(Permission.READER);
         permissions.add(Permission.WRITER);
         for (Permission permission : permissions) {
-            List<Number> users = notebookDao.getPrincipalIDsWithPermission(notebookID, permission);
+            List<Number> users = userDao.getPrincipalIDsWithPermissionForNotebook(notebookID, permission);
             if (users != null) {
                 for (Number user : users) {
                     UserWithPermission up = new UserWithPermission();
@@ -519,7 +520,7 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     /////////////////////////////////////////////////////////////
     @Override
     public ReferenceList getAnnotationsForNotebook(Number notebookID, int startAnnotation, int maximumAnnotations, String orderedBy, boolean desc) {
-        List<Number> annotationIDs = notebookDao.getAnnotations(notebookID);
+        List<Number> annotationIDs = annotationDao.getAnnotations(notebookID);
 
         if (startAnnotation < -1) {
             logger.info("Variable's startAnnotation value " + startAnnotation + " is invalid. I will return null.");
@@ -696,17 +697,38 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     }
 
     ////////////// DELETERS //////////////////
+    
+   
+    
+    
     @Override
     public int deleteUser(Number userID) {
         return userDao.deleteUser(userID);
     }
 
-    ////////////// DELETERS //////////////////
+    
     @Override
     public int deleteUserSafe(Number userID) {
         return userDao.deleteUserSafe(userID);
     }
 
+    @Override
+    public int deleteCachedRepresentation(Number internalID) {
+        
+        if (internalID == null) {
+            logger.debug("Cached's internalID is null");
+            return 0;
+        }
+        
+        if (targetDao.cachedIsInUse(internalID)) {
+            logger.debug("Cached Repr. is in use, and cannot be deleted.");
+            return 0;
+        }
+
+        return cachedRepresentationDao.deleteCachedRepresentation(internalID);
+    };
+    
+    
     @Override
     public int[] deleteCachedRepresentationOfTarget(Number versionID, Number cachedID) {
         int[] result = new int[2];
@@ -721,13 +743,13 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     }
 
     @Override
-    public int[] deleteAllCachedRepresentationsOfTarget(Number TargetID) {
+    public int[] deleteAllCachedRepresentationsOfTarget(Number targetID) {
         int[] result = new int[2];
         result[0] = 0;
         result[1] = 0;
-        List<Number> cachedIDs = targetDao.getCachedRepresentations(TargetID);
+        List<Number> cachedIDs = cachedRepresentationDao.getCachedRepresentationsForTarget(targetID);
         for (Number cachedID : cachedIDs) {
-            int[] currentResult = this.deleteCachedRepresentationOfTarget(TargetID, cachedID);
+            int[] currentResult = this.deleteCachedRepresentationOfTarget(targetID, cachedID);
             result[0] = result[0] + currentResult[0];
             result[1] = result[1] + currentResult[1];
         }
@@ -736,20 +758,40 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
 
     @Override
     public int[] deleteAnnotation(Number annotationID) {
-        int[] result = new int[4];
+        int[] result = new int[5];
         result[1] = annotationDao.deleteAnnotationPrincipalPermissions(annotationID);
-        List<Number> targetIDs = annotationDao.retrieveTargetIDs(annotationID);
+        List<Number> targetIDs = targetDao.retrieveTargetIDs(annotationID);
         result[2] = annotationDao.deleteAllAnnotationTarget(annotationID);
-        result[0] = annotationDao.deleteAnnotation(annotationID);
         result[3] = 0;
         if (targetIDs != null) {
             for (Number targetID : targetIDs) {
                 this.deleteAllCachedRepresentationsOfTarget(targetID);
-                result[3] = result[3] + targetDao.deleteTarget(targetID);
+                result[3] = result[3] + this.deleteTarget(targetID);
 
             }
         }
+        
+        result[4] = annotationDao.deleteAnnotationFromAllNotebooks(annotationID);
+        
+        result[0] = annotationDao.deleteAnnotation(annotationID);
         return result;
+    }
+    
+    ////////////////////// DELETERS ////////////////////////
+    @Override
+    public int deleteTarget(Number internalID) {
+        if (internalID == null) {
+            logger.debug("internalID of the target is null.");
+            return 0;
+        }
+        
+        if (annotationDao.targetIsInUse(internalID)) {
+            logger.debug("The target is in use, and cannot be deleted.");
+            return 0;
+        }
+        
+        return targetDao.deleteTarget(internalID);
+
     }
 
     @Override

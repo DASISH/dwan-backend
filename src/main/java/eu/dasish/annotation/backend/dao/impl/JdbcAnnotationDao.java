@@ -25,8 +25,6 @@ import eu.dasish.annotation.schema.AnnotationBody.TextBody;
 import eu.dasish.annotation.schema.AnnotationBody.XmlBody;
 import eu.dasish.annotation.schema.AnnotationInfo;
 import eu.dasish.annotation.schema.Permission;
-import eu.dasish.annotation.schema.UserWithPermission;
-import eu.dasish.annotation.schema.UserWithPermissionList;
 import java.lang.String;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -63,17 +61,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
     }
 
     ///////////// GETTERS /////////////
-    @Override
-    public List<Number> retrieveTargetIDs(Number annotationID) {
-        if (annotationID != null) {
-            StringBuilder sql = new StringBuilder("SELECT DISTINCT ");
-            sql.append(target_id).append(" FROM ").append(annotationsTargetsTableName).append(" WHERE ").append(annotation_id).append("= ?");
-            return getSimpleJdbcTemplate().query(sql.toString(), targetIDRowMapper, annotationID);
-        } else {
-            loggerAnnotationDao.debug(nullArgument);
-            return null;
-        }
-    }
+   
 
     ///////////////////////////////////////////////////////////////////
     @Override
@@ -340,27 +328,63 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
     }
 
     /////////////////////////////
-    @Override
-    public boolean annotationIsInUse(Number annotationID) {
-        StringBuilder sqlNotebooks = new StringBuilder("SELECT ");
-        sqlNotebooks.append(notebook_id).append(" FROM ").append(notebooksAnnotationsTableName).append(" WHERE ").append(annotation_id).append("= ? LIMIT 1");
-        List<Number> resultNotebooks = getSimpleJdbcTemplate().query(sqlNotebooks.toString(), notebookIDRowMapper, annotationID);
-        if (resultNotebooks.size() > 0) {
-            return true;
+//    @Override
+//    public boolean annotationIsInUse(Number annotationID) {
+//        StringBuilder sqlNotebooks = new StringBuilder("SELECT ");
+//        sqlNotebooks.append(notebook_id).append(" FROM ").append(notebooksAnnotationsTableName).append(" WHERE ").append(annotation_id).append("= ? LIMIT 1");
+//        List<Number> resultNotebooks = getSimpleJdbcTemplate().query(sqlNotebooks.toString(), notebookIDRowMapper, annotationID);
+//        if (resultNotebooks.size() > 0) {
+//            return true;
+//        }
+//
+//        StringBuilder sqlTargets = new StringBuilder("SELECT ");
+//        sqlTargets.append(target_id).append(" FROM ").append(annotationsTargetsTableName).append(" WHERE ").append(annotation_id).append("= ? LIMIT 1");
+//        List<Number> resultTargets = getSimpleJdbcTemplate().query(sqlTargets.toString(), targetIDRowMapper, annotationID);
+//        if (resultTargets.size() > 0) {
+//            return true;
+//        }
+//
+//        StringBuilder sqlPermissions = new StringBuilder("SELECT ");
+//        sqlPermissions.append(principal_id).append(" FROM ").append(permissionsTableName).append(" WHERE ").append(annotation_id).append("= ? LIMIT 1");
+//        List<Number> resultPermissions = getSimpleJdbcTemplate().query(sqlPermissions.toString(), principalIDRowMapper, annotationID);
+//        return (resultPermissions.size() > 0);
+//    }
+    
+     @Override
+    public List<Number> getAnnotations(Number notebookID) {
+
+        if (notebookID == null) {
+            loggerAnnotationDao.debug("notebookID: " + nullArgument);
+            return null;
         }
 
-        StringBuilder sqlTargets = new StringBuilder("SELECT ");
-        sqlTargets.append(target_id).append(" FROM ").append(annotationsTargetsTableName).append(" WHERE ").append(annotation_id).append("= ? LIMIT 1");
-        List<Number> resultTargets = getSimpleJdbcTemplate().query(sqlTargets.toString(), targetIDRowMapper, annotationID);
-        if (resultTargets.size() > 0) {
-            return true;
-        }
+        StringBuilder sql = new StringBuilder("SELECT ");
+        sql.append(annotation_id).
+                append(" FROM ").append(notebooksAnnotationsTableName).append(" WHERE ").
+                append(notebook_id).append(" = :notebookID");
+        return getSimpleJdbcTemplate().query(sql.toString(), internalIDRowMapper, notebookID);
 
-        StringBuilder sqlPermissions = new StringBuilder("SELECT ");
-        sqlPermissions.append(principal_id).append(" FROM ").append(permissionsTableName).append(" WHERE ").append(annotation_id).append("= ? LIMIT 1");
-        List<Number> resultPermissions = getSimpleJdbcTemplate().query(sqlPermissions.toString(), principalIDRowMapper, annotationID);
-        return (resultPermissions.size() > 0);
     }
+     
+       /////////////////////////////////////////////////
+    @Override
+    public boolean targetIsInUse(Number targetID) {
+        if (targetID == null) {
+            loggerAnnotationDao.debug("targetID: " + nullArgument);
+            return false;
+        }
+
+
+        StringBuilder sqlAnnotations = new StringBuilder("SELECT ");
+        sqlAnnotations.append(annotation_id).append(" FROM ").append(annotationsTargetsTableName).append(" WHERE ").append(target_id).append(" = ? LIMIT 1");
+        List<Number> resultAnnotations = getSimpleJdbcTemplate().query(sqlAnnotations.toString(), internalIDRowMapper, targetID);
+        if (resultAnnotations == null) {
+            return false;
+        }
+        return (resultAnnotations.size() > 0);
+    }
+    
+
 
     //////////// UPDATERS /////////////
     @Override
@@ -541,9 +565,6 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
     @Override
     public int deleteAnnotation(Number annotationID) {
         if (annotationID != null) {
-            if (annotationIsInUse(annotationID)) {
-                return 0;
-            }
             StringBuilder sqlAnnotation = new StringBuilder("DELETE FROM ");
             sqlAnnotation.append(annotationTableName).append(" where ").append(annotation_id).append(" = ?");
             return (getSimpleJdbcTemplate().update(sqlAnnotation.toString(), annotationID));
@@ -577,6 +598,19 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
             return 0;
         }
 
+    }
+    
+    ////////////////////////////////////////
+    @Override
+    public int deleteAnnotationFromAllNotebooks(Number annotationID){
+        if (annotationID != null) {
+            StringBuilder sql = new StringBuilder("DELETE FROM ");
+            sql.append(notebooksAnnotationsTableName).append(" WHERE ").append(annotation_id).append(" = ?");
+            return getSimpleJdbcTemplate().update(sql.toString(), annotationID); // removed "notebook-annotation" rows 
+        } else {
+            loggerAnnotationDao.debug("annotationID: " + nullArgument);
+            return 0;
+        }
     }
 
     //////////////////////////////////////////////////////

@@ -227,7 +227,7 @@ public class DBIntegrityServiceTest {
                 oneOf(userDao).getURIFromInternalID(1);
                 will(returnValue(uri1));
 
-                oneOf(annotationDao).retrieveTargetIDs(1);
+                oneOf(targetDao).retrieveTargetIDs(1);
                 will(returnValue(mockTargetIDs));
 
                 oneOf(targetDao).getTarget(1);
@@ -329,7 +329,7 @@ public class DBIntegrityServiceTest {
         TargetIDs.add(2);
         mockeryDao.checking(new Expectations() {
             {
-                oneOf(annotationDao).retrieveTargetIDs(1);
+                oneOf(targetDao).retrieveTargetIDs(1);
                 will(returnValue(TargetIDs));
 
                 oneOf(targetDao).getURIFromInternalID(1);
@@ -421,7 +421,7 @@ public class DBIntegrityServiceTest {
                 will(returnValue(TestBackendConstants._TEST_SERVLET_URI_users + "00000000-0000-0000-0000-000000000111"));
 
                 ////
-                oneOf(annotationDao).retrieveTargetIDs(1);
+                oneOf(targetDao).retrieveTargetIDs(1);
                 will(returnValue(targetIDs));
 
                 oneOf(targetDao).getURIFromInternalID(1);
@@ -463,13 +463,13 @@ public class DBIntegrityServiceTest {
 
         mockeryDao.checking(new Expectations() {
             {
-                oneOf(annotationDao).retrieveTargetIDs(3);
+                oneOf(targetDao).retrieveTargetIDs(3);
                 will(returnValue(targetIDs));
 
-                oneOf(targetDao).getCachedRepresentations(5);
+                oneOf(cachedRepresentationDao).getCachedRepresentationsForTarget(5);
                 will(returnValue(cachedIDs5));
 
-                oneOf(targetDao).getCachedRepresentations(7);
+                oneOf(cachedRepresentationDao).getCachedRepresentationsForTarget(7);
                 will(returnValue(cachedIDs7));
 
                 oneOf(targetDao).getURIFromInternalID(7);
@@ -723,7 +723,7 @@ public class DBIntegrityServiceTest {
 
         mockeryDao.checking(new Expectations() {
             {
-                oneOf(targetDao).getCachedRepresentations(1);
+                oneOf(cachedRepresentationDao).getCachedRepresentationsForTarget(1);
                 will(returnValue(cachedList));
 
                 oneOf(targetDao).deleteTargetCachedRepresentation(1, 1);
@@ -766,7 +766,7 @@ public class DBIntegrityServiceTest {
                 oneOf(annotationDao).deleteAnnotationPrincipalPermissions(2);
                 will(returnValue(2));
 
-                oneOf(annotationDao).retrieveTargetIDs(2);
+                oneOf(targetDao).retrieveTargetIDs(2);
                 will(returnValue(mockTargetIDs));
 
                 oneOf(annotationDao).deleteAllAnnotationTarget(2);
@@ -775,7 +775,7 @@ public class DBIntegrityServiceTest {
                 oneOf(annotationDao).deleteAnnotation(2);
                 will(returnValue(1));
 
-                oneOf(targetDao).getCachedRepresentations(2);
+                oneOf(cachedRepresentationDao).getCachedRepresentationsForTarget(2);
                 will(returnValue(mockCachedIDs));
 
                 oneOf(targetDao).deleteTargetCachedRepresentation(2, 3);
@@ -783,42 +783,28 @@ public class DBIntegrityServiceTest {
 
                 oneOf(cachedRepresentationDao).deleteCachedRepresentation(3);
                 will(returnValue(1));
+                
+                oneOf(annotationDao).targetIsInUse(2);
+                will(returnValue(true));
 
                 oneOf(targetDao).deleteTarget(2);
+                will(returnValue(0));
+
+                oneOf(annotationDao).deleteAnnotationFromAllNotebooks(2);
                 will(returnValue(1));
-
-
+                
+                
             }
         });
         int[] result = dbIntegrityService.deleteAnnotation(2);// the Target will be deleted because it is not referred by any annotation
-        assertEquals(4, result.length);
+        assertEquals(5, result.length);
         assertEquals(1, result[0]); // annotation 3 is deleted
         assertEquals(2, result[1]); // 2 rows in "annotation principal permissions are deleted"
         assertEquals(1, result[2]);  // row (3,2) in "annotations_Targets" is deleted
-        assertEquals(1, result[3]); //  Target 3 is deleted 
+        assertEquals(0, result[3]); //  target 2 is not deleted deleted since it is used by annotation 1
+        assertEquals(1, result[4]); // deleted from 1 notebook
     }
-//    @Test
-//    public void testCreateTarget(){  
-//        NewTargetInfo newTargetInfo = new NewTargetInfo();
-//        newTargetInfo.setLink(TestBackendConstants._TEST_NEW_Target_LINK);
-//        newTargetInfo.setVersion(null);
-//        
-//        Target result = dbIntegrityService.createTarget(newTargetInfo);
-//        assertEquals(TestBackendConstants._TEST_NEW_Target_LINK, result.getLink());
-//        assertFalse(null == result.getURI());
-//        
-//    }
-//    
-//    @Test
-//    public void testCreateVersion(){  
-//        NewTargetInfo newTargetInfo = new NewTargetInfo();
-//        newTargetInfo.setLink(TestBackendConstants._TEST_NEW_Target_LINK);
-//        newTargetInfo.setVersion(null);
-//        
-//        Version result = dbIntegrityService.createVersion(newTargetInfo);
-//        assertFalse(null == result.getVersion()); // will be chnaged once the schema for version is fixed: ID is added
-//        
-//    }
+
 
     /**
      * NOTEBOOKS
@@ -1037,7 +1023,7 @@ public class DBIntegrityServiceTest {
         
         mockeryDao.checking(new Expectations() {
             {
-                oneOf(notebookDao).getPrincipalIDsWithPermission(1, Permission.WRITER);
+                oneOf(userDao).getPrincipalIDsWithPermissionForNotebook(1, Permission.WRITER);
                 will(returnValue(mockPrincipalIDs));
 
                 oneOf(userDao).getURIFromInternalID(2);
@@ -1118,19 +1104,19 @@ public class DBIntegrityServiceTest {
                 oneOf(userDao).getURIFromInternalID(2);
                 will(returnValue("serviceURI/users/00000000-0000-0000-0000-000000000112"));
 
-                oneOf(notebookDao).getAnnotations(2);
+                oneOf(annotationDao).getAnnotations(2);
                 will(returnValue(mockAnnotations));
                 
                 oneOf(annotationDao).getURIFromInternalID(3);
                 will(returnValue("serviceURI/annotations/00000000-0000-0000-0000-000000000023"));
                 
-                oneOf(notebookDao).getPrincipalIDsWithPermission(2, Permission.READER);
+                oneOf(userDao).getPrincipalIDsWithPermissionForNotebook(2, Permission.READER);
                 will(returnValue(mockReaders));
                 
                 oneOf(userDao).getURIFromInternalID(1);
                 will(returnValue("serviceURI/users/00000000-0000-0000-0000-000000000111"));
                 
-                oneOf(notebookDao).getPrincipalIDsWithPermission(2, Permission.WRITER);
+                oneOf(userDao).getPrincipalIDsWithPermissionForNotebook(2, Permission.WRITER);
                 will(returnValue(mockWriters));
                 
                 oneOf(userDao).getURIFromInternalID(3);
@@ -1156,28 +1142,6 @@ public class DBIntegrityServiceTest {
         
     }
 
-//    public List<UUID> getAnnotationsForNotebook(Number notebookID, int startAnnotation, int maximumAnnotations, String orderedBy, boolean desc) {
-//        List<Number> annotationIDs = notebookDao.getAnnotations(notebookID);
-//
-//        if (startAnnotation < -1) {
-//            logger.info("Variable's startAnnotation value " + startAnnotation + " is invalid. I will return null.");
-//            return null;
-//        }
-//
-//        if (maximumAnnotations < -1) {
-//            logger.info("Variable's maximumAnnotations value " + maximumAnnotations + " is invalid. I will return null.");
-//            return null;
-//        }
-//
-//        int offset = (startAnnotation > 0) ? startAnnotation - 1 : 0;
-//        String direction = desc ? " DESC " : " ASC ";
-//        List<Number> selectedAnnotIDs = annotationDao.sublistOrderedAnnotationIDs(annotationIDs, offset, maximumAnnotations, orderedBy, direction);
-//        List<UUID> annotationUUIDs = new ArrayList<UUID>();
-//        for (Number annotationID : selectedAnnotIDs) {
-//            annotationUUIDs.add(annotationDao.getExternalID(annotationID));
-//        }
-//        return annotationUUIDs;
-//    }
     @Test
     public void testAnnotationsForNotebook() {
         final List<Number> mockAnnotationIDs = new ArrayList<Number>();
@@ -1186,7 +1150,7 @@ public class DBIntegrityServiceTest {
 
         mockeryDao.checking(new Expectations() {
             {
-                oneOf(notebookDao).getAnnotations(1);
+                oneOf(annotationDao).getAnnotations(1);
                 will(returnValue(mockAnnotationIDs));
 
                 oneOf(annotationDao).sublistOrderedAnnotationIDs(mockAnnotationIDs, 0, 3, "last_modified", "DESC");
