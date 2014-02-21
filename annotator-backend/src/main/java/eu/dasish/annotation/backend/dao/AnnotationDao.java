@@ -90,7 +90,7 @@ public interface AnnotationDao extends ResourceDao{
      * @param annotationID
      * @return the list of the internal IDs of all the target Targets of "annotationID".
      */
-    public List<Number> retrieveTargetIDs(Number annotationID);   
+    //public List<Number> retrieveTargetIDs(Number annotationID);   
     
     
     public Number  getOwner(Number annotationID);
@@ -104,6 +104,11 @@ public interface AnnotationDao extends ResourceDao{
     public Permission  getPermission(Number annotationID, Number userID);
     
     
+    
+    public List<Number> getAnnotations(Number notebookID);
+    
+    
+    public boolean targetIsInUse(Number targetID);
     /**
      * 
      * @param annotationID
@@ -111,7 +116,7 @@ public interface AnnotationDao extends ResourceDao{
      * "annotations_targets", "annotations_principals_permissions", "notebook_annotations".
      * Otherwise return "false".
      */
-    public boolean annotationIsInUse(Number annotationID);
+    //public boolean annotationIsInUse(Number annotationID);
     
     /**
      * ADDERS 
@@ -210,6 +215,8 @@ public interface AnnotationDao extends ResourceDao{
     public int deleteAnnotationPrincipalPermissions(Number annotationID);
     
     public int deleteAnnotationPrincipalPermission(Number annotationID, Number userID);
+    
+    public int deleteAnnotationFromAllNotebooks(Number annotationID);
     
     /*
      * HELPERS 

@@ -46,22 +46,19 @@ import java.util.UUID;
 public interface DBIntegrityService {
 
     void setServiceURI(String serviceURI);
-    
 
     /**
      * GETTERS
      */
-   
     Number getResourceInternalIdentifier(UUID externalID, Resource resource);
-   
-    Number getResourceInternalIdentifierFromURI(String uri, Resource resource);    
-    
-    UUID getResourceExternalIdentifier(Number resourceID, Resource resource);
-    
-    String getResourceURI(Number resourceID, Resource resource);
-    
-    UserWithPermissionList getPermissions(Number resourceID, Resource resource);
 
+    Number getResourceInternalIdentifierFromURI(String uri, Resource resource);
+
+    UUID getResourceExternalIdentifier(Number resourceID, Resource resource);
+
+    String getResourceURI(Number resourceID, Resource resource);
+
+    UserWithPermissionList getPermissions(Number resourceID, Resource resource);
 
     /**
      *
@@ -97,8 +94,6 @@ public interface DBIntegrityService {
      * created after time-samp "after and before time-stamp "before".
      */
     AnnotationInfoList getFilteredAnnotationInfos(UUID ownerId, String word, String text, Number inloggedUserID, String access, String namespace, String after, String before);
-
-   
 
     /**
      *
@@ -139,7 +134,6 @@ public interface DBIntegrityService {
 
     List<String> getUsersWithNoInfo(Number annotationID);
 
-   
     /**
      *
      * @param targetID
@@ -191,18 +185,16 @@ public interface DBIntegrityService {
     boolean canWrite(Number userID, Number annotationID);
 
     /// notebooks ///
-    
-    
     NotebookInfoList getNotebooks(Number prinipalID, String permission);
-    
-    boolean hasAccess(Number notebookID, Number principalID, Permission permission);    
-    
+
+    boolean hasAccess(Number notebookID, Number principalID, Permission permission);
+
     ReferenceList getNotebooksOwnedBy(Number principalID);
 
     ReferenceList getPrincipals(Number notebookID, String permission);
 
     Notebook getNotebook(Number notebookID);
-    
+
     Number getNotebookOwner(Number notebookID);
 
     ReferenceList getAnnotationsForNotebook(Number notebookID, int startAnnotation, int maximumAnnotations, String orderedBy, boolean desc);
@@ -332,6 +324,8 @@ public interface DBIntegrityService {
      */
     int deleteUserSafe(Number userID);
 
+    int deleteCachedRepresentation(Number internalID);
+
     /**
      *
      * @param TargetID
@@ -353,6 +347,8 @@ public interface DBIntegrityService {
      */
     int[] deleteAllCachedRepresentationsOfTarget(Number versionID);
 
+    int deleteTarget(Number internalID);
+
     /**
      *
      * @param annotationID
@@ -364,17 +360,14 @@ public interface DBIntegrityService {
      * @throws SQLException
      */
     int[] deleteAnnotation(Number annotationID);
-    
+
     /// notebooks ///
     boolean deleteNotebook(Number notebookID);
-    
-    
-    //////// HELPERS for resources /////
-    ResponseBody makeAnnotationResponseEnvelope(Number annotationID); 
-    
-    ResponseBody makeNotebookResponseEnvelope(Number notebookID); 
-    
-    ResponseBody makePermissionResponseEnvelope(Number resourceID, Resource resource); 
 
-    
+    //////// HELPERS for resources /////
+    ResponseBody makeAnnotationResponseEnvelope(Number annotationID);
+
+    ResponseBody makeNotebookResponseEnvelope(Number notebookID);
+
+    ResponseBody makePermissionResponseEnvelope(Number resourceID, Resource resource);
 }

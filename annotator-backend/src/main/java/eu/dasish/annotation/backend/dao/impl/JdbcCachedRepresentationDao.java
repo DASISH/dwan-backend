@@ -108,23 +108,21 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
         }
     };
 
-    //////////////////////////////////////
-    private boolean cachedIsInUse(Number cachedID) {
-        
-        if (cachedID == null) {
-            loggerCachedDao.debug("cachedID: " + nullArgument);
-            return false;
+   
+    
+       /////////////////////////////////////////
+    @Override
+    public List<Number> getCachedRepresentationsForTarget(Number targetID) {
+
+        if (targetID == null) {
+            loggerCachedDao.debug("targetID: " + nullArgument);
+            return null;
         }
-        
-        StringBuilder sql = new StringBuilder("SELECT ");
-        sql.append(target_id).append(" FROM ").append(targetsCachedRepresentationsTableName).append(" WHERE ").append(cached_representation_id).append("= ? LIMIT 1");
-        List<Number> result = getSimpleJdbcTemplate().query(sql.toString(), targetIDRowMapper, cachedID);
-        if (result != null) {
-            return (!result.isEmpty());
-        } else {
-            return false;
-        }
+
+        String sql = "SELECT " + cached_representation_id + " FROM " + targetsCachedRepresentationsTableName + " WHERE " + target_id + " = ?";
+        return getSimpleJdbcTemplate().query(sql, internalIDRowMapper, targetID);
     }
+
 
     //////////////////////// ADDERS ///////////////////////////////
     @Override
@@ -157,12 +155,7 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
             loggerCachedDao.debug("internalID: " + nullArgument);
             return 0;
         }
-        
-        if (cachedIsInUse(internalID)) {
-            loggerCachedDao.debug("Cached Repr. is in use, and cannot be deleted.");
-            return 0;
-        }
-
+               
         StringBuilder sql = new StringBuilder("DELETE FROM ");
         sql.append(cachedRepresentationTableName).append(" WHERE ").append(cached_representation_id).append(" = ?");
         return getSimpleJdbcTemplate().update(sql.toString(), internalID);

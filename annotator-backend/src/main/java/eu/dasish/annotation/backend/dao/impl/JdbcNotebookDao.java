@@ -119,28 +119,7 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
         return getSimpleJdbcTemplate().query(sql.toString(), internalIDRowMapper, principalID);
     }
 
-    @Override
-    public List<Number> getPrincipalIDsWithPermission(Number notebookID, Permission permission) {
-        if (notebookID == null) {
-            loggerNotebookDao.debug("notebookID: " + nullArgument);
-            return null;
-        }
-
-        if (permission == null) {
-            loggerNotebookDao.debug("permission: " + nullArgument);
-            return null;
-        }
-        Map<String, Object> params = new HashMap<String, Object>();
-        params.put("notebookID", notebookID);
-        params.put("accessMode", permission.value());
-
-        StringBuilder sql = new StringBuilder("SELECT ");
-        sql.append(principal_id).append(" FROM ").append(notebookPermissionsTableName).append(" WHERE ").
-                append(notebook_id).append(" = :notebookID AND ").append(this.permission).append(" = :accessMode");
-
-        return getSimpleJdbcTemplate().query(sql.toString(), principalIDRowMapper, params);
-
-    }
+   
 
     @Override
     public NotebookInfo getNotebookInfoWithoutOwner(Number notebookID) {
@@ -190,22 +169,7 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
         }
     };
 
-    @Override
-    public List<Number> getAnnotations(Number notebookID) {
-
-        if (notebookID == null) {
-            loggerNotebookDao.debug("notebookID: " + nullArgument);
-            return null;
-        }
-
-        StringBuilder sql = new StringBuilder("SELECT ");
-        sql.append(annotation_id).
-                append(" FROM ").append(notebooksAnnotationsTableName).append(" WHERE ").
-                append(notebook_id).append(" = :notebookID");
-        return getSimpleJdbcTemplate().query(sql.toString(), annotationIDRowMapper, notebookID);
-
-    }
-
+   
     /**
      *
      * UPDATERS

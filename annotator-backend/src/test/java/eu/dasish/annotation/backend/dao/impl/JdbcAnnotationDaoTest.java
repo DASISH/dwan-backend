@@ -80,15 +80,21 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
      /**
      * Test of retrieveTargetIDs method, of class JdbcAnnotationDao.
      */
+ 
+    
+     /**
+     * Test of getAnnotations method, of class JdbcNotebookDao.
+     */
     @Test
-    public void testRetrieveTargetIDs() {
-        System.out.println("retrieveTargetIDs");
-        Number annotationID = 1;
-        List<Number> result = jdbcAnnotationDao.retrieveTargetIDs(annotationID);
-        assertEquals(2, result.size());
-        assertEquals(1, result.get(0));
-        assertEquals(2, result.get(1));
+    public void testGetAnnotations() {
+        System.out.println("test getAnnotations");
+        List<Number> expResult = new ArrayList<Number>();
+        expResult.add(1);
+        expResult.add(2);
+        List<Number> result = jdbcAnnotationDao.getAnnotations(1);
+        assertEquals(expResult, result);
     }
+
     
     ///////////////////////////////////////////
     @Test

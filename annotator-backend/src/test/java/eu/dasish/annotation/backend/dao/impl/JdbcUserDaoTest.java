@@ -19,7 +19,10 @@ package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.TestInstances;
+import eu.dasish.annotation.schema.Permission;
 import eu.dasish.annotation.schema.User;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -156,6 +159,19 @@ public class JdbcUserDaoTest extends JdbcResourceDaoTest {
         user.setDisplayName("Olha");
         user.setEMail("Olha.Shakaravska@mpi.nl");
         assertTrue(jdbcUserDao.userExists(user));
-
     }
+    
+      /**
+     * Test of getPrincipalIDsWithPermission method, of class JdbcNotebookDao.
+     */
+    @Test
+    public void testGetPrincipalIDsWithPermission() {
+        System.out.println("gtest getPrincipalIDsWithPermission");
+        List<Number> expResult = new ArrayList<Number>();
+        expResult.add(2);
+        expResult.add(4);
+        List result = jdbcUserDao.getPrincipalIDsWithPermissionForNotebook(1, Permission.WRITER);
+        assertEquals(expResult, result);
+    }
+
 }
