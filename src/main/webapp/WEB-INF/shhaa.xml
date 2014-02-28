@@ -52,7 +52,7 @@
 
 	
         <authorization>
-            <location  target="/*" />
+            <location  target="/api/authenticate/login/*" />
         </authorization>
 	
 	
