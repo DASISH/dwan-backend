@@ -15,8 +15,9 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package eu.dasish.annotation.backend.dao;
+package eu.dasish.annotation.backend.da;
 
+import eu.dasish.annotation.backend.dao1.ResourceDao;
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationBody;
 import eu.dasish.annotation.schema.AnnotationInfo;
