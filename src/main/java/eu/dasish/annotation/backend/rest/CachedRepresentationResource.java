@@ -97,7 +97,7 @@ public class CachedRepresentationResource extends ResourceResource {
                     BufferedImage result = ImageIO.read(dbRespond);
                     return result;
                 } else {
-                    verboseOutput.ANNOTATION_NOT_FOUND(externalId);
+                    verboseOutput.CACHED_REPRESENTATION_NOT_FOUND(externalId);
                 }
             } catch (IllegalArgumentException e) {
                 verboseOutput.ILLEGAL_UUID(externalId);

@@ -753,9 +753,9 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     
     
     @Override
-    public int[] deleteCachedRepresentationOfTarget(Number versionID, Number cachedID) {
+    public int[] deleteCachedRepresentationOfTarget(Number targetID, Number cachedID) {
         int[] result = new int[2];
-        result[0] = targetDao.deleteTargetCachedRepresentation(versionID, cachedID);
+        result[0] = targetDao.deleteTargetCachedRepresentation(targetID, cachedID);
         if (result[0] > 0) {
             result[1] = cachedRepresentationDao.deleteCachedRepresentation(cachedID);
         } else {
