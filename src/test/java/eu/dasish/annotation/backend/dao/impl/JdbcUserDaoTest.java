@@ -119,7 +119,7 @@ public class JdbcUserDaoTest extends JdbcResourceDaoTest {
         freshUser.setEMail(freshUserEmail);
 
         Number result = jdbcUserDao.addUser(freshUser, "secret X");
-        assertEquals(11, result.intValue());
+        assertEquals(12, result.intValue());
         User addedUser = jdbcUserDao.getUser(result);
         assertEquals(freshUserName, addedUser.getDisplayName());
         assertEquals(freshUserEmail, addedUser.getEMail());

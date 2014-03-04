@@ -137,11 +137,13 @@ public class AnnotationsTest extends JerseyTest {
         assertEquals(testAnnotation.getBody().getTextBody().getBody(), entity.getBody().getTextBody().getBody());
         assertEquals(testAnnotation.getHeadline(), entity.getHeadline());
         assertEquals(testAnnotation.getOwnerRef(), entity.getOwnerRef());
-        assertEquals(2, entity.getPermissions().getUserWithPermission().size());
+        assertEquals(3, entity.getPermissions().getUserWithPermission().size());
         assertEquals("writer", entity.getPermissions().getUserWithPermission().get(0).getPermission().value());
         assertEquals(resource().getURI()+"users/"+"00000000-0000-0000-0000-000000000112", entity.getPermissions().getUserWithPermission().get(0).getRef()); 
         assertEquals("reader", entity.getPermissions().getUserWithPermission().get(1).getPermission().value()); 
         assertEquals(resource().getURI()+"users/"+"00000000-0000-0000-0000-000000000113", entity.getPermissions().getUserWithPermission().get(1).getRef()); 
+        assertEquals("reader", entity.getPermissions().getUserWithPermission().get(1).getPermission().value()); 
+        assertEquals(resource().getURI()+"users/"+"00000000-0000-0000-0000-000000000221", entity.getPermissions().getUserWithPermission().get(2).getRef()); 
         assertEquals(2, entity.getTargets().getTargetInfo().size());
         assertEquals(resource().getURI().toString()+"targets/"+"00000000-0000-0000-0000-000000000031", entity.getTargets().getTargetInfo().get(0).getRef());
         assertEquals(resource().getURI().toString()+"targets/"+"00000000-0000-0000-0000-000000000032", entity.getTargets().getTargetInfo().get(1).getRef());

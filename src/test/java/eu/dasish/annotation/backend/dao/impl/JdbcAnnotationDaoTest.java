@@ -109,7 +109,7 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
     public void testDeleteAnnotationPrinciplePermissions() throws SQLException{
         System.out.println("test deleteAllAnnotationTargets");
         int result = jdbcAnnotationDao.deleteAnnotationPrincipalPermissions(1);
-        assertEquals(2, result);
+        assertEquals(3, result);
         assertEquals(0, jdbcAnnotationDao.deleteAnnotationPrincipalPermissions(1));
     }
     
@@ -363,10 +363,10 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
     public void testRetrievePermissions (){
         System.out.println("test Permissions");
         List<Map<Number, String>> result = jdbcAnnotationDao.getPermissions(1);
-        assertEquals(2, result.size());
+        assertEquals(3, result.size());
         assertEquals("writer", result.get(0).get(2));
         assertEquals("reader", result.get(1).get(3));
-        
+        assertEquals("reader", result.get(2).get(11));
         
     }
 }

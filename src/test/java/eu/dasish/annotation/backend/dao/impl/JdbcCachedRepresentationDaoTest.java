@@ -129,9 +129,9 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest {
         jdbcCachedRepresentationDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_cached);
         CachedRepresentationInfo result = jdbcCachedRepresentationDao.getCachedRepresentationInfo(1);
         assertEquals(TestBackendConstants._TEST_SERVLET_URI_cached + "00000000-0000-0000-0000-000000000051", result.getURI());
-        assertEquals("text/html", result.getMimeType());
-        assertEquals("latex", result.getTool());
-        assertEquals("text", result.getType());
+        assertEquals("image/png", result.getMimeType());
+        assertEquals("screen-shot", result.getTool());
+        assertEquals("image", result.getType());
         assertEquals(TestBackendConstants._TEST_SERVLET_URI_cached +"00000000-0000-0000-0000-000000000051", result.getURI());
     }
 
