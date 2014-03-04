@@ -30,6 +30,7 @@ INSERT INTO principal (principal_name, external_id, remote_id, e_mail, account) 
 INSERT INTO principal (principal_name, external_id, remote_id, e_mail, account) VALUES ('Stephanie', '00000000-0000-0000-0000-000000000118', 'gusrotst@gu.se', 'stephanie.roth@gu.se', 'developer'); -- 8
 INSERT INTO principal (principal_name, external_id, remote_id, e_mail, account) VALUES ('Olof', '00000000-0000-0000-0000-000000000119', 'gusolsol@gu.se', 'olof.olsson.2@gu.se', 'developer'); -- 9
 INSERT INTO principal (principal_name, external_id, remote_id, e_mail, account) VALUES ('Willem', '00000000-0000-0000-0000-000000000220', 'wilelb@mpi.nl', 'Willem.Elbers@mpi.nl', 'developer'); -- 10
+INSERT INTO principal (principal_name, external_id, remote_id, e_mail, account) VALUES ('Olaf', '00000000-0000-0000-0000-000000000221', 'olasei@mpi.nl', 'Olaf.Seibert@mpi.nl', 'developer'); -- 11
 
 
 INSERT INTO notebook (title, owner_id, external_id, last_modified) VALUES ('Notebook 1', 1, '00000000-0000-0000-0000-000000000011', '2013-08-12 09:25:00.383'); -- 1
@@ -70,10 +71,10 @@ INSERT INTO annotations_targets (annotation_id, target_id) VALUES (3, 5);
 INSERT INTO annotations_targets (annotation_id, target_id) VALUES (3, 7); 
 
 -- HSQL ---
-INSERT INTO cached_representation (external_id, mime_type, tool, type_, file_) VALUES ('00000000-0000-0000-0000-000000000051', 'text/html', 'latex', 'text', X'1001'); --1
+INSERT INTO cached_representation (external_id, mime_type, tool, type_, file_) VALUES ('00000000-0000-0000-0000-000000000051', 'image/png', 'screen-shot', 'image', NULL); --1
 INSERT INTO cached_representation (external_id, mime_type, tool, type_, file_) VALUES ('00000000-0000-0000-0000-000000000052', 'text/html', 'vi', 'text', X'1002'); -- 2
-INSERT INTO cached_representation (external_id, mime_type, tool, type_, file_) VALUES ('00000000-0000-0000-0000-000000000053', 'image/png', 'screenshooter', 'image', X'1003'); -- 3
-INSERT INTO cached_representation (external_id, mime_type, tool, type_, file_) VALUES ('00000000-0000-0000-0000-000000000054', 'text/html', 'oxygen', 'text', X'1004'); --4 
+INSERT INTO cached_representation (external_id, mime_type, tool, type_, file_) VALUES ('00000000-0000-0000-0000-000000000053', 'image/png', 'screenshooter', 'image', NULL); -- 3
+INSERT INTO cached_representation (external_id, mime_type, tool, type_, file_) VALUES ('00000000-0000-0000-0000-000000000054', 'image/png', 'screen-shot', 'image', NULL); --4
 INSERT INTO cached_representation (external_id, mime_type, tool, type_, file_) VALUES ('00000000-0000-0000-0000-000000000055', 'image/jpg', 'photomaster', 'image', X'1005'); --5 
 INSERT INTO cached_representation (external_id, mime_type, tool, type_, file_) VALUES ('00000000-0000-0000-0000-000000000056', 'text/plain', 'some tool', 'text', X'1006'); --6  not used
 INSERT INTO cached_representation (external_id, mime_type, tool, type_, file_) VALUES ('00000000-0000-0000-0000-000000000057', 'text/html', 'some tool 2', 'text', X'1007'); --7 
@@ -105,6 +106,7 @@ INSERT INTO permission_(permission_mode) VALUES ('reader');
 
 INSERT INTO annotations_principals_permissions (annotation_id, principal_id, permission_) VALUES (1, 2, 'writer');
 INSERT INTO annotations_principals_permissions (annotation_id, principal_id, permission_) VALUES (1, 3, 'reader');
+INSERT INTO annotations_principals_permissions (annotation_id, principal_id, permission_) VALUES (1, 11, 'reader');
 
 INSERT INTO annotations_principals_permissions (annotation_id, principal_id, permission_) VALUES (2, 1, 'reader');
 INSERT INTO annotations_principals_permissions (annotation_id, principal_id, permission_) VALUES (2, 3, 'writer');
@@ -121,11 +123,13 @@ INSERT INTO notebooks_principals_permissions (notebook_id, principal_id, permiss
 INSERT INTO notebooks_principals_permissions (notebook_id, principal_id, permission_) VALUES (1, 3, 'reader');
 INSERT INTO notebooks_principals_permissions (notebook_id, principal_id, permission_) VALUES (1, 4, 'writer');
 INSERT INTO notebooks_principals_permissions (notebook_id, principal_id, permission_) VALUES (1, 5, 'reader');
-
+INSERT INTO notebooks_principals_permissions (notebook_id, principal_id, permission_) VALUES (1, 11, 'reader');
 
 INSERT INTO notebooks_principals_permissions (notebook_id, principal_id, permission_) VALUES (2, 1, 'reader');
 INSERT INTO notebooks_principals_permissions (notebook_id, principal_id, permission_) VALUES (2, 3, 'writer');
+INSERT INTO notebooks_principals_permissions (notebook_id, principal_id, permission_) VALUES (2, 11, 'reader');
+
 
 INSERT INTO notebooks_principals_permissions (notebook_id, principal_id, permission_) VALUES (4, 2, 'writer');
 INSERT INTO notebooks_principals_permissions (notebook_id, principal_id, permission_) VALUES (4, 1, 'writer');
-
+INSERT INTO notebooks_principals_permissions (notebook_id, principal_id, permission_) VALUES (4, 11, 'reader');
