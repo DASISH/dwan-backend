@@ -25,7 +25,6 @@ import com.sun.jersey.spi.spring.container.servlet.SpringServlet;
 import com.sun.jersey.test.framework.AppDescriptor;
 import com.sun.jersey.test.framework.JerseyTest;
 import com.sun.jersey.test.framework.WebAppDescriptor;
-import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.TestInstances;
 import eu.dasish.annotation.backend.dao.impl.JdbcResourceDaoTest;
 import eu.dasish.annotation.schema.Annotation;
@@ -35,12 +34,9 @@ import eu.dasish.annotation.schema.ObjectFactory;
 import eu.dasish.annotation.schema.ResponseBody;
 import eu.dasish.annotation.schema.TargetInfo;
 import eu.dasish.annotation.schema.TargetInfoList;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.sql.SQLException;
-import java.util.Scanner;
 import java.util.UUID;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -50,6 +46,7 @@ import javax.xml.datatype.DatatypeFactory;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -113,6 +110,7 @@ public class AnnotationsTest extends JerseyTest {
      * api/annotations/<aid>
      */
     @Test
+    @Ignore
     public void testGetAnnotation() throws SQLException, DatatypeConfigurationException {
         
         // Authentication  
@@ -156,6 +154,7 @@ public class AnnotationsTest extends JerseyTest {
      * <nid>. DELETE api/annotations/<aid>
      */
     @Test
+    @Ignore
     public void testDeleteAnnotation() throws SQLException {
         
           
@@ -181,6 +180,7 @@ public class AnnotationsTest extends JerseyTest {
      * api/annotations/
      */
     @Test
+    @Ignore
     public void testCreateAnnotation() throws SQLException, InstantiationException, IllegalAccessException, DatatypeConfigurationException, Exception {
         
           

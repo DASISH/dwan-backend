@@ -54,7 +54,7 @@ public class ResourceResource {
     
     public Number getUserID() throws IOException {
         verboseOutput = new VerboseOutput(httpServletResponse, loggerServer);
-        String remoteUser = dbIntegrityService.getRemoteUser();        
+        String remoteUser = httpServletRequest.getRemoteUser();        
         if (remoteUser != null) {
             if (!remoteUser.equals(anonym)) {
                 final Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
@@ -70,4 +70,6 @@ public class ResourceResource {
         return null;
 
     }
+    
+    
 }

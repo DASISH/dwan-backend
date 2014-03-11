@@ -119,6 +119,10 @@ public class VerboseOutput {
     private MessageStatus _LOGOUT() {
         return new MessageStatus("You are logged out.", HttpServletResponse.SC_UNAUTHORIZED);
     }
+    
+    private MessageStatus _ANONYMOUS_PRINCIPAL() {
+        return new MessageStatus("Shibboleth fall-back.  Logged in as 'anonymous' with no rights.", HttpServletResponse.SC_UNAUTHORIZED);
+    }
 
     private void sendMessage(MessageStatus msg) throws IOException {
         logger.debug(msg.status + ": " + msg.message);
@@ -209,4 +213,9 @@ public class VerboseOutput {
     public void LOGOUT() throws IOException {
         this.sendMessage(this._LOGOUT());
     }
+    
+    public void ANONYMOUS_PRINCIPAL() throws IOException {
+        this.sendMessage(this._ANONYMOUS_PRINCIPAL());
+    }
+    
 }

@@ -78,7 +78,6 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     AnnotationDao annotationDao;
     @Autowired
     NotebookDao notebookDao;
-    private String remoteUser=null;
     
     
     final static protected String admin = "admin";
@@ -102,14 +101,7 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         }
     }
     
-    public String getRemoteUser(){
-        return remoteUser;
-    }
-    
-    public void setRemoteUser(String currentUser){
-        remoteUser = currentUser;
-    }
-    
+   
 
     @Override
     public void setServiceURI(String serviceURI) {
