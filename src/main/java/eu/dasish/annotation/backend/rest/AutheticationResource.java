@@ -64,11 +64,16 @@ public class AutheticationResource extends ResourceResource {
         String remoteUser = httpServletRequest.getRemoteUser();
         verboseOutput = new VerboseOutput(httpServletResponse, loggerServer);
         if (remoteUser != null) {
-            dbIntegrityService.setRemoteUser(remoteUser);
-            dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
-            final Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
-            if (remoteUserID != null) {
-                return new ObjectFactory().createUser(dbIntegrityService.getUser(remoteUserID));
+            if (!remoteUser.equals("anonymous")) {
+                dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
+                final Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
+                if (remoteUserID != null) {
+                    return new ObjectFactory().createUser(dbIntegrityService.getUser(remoteUserID));
+                } else {
+                    verboseOutput.REMOTE_PRINCIPAL_NOT_FOUND(remoteUser, dbIntegrityService.getDataBaseAdmin().getDisplayName(), dbIntegrityService.getDataBaseAdmin().getEMail());
+                }
+            } else {
+                verboseOutput.ANONYMOUS_PRINCIPAL();
             }
         }
         return new ObjectFactory().createUser(new User());
@@ -79,11 +84,6 @@ public class AutheticationResource extends ResourceResource {
     @Path("logout")
     @Transactional(readOnly = true)
     public void logout() throws IOException, ServletException {
-        Number remoteUserID = this.getUserID();
-        if (remoteUserID != null) {
-            dbIntegrityService.setRemoteUser(null);
-            dbIntegrityService.setServiceURI(null);
-            verboseOutput.LOGOUT();
-        }
+        httpServletResponse.sendRedirect("eu.dasish.annotation.backend.logout");
     }
 }

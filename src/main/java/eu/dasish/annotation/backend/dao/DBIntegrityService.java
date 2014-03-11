@@ -50,11 +50,7 @@ public interface DBIntegrityService {
     /**
      * GETTERS
      */
-    String getRemoteUser();
-    
-    void setRemoteUser(String currentUser);
-    
-    
+      
     Number getResourceInternalIdentifier(UUID externalID, Resource resource);
 
     Number getResourceInternalIdentifierFromURI(String uri, Resource resource);

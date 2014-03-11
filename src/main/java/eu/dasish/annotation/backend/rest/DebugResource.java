@@ -85,7 +85,7 @@ public class DebugResource extends ResourceResource {
     @Path("/remoteID")
     @Transactional(readOnly = true)
     public String getLoggedInRemoteID(){
-        return dbIntegrityService.getRemoteUser();
+        return httpServletRequest.getRemoteUser();
     }
 
     /////

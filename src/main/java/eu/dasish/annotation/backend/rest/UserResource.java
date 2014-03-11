@@ -247,6 +247,6 @@ public class UserResource extends ResourceResource{
     }
 
     private boolean ifLoggedIn(Number userID) {
-        return (dbIntegrityService.getRemoteUser()).equals(dbIntegrityService.getUserRemoteID(userID));
+        return (httpServletRequest.getRemoteUser()).equals(dbIntegrityService.getUserRemoteID(userID));
     }
 }

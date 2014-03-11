@@ -20,6 +20,11 @@
 -->
 <ROOT>
     <shhaa>
+        
+<!--        <webapp>
+                <host>http://localhost:8080</host>
+                <context>/annotator-backend</context>
+        </webapp>-->
 
         <authentication>
             <shibheader>
@@ -38,12 +43,12 @@
             <fallback>
                 <username>anonymous</username>
             </fallback>
-            <sso action="lI">http://lux16.mpi.nl/Shibboleth.sso/Login</sso> 
-	    <slo action="lO">http://lux16.mpi.nl/Shibboleth.sso/Logout</slo> 
+            <sso action="lI">https://lux16.mpi.nl/Shibboleth.sso/Login</sso> 
+	    <slo action="lO">eu.dasish.annotation.backend.logout</slo> 
         </authentication>
 	
 	
-        <!-- <composition action="rF">
+<!--         <composition action="rF">
        	    <shibheader>
               		<attribute>displayName</attribute>
               		<attribute>commonName</attribute>
@@ -52,10 +57,35 @@
 
 	
         <authorization>
-            <location  target="/api/authenticate/login/*" />
+            <location  target="/api/authentication/login" />
         </authorization>
 	
-	
+        <handler>
+        
+            <!-- don't run checks on "background resources" -->
+            <ignore>
+                <location target="/css/*" />
+                <location target="/img/*" />
+            </ignore>
+                
+            <!-- set the provided subject and its credentials to "read-only" -->
+            <readonly>true</readonly>
+
+            <!-- automatically redirect to SSO login on inital access to a protected site -->
+            <autologin>true</autologin>
+
+            <!-- url parameter name to recognize flags for actions shhaa shall perform -->
+            <actionparam>shhaaDo</actionparam>
+                
+<!--             shhaa actions & view-control  
+            <pages>
+                <info action="dI">/pages/info.jsp</info>
+                <expired action="dE">/pages/expired.jsp</expired>
+                <denied action="dD">/pages/noaccess.jsp</denied>
+            </pages>-->
+                
+        </handler>
+        
 	
     </shhaa>
 </ROOT>

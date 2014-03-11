@@ -76,6 +76,7 @@ public class AnnotationResourceTest {
 
     public AnnotationResourceTest() {
         mockRequest = new MockHttpServletRequest();
+        
     }
     
    
@@ -86,13 +87,11 @@ public class AnnotationResourceTest {
         final Annotation expectedAnnotation = (new TestInstances(null)).getAnnotationOne();
         annotationResource.setHttpServletRequest(mockRequest);
         annotationResource.setUriInfo(mockUriInfo);
-
+        mockRequest.setRemoteUser("olhsha@mpi.nl");
 
         mockeryRest.checking(new Expectations() {
             {  
-                oneOf(mockDbIntegrityService).getRemoteUser();
-                will(returnValue("olhsha@mpi.nl"));
-                        
+                     
                 oneOf(mockDbIntegrityService).getUserInternalIDFromRemoteID("olhsha@mpi.nl");
                 will(returnValue(3));
 
@@ -128,12 +127,12 @@ public class AnnotationResourceTest {
 
         annotationResource.setHttpServletRequest(mockRequest);
         annotationResource.setUriInfo(mockUriInfo);
-
+        mockRequest.setRemoteUser("olhsha@mpi.nl");
+        
+        
         mockeryRest.checking(new Expectations() {
             {
-                oneOf(mockDbIntegrityService).getRemoteUser();
-                will(returnValue("olhsha@mpi.nl"));
-                
+               
                 oneOf(mockDbIntegrityService).getUserInternalIDFromRemoteID("olhsha@mpi.nl");
                 will(returnValue(3));
 
@@ -202,13 +201,12 @@ public class AnnotationResourceTest {
 
         annotationResource.setHttpServletRequest(mockRequest);
         annotationResource.setUriInfo(mockUriInfo);
-
+        mockRequest.setRemoteUser("olhsha@mpi.nl");
+        
+        
         mockeryRest.checking(new Expectations() {
             {
-                oneOf(mockDbIntegrityService).getRemoteUser();
-                will(returnValue("olhsha@mpi.nl"));
-                
-             
+               
                 oneOf(mockDbIntegrityService).getUserInternalIDFromRemoteID("olhsha@mpi.nl");
                 will(returnValue(3));
 
