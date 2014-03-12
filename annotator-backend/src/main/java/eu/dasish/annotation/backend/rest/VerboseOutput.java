@@ -47,27 +47,25 @@ public class VerboseOutput {
     }
 
     private MessageStatus _NOT_LOGGED_IN(String adminName, String adminEmail) {
-        return new MessageStatus(" The user is not logged-in or its remote login is corrupted by setting to null. In the latter case contact the admin "+adminName+" via the e-mail "+adminEmail, HttpServletResponse.SC_UNAUTHORIZED);
+        return new MessageStatus(" The user is not logged-in or its remote login is corrupted by setting to null. In the latter case contact the admin " + adminName + " via the e-mail " + adminEmail, HttpServletResponse.SC_UNAUTHORIZED);
     }
 
     private MessageStatus _FORBIDDEN_RESOURCE_ACTION(String identifier, String resource, String action, String ownerName, String ownerEMail) {
-        return new MessageStatus(" The logged-in principal cannot "+action+" the "+resource+" with the identifier " + identifier+ ". Contact the resource's owner "+ownerName+" via the e-mail "+ownerEMail, HttpServletResponse.SC_FORBIDDEN);
+        return new MessageStatus(" The logged-in principal cannot " + action + " the " + resource + " with the identifier " + identifier + ". Contact the resource's owner " + ownerName + " via the e-mail " + ownerEMail, HttpServletResponse.SC_FORBIDDEN);
     }
-
 
     private MessageStatus _ILLEGAL_UUID(String identifier) {
         return new MessageStatus("The string '" + identifier + "' is not a valid UUID.", HttpServletResponse.SC_BAD_REQUEST);
     }
 
     private MessageStatus _REMOTE_PRINCIPAL_NOT_FOUND(String remoteID, String adminName, String adminEmail) {
-        return new MessageStatus("The logged in principal with the remote ID " + remoteID + " is not found in the database or his/her internal DB identifier is corrupted by setting to null. Contact the database admin "+adminName+" by the e-mail "+adminEmail, HttpServletResponse.SC_NOT_FOUND);
+        return new MessageStatus("The logged in principal with the remote ID " + remoteID + " is not found in the database or his/her internal DB identifier is corrupted by setting to null. Contact the database admin " + adminName + " by the e-mail " + adminEmail, HttpServletResponse.SC_NOT_FOUND);
     }
 
     private MessageStatus resourceNotFound(String externalIdentifier, String resourceType) {
         return new MessageStatus("A(n) " + resourceType + " with the indentifier " + externalIdentifier + " is not found in the database, or its internal database identifier is corrupted by setting to null.", HttpServletResponse.SC_NOT_FOUND);
     }
 
-  
     private MessageStatus _PRINCIPAL_NOT_FOUND(String externalIdentifier) {
         return resourceNotFound(externalIdentifier, "principal");
     }
@@ -88,6 +86,11 @@ public class VerboseOutput {
         return resourceNotFound(externalIdentifier, "cached representation");
     }
 
+    private MessageStatus _CACHED_REPRESENTATION_IS_NULL() {
+        return new MessageStatus("The cached representation with the give ID exist in the DB, however its BLOB is null.", HttpServletResponse.SC_NO_CONTENT);
+
+    }
+
     private MessageStatus _INVALID_PERMISSION_MODE(String permissionMode) {
         return new MessageStatus(permissionMode + " is an invalid permission value, which must be either owner, or reader, or writer.", HttpServletResponse.SC_BAD_REQUEST);
     }
@@ -97,7 +100,7 @@ public class VerboseOutput {
     }
 
     private MessageStatus _ADMIN_RIGHTS_EXPECTED(String adminName, String adminEmail) {
-        return new MessageStatus("The request can be performed only by the principal with the admin rights. Contact the admin "+adminName+" via e-mail "+adminEmail, HttpServletResponse.SC_FORBIDDEN);
+        return new MessageStatus("The request can be performed only by the principal with the admin rights. Contact the admin " + adminName + " via e-mail " + adminEmail, HttpServletResponse.SC_FORBIDDEN);
     }
 
     private MessageStatus _DEVELOPER_RIGHTS_EXPECTED() {
@@ -115,11 +118,11 @@ public class VerboseOutput {
     private MessageStatus _ACCOUNT_IS_NOT_UPDATED() {
         return new MessageStatus("The account is not updated", HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
     }
-    
+
     private MessageStatus _LOGOUT() {
         return new MessageStatus("You are logged out.", HttpServletResponse.SC_UNAUTHORIZED);
     }
-    
+
     private MessageStatus _ANONYMOUS_PRINCIPAL() {
         return new MessageStatus("Shibboleth fall-back.  Logged in as 'anonymous' with no rights.", HttpServletResponse.SC_UNAUTHORIZED);
     }
@@ -139,19 +142,19 @@ public class VerboseOutput {
     }
 
     public void FORBIDDEN_NOTEBOOK_WRITING(String identifier, String ownerName, String ownerEMail) throws IOException {
-         this.sendMessage(this._FORBIDDEN_RESOURCE_ACTION(identifier, "notebook", "write", ownerName, ownerEMail));
+        this.sendMessage(this._FORBIDDEN_RESOURCE_ACTION(identifier, "notebook", "write", ownerName, ownerEMail));
     }
 
     public void FORBIDDEN_ANNOTATION_READING(String identifier, String ownerName, String ownerEMail) throws IOException {
-         this.sendMessage(this._FORBIDDEN_RESOURCE_ACTION(identifier, "annotation", "read", ownerName, ownerEMail));;
+        this.sendMessage(this._FORBIDDEN_RESOURCE_ACTION(identifier, "annotation", "read", ownerName, ownerEMail));;
     }
 
     public void FORBIDDEN_ANNOTATION_WRITING(String identifier, String ownerName, String ownerEMail) throws IOException {
-         this.sendMessage(this._FORBIDDEN_RESOURCE_ACTION(identifier, "annotation", "write", ownerName, ownerEMail));
+        this.sendMessage(this._FORBIDDEN_RESOURCE_ACTION(identifier, "annotation", "write", ownerName, ownerEMail));
     }
 
     public void FORBIDDEN_PERMISSION_CHANGING(String identifier, String ownerName, String ownerEMail) throws IOException {
-         this.sendMessage(this._FORBIDDEN_RESOURCE_ACTION(identifier, "resource","change", ownerName, ownerEMail));
+        this.sendMessage(this._FORBIDDEN_RESOURCE_ACTION(identifier, "resource", "change", ownerName, ownerEMail));
     }
 
     public void ILLEGAL_UUID(String identifier) throws IOException {
@@ -182,6 +185,10 @@ public class VerboseOutput {
         this.sendMessage(this._CACHED_REPRESENTATION_NOT_FOUND(externalIdentifier));
     }
 
+    public void CACHED_REPRESENTATION_IS_NULL() throws IOException {
+        this.sendMessage(this._CACHED_REPRESENTATION_IS_NULL());
+    }
+
     public void INVALID_PERMISSION_MODE(String permissionMode) throws IOException {
         this.sendMessage(this._INVALID_PERMISSION_MODE(permissionMode));
     }
@@ -209,13 +216,12 @@ public class VerboseOutput {
     public void ACCOUNT_IS_NOT_UPDATED() throws IOException {
         this.sendMessage(this._ACCOUNT_IS_NOT_UPDATED());
     }
-    
+
     public void LOGOUT() throws IOException {
         this.sendMessage(this._LOGOUT());
     }
-    
+
     public void ANONYMOUS_PRINCIPAL() throws IOException {
         this.sendMessage(this._ANONYMOUS_PRINCIPAL());
     }
-    
 }

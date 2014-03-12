@@ -31,7 +31,8 @@ public class JaxbMarshallerFactory {
     
     private JAXBContext context;
     private Marshaller marshaller;
-    // overwritten by the context.xml's 
+    // overwritten by the web.xml's 
+    // why?? 
     private String schemaLocation = "http://www.dasish.eu/ns/addit file:/Users/olhsha/repositories/DASISH/t5.6/schema/trunk/annotator-schema/src/main/target/DASISH-schema.xsd";
     
     public JaxbMarshallerFactory() throws Exception {
@@ -47,7 +48,7 @@ public class JaxbMarshallerFactory {
     }
     
     public Marshaller createMarshaller(Class<?> type) throws JAXBException{
-        context = JAXBContext.newInstance(type);
+        context = JAXBContext.newInstance(type); 
         marshaller = context.createMarshaller();        
         marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, schemaLocation);
         marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);

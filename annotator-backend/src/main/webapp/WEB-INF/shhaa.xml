@@ -20,12 +20,6 @@
 -->
 <ROOT>
     <shhaa>
-        
-<!--        <webapp>
-                <host>http://localhost:8080</host>
-                <context>/annotator-backend</context>
-        </webapp>-->
-
         <authentication>
             <shibheader>
                 <username>oid:eduPersonPrincipalName</username>
@@ -44,7 +38,7 @@
                 <username>anonymous</username>
             </fallback>
             <sso action="lI">https://lux16.mpi.nl/Shibboleth.sso/Login</sso> 
-	    <slo action="lO">eu.dasish.annotation.backend.logout</slo> 
+	    <slo action="lO">https://lux16.mpi.nl/Shibboleth.sso/Logout</slo> 
         </authentication>
 	
 	
