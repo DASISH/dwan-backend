@@ -110,7 +110,6 @@ public class AnnotationsTest extends JerseyTest {
      * api/annotations/<aid>
      */
     @Test
-    @Ignore
     public void testGetAnnotation() throws SQLException, DatatypeConfigurationException {
         
         // Authentication  
@@ -154,7 +153,6 @@ public class AnnotationsTest extends JerseyTest {
      * <nid>. DELETE api/annotations/<aid>
      */
     @Test
-    @Ignore
     public void testDeleteAnnotation() throws SQLException {
         
           
@@ -180,7 +178,6 @@ public class AnnotationsTest extends JerseyTest {
      * api/annotations/
      */
     @Test
-    @Ignore
     public void testCreateAnnotation() throws SQLException, InstantiationException, IllegalAccessException, DatatypeConfigurationException, Exception {
         
           

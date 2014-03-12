@@ -22,10 +22,10 @@ import eu.dasish.annotation.schema.User;
 import java.io.IOException;
 import java.sql.SQLException;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequestWrapper;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.xml.bind.JAXBElement;
 import javax.xml.parsers.ParserConfigurationException;
@@ -40,7 +40,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Path("/authentication")
 @Transactional(rollbackFor = {Exception.class, SQLException.class, IOException.class, ParserConfigurationException.class})
 public class AutheticationResource extends ResourceResource {
-
+    
+    
     @GET
     @Produces(MediaType.TEXT_XML)
     @Path("user")
@@ -61,11 +62,11 @@ public class AutheticationResource extends ResourceResource {
     @Path("login")
     @Transactional(readOnly = true)
     public JAXBElement<User> loginAndGet() throws IOException {
+        dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         String remoteUser = httpServletRequest.getRemoteUser();
         verboseOutput = new VerboseOutput(httpServletResponse, loggerServer);
         if (remoteUser != null) {
-            if (!remoteUser.equals("anonymous")) {
-                dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
+            if (!remoteUser.equals("anonymous")) {                
                 final Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
                 if (remoteUserID != null) {
                     return new ObjectFactory().createUser(dbIntegrityService.getUser(remoteUserID));
@@ -84,6 +85,6 @@ public class AutheticationResource extends ResourceResource {
     @Path("logout")
     @Transactional(readOnly = true)
     public void logout() throws IOException, ServletException {
-        httpServletResponse.sendRedirect("eu.dasish.annotation.backend.logout");
+        httpServletResponse.sendRedirect(context.getInitParameter("eu.dasish.annotation.backend.logout"));
     }
 }

@@ -19,7 +19,6 @@ package eu.dasish.annotation.backend.rest;
 
 import eu.dasish.annotation.backend.BackendConstants;
 import eu.dasish.annotation.backend.Resource;
-import eu.dasish.annotation.backend.dao.DBIntegrityService;
 import eu.dasish.annotation.schema.CachedRepresentationInfo;
 import eu.dasish.annotation.schema.ObjectFactory;
 import java.awt.image.BufferedImage;
@@ -29,19 +28,13 @@ import java.sql.SQLException;
 import java.util.UUID;
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.JAXBElement;
 import javax.xml.parsers.ParserConfigurationException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -93,16 +86,20 @@ public class CachedRepresentationResource extends ResourceResource {
                 final Number cachedID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalId), Resource.CACHED_REPRESENTATION);
                 if (cachedID != null) {
                     InputStream dbRespond = dbIntegrityService.getCachedRepresentationBlob(cachedID);
-                    ImageIO.setUseCache(false);
-                    BufferedImage result = ImageIO.read(dbRespond);
-                    return result;
+                    if (dbRespond != null) {
+                        ImageIO.setUseCache(false);
+                        BufferedImage result = ImageIO.read(dbRespond);
+                        return result;
+                    } else {
+                        verboseOutput.CACHED_REPRESENTATION_IS_NULL();
+                    }
                 } else {
                     verboseOutput.CACHED_REPRESENTATION_NOT_FOUND(externalId);
                 }
             } catch (IllegalArgumentException e) {
                 verboseOutput.ILLEGAL_UUID(externalId);
             }
-        } 
-        return null;
+        }
+        return new BufferedImage(20, 20, BufferedImage.TYPE_INT_ARGB);
     }
 }

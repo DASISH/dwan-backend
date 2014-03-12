@@ -51,17 +51,18 @@ public class ResourceResource {
     protected VerboseOutput verboseOutput;
     protected String admin = "admin";
     protected String anonym = "anonymous";
-    
+
     public Number getUserID() throws IOException {
+        dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         verboseOutput = new VerboseOutput(httpServletResponse, loggerServer);
-        String remoteUser = httpServletRequest.getRemoteUser();        
+        String remoteUser = httpServletRequest.getRemoteUser();
         if (remoteUser != null) {
             if (!remoteUser.equals(anonym)) {
                 final Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
                 if (userID != null) {
                     return userID;
-                } 
-                verboseOutput.REMOTE_PRINCIPAL_NOT_FOUND(remoteUser,dbIntegrityService.getDataBaseAdmin().getDisplayName(), dbIntegrityService.getDataBaseAdmin().getEMail());
+                }
+                verboseOutput.REMOTE_PRINCIPAL_NOT_FOUND(remoteUser, dbIntegrityService.getDataBaseAdmin().getDisplayName(), dbIntegrityService.getDataBaseAdmin().getEMail());
                 return null;
             }
         }
@@ -70,6 +71,4 @@ public class ResourceResource {
         return null;
 
     }
-    
-    
 }

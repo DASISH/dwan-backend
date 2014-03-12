@@ -76,9 +76,28 @@ public class AnnotationResourceTest {
 
     public AnnotationResourceTest() {
         mockRequest = new MockHttpServletRequest();
-        
     }
     
+    
+//    public Number getUserID() throws IOException {
+//        dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
+//        verboseOutput = new VerboseOutput(httpServletResponse, loggerServer);
+//        String remoteUser = httpServletRequest.getRemoteUser();
+//        if (remoteUser != null) {
+//            if (!remoteUser.equals(anonym)) {
+//                final Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
+//                if (userID != null) {
+//                    return userID;
+//                }
+//                verboseOutput.REMOTE_PRINCIPAL_NOT_FOUND(remoteUser, dbIntegrityService.getDataBaseAdmin().getDisplayName(), dbIntegrityService.getDataBaseAdmin().getEMail());
+//                return null;
+//            }
+//        }
+//
+//        verboseOutput.NOT_LOGGED_IN(dbIntegrityService.getDataBaseAdmin().getDisplayName(), dbIntegrityService.getDataBaseAdmin().getEMail());
+//        return null;
+//
+//    }
    
     @Test
     public void testGetAnnotation() throws SQLException, JAXBException, Exception {
@@ -88,10 +107,16 @@ public class AnnotationResourceTest {
         annotationResource.setHttpServletRequest(mockRequest);
         annotationResource.setUriInfo(mockUriInfo);
         mockRequest.setRemoteUser("olhsha@mpi.nl");
+        
+        final URI baseUri = URI.create(TestBackendConstants._TEST_SERVLET_URI);
 
         mockeryRest.checking(new Expectations() {
             {  
-                     
+                oneOf(mockUriInfo).getBaseUri();
+                will(returnValue(baseUri));
+                
+                oneOf(mockDbIntegrityService).setServiceURI(baseUri.toString());
+                
                 oneOf(mockDbIntegrityService).getUserInternalIDFromRemoteID("olhsha@mpi.nl");
                 will(returnValue(3));
 
@@ -129,10 +154,16 @@ public class AnnotationResourceTest {
         annotationResource.setUriInfo(mockUriInfo);
         mockRequest.setRemoteUser("olhsha@mpi.nl");
         
+         final URI baseUri = URI.create(TestBackendConstants._TEST_SERVLET_URI);
+
         
         mockeryRest.checking(new Expectations() {
             {
-               
+                oneOf(mockUriInfo).getBaseUri();
+                will(returnValue(baseUri));
+                
+                oneOf(mockDbIntegrityService).setServiceURI(baseUri.toString());
+                
                 oneOf(mockDbIntegrityService).getUserInternalIDFromRemoteID("olhsha@mpi.nl");
                 will(returnValue(3));
 
@@ -202,11 +233,16 @@ public class AnnotationResourceTest {
         annotationResource.setHttpServletRequest(mockRequest);
         annotationResource.setUriInfo(mockUriInfo);
         mockRequest.setRemoteUser("olhsha@mpi.nl");
-        
+        final URI baseUri = URI.create(TestBackendConstants._TEST_SERVLET_URI);
+
         
         mockeryRest.checking(new Expectations() {
             {
-               
+                oneOf(mockUriInfo).getBaseUri();
+                will(returnValue(baseUri));
+                
+                oneOf(mockDbIntegrityService).setServiceURI(baseUri.toString());
+                
                 oneOf(mockDbIntegrityService).getUserInternalIDFromRemoteID("olhsha@mpi.nl");
                 will(returnValue(3));
 
