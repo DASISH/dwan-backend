@@ -292,7 +292,7 @@ public class AnnotationResource extends ResourceResource {
                     if (dbIntegrityService.canWrite(userID, annotationID)) {
                         int updatedRows = dbIntegrityService.updateAnnotationBody(annotationID, annotationBody);
                         return new ObjectFactory().createResponseBody(dbIntegrityService.makeAnnotationResponseEnvelope(annotationID));
-                    } else { 
+                    } else {
                         verboseOutput.FORBIDDEN_ANNOTATION_WRITING(externalIdentifier, dbIntegrityService.getAnnotationOwner(annotationID).getDisplayName(), dbIntegrityService.getAnnotationOwner(annotationID).getEMail());
                     }
                 } else {
@@ -352,23 +352,18 @@ public class AnnotationResource extends ResourceResource {
     public JAXBElement<ResponseBody> updatePermissions(@PathParam("annotationid") String annotationExternalId, UserWithPermissionList permissions) throws IOException {
         Number remoteUserID = this.getUserID();
         if (remoteUserID != null) {
-            try {
-                final Number annotationID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(annotationExternalId), Resource.ANNOTATION);
-                if (annotationID != null) {
-                    if (remoteUserID.equals(dbIntegrityService.getAnnotationOwnerID(annotationID)) || dbIntegrityService.getTypeOfUserAccount(remoteUserID).equals(admin)) {
-                        int updatedRows = dbIntegrityService.updatePermissions(annotationID, permissions);
-                        return new ObjectFactory().createResponseBody(dbIntegrityService.makePermissionResponseEnvelope(annotationID, Resource.ANNOTATION));
-                    } else {
-                        verboseOutput.FORBIDDEN_PERMISSION_CHANGING(annotationExternalId, dbIntegrityService.getAnnotationOwner(annotationID).getDisplayName(), dbIntegrityService.getAnnotationOwner(annotationID).getEMail());
-                    }
+            final Number annotationID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(annotationExternalId), Resource.ANNOTATION);
+            if (annotationID != null) {
+                if (remoteUserID.equals(dbIntegrityService.getAnnotationOwnerID(annotationID)) || dbIntegrityService.getTypeOfUserAccount(remoteUserID).equals(admin)) {
+                    int updatedRows = dbIntegrityService.updatePermissions(annotationID, permissions);
+                    return new ObjectFactory().createResponseBody(dbIntegrityService.makePermissionResponseEnvelope(annotationID, Resource.ANNOTATION));
                 } else {
-                    verboseOutput.ANNOTATION_NOT_FOUND(annotationExternalId);
+                    verboseOutput.FORBIDDEN_PERMISSION_CHANGING(annotationExternalId, dbIntegrityService.getAnnotationOwner(annotationID).getDisplayName(), dbIntegrityService.getAnnotationOwner(annotationID).getEMail());
                 }
-
-
-            } catch (IllegalArgumentException e) {
-                verboseOutput.ILLEGAL_UUID(annotationExternalId);
+            } else {
+                verboseOutput.ANNOTATION_NOT_FOUND(annotationExternalId);
             }
+
         }
         return new ObjectFactory().createResponseBody(new ResponseBody());
 
