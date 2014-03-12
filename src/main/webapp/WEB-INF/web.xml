@@ -104,7 +104,7 @@ see implementation details http://jersey.java.net/nonav/documentation/latest/jax
         <role-name>tomcat</role-name>
     </security-role> 
     
-    <!--    <filter>
+<!--    <filter>
         <filter-name>AAIFilter</filter-name>
         <filter-class>de.mpg.aai.shhaa.AuthFilter</filter-class>
     </filter>
