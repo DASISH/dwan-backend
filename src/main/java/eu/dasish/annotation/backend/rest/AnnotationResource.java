@@ -88,23 +88,20 @@ public class AnnotationResource extends ResourceResource {
     public JAXBElement<Annotation> getAnnotation(@PathParam("annotationid") String externalIdentifier) throws IOException {
         Number userID = this.getUserID();
         if (userID != null) {
-            try {
-                final Number annotationID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.ANNOTATION);
-                if (annotationID != null) {
+            final Number annotationID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.ANNOTATION);
+            if (annotationID != null) {
 
-                    if (dbIntegrityService.canRead(userID, annotationID)) {
-                        final Annotation annotation = dbIntegrityService.getAnnotation(annotationID);
-                        return new ObjectFactory().createAnnotation(annotation);
-                    } else {
-                        verboseOutput.FORBIDDEN_ANNOTATION_READING(externalIdentifier, dbIntegrityService.getAnnotationOwner(annotationID).getDisplayName(), dbIntegrityService.getAnnotationOwner(annotationID).getEMail());
-                    }
-
+                if (dbIntegrityService.canRead(userID, annotationID)) {
+                    final Annotation annotation = dbIntegrityService.getAnnotation(annotationID);
+                    return new ObjectFactory().createAnnotation(annotation);
                 } else {
-                    verboseOutput.ANNOTATION_NOT_FOUND(externalIdentifier);
+                    verboseOutput.FORBIDDEN_ANNOTATION_READING(externalIdentifier, dbIntegrityService.getAnnotationOwner(annotationID).getDisplayName(), dbIntegrityService.getAnnotationOwner(annotationID).getEMail());
                 }
-            } catch (IllegalArgumentException e) {
-                verboseOutput.ILLEGAL_UUID(externalIdentifier);
+
+            } else {
+                verboseOutput.ANNOTATION_NOT_FOUND(externalIdentifier);
             }
+
         }
 
         return new ObjectFactory().createAnnotation(new Annotation());
