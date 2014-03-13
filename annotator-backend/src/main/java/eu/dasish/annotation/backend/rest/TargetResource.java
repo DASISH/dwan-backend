@@ -71,17 +71,15 @@ public class TargetResource extends ResourceResource {
     public JAXBElement<Target> getTarget(@PathParam("targetid") String externalIdentifier) throws SQLException, IOException {
         Number remoteUserID = this.getUserID();
         if (remoteUserID != null) {
-            try {
-                final Number targetID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.TARGET);
-                if (targetID != null) {
-                    final Target target = dbIntegrityService.getTarget(targetID);
-                    return new ObjectFactory().createTarget(target);
-                } else {
-                    verboseOutput.TARGET_NOT_FOUND(externalIdentifier);
-                }
-            } catch (IllegalArgumentException e) {
-                verboseOutput.ILLEGAL_UUID(externalIdentifier);
+
+            final Number targetID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.TARGET);
+            if (targetID != null) {
+                final Target target = dbIntegrityService.getTarget(targetID);
+                return new ObjectFactory().createTarget(target);
+            } else {
+                verboseOutput.TARGET_NOT_FOUND(externalIdentifier);
             }
+
         }
         return new ObjectFactory().createTarget(new Target());
     }
@@ -94,17 +92,14 @@ public class TargetResource extends ResourceResource {
     public JAXBElement<ReferenceList> getSiblingTargets(@PathParam("targetid") String externalIdentifier) throws SQLException, IOException {
         Number remoteUserID = this.getUserID();
         if (remoteUserID != null) {
-            try {
-                final Number targetID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.TARGET);
-                if (targetID != null) {
-                    final ReferenceList siblings = dbIntegrityService.getTargetsForTheSameLinkAs(targetID);
-                    return new ObjectFactory().createReferenceList(siblings);
-                } else {
-                    verboseOutput.TARGET_NOT_FOUND(externalIdentifier);
-                }
-            } catch (IllegalArgumentException e) {
-                verboseOutput.ILLEGAL_UUID(externalIdentifier);
+            final Number targetID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.TARGET);
+            if (targetID != null) {
+                final ReferenceList siblings = dbIntegrityService.getTargetsForTheSameLinkAs(targetID);
+                return new ObjectFactory().createReferenceList(siblings);
+            } else {
+                verboseOutput.TARGET_NOT_FOUND(externalIdentifier);
             }
+
         }
         return new ObjectFactory().createReferenceList(new ReferenceList());
     }
@@ -118,21 +113,18 @@ public class TargetResource extends ResourceResource {
             MultiPart multiPart) throws SQLException, IOException {
         Number remoteUserID = this.getUserID();
         if (remoteUserID != null) {
-            try {
-                final Number targetID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(targetIdentifier), Resource.TARGET);
-                if (targetID != null) {
-                    CachedRepresentationInfo metadata = multiPart.getBodyParts().get(0).getEntityAs(CachedRepresentationInfo.class);
-                    BodyPartEntity bpe = (BodyPartEntity) multiPart.getBodyParts().get(1).getEntity();
-                    InputStream cachedSource = bpe.getInputStream();
-                    final Number[] respondDB = dbIntegrityService.addCachedForTarget(targetID, fragmentDescriptor, metadata, cachedSource);
-                    final CachedRepresentationInfo cachedInfo = dbIntegrityService.getCachedRepresentationInfo(respondDB[1]);
-                    return new ObjectFactory().createCashedRepresentationInfo(cachedInfo);
-                } else {
-                    verboseOutput.TARGET_NOT_FOUND(targetIdentifier);
-                }
-            } catch (IllegalArgumentException e) {
-                verboseOutput.ILLEGAL_UUID(targetIdentifier);
+            final Number targetID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(targetIdentifier), Resource.TARGET);
+            if (targetID != null) {
+                CachedRepresentationInfo metadata = multiPart.getBodyParts().get(0).getEntityAs(CachedRepresentationInfo.class);
+                BodyPartEntity bpe = (BodyPartEntity) multiPart.getBodyParts().get(1).getEntity();
+                InputStream cachedSource = bpe.getInputStream();
+                final Number[] respondDB = dbIntegrityService.addCachedForTarget(targetID, fragmentDescriptor, metadata, cachedSource);
+                final CachedRepresentationInfo cachedInfo = dbIntegrityService.getCachedRepresentationInfo(respondDB[1]);
+                return new ObjectFactory().createCashedRepresentationInfo(cachedInfo);
+            } else {
+                verboseOutput.TARGET_NOT_FOUND(targetIdentifier);
             }
+
         }
         return new ObjectFactory().createCashedRepresentationInfo(new CachedRepresentationInfo());
     }
@@ -143,23 +135,20 @@ public class TargetResource extends ResourceResource {
             @PathParam("cachedid") String cachedExternalIdentifier) throws SQLException, IOException {
         Number remoteUserID = this.getUserID();
         if (remoteUserID != null) {
-            try {
-                final Number targetID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(targetExternalIdentifier), Resource.TARGET);
-                if (targetID != null) {
-                    final Number cachedID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(cachedExternalIdentifier), Resource.CACHED_REPRESENTATION);
-                    if (cachedID != null) {
-                        int[] resultDelete = dbIntegrityService.deleteCachedRepresentationOfTarget(targetID, cachedID);
-                        String result = Integer.toString(resultDelete[0]);
-                        return result + " pair(s) target-cached deleted.";
-                    } else {
-                        verboseOutput.CACHED_REPRESENTATION_NOT_FOUND(cachedExternalIdentifier);
-                    }
+            final Number targetID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(targetExternalIdentifier), Resource.TARGET);
+            if (targetID != null) {
+                final Number cachedID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(cachedExternalIdentifier), Resource.CACHED_REPRESENTATION);
+                if (cachedID != null) {
+                    int[] resultDelete = dbIntegrityService.deleteCachedRepresentationOfTarget(targetID, cachedID);
+                    String result = Integer.toString(resultDelete[0]);
+                    return result + " pair(s) target-cached deleted.";
                 } else {
-                    verboseOutput.TARGET_NOT_FOUND(targetExternalIdentifier);
+                    verboseOutput.CACHED_REPRESENTATION_NOT_FOUND(cachedExternalIdentifier);
                 }
-            } catch (IllegalArgumentException e) {
-                verboseOutput.ILLEGAL_UUID(targetExternalIdentifier);
+            } else {
+                verboseOutput.TARGET_NOT_FOUND(targetExternalIdentifier);
             }
+
         }
         return " ";
     }

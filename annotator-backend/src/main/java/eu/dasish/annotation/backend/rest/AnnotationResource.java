@@ -115,24 +115,22 @@ public class AnnotationResource extends ResourceResource {
     public JAXBElement<ReferenceList> getAnnotationTargets(@PathParam("annotationid") String externalIdentifier) throws IOException {
         Number userID = this.getUserID();
         if (userID != null) {
-            try {
-                final Number annotationID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.ANNOTATION);
-                if (annotationID != null) {
 
-                    if (dbIntegrityService.canRead(userID, annotationID)) {
-                        final ReferenceList TargetList = dbIntegrityService.getAnnotationTargets(annotationID);
-                        return new ObjectFactory().createTargetList(TargetList);
-                    } else {
-                        verboseOutput.FORBIDDEN_ANNOTATION_READING(externalIdentifier, dbIntegrityService.getAnnotationOwner(annotationID).getDisplayName(), dbIntegrityService.getAnnotationOwner(annotationID).getEMail());
-                    }
+            final Number annotationID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.ANNOTATION);
+            if (annotationID != null) {
 
+                if (dbIntegrityService.canRead(userID, annotationID)) {
+                    final ReferenceList TargetList = dbIntegrityService.getAnnotationTargets(annotationID);
+                    return new ObjectFactory().createTargetList(TargetList);
                 } else {
-                    verboseOutput.ANNOTATION_NOT_FOUND(externalIdentifier);
-
+                    verboseOutput.FORBIDDEN_ANNOTATION_READING(externalIdentifier, dbIntegrityService.getAnnotationOwner(annotationID).getDisplayName(), dbIntegrityService.getAnnotationOwner(annotationID).getEMail());
                 }
-            } catch (IllegalArgumentException e) {
-                verboseOutput.ILLEGAL_UUID(externalIdentifier);
+
+            } else {
+                verboseOutput.ANNOTATION_NOT_FOUND(externalIdentifier);
+
             }
+
         }
         return new ObjectFactory().createTargetList(new ReferenceList());
     }
@@ -152,14 +150,12 @@ public class AnnotationResource extends ResourceResource {
 
         Number userID = this.getUserID();
         if (userID != null) {
-            try {
-                UUID ownerExternalUUID = (ownerExternalId != null) ? UUID.fromString(ownerExternalId) : null;
 
-                final AnnotationInfoList annotationInfoList = dbIntegrityService.getFilteredAnnotationInfos(ownerExternalUUID, link, text, userID, access, namespace, after, before);
-                return new ObjectFactory().createAnnotationInfoList(annotationInfoList);
-            } catch (IllegalArgumentException e) {
-                verboseOutput.ILLEGAL_UUID(ownerExternalId);
-            }
+            UUID ownerExternalUUID = (ownerExternalId != null) ? UUID.fromString(ownerExternalId) : null;
+
+            final AnnotationInfoList annotationInfoList = dbIntegrityService.getFilteredAnnotationInfos(ownerExternalUUID, link, text, userID, access, namespace, after, before);
+            return new ObjectFactory().createAnnotationInfoList(annotationInfoList);
+
         }
         return new ObjectFactory().createAnnotationInfoList(new AnnotationInfoList());
     }
@@ -172,22 +168,19 @@ public class AnnotationResource extends ResourceResource {
     public JAXBElement<UserWithPermissionList> getAnnotationPermissions(@PathParam("annotationid") String externalIdentifier) throws IOException {
         Number userID = this.getUserID();
         if (userID != null) {
-            try {
-                final Number annotationID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.ANNOTATION);
-                if (annotationID != null) {
-                    if (dbIntegrityService.canRead(userID, annotationID)) {
-                        final UserWithPermissionList permissionList = dbIntegrityService.getPermissions(annotationID, Resource.ANNOTATION);
-                        return new ObjectFactory().createPermissionList(permissionList);
-                    } else {
-                        verboseOutput.FORBIDDEN_ANNOTATION_READING(externalIdentifier, dbIntegrityService.getAnnotationOwner(annotationID).getDisplayName(), dbIntegrityService.getAnnotationOwner(annotationID).getEMail());
-                    }
-                } else {
-                    verboseOutput.ANNOTATION_NOT_FOUND(externalIdentifier);
-                }
 
-            } catch (IllegalArgumentException e) {
-                verboseOutput.ILLEGAL_UUID(externalIdentifier);
+            final Number annotationID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.ANNOTATION);
+            if (annotationID != null) {
+                if (dbIntegrityService.canRead(userID, annotationID)) {
+                    final UserWithPermissionList permissionList = dbIntegrityService.getPermissions(annotationID, Resource.ANNOTATION);
+                    return new ObjectFactory().createPermissionList(permissionList);
+                } else {
+                    verboseOutput.FORBIDDEN_ANNOTATION_READING(externalIdentifier, dbIntegrityService.getAnnotationOwner(annotationID).getDisplayName(), dbIntegrityService.getAnnotationOwner(annotationID).getEMail());
+                }
+            } else {
+                verboseOutput.ANNOTATION_NOT_FOUND(externalIdentifier);
             }
+
         }
         return new ObjectFactory().createUserWithPermissionList(new UserWithPermissionList());
     }
@@ -199,22 +192,18 @@ public class AnnotationResource extends ResourceResource {
     public String deleteAnnotation(@PathParam("annotationid") String externalIdentifier) throws IOException {
         Number userID = this.getUserID();
         if (userID != null) {
-            try {
-                final Number annotationID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.ANNOTATION);
-                if (annotationID != null) {
-                    if (userID.equals(dbIntegrityService.getAnnotationOwnerID(annotationID)) || dbIntegrityService.getTypeOfUserAccount(userID).equals(admin)) {
-                        int[] resultDelete = dbIntegrityService.deleteAnnotation(annotationID);
-                        String result = Integer.toString(resultDelete[0]);
-                        return result + " annotation(s) deleted.";
-                    } else {
-                        verboseOutput.FORBIDDEN_ANNOTATION_WRITING(externalIdentifier, dbIntegrityService.getAnnotationOwner(annotationID).getDisplayName(), dbIntegrityService.getAnnotationOwner(annotationID).getEMail());
-                    }
-                } else {
-                    verboseOutput.ANNOTATION_NOT_FOUND(externalIdentifier);
-                }
 
-            } catch (IllegalArgumentException e) {
-                verboseOutput.ILLEGAL_UUID(externalIdentifier);
+            final Number annotationID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.ANNOTATION);
+            if (annotationID != null) {
+                if (userID.equals(dbIntegrityService.getAnnotationOwnerID(annotationID)) || dbIntegrityService.getTypeOfUserAccount(userID).equals(admin)) {
+                    int[] resultDelete = dbIntegrityService.deleteAnnotation(annotationID);
+                    String result = Integer.toString(resultDelete[0]);
+                    return result + " annotation(s) deleted.";
+                } else {
+                    verboseOutput.FORBIDDEN_ANNOTATION_WRITING(externalIdentifier, dbIntegrityService.getAnnotationOwner(annotationID).getDisplayName(), dbIntegrityService.getAnnotationOwner(annotationID).getEMail());
+                }
+            } else {
+                verboseOutput.ANNOTATION_NOT_FOUND(externalIdentifier);
             }
         }
         return "Due to the failure no annotation is deleted.";
@@ -253,24 +242,20 @@ public class AnnotationResource extends ResourceResource {
                 return new ObjectFactory().createResponseBody(new ResponseBody());
             }
 
-            try {
-                final Number annotationID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.ANNOTATION);
-                if (annotationID != null) {
+            final Number annotationID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.ANNOTATION);
+            if (annotationID != null) {
 
-                    if (userID != null) {
-                        if (userID.equals(dbIntegrityService.getAnnotationOwnerID(annotationID)) || dbIntegrityService.getTypeOfUserAccount(userID).equals(admin)) {
-                            int updatedRows = dbIntegrityService.updateAnnotation(annotation);
-                            return new ObjectFactory().createResponseBody(dbIntegrityService.makeAnnotationResponseEnvelope(annotationID));
-                        } else {
-                            verboseOutput.FORBIDDEN_PERMISSION_CHANGING(externalIdentifier, dbIntegrityService.getAnnotationOwner(annotationID).getDisplayName(), dbIntegrityService.getAnnotationOwner(annotationID).getEMail());
-                            loggerServer.debug(" Permission changing is the part of the full update of the annotation.");
-                        }
+                if (userID != null) {
+                    if (userID.equals(dbIntegrityService.getAnnotationOwnerID(annotationID)) || dbIntegrityService.getTypeOfUserAccount(userID).equals(admin)) {
+                        int updatedRows = dbIntegrityService.updateAnnotation(annotation);
+                        return new ObjectFactory().createResponseBody(dbIntegrityService.makeAnnotationResponseEnvelope(annotationID));
+                    } else {
+                        verboseOutput.FORBIDDEN_PERMISSION_CHANGING(externalIdentifier, dbIntegrityService.getAnnotationOwner(annotationID).getDisplayName(), dbIntegrityService.getAnnotationOwner(annotationID).getEMail());
+                        loggerServer.debug(" Permission changing is the part of the full update of the annotation.");
                     }
-                } else {
-                    verboseOutput.ANNOTATION_NOT_FOUND(externalIdentifier);
                 }
-            } catch (IllegalArgumentException e) {
-                verboseOutput.ILLEGAL_UUID(externalIdentifier);
+            } else {
+                verboseOutput.ANNOTATION_NOT_FOUND(externalIdentifier);
             }
         }
         return new ObjectFactory().createResponseBody(new ResponseBody());
@@ -283,22 +268,19 @@ public class AnnotationResource extends ResourceResource {
     public JAXBElement<ResponseBody> updateAnnotationBody(@PathParam("annotationid") String externalIdentifier, AnnotationBody annotationBody) throws IOException {
         Number userID = this.getUserID();
         if (userID != null) {
-            try {
-                final Number annotationID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.ANNOTATION);
-                if (annotationID != null) {
-                    if (dbIntegrityService.canWrite(userID, annotationID)) {
-                        int updatedRows = dbIntegrityService.updateAnnotationBody(annotationID, annotationBody);
-                        return new ObjectFactory().createResponseBody(dbIntegrityService.makeAnnotationResponseEnvelope(annotationID));
-                    } else {
-                        verboseOutput.FORBIDDEN_ANNOTATION_WRITING(externalIdentifier, dbIntegrityService.getAnnotationOwner(annotationID).getDisplayName(), dbIntegrityService.getAnnotationOwner(annotationID).getEMail());
-                    }
-                } else {
-                    verboseOutput.ANNOTATION_NOT_FOUND(externalIdentifier);
-                }
 
-            } catch (IllegalArgumentException e) {
-                verboseOutput.ILLEGAL_UUID(externalIdentifier);
+            final Number annotationID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.ANNOTATION);
+            if (annotationID != null) {
+                if (dbIntegrityService.canWrite(userID, annotationID)) {
+                    int updatedRows = dbIntegrityService.updateAnnotationBody(annotationID, annotationBody);
+                    return new ObjectFactory().createResponseBody(dbIntegrityService.makeAnnotationResponseEnvelope(annotationID));
+                } else {
+                    verboseOutput.FORBIDDEN_ANNOTATION_WRITING(externalIdentifier, dbIntegrityService.getAnnotationOwner(annotationID).getDisplayName(), dbIntegrityService.getAnnotationOwner(annotationID).getEMail());
+                }
+            } else {
+                verboseOutput.ANNOTATION_NOT_FOUND(externalIdentifier);
             }
+
         }
         return new ObjectFactory().createResponseBody(new ResponseBody());
     }
@@ -311,33 +293,28 @@ public class AnnotationResource extends ResourceResource {
             @PathParam("userid") String userExternalId, Permission permission) throws IOException {
         Number remoteUserID = this.getUserID();
         if (remoteUserID != null) {
-            try {
-                final Number userID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(userExternalId), Resource.PRINCIPAL);
-                if (userID != null) {
-                    try {
-                        final Number annotationID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(annotationExternalId), Resource.ANNOTATION);
-                        if (annotationID != null) {
-                            if (remoteUserID.equals(dbIntegrityService.getAnnotationOwnerID(annotationID)) || dbIntegrityService.getTypeOfUserAccount(remoteUserID).equals(admin)) {
-                                int result = (dbIntegrityService.getPermission(annotationID, userID) != null)
-                                        ? dbIntegrityService.updateAnnotationPrincipalPermission(annotationID, userID, permission)
-                                        : dbIntegrityService.addAnnotationPrincipalPermission(annotationID, userID, permission);
-                                return result + " rows are updated/added";
+            final Number userID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(userExternalId), Resource.PRINCIPAL);
+            if (userID != null) {
 
-                            } else {
-                                verboseOutput.FORBIDDEN_PERMISSION_CHANGING(annotationExternalId, dbIntegrityService.getAnnotationOwner(annotationID).getDisplayName(), dbIntegrityService.getAnnotationOwner(annotationID).getEMail());
-                            }
-                        } else {
-                            verboseOutput.ANNOTATION_NOT_FOUND(annotationExternalId);
-                        }
-                    } catch (IllegalArgumentException e) {
-                        verboseOutput.ILLEGAL_UUID(annotationExternalId);
+                final Number annotationID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(annotationExternalId), Resource.ANNOTATION);
+                if (annotationID != null) {
+                    if (remoteUserID.equals(dbIntegrityService.getAnnotationOwnerID(annotationID)) || dbIntegrityService.getTypeOfUserAccount(remoteUserID).equals(admin)) {
+                        int result = (dbIntegrityService.getPermission(annotationID, userID) != null)
+                                ? dbIntegrityService.updateAnnotationPrincipalPermission(annotationID, userID, permission)
+                                : dbIntegrityService.addAnnotationPrincipalPermission(annotationID, userID, permission);
+                        return result + " rows are updated/added";
+
+                    } else {
+                        verboseOutput.FORBIDDEN_PERMISSION_CHANGING(annotationExternalId, dbIntegrityService.getAnnotationOwner(annotationID).getDisplayName(), dbIntegrityService.getAnnotationOwner(annotationID).getEMail());
                     }
                 } else {
-                    verboseOutput.PRINCIPAL_NOT_FOUND(userExternalId);
+                    verboseOutput.ANNOTATION_NOT_FOUND(annotationExternalId);
                 }
-            } catch (IllegalArgumentException e) {
-                verboseOutput.ILLEGAL_UUID(userExternalId);
+
+            } else {
+                verboseOutput.PRINCIPAL_NOT_FOUND(userExternalId);
             }
+
         }
         return "Due to the failure no permissionis updated.";
     }
@@ -369,32 +346,30 @@ public class AnnotationResource extends ResourceResource {
     @DELETE
     @Produces(MediaType.TEXT_PLAIN)
     @Path("{annotationId: " + BackendConstants.regExpIdentifier + "}/user/{userId}/delete")
-    public String deleteUsersPermission(@PathParam("annotationId") String annotationId, @PathParam("userId") String userId) throws IOException {
+    public String deleteUsersPermission(@PathParam("annotationId") String annotationId,
+            @PathParam("userId") String userId) throws IOException {
         Number remoteUserID = this.getUserID();
         int deletedRows = 0;
         if (remoteUserID != null) {
-            try {
-                final Number annotationID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(annotationId), Resource.ANNOTATION);
 
-                if (annotationID != null) {
-                    if (remoteUserID.equals(dbIntegrityService.getAnnotationOwnerID(annotationID)) || dbIntegrityService.getTypeOfUserAccount(remoteUserID).equals(admin)) {
-                        Number userID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(userId), Resource.PRINCIPAL);
-                        if (userID != null) {
-                            deletedRows = dbIntegrityService.updateAnnotationPrincipalPermission(annotationID, userID, null);
-                        } else {
-                            verboseOutput.PRINCIPAL_NOT_FOUND(userId);
-                        }
+            final Number annotationID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(annotationId), Resource.ANNOTATION);
+
+            if (annotationID != null) {
+                if (remoteUserID.equals(dbIntegrityService.getAnnotationOwnerID(annotationID)) || dbIntegrityService.getTypeOfUserAccount(remoteUserID).equals(admin)) {
+                    Number userID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(userId), Resource.PRINCIPAL);
+                    if (userID != null) {
+                        deletedRows = dbIntegrityService.updateAnnotationPrincipalPermission(annotationID, userID, null);
                     } else {
-                        verboseOutput.FORBIDDEN_PERMISSION_CHANGING(annotationId, dbIntegrityService.getAnnotationOwner(annotationID).getDisplayName(), dbIntegrityService.getAnnotationOwner(annotationID).getEMail());
-
+                        verboseOutput.PRINCIPAL_NOT_FOUND(userId);
                     }
                 } else {
-                    verboseOutput.ANNOTATION_NOT_FOUND(annotationId);
-                }
+                    verboseOutput.FORBIDDEN_PERMISSION_CHANGING(annotationId, dbIntegrityService.getAnnotationOwner(annotationID).getDisplayName(), dbIntegrityService.getAnnotationOwner(annotationID).getEMail());
 
-            } catch (IllegalArgumentException e) {
-                verboseOutput.ILLEGAL_UUID(annotationId);
+                }
+            } else {
+                verboseOutput.ANNOTATION_NOT_FOUND(annotationId);
             }
+
         }
         return (deletedRows + " is deleted.");
     }

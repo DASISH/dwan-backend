@@ -60,17 +60,14 @@ public class CachedRepresentationResource extends ResourceResource {
     public JAXBElement<CachedRepresentationInfo> getCachedRepresentationInfo(@PathParam("cachedid") String externalId) throws SQLException, IOException {
         Number remoteUserID = this.getUserID();
         if (remoteUserID != null) {
-            try {
-                final Number cachedID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalId), Resource.CACHED_REPRESENTATION);
-                if (cachedID != null) {
-                    final CachedRepresentationInfo cachedInfo = dbIntegrityService.getCachedRepresentationInfo(cachedID);
-                    return new ObjectFactory().createCashedRepresentationInfo(cachedInfo);
-                } else {
-                    verboseOutput.CACHED_REPRESENTATION_NOT_FOUND(externalId);
-                }
-            } catch (IllegalArgumentException e) {
-                verboseOutput.ILLEGAL_UUID(externalId);
+            final Number cachedID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalId), Resource.CACHED_REPRESENTATION);
+            if (cachedID != null) {
+                final CachedRepresentationInfo cachedInfo = dbIntegrityService.getCachedRepresentationInfo(cachedID);
+                return new ObjectFactory().createCashedRepresentationInfo(cachedInfo);
+            } else {
+                verboseOutput.CACHED_REPRESENTATION_NOT_FOUND(externalId);
             }
+
         }
         return new ObjectFactory().createCashedRepresentationInfo(new CachedRepresentationInfo());
     }
@@ -82,23 +79,21 @@ public class CachedRepresentationResource extends ResourceResource {
     public BufferedImage getCachedRepresentationContent(@PathParam("cachedid") String externalId) throws SQLException, IOException {
         Number remoteUserID = this.getUserID();
         if (remoteUserID != null) {
-            try {
-                final Number cachedID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalId), Resource.CACHED_REPRESENTATION);
-                if (cachedID != null) {
-                    InputStream dbRespond = dbIntegrityService.getCachedRepresentationBlob(cachedID);
-                    if (dbRespond != null) {
-                        ImageIO.setUseCache(false);
-                        BufferedImage result = ImageIO.read(dbRespond);
-                        return result;
-                    } else {
-                        verboseOutput.CACHED_REPRESENTATION_IS_NULL();
-                    }
+
+            final Number cachedID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalId), Resource.CACHED_REPRESENTATION);
+            if (cachedID != null) {
+                InputStream dbRespond = dbIntegrityService.getCachedRepresentationBlob(cachedID);
+                if (dbRespond != null) {
+                    ImageIO.setUseCache(false);
+                    BufferedImage result = ImageIO.read(dbRespond);
+                    return result;
                 } else {
-                    verboseOutput.CACHED_REPRESENTATION_NOT_FOUND(externalId);
+                    verboseOutput.CACHED_REPRESENTATION_IS_NULL();
                 }
-            } catch (IllegalArgumentException e) {
-                verboseOutput.ILLEGAL_UUID(externalId);
+            } else {
+                verboseOutput.CACHED_REPRESENTATION_NOT_FOUND(externalId);
             }
+
         }
         return new BufferedImage(20, 20, BufferedImage.TYPE_INT_ARGB);
     }
