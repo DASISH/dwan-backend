@@ -19,7 +19,6 @@ package eu.dasish.annotation.backend.rest;
 
 import eu.dasish.annotation.backend.BackendConstants;
 import eu.dasish.annotation.backend.Resource;
-import eu.dasish.annotation.backend.dao.DBIntegrityService;
 import eu.dasish.annotation.schema.Notebook;
 import eu.dasish.annotation.schema.NotebookInfo;
 import eu.dasish.annotation.schema.NotebookInfoList;
@@ -30,8 +29,6 @@ import eu.dasish.annotation.schema.ResponseBody;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.UUID;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
@@ -39,15 +36,9 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.ext.Providers;
 import javax.xml.bind.JAXBElement;
 import javax.xml.parsers.ParserConfigurationException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -187,24 +178,22 @@ public class NotebookResource extends ResourceResource {
                 return new ObjectFactory().createResponseBody(new ResponseBody());
             }
 
-            try {
-                final Number notebookID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.NOTEBOOK);
-                if (notebookID != null) {
-                    if (remoteUserID.equals(dbIntegrityService.getNotebookOwner(notebookID)) || dbIntegrityService.getTypeOfUserAccount(remoteUserID).equals(admin)) {
-                        boolean success = dbIntegrityService.updateNotebookMetadata(notebookID, notebookInfo);
-                        if (success) {
-                            return new ObjectFactory().createResponseBody(dbIntegrityService.makeNotebookResponseEnvelope(notebookID));
-                        }
-                    } else {
-                        verboseOutput.FORBIDDEN_PERMISSION_CHANGING(externalIdentifier, dbIntegrityService.getAnnotationOwner(notebookID).getDisplayName(), dbIntegrityService.getAnnotationOwner(notebookID).getEMail());
-                        loggerServer.debug(" Ownership changing is the part of the full update of the notebook metadadata.");
+
+            final Number notebookID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.NOTEBOOK);
+            if (notebookID != null) {
+                if (remoteUserID.equals(dbIntegrityService.getNotebookOwner(notebookID)) || dbIntegrityService.getTypeOfUserAccount(remoteUserID).equals(admin)) {
+                    boolean success = dbIntegrityService.updateNotebookMetadata(notebookID, notebookInfo);
+                    if (success) {
+                        return new ObjectFactory().createResponseBody(dbIntegrityService.makeNotebookResponseEnvelope(notebookID));
                     }
                 } else {
-                    verboseOutput.NOTEBOOK_NOT_FOUND(externalIdentifier);
+                    verboseOutput.FORBIDDEN_PERMISSION_CHANGING(externalIdentifier, dbIntegrityService.getAnnotationOwner(notebookID).getDisplayName(), dbIntegrityService.getAnnotationOwner(notebookID).getEMail());
+                    loggerServer.debug(" Ownership changing is the part of the full update of the notebook metadadata.");
                 }
-            } catch (IllegalArgumentException e) {
-                verboseOutput.ILLEGAL_UUID(externalIdentifier);
+            } else {
+                verboseOutput.NOTEBOOK_NOT_FOUND(externalIdentifier);
             }
+
         }
         return new ObjectFactory().createResponseBody(new ResponseBody());
     }
