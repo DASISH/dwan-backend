@@ -85,7 +85,7 @@ see implementation details http://jersey.java.net/nonav/documentation/latest/jax
         <web-resource-collection>
             <web-resource-name> Protected backend rest service</web-resource-name>
             <description />
-            <url-pattern>/api/authentication/login</url-pattern> 
+            <url-pattern>/*</url-pattern> 
             <http-method>GET</http-method>
             <http-method>DELETE</http-method>
             <http-method>PUT</http-method>

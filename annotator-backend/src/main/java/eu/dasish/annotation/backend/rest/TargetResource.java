@@ -153,3 +153,6 @@ public class TargetResource extends ResourceResource {
         return " ";
     }
 }
+
+// xpointer(start-point(string-range(--2F--2Fdiv--5B--40id--3D--22mw-content-text--22--5D--2Fp--5B1--5D--2Ftext()--5B1--5D--2C''--2C333))--2Frange-to(string-range(--2F--2Fdiv--5B--40id--3D--22mw-content-text--22--5D--2Fp--5B1--5D--2Ftext()--5B1--5D--2C--2C339)))
+
