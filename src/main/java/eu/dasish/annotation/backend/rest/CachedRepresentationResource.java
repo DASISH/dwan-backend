@@ -97,4 +97,31 @@ public class CachedRepresentationResource extends ResourceResource {
         }
         return new BufferedImage(20, 20, BufferedImage.TYPE_INT_ARGB);
     }
+    
+    @GET
+    @Produces({"text/plain", "text/html", "text/xml"})
+    @Path("{cachedid: " + BackendConstants.regExpIdentifier + "}/stream")
+    @Transactional(readOnly = true)
+    public InputStream getCachedRepresentationContentStream(@PathParam("cachedid") String externalId) throws SQLException, IOException {
+        Number remoteUserID = this.getUserID();
+        if (remoteUserID != null) {
+
+            final Number cachedID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalId), Resource.CACHED_REPRESENTATION);
+            if (cachedID != null) {
+                InputStream dbRespond = dbIntegrityService.getCachedRepresentationBlob(cachedID);
+                if (dbRespond != null) {
+//                    byte[] bytes = new byte[1024];
+//                    int result = dbRespond.read(bytes);
+//                    return bytes;
+                     return dbRespond;
+                } else {
+                    verboseOutput.CACHED_REPRESENTATION_IS_NULL();
+                }
+            } else {
+                verboseOutput.CACHED_REPRESENTATION_NOT_FOUND(externalId);
+            }
+
+        }
+        return null;
+    }
 }
