@@ -93,9 +93,10 @@ public class ResourceResource {
     public String welcome() throws IOException {
         Number remoteUserID = this.getUserID();
         if (remoteUserID != null) {
+            String baseUri = uriInfo.getBaseUri().toString()+"..";
             String welcome = "<!DOCTYPE html><body>"
                     + "<h3>Welcome to DASISH Webannotator (DWAN)</h3><br>"
-                    +"<a href=\"../\"> to DWAN's test jsp page</a>"
+                    +"<a href=\""+baseUri+"\"> to DWAN's test jsp page</a>"
                     + "</body>";
             return welcome;
         }
