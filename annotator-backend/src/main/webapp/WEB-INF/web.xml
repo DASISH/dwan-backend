@@ -80,7 +80,7 @@ see implementation details http://jersey.java.net/nonav/documentation/latest/jax
         <url-pattern>/webresources/*</url-pattern>
     </servlet-mapping>
     
-    <security-constraint>
+<!--    <security-constraint>
         <display-name>Protected backend localhost</display-name>
         <web-resource-collection>
             <web-resource-name> Protected backend rest service</web-resource-name>
@@ -102,16 +102,16 @@ see implementation details http://jersey.java.net/nonav/documentation/latest/jax
         <description> The role that is required to log in to the Application
         </description>
         <role-name>tomcat</role-name>
-    </security-role> 
+    </security-role> -->
     
-<!--    <filter>
+    <filter>
         <filter-name>AAIFilter</filter-name>
         <filter-class>de.mpg.aai.shhaa.AuthFilter</filter-class>
     </filter>
     <filter-mapping>
         <filter-name>AAIFilter</filter-name>
         <url-pattern>/*</url-pattern>
-    </filter-mapping> -->
+    </filter-mapping> 
     
    
 </web-app>

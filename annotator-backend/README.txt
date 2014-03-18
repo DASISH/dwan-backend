@@ -21,13 +21,8 @@ https://trac.clarin.eu/wiki/DASISH/XSD%20and%20XML
 
 === Logging in ===
 
-So far a simple spring-security authentication (with hashed passwords, via database authentication 
-provider) is implemented. The settings are in spring-config/applicationContext-security.xml. 
-For hashing the class
-org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder is used.
+Shibbolized authentication is implemented for lux16 and lux17, and basic tomcat works for localhost.
 
-The setting are done based on the manual
- http://docs.spring.io/spring-security/site/docs/3.1.x/reference/springsecurity-single.html
 
 === License ===
 

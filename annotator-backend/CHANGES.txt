@@ -9,7 +9,16 @@ are removed. Shibboleth sshaa.xml is added,  and web.xml is adapted. The boolean
 is added to the table "principal" in the DB. Adding, updating and deleting a user 
 in the DB (only by admin) is debugged and tested.
 
-January 20/01, 2014. The database is updated (redundant  duplicating ownerId column is removed f
-rom annotation table, and "admin_rights" is replaced with more informative "account" for the
-table principal. There are two profiles now: fot tomcat authentication (laptop developemnt testing)
-and shibbolized one. The depolyment tarball is compiled with the shibbolized  profile.
+January 20, 2014. The database is updated (redundant  duplicating ownerId column is removed 
+from annotation table, and "admin_rights" is replaced with more informative "account" for the
+table principal. There are two profiles now: for tomcat authentication (laptop development testing)
+and shibbolized one. The deployment tarball is compiled with the shibbolized  profile.
+
+March 11, 2014. The database is recreated (the old one was polluted by experimental data, 
+"owner" is removed from permission values). Shibboleth authentication is possible via a new
+authentication/login api, the other uri's return 401 unless authenticated/authorized.
+POST new annotation is possible with a temporary target uri of any form. Notebook DAO is added
+(unit tested), Notebook REST is added (not compleete).  The code is significantly refactored.
+
+March 18, 2014. The "bienvenue" page is created when a user is successfully authenticated. Zipped
+and html cacher representations can be GET. 

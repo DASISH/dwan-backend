@@ -86,9 +86,8 @@ https://chrome.google.com/webstore/detail/rest-console/cokgbflfommojglbmbpenpphp
 -- or a FireFox add-on "Rest client", 
 see https://addons.mozilla.org/nl/firefox/addon/restclient/
 
-NOTE that POST and PUT 
 
-For Posting/Putting files of cached representations use curl, e.g. 
+Example  Posting/Putting files via curl:
 
 curl -u <user>:<password> -H "Content-Type: multipart/mixed" -F 
 "metadata=@cachedInfoToAdd.xml; type=application/xml " -F "content=@artnouveauspain.png; 
