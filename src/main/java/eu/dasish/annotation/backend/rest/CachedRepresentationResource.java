@@ -99,7 +99,7 @@ public class CachedRepresentationResource extends ResourceResource {
     }
     
     @GET
-    @Produces({"text/plain", "text/html", "text/xml"})
+    @Produces({"text/plain", "text/html", "text/xml", "application/zip"})
     @Path("{cachedid: " + BackendConstants.regExpIdentifier + "}/stream")
     @Transactional(readOnly = true)
     public InputStream getCachedRepresentationContentStream(@PathParam("cachedid") String externalId) throws SQLException, IOException {

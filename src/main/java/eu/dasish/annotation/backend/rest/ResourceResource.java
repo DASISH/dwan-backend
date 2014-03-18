@@ -17,22 +17,36 @@
  */
 package eu.dasish.annotation.backend.rest;
 
+import eu.dasish.annotation.backend.BackendConstants;
+import eu.dasish.annotation.backend.Resource;
 import eu.dasish.annotation.backend.dao.DBIntegrityService;
 import java.io.IOException;
+import java.io.InputStream;
+import java.sql.SQLException;
+import java.util.UUID;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Providers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
  * @author olhsha
  */
+@Component
+@Path("")
+@Transactional(rollbackFor = {Exception.class})
 public class ResourceResource {
 
     @Autowired
@@ -70,5 +84,21 @@ public class ResourceResource {
         verboseOutput.NOT_LOGGED_IN(dbIntegrityService.getDataBaseAdmin().getDisplayName(), dbIntegrityService.getDataBaseAdmin().getEMail());
         return null;
 
+    }
+
+    @GET
+    @Produces({"text/html"})
+    @Path("")
+    @Transactional(readOnly = true)
+    public String welcome() throws IOException {
+        Number remoteUserID = this.getUserID();
+        if (remoteUserID != null) {
+            String welcome = "<!DOCTYPE html><body>"
+                    + "<h3>Welcome to DASISH Webannotator (DWAN)</h3><br>"
+                    +"<a href=\"../\"> to DWAN's test jsp page</a>"
+                    + "</body>";
+            return welcome;
+        }
+        return null;
     }
 }
