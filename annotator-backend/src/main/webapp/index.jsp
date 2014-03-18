@@ -24,21 +24,23 @@
         <p><a href="https://trac.clarin.eu/wiki/DASISH/SpecificationDocument#RESTAPI">https://trac.clarin.eu/wiki/DASISH/SpecificationDocument#RESTAPI</a></p>
       
         <br> 
-        new:  <a href="api/authentication/login">api/authentication/login  (Login/check)</a> <br> 
+        <a href="api/authentication/login"> login  (Login/check)</a> <br> 
          <br> 
-        new: <a href="api/authentication/logout"> api/authentication/logout</a> <br> 
+        <a href="api/authentication/logout"> logout</a> <br> 
         <br> 
+        <a href="api/"> Bienvenue </a> <br> 
+        <br>
         
         <b>Test URI-s</b><br>
         <b>All output xml-s are valid w.r.t. the schema</b><br>
-        new: GET <a href="api/authentication/user">api/authentication/user</a> ticket 500<br> 
-        new: GET <a href="api/users/admin">api/users/admin   ticket 501</a> <br> 
+        GET <a href="api/authentication/user">api/authentication/user</a> <br> 
+        GET <a href="api/users/admin">api/users/admin</a><br> 
         GET <a href="api/users/00000000-0000-0000-0000-0000000000112">api/users/00000000-0000-0000-0000-0000000000112</a> <br> 
         GET <a href="api/users/00000000-0000-0000-0000-0000000000112/current">api/users/00000000-0000-0000-0000-0000000000112/current</a>  !Problem: how to ask the servlet if the given user is logged in, may be by some other running somewhere client<br> 
         GET <a href="api/users/info?email=Twan.Goosen@mpi.nl">api/users/info?email=Twan.Goosen@mpi.nl</a>  <br>
         GET <a href="api/annotations?link=Sagrada">api/annotations/info?link=Sagrada</a>  <br>
         GET <a href="api/annotations?link=Gaud">api/annotations/info?link=Gaud</a>  <br>
-        GET <a href="api/annotations?after=2014-02-04 15:57:58.046908&before=2014-02-06 10:08:16.213186">api/annotations?after=2014-02-04 15:57:58.046908&before=2014-02-06 10:08:16.213186</a> <br>
+        GET <a href="api/annotations?after=2014-02-04 15:57:58.046908&before=2014-02-06 10:08:16.213186">api/annotations?after=2014-02-04 15:57:58.046908&before=2014-04-06 10:08:16.213186</a> 
         !Comment: What is "namespace" query parameter? Must be implemented and tested <br>
         GET <a href="api/annotations/00000000-0000-0000-0000-000000000021">api/annotations/00000000-0000-0000-0000-000000000021</a>  </br>
         GET <a href="api/annotations/00000000-0000-0000-0000-000000000021/targets">api/annotations/00000000-0000-0000-0000-000000000021/targets</a>  </br>
@@ -46,8 +48,9 @@
         GET <a href="api/targets/00000000-0000-0000-0000-000000000032">api/targets/00000000-0000-0000-0000-000000000032</a>  <br>
         GET <a href="api/targets/00000000-0000-0000-0000-000000000032/versions">api/targets/00000000-0000-0000-0000-000000000032/versions</a>   <br>
         GET <a href="api/cached/00000000-0000-0000-0000-000000000051/metadata">api/cached/00000000-0000-0000-0000-000000000051/metadata</a><br>
-        GET <a href="api/cached/00000000-0000-0000-0000-000000000051/content">api/cached/00000000-0000-0000-0000-000000000051/content</a> !Problem: works only on image.jpeg, end maps png-blobs to jpegs.<br>
-        updated (Stephanie's request): POST annotation with arbitrary temporary id-s for targets.<br>
+        GET <a href="api/cached/00000000-0000-0000-0000-000000000051/content">api/cached/00000000-0000-0000-0000-000000000051/content</a><br> 
+        GET <a href="api/cached/00000000-0000-0000-0000-000000000511/stream">api/cached/00000000-0000-0000-0000-000000000511/stream</a> 
+        
         <br> 
         <br>
         <b>Debugging URI's (only for developers)</b><br>
