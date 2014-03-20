@@ -23,7 +23,7 @@ import eu.dasish.annotation.schema.Notebook;
 import eu.dasish.annotation.schema.NotebookInfo;
 import eu.dasish.annotation.schema.NotebookInfoList;
 import eu.dasish.annotation.schema.ObjectFactory;
-import eu.dasish.annotation.schema.Permission;
+import eu.dasish.annotation.schema.Access;
 import eu.dasish.annotation.schema.ReferenceList;
 import eu.dasish.annotation.schema.ResponseBody;
 import java.io.IOException;
@@ -60,15 +60,15 @@ public class NotebookResource extends ResourceResource {
     @Produces(MediaType.APPLICATION_XML)
     @Path("")
     @Transactional(readOnly = true)
-    public JAXBElement<NotebookInfoList> getNotebookInfos(@QueryParam("permission") String permissionMode) throws IOException {
+    public JAXBElement<NotebookInfoList> getNotebookInfos(@QueryParam("access") String accessMode) throws IOException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
-        Number remoteUserID = this.getUserID();
-        if (remoteUserID != null) {
-            if (permissionMode.equalsIgnoreCase("reader") || permissionMode.equalsIgnoreCase("writer") || permissionMode.equalsIgnoreCase("owner")) {
-                NotebookInfoList notebookInfos = dbIntegrityService.getNotebooks(remoteUserID, permissionMode);
+        Number remotePrincipalID = this.getPrincipalID();
+        if (remotePrincipalID != null) {
+            if (accessMode.equalsIgnoreCase("read") || accessMode.equalsIgnoreCase("write") || accessMode.equalsIgnoreCase("owner")) {
+                NotebookInfoList notebookInfos = dbIntegrityService.getNotebooks(remotePrincipalID, accessMode);
                 return new ObjectFactory().createNotebookInfoList(notebookInfos);
             } else {
-                verboseOutput.INVALID_PERMISSION_MODE(permissionMode);
+                verboseOutput.INVALID_ACCESS_MODE(accessMode);
             }
         }
         return (new ObjectFactory()).createNotebookInfoList(new NotebookInfoList());
@@ -79,9 +79,9 @@ public class NotebookResource extends ResourceResource {
     @Path("owned")
     @Transactional(readOnly = true)
     public JAXBElement<ReferenceList> getOwnedNotebooks() throws IOException {
-        Number remoteUserID = this.getUserID();
-        if (remoteUserID != null) {
-            ReferenceList references = dbIntegrityService.getNotebooksOwnedBy(remoteUserID);
+        Number remotePrincipalID = this.getPrincipalID();
+        if (remotePrincipalID != null) {
+            ReferenceList references = dbIntegrityService.getNotebooksOwnedBy(remotePrincipalID);
             return new ObjectFactory().createReferenceList(references);
         }
         return new ObjectFactory().createReferenceList(new ReferenceList());
@@ -89,15 +89,15 @@ public class NotebookResource extends ResourceResource {
 
     @GET
     @Produces(MediaType.APPLICATION_XML)
-    @Path("{notebookid: " + BackendConstants.regExpIdentifier + "}/{permission}")
+    @Path("{notebookid: " + BackendConstants.regExpIdentifier + "}/{access}")
     @Transactional(readOnly = true)
-    public JAXBElement<ReferenceList> getPrincipals(@PathParam("notebookid") String externalIdentifier, @PathParam("permission") String permissionMode) throws IOException {
-        Number remoteUserID = this.getUserID();
-        if (remoteUserID != null) {
+    public JAXBElement<ReferenceList> getPrincipals(@PathParam("notebookid") String externalIdentifier, @PathParam("access") String accessMode) throws IOException {
+        Number remotePrincipalID = this.getPrincipalID();
+        if (remotePrincipalID != null) {
             Number notebookID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.NOTEBOOK);
             if (notebookID != null) {
-                if (dbIntegrityService.hasAccess(notebookID, remoteUserID, Permission.fromValue("reader"))) {
-                    ReferenceList principals = dbIntegrityService.getPrincipals(notebookID, permissionMode);
+                if (dbIntegrityService.hasAccess(notebookID, remotePrincipalID, Access.fromValue("read"))) {
+                    ReferenceList principals = dbIntegrityService.getPrincipals(notebookID, accessMode);
                     return new ObjectFactory().createReferenceList(principals);
                 } else {
                     verboseOutput.FORBIDDEN_NOTEBOOK_READING(externalIdentifier, dbIntegrityService.getAnnotationOwner(notebookID).getDisplayName(), dbIntegrityService.getAnnotationOwner(notebookID).getEMail());
@@ -110,7 +110,7 @@ public class NotebookResource extends ResourceResource {
     }
 
     // Notebook and NotebookInfo (metadata) schemata may be changed
-    // 1) we do not have information "private notebook" directly in the xml, but we have readers and writers in the schema
+    // 1) we do not have information "private notebook" directly in the xml, but we have reads and writes in the schema
     //so if both are empty then we see that it is private for the owner
     // or shall we change the scheme? for notebooks
     // 2) d we need to include the reference list of annotations in teh metadata of the notebook
@@ -119,11 +119,11 @@ public class NotebookResource extends ResourceResource {
     @Path("{notebookid: " + BackendConstants.regExpIdentifier + "}/metadata")
     @Transactional(readOnly = true)
     public JAXBElement<Notebook> getNotebook(@PathParam("notebookid") String externalIdentifier) throws IOException {
-        Number remoteUserID = this.getUserID();
-        if (remoteUserID != null) {
+        Number remotePrincipalID = this.getPrincipalID();
+        if (remotePrincipalID != null) {
             Number notebookID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.NOTEBOOK);
             if (notebookID != null) {
-                if (dbIntegrityService.hasAccess(notebookID, remoteUserID, Permission.fromValue("reader"))) {
+                if (dbIntegrityService.hasAccess(notebookID, remotePrincipalID, Access.fromValue("read"))) {
                     Notebook notebook = dbIntegrityService.getNotebook(notebookID);
                     return new ObjectFactory().createNotebook(notebook);
                 } else {
@@ -146,11 +146,11 @@ public class NotebookResource extends ResourceResource {
             @QueryParam("orderBy") String orderBy,
             @QueryParam("descending") boolean desc) throws IOException {
 
-        Number remoteUserID = this.getUserID();
-        if (remoteUserID != null) {
+        Number remotePrincipalID = this.getPrincipalID();
+        if (remotePrincipalID != null) {
             Number notebookID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.NOTEBOOK);
             if (notebookID != null) {
-                if (dbIntegrityService.hasAccess(notebookID, remoteUserID, Permission.fromValue("reader"))) {
+                if (dbIntegrityService.hasAccess(notebookID, remotePrincipalID, Access.fromValue("read"))) {
                     ReferenceList annotations = dbIntegrityService.getAnnotationsForNotebook(notebookID, startAnnotations, maximumAnnotations, orderBy, desc);
                     return new ObjectFactory().createReferenceList(annotations);
                 } else {
@@ -169,8 +169,8 @@ public class NotebookResource extends ResourceResource {
     @Path("{notebookid: " + BackendConstants.regExpIdentifier + "}")
     public JAXBElement<ResponseBody> updateNotebookInfo(@PathParam("notebookid") String externalIdentifier, NotebookInfo notebookInfo) throws IOException {
 
-        Number remoteUserID = this.getUserID();
-        if (remoteUserID != null) {
+        Number remotePrincipalID = this.getPrincipalID();
+        if (remotePrincipalID != null) {
             String path = uriInfo.getBaseUri().toString();
             String notebookURI = notebookInfo.getRef();
             if (!(path + "notebook/" + externalIdentifier).equals(notebookURI)) {
@@ -181,13 +181,13 @@ public class NotebookResource extends ResourceResource {
 
             final Number notebookID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.NOTEBOOK);
             if (notebookID != null) {
-                if (remoteUserID.equals(dbIntegrityService.getNotebookOwner(notebookID)) || dbIntegrityService.getTypeOfUserAccount(remoteUserID).equals(admin)) {
+                if (remotePrincipalID.equals(dbIntegrityService.getNotebookOwner(notebookID)) || dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID).equals(admin)) {
                     boolean success = dbIntegrityService.updateNotebookMetadata(notebookID, notebookInfo);
                     if (success) {
                         return new ObjectFactory().createResponseBody(dbIntegrityService.makeNotebookResponseEnvelope(notebookID));
                     }
                 } else {
-                    verboseOutput.FORBIDDEN_PERMISSION_CHANGING(externalIdentifier, dbIntegrityService.getAnnotationOwner(notebookID).getDisplayName(), dbIntegrityService.getAnnotationOwner(notebookID).getEMail());
+                    verboseOutput.FORBIDDEN_ACCESS_CHANGING(externalIdentifier, dbIntegrityService.getAnnotationOwner(notebookID).getDisplayName(), dbIntegrityService.getAnnotationOwner(notebookID).getEMail());
                     loggerServer.debug(" Ownership changing is the part of the full update of the notebook metadadata.");
                 }
             } else {

@@ -17,8 +17,8 @@
  */
 package eu.dasish.annotation.backend.dao;
 
-import eu.dasish.annotation.schema.Permission;
-import eu.dasish.annotation.schema.User;
+import eu.dasish.annotation.schema.Access;
+import eu.dasish.annotation.schema.Principal;
 import java.util.List;
 import java.util.UUID;
 
@@ -27,40 +27,38 @@ import java.util.UUID;
  *
  * @author olhsha
  */
-public interface UserDao extends ResourceDao{
+public interface PrincipalDao extends ResourceDao{
     
-     public User getUser(Number internalID);
+     public Principal getPrincipal(Number internalID);
      
-     public User getUserByInfo(String  eMail);
+     public Principal getPrincipalByInfo(String  eMail);
      
      public Number getDBAdminID();
      
      // where is it used?
-     public boolean userIsInUse(Number userID);
+     public boolean principalIsInUse(Number principalID);
      
      // where is it used??
-     public boolean userExists(User user);
+     public boolean principalExists(Principal principal);
      
-     public String getTypeOfUserAccount(Number internalID);
+     public String getTypeOfPrincipalAccount(Number internalID);
      
      public String getRemoteID(Number internalID);
      
      
-     public Number getUserInternalIDFromRemoteID(String remoteID);
+     public Number getPrincipalInternalIDFromRemoteID(String remoteID);
      
-     public List<Number> getPrincipalIDsWithPermissionForNotebook(Number notebookID, Permission permission);
+     public List<Number> getPrincipalIDsWithAccessForNotebook(Number notebookID, Access access);
      
      public boolean updateAccount(UUID externalID, String account);
      
-     public Number updateUser(User user);
+     public Number updatePrincipal(Principal principal);
     
-     public Number addUser(User user, String remoteID);
+     public Number addPrincipal(Principal principal, String remoteID);
      
-     public int deleteUser(Number intenralID);
+     public int deletePrincipal(Number intenralID);
      
-     public int deleteUserSafe(Number internalID);
+     public int deletePrincipalSafe(Number internalID);
   
      
 }
-
-

@@ -29,7 +29,7 @@ public final class DummyPrincipal implements Principal {
 
     public static final DummyPrincipal DUMMY_ADMIN_PRINCIPAL = new DummyPrincipal("JUnit.Admin@test.com");
     public static final DummyPrincipal DUMMY_PRINCIPAL = new DummyPrincipal("olhsha@mpi.nl");
-    public static final UserCredentials DUMMY_CREDENTIALS = new UserCredentials(DUMMY_PRINCIPAL) {
+    public static final PrincipalCredentials DUMMY_CREDENTIALS = new PrincipalCredentials(DUMMY_PRINCIPAL) {
 
 	@Override
 	public String getDisplayName() {
@@ -37,20 +37,20 @@ public final class DummyPrincipal implements Principal {
 	}
     };
     
-    public static final UserCredentials DUMMY_ADMIN_CREDENTIALS = new UserCredentials(DUMMY_ADMIN_PRINCIPAL);
+    public static final PrincipalCredentials DUMMY_ADMIN_CREDENTIALS = new PrincipalCredentials(DUMMY_ADMIN_PRINCIPAL);
     
-    private final String username;
+    private final String principalname;
 
-    public DummyPrincipal(String username) {
-	this.username = username;
+    public DummyPrincipal(String principalname) {
+	this.principalname = principalname;
     }
 
     @Override
     public String getName() {
-	return username;
+	return principalname;
     }
 
-    public UserCredentials getCredentials() {
-	return new UserCredentials(this);
+    public PrincipalCredentials getCredentials() {
+	return new PrincipalCredentials(this);
     }
 }

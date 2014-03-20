@@ -56,12 +56,12 @@ public class NotebookResourceTest {
 //    public void testGetNotebookInfo() {
 //        System.out.println("getNotebookInfo");
 //        final MockHttpServletRequest httpServletRequest = new MockHttpServletRequest();
-//        httpServletRequest.setRemoteUser(TestBackendConstants._TEST_UID_1_);  
+//        httpServletRequest.setRemotePrincipal(TestBackendConstants._TEST_UID_1_);  
 //        
 //        
 //        mockery.checking(new Expectations() {
 //            {
-//                oneOf(notebookDao).getNotebookInfos(UUID.fromString(httpServletRequest.getRemoteUser()));                
+//                oneOf(notebookDao).getNotebookInfos(UUID.fromString(httpServletRequest.getRemotePrincipal()));                
 //                will(returnValue(new ArrayList<NotebookInfo>()));
 //            }
 //        });
@@ -70,20 +70,20 @@ public class NotebookResourceTest {
 //    }
 //
 //    /**
-//     * Test of getUsersNotebooks method, of class NotebookResource.
+//     * Test of getPrincipalsNotebooks method, of class NotebookResource.
 //     */
 //    @Test
-//    public void testGetUsersNotebooks() {
-//        System.out.println("getUsersNotebooks");
+//    public void testGetPrincipalsNotebooks() {
+//        System.out.println("getPrincipalsNotebooks");
 //        mockery.checking(new Expectations() {
 //            {
-//                oneOf(notebookDao).getUsersNotebooks(UUID.fromString(TestBackendConstants._TEST_UID_2_));
+//                oneOf(notebookDao).getPrincipalsNotebooks(UUID.fromString(TestBackendConstants._TEST_UID_2_));
 //                will(returnValue(new ArrayList<Notebook>()));
 //            }
 //        });
 //        final MockHttpServletRequest httpServletRequest = new MockHttpServletRequest();
-//        httpServletRequest.setRemoteUser(TestBackendConstants._TEST_UID_2_); 
-//        List result = notebookResource.getUsersNotebooks(httpServletRequest);
+//        httpServletRequest.setRemotePrincipal(TestBackendConstants._TEST_UID_2_); 
+//        List result = notebookResource.getPrincipalsNotebooks(httpServletRequest);
 //        assertEquals(0, result.size());
 //    }
 //
@@ -94,11 +94,11 @@ public class NotebookResourceTest {
 //    public void testCreateNotebook() throws Exception {
 //        System.out.println("createNotebook");
 //        final MockHttpServletRequest httpServletRequest = new MockHttpServletRequest();
-//        httpServletRequest.setRemoteUser(TestBackendConstants._TEST_UID_2_);
+//        httpServletRequest.setRemotePrincipal(TestBackendConstants._TEST_UID_2_);
 //        
 //        mockery.checking(new Expectations() {
 //            {
-//                oneOf(notebookDao).addNotebook(UUID.fromString(httpServletRequest.getRemoteUser()), null);
+//                oneOf(notebookDao).addNotebook(UUID.fromString(httpServletRequest.getRemotePrincipal()), null);
 //                will(returnValue(UUID.fromString(TestBackendConstants._TEST_NOTEBOOK_1_EXT_ID)));
 //            }
 //        });

@@ -18,6 +18,7 @@
 package eu.dasish.annotation.backend.dao;
 
 
+import eu.dasish.annotation.schema.Permission;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;

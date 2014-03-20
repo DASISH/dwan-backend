@@ -66,17 +66,17 @@ public class ResourceResource {
     protected String admin = "admin";
     protected String anonym = "anonymous";
 
-    public Number getUserID() throws IOException {
+    public Number getPrincipalID() throws IOException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         verboseOutput = new VerboseOutput(httpServletResponse, loggerServer);
-        String remoteUser = httpServletRequest.getRemoteUser();
-        if (remoteUser != null) {
-            if (!remoteUser.equals(anonym)) {
-                final Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
-                if (userID != null) {
-                    return userID;
+        String remotePrincipal = httpServletRequest.getRemoteUser();
+        if (remotePrincipal != null) {
+            if (!remotePrincipal.equals(anonym)) {
+                final Number principalID = dbIntegrityService.getPrincipalInternalIDFromRemoteID(remotePrincipal);
+                if (principalID != null) {
+                    return principalID;
                 }
-                verboseOutput.REMOTE_PRINCIPAL_NOT_FOUND(remoteUser, dbIntegrityService.getDataBaseAdmin().getDisplayName(), dbIntegrityService.getDataBaseAdmin().getEMail());
+                verboseOutput.REMOTE_PRINCIPAL_NOT_FOUND(remotePrincipal, dbIntegrityService.getDataBaseAdmin().getDisplayName(), dbIntegrityService.getDataBaseAdmin().getEMail());
                 return null;
             }
         }
@@ -91,8 +91,8 @@ public class ResourceResource {
     @Path("")
     @Transactional(readOnly = true)
     public String welcome() throws IOException {
-        Number remoteUserID = this.getUserID();
-        if (remoteUserID != null) {
+        Number remotePrincipalID = this.getPrincipalID();
+        if (remotePrincipalID != null) {
             String baseUri = uriInfo.getBaseUri().toString()+"..";
             String welcome = "<!DOCTYPE html><body>"
                     + "<h3>Welcome to DASISH Webannotator (DWAN)</h3><br>"

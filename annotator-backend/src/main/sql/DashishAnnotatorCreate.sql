@@ -37,6 +37,9 @@ SET default_with_oids = false;
 
 SET TIME ZONE LOCAL;
 
+CREATE TABLE access (
+  access_mode text UNIQUE NOT NULL
+);
 
 CREATE TABLE principal (
     principal_id SERIAL UNIQUE NOT NULL,
@@ -64,7 +67,8 @@ CREATE TABLE annotation (
     headline text,
     body_text text,
     body_mimetype text,
-    is_xml BOOLEAN
+    is_xml BOOLEAN,
+    public_ text REFERENCES access(access_mode)
 );
 
 
@@ -89,9 +93,7 @@ CREATE TABLE cached_representation (
 
 
 
-CREATE TABLE permission_ (
-  permission_mode text UNIQUE NOT NULL
-);
+
 
 -----------------------------------------------------------------------
 --------------------- JOINT TABLES ------------------------------------
@@ -119,17 +121,17 @@ CREATE TABLE targets_cached_representations (
 
 
 
-CREATE TABLE annotations_principals_permissions (
+CREATE TABLE annotations_principals_accesss (
 annotation_id integer REFERENCES annotation(annotation_id),
 principal_id integer REFERENCES principal(principal_id),
-permission_  text REFERENCES permission_(permission_mode),
+access_  text REFERENCES access(access_mode),
 unique(annotation_id, principal_id)
 );
 
-CREATE TABLE notebooks_principals_permissions (
+CREATE TABLE notebooks_principals_accesss (
 notebook_id integer REFERENCES notebook(notebook_id),
 principal_id integer REFERENCES principal(principal_id),
-permission_  text REFERENCES permission_(permission_mode),
+access_  text REFERENCES access(access_mode),
 unique(notebook_id, principal_id)
 );
 

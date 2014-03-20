@@ -79,17 +79,17 @@ public class AnnotationResourceTest {
     }
     
     
-//    public Number getUserID() throws IOException {
+//    public Number getPrincipalID() throws IOException {
 //        dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
 //        verboseOutput = new VerboseOutput(httpServletResponse, loggerServer);
-//        String remoteUser = httpServletRequest.getRemoteUser();
-//        if (remoteUser != null) {
-//            if (!remoteUser.equals(anonym)) {
-//                final Number userID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
-//                if (userID != null) {
-//                    return userID;
+//        String remotePrincipal = httpServletRequest.getRemotePrincipal();
+//        if (remotePrincipal != null) {
+//            if (!remotePrincipal.equals(anonym)) {
+//                final Number principalID = dbIntegrityService.getPrincipalInternalIDFromRemoteID(remotePrincipal);
+//                if (principalID != null) {
+//                    return principalID;
 //                }
-//                verboseOutput.REMOTE_PRINCIPAL_NOT_FOUND(remoteUser, dbIntegrityService.getDataBaseAdmin().getDisplayName(), dbIntegrityService.getDataBaseAdmin().getEMail());
+//                verboseOutput.REMOTE_PRINCIPAL_NOT_FOUND(remotePrincipal, dbIntegrityService.getDataBaseAdmin().getDisplayName(), dbIntegrityService.getDataBaseAdmin().getEMail());
 //                return null;
 //            }
 //        }
@@ -117,7 +117,7 @@ public class AnnotationResourceTest {
                 
                 oneOf(mockDbIntegrityService).setServiceURI(baseUri.toString());
                 
-                oneOf(mockDbIntegrityService).getUserInternalIDFromRemoteID("olhsha@mpi.nl");
+                oneOf(mockDbIntegrityService).getPrincipalInternalIDFromRemoteID("olhsha@mpi.nl");
                 will(returnValue(3));
 
                 oneOf(mockDbIntegrityService).getResourceInternalIdentifier(with(aNonNull(UUID.class)), with(aNonNull((Resource.class))));
@@ -146,7 +146,7 @@ public class AnnotationResourceTest {
 
         final int[] mockDelete = new int[4];
         mockDelete[0] = 1; // # deleted annotations
-        mockDelete[3] = 1; // # deleted annotation_prinipal_permissions
+        mockDelete[3] = 1; // # deleted annotation_prinipal_accesss
         mockDelete[2] = 2; // # deleted  annotations_target_Targets, (4,3), (4,4)
         mockDelete[3] = 1; // # deletd Targets, 4
 
@@ -164,7 +164,7 @@ public class AnnotationResourceTest {
                 
                 oneOf(mockDbIntegrityService).setServiceURI(baseUri.toString());
                 
-                oneOf(mockDbIntegrityService).getUserInternalIDFromRemoteID("olhsha@mpi.nl");
+                oneOf(mockDbIntegrityService).getPrincipalInternalIDFromRemoteID("olhsha@mpi.nl");
                 will(returnValue(3));
 
                 oneOf(mockDbIntegrityService).getResourceInternalIdentifier(with(aNonNull(UUID.class)), with(aNonNull((Resource.class))));
@@ -219,7 +219,7 @@ public class AnnotationResourceTest {
 
         final Annotation addedAnnotation = (new ObjectFactory()).createAnnotation(annotationToAdd).getValue();
         addedAnnotation.setURI("http://localhost:8080/annotator-backend/api/annotations/" + UUID.randomUUID().toString());
-        addedAnnotation.setOwnerRef("http://localhost:8080/annotator-backend/api/users/" + "00000000-0000-0000-0000-000000000111");
+        addedAnnotation.setOwnerRef("http://localhost:8080/annotator-backend/api/principals/" + "00000000-0000-0000-0000-000000000111");
 
         final ResponseBody mockEnvelope = new ResponseBody();
         final Action action = new Action();
@@ -243,10 +243,10 @@ public class AnnotationResourceTest {
                 
                 oneOf(mockDbIntegrityService).setServiceURI(baseUri.toString());
                 
-                oneOf(mockDbIntegrityService).getUserInternalIDFromRemoteID("olhsha@mpi.nl");
+                oneOf(mockDbIntegrityService).getPrincipalInternalIDFromRemoteID("olhsha@mpi.nl");
                 will(returnValue(3));
 
-                oneOf(mockDbIntegrityService).addUsersAnnotation(3, annotationToAdd);
+                oneOf(mockDbIntegrityService).addPrincipalsAnnotation(3, annotationToAdd);
                 will(returnValue(newAnnotationID));
 
                 oneOf(mockDbIntegrityService).getAnnotation(newAnnotationID);

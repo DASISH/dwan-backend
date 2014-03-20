@@ -20,7 +20,7 @@ package eu.dasish.annotation.backend.dao.impl;
 import eu.dasish.annotation.backend.dao.NotebookDao;
 import eu.dasish.annotation.schema.Notebook;
 import eu.dasish.annotation.schema.NotebookInfo;
-import eu.dasish.annotation.schema.Permission;
+import eu.dasish.annotation.schema.Access;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -76,31 +76,31 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
             return null;
         }
         StringBuilder sql = new StringBuilder("SELECT ");
-        sql.append(principal_id).append(",").append(permission).append(" FROM ").append(notebookPermissionsTableName).append(" WHERE ").append(notebook_id).append("  = ?");
-        return this.loggedQuery(sql.toString(), principalsPermissionsRowMapper, notebookID);
+        sql.append(principal_id).append(",").append(access).append(" FROM ").append(notebookAccesssTableName).append(" WHERE ").append(notebook_id).append("  = ?");
+        return this.loggedQuery(sql.toString(), principalsAccesssRowMapper, notebookID);
     }
     
   /////////////
 
     @Override
-    public List<Number> getNotebookIDs(Number principalID, Permission permission) {
+    public List<Number> getNotebookIDs(Number principalID, Access access) {
 
         if (principalID == null) {
             loggerNotebookDao.debug("princiaplID: " + nullArgument);
             return null;
         }
 
-        if (permission == null) {
-            loggerNotebookDao.debug("permission: " + nullArgument);
+        if (access == null) {
+            loggerNotebookDao.debug("access: " + nullArgument);
             return null;
         }
 
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("principalID", principalID);
-        params.put("accessMode", permission.value());
+        params.put("accessMode", access.value());
         StringBuilder sql = new StringBuilder("SELECT ");
-        sql.append(notebook_id).append(" FROM ").append(notebookPermissionsTableName).append(" WHERE ").
-                append(principal_id).append(" = :principalID AND ").append(this.permission).append(" = :accessMode");
+        sql.append(notebook_id).append(" FROM ").append(notebookAccesssTableName).append(" WHERE ").
+                append(principal_id).append(" = :principalID AND ").append(this.access).append(" = :accessMode");
         return this.loggedQuery(sql.toString(), internalIDRowMapper, params);
     }
 
@@ -146,7 +146,7 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
     };
 
     @Override
-    public Notebook getNotebookWithoutAnnotationsAndPermissionsAndOwner(Number notebookID) {
+    public Notebook getNotebookWithoutAnnotationsAndAccesssAndOwner(Number notebookID) {
         if (notebookID == null) {
             loggerNotebookDao.debug("notebookID: " + nullArgument);
             return null;
@@ -262,7 +262,7 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
     }
 
     @Override
-    public boolean updateUserPermissionForNotebook(Number notebookID, Number principalID, Permission permission) {
+    public boolean updatePrincipalAccessForNotebook(Number notebookID, Number principalID, Access access) {
 
         if (notebookID == null) {
             loggerNotebookDao.debug("notebookID: " + nullArgument);
@@ -274,8 +274,8 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
             return false;
         }
 
-        if (permission == null) {
-            loggerNotebookDao.debug("permission: " + nullArgument);
+        if (access == null) {
+            loggerNotebookDao.debug("access: " + nullArgument);
             return false;
         }
 
@@ -283,20 +283,20 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("notebookID", notebookID);
         params.put("principalID", principalID);
-        params.put("permission", permission.value());
+        params.put("access", access.value());
 
         StringBuilder sql = new StringBuilder("UPDATE ");
-        sql.append(notebookPermissionsTableName).append(" SET ").
-                append(this.permission).append("= :permission ").
+        sql.append(notebookAccesssTableName).append(" SET ").
+                append(this.access).append("= :access ").
                 append(" WHERE ").append(notebook_id).append("= :notebookID AND ").
                 append(principal_id).append("= :principalID");
         int affectedRows = this.loggedUpdate(sql.toString(), params);
         if (affectedRows <= 0) {
-            logger.info("For some reason no rows in the table notebooks-permissions were updated. ");
+            logger.info("For some reason no rows in the table notebooks-accesss were updated. ");
             return false;
         } else {
             if (affectedRows > 1) {
-                logger.info("For some reason more than 1 row in the table notebooks-permissions were updated. that's strange.");
+                logger.info("For some reason more than 1 row in the table notebooks-accesss were updated. that's strange.");
                 return true;
             } else {
                 return true;
@@ -311,7 +311,7 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
      *
      */
     @Override
-    public Number createNotebookWithoutPermissionsAndAnnotations(Notebook notebook, Number ownerID) {
+    public Number createNotebookWithoutAccesssAndAnnotations(Notebook notebook, Number ownerID) {
         if (notebook == null) {
             loggerNotebookDao.debug("notebook: " + nullArgument);
             return null;
@@ -361,7 +361,7 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
     }
 
     @Override
-    public boolean addPermissionToNotebook(Number notebookID, Number principalID, Permission permission) {
+    public boolean addAccessToNotebook(Number notebookID, Number principalID, Access access) {
         if (notebookID == null) {
             loggerNotebookDao.debug("notebookID: " + nullArgument);
             return false;
@@ -372,7 +372,7 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
             return false;
         }
 
-        if (permission == null) {
+        if (access == null) {
             loggerNotebookDao.debug("premission: " + nullArgument);
             return false;
         }
@@ -380,12 +380,12 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("notebookID", notebookID);
         params.put("principalID", principalID);
-        params.put("permission", permission.value());
+        params.put("access", access.value());
 
         StringBuilder sql = new StringBuilder("INSERT INTO ");
-        sql.append(notebookPermissionsTableName).append("(").append(notebook_id).append(",").append(principal_id);
-        sql.append(",").append(this.permission).
-                append(" ) VALUES (:notebookID, :principalID, :permission)");
+        sql.append(notebookAccesssTableName).append("(").append(notebook_id).append(",").append(principal_id);
+        sql.append(",").append(this.access).
+                append(" ) VALUES (:notebookID, :principalID, :access)");
         int affectedRows = this.loggedUpdate(sql.toString(), params);
         return (affectedRows > 0);
     }
@@ -419,16 +419,16 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
     }
 
     @Override
-    public boolean deleteNotebookPrincipalPermission(Number notebookID, Number principalID) {
+    public boolean deleteNotebookPrincipalAccess(Number notebookID, Number principalID) {
         if (notebookID != null) {
             if (principalID != null) {
                 Map<String, Number> params = new HashMap();
                 params.put("notebookID", notebookID);
                 params.put("principalID", principalID);
-                StringBuilder sqlPermissions = new StringBuilder("DELETE FROM ");
-                sqlPermissions.append(notebookPermissionsTableName).append(" WHERE ").append(notebook_id).append(" = :notebookID AND ").
+                StringBuilder sqlAccesss = new StringBuilder("DELETE FROM ");
+                sqlAccesss.append(notebookAccesssTableName).append(" WHERE ").append(notebook_id).append(" = :notebookID AND ").
                         append(principal_id).append(" = :principalID");
-                int affectedRows = this.loggedUpdate(sqlPermissions.toString(), params);
+                int affectedRows = this.loggedUpdate(sqlAccesss.toString(), params);
                 return (affectedRows > 0);
             } else {
                 loggerNotebookDao.debug("principalID: " + nullArgument);
@@ -454,11 +454,11 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
     }
 
     @Override
-    public boolean deleteAllPermissionsForNotebook(Number notebookID) {
+    public boolean deleteAllAccesssForNotebook(Number notebookID) {
         if (notebookID != null) {
-            StringBuilder sqlPermissions = new StringBuilder("DELETE FROM ");
-            sqlPermissions.append(notebookPermissionsTableName).append(" WHERE ").append(notebook_id).append(" = ? ");
-            int affectedRows = this.loggedUpdate(sqlPermissions.toString(), notebookID);
+            StringBuilder sqlAccesss = new StringBuilder("DELETE FROM ");
+            sqlAccesss.append(notebookAccesssTableName).append(" WHERE ").append(notebook_id).append(" = ? ");
+            int affectedRows = this.loggedUpdate(sqlAccesss.toString(), notebookID);
             return (affectedRows > 0);
         } else {
             loggerNotebookDao.debug("notebookID: " + nullArgument);

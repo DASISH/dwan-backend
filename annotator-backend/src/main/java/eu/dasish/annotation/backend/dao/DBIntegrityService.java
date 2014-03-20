@@ -25,13 +25,13 @@ import eu.dasish.annotation.schema.CachedRepresentationInfo;
 import eu.dasish.annotation.schema.Notebook;
 import eu.dasish.annotation.schema.NotebookInfo;
 import eu.dasish.annotation.schema.NotebookInfoList;
-import eu.dasish.annotation.schema.Permission;
-import eu.dasish.annotation.schema.UserWithPermissionList;
+import eu.dasish.annotation.schema.Access;
+import eu.dasish.annotation.schema.PermissionList;
 import eu.dasish.annotation.schema.ReferenceList;
 import eu.dasish.annotation.schema.ResponseBody;
 import eu.dasish.annotation.schema.Target;
 import eu.dasish.annotation.schema.TargetInfo;
-import eu.dasish.annotation.schema.User;
+import eu.dasish.annotation.schema.Principal;
 import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.List;
@@ -59,7 +59,7 @@ public interface DBIntegrityService {
 
     String getResourceURI(Number resourceID, Resource resource);
 
-    UserWithPermissionList getPermissions(Number resourceID, Resource resource);
+    PermissionList getPermissions(Number resourceID, Resource resource);
 
     /**
      *
@@ -71,11 +71,11 @@ public interface DBIntegrityService {
      * @param before
      * @return the list of internal id-s of the annotations such that: --
      * Targets' links of which contain "link" (as a substring), -- serialized
-     * bodies of which contain "text", -- current user has "access" (owner,
-     * reader, writer) to them, -- namespace ???, -- owned by "owner", --
+     * bodies of which contain "text", -- current principal has "access" (owner,
+     * read, write) to them, -- namespace ???, -- owned by "owner", --
      * created after time-samp "after and before time-stamp "before".
      */
-    List<Number> getFilteredAnnotationIDs(UUID ownerId, String link, String text, Number inloggedUserID, String access, String namespace, String after, String before);
+    List<Number> getFilteredAnnotationIDs(UUID ownerId, String link, String text, Number inloggedPrincipalID, String access, String namespace, String after, String before);
 
     AnnotationInfoList getAllAnnotationInfos();
 
@@ -90,11 +90,11 @@ public interface DBIntegrityService {
      * @param before
      * @return the list of the annotationInfos of the annotations such that: --
      * Targets' links of which contain "link" (as a substring), -- serialized
-     * bodies of which contain "text", -- current user has "access" (owner,
-     * reader, writer) to them, -- namespace ???, -- owned by "owner", --
+     * bodies of which contain "text", -- current principal has "access" (owner,
+     * read, write) to them, -- namespace ???, -- owned by "owner", --
      * created after time-samp "after and before time-stamp "before".
      */
-    AnnotationInfoList getFilteredAnnotationInfos(UUID ownerId, String word, String text, Number inloggedUserID, String access, String namespace, String after, String before);
+    AnnotationInfoList getFilteredAnnotationInfos(UUID ownerId, String word, String text, Number inloggedPrincipalID, String access, String namespace, String after, String before);
 
     /**
      *
@@ -109,14 +109,14 @@ public interface DBIntegrityService {
      * @param annotationID
      * @return the object Annotation generated from the tables "annotation",
      * "annotations_target_Targets", "Target",
-     * "annotations_principals_permissions".
+     * "annotations_principals_accesss".
      * @throws SQLException
      */
     Annotation getAnnotation(Number annotationID);
 
     Number getAnnotationOwnerID(Number annotationID);
 
-    User getAnnotationOwner(Number annotationID);
+    Principal getAnnotationOwner(Number annotationID);
     
     /**
      *
@@ -135,7 +135,7 @@ public interface DBIntegrityService {
      */
     List<String> getTargetsWithNoCachedRepresentation(Number annotationID);
 
-    List<String> getUsersWithNoInfo(Number annotationID);
+    List<String> getPrincipalsWithNoInfo(Number annotationID);
 
     /**
      *
@@ -156,47 +156,47 @@ public interface DBIntegrityService {
 
     /**
      *
-     * @param userID
-     * @return user with "userID"
+     * @param principalID
+     * @return principal with "principalID"
      */
-    User getUser(Number userID);
+    Principal getPrincipal(Number principalID);
 
     /**
      *
      * @param eMail
-     * @return user with e-mail "eMail"
+     * @return principal with e-mail "eMail"
      */
-    User getUserByInfo(String eMail);
+    Principal getPrincipalByInfo(String eMail);
 
-    String getUserRemoteID(Number internalID);
+    String getPrincipalRemoteID(Number internalID);
 
-    Number getUserInternalIDFromRemoteID(String remoteID);
+    Number getPrincipalInternalIDFromRemoteID(String remoteID);
 
     /**
      *
      * @param annotationID
-     * @param userID
-     * @return permission of the userID w.r.t. annotationID, or null if the
-     * permission is not given
+     * @param principalID
+     * @return access of the principalID w.r.t. annotationID, or null if the
+     * access is not given
      */
-    Permission getPermission(Number annotationID, Number userID);
+    Access getAccess(Number annotationID, Number principalID);
 
-    String getTypeOfUserAccount(Number userID);
+    String getTypeOfPrincipalAccount(Number principalID);
     
-    User getDataBaseAdmin();
+    Principal getDataBaseAdmin();
 
-    boolean canRead(Number userID, Number annotationID);
+    boolean canRead(Number principalID, Number annotationID);
 
-    boolean canWrite(Number userID, Number annotationID);
+    boolean canWrite(Number principalID, Number annotationID);
 
     /// notebooks ///
-    NotebookInfoList getNotebooks(Number prinipalID, String permission);
+    NotebookInfoList getNotebooks(Number prinipalID, String access);
 
-    boolean hasAccess(Number notebookID, Number principalID, Permission permission);
+    boolean hasAccess(Number notebookID, Number principalID, Access access);
 
     ReferenceList getNotebooksOwnedBy(Number principalID);
 
-    ReferenceList getPrincipals(Number notebookID, String permission);
+    ReferenceList getPrincipals(Number notebookID, String access);
 
     Notebook getNotebook(Number notebookID);
 
@@ -207,7 +207,7 @@ public interface DBIntegrityService {
     /**
      * UPDATERS
      */
-    boolean updateAccount(UUID userExternalID, String account);
+    boolean updateAccount(UUID principalExternalID, String account);
 
     /**
      *
@@ -218,7 +218,7 @@ public interface DBIntegrityService {
 
     /**
      *
-     * @param userID
+     * @param principalID
      * @param annotationBody
      * @return 1 of the annotation if it is updated
      */
@@ -227,24 +227,24 @@ public interface DBIntegrityService {
     /**
      *
      * @param annotationID
-     * @param userID
-     * @param permission
-     * @return # rows updated to the table "annotations_principals_permissions"
-     * Sets the "permission" for the "userID" w.r.t. the annotation with
+     * @param principalID
+     * @param access
+     * @return # rows updated to the table "annotations_principals_accesss"
+     * Sets the "access" for the "principalID" w.r.t. the annotation with
      * "annotationID".
      */
-    int updateAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission);
+    int updateAnnotationPrincipalAccess(Number annotationID, Number principalID, Access access);
 
     /**
      *
      * @param annotationID
-     * @param permissionList
+     * @param accessList
      * @return # of rows updated or added in the table
-     * annotations_principals_permissions
+     * annotations_principals_accesss
      */
-    int updatePermissions(Number annotationID, UserWithPermissionList permissionList);
+    int updatePermissions(Number annotationID, PermissionList permissionList);
 
-    Number updateUser(User user);
+    Number updatePrincipal(Principal principal);
 
     /// notebooks ///
     boolean updateNotebookMetadata(Number notebookID, NotebookInfo upToDateNotebookInfo);
@@ -281,25 +281,25 @@ public interface DBIntegrityService {
 
     /**
      *
-     * @param userID
+     * @param principalID
      * @param annotation
      * @return the internalId of the just added "annotation" (or null if it is
-     * not added) by the owner "userID". calls "addTargetsForAnnotation"
+     * not added) by the owner "principalID". calls "addTargetsForAnnotation"
      * @throws SQLException
      */
-    Number addUsersAnnotation(Number ownerID, Annotation annotation);
+    Number addPrincipalsAnnotation(Number ownerID, Annotation annotation);
 
     /**
      *
-     * @param user
+     * @param principal
      * @param remoteID is got from the server
-     * @return the internal Id of the just added "user", or null if it was not
+     * @return the internal Id of the just added "principal", or null if it was not
      * added for some reason (already exists)
      * @throws SQLException
      */
-    Number addUser(User user, String remoteID);
+    Number addPrincipal(Principal principal, String remoteID);
 
-    int addAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission);
+    int addAnnotationPrincipalAccess(Number annotationID, Number principalID, Access access);
 
     /// notebooks ////
     Number createNotebook(Notebook notebook, Number ownerID);
@@ -311,23 +311,23 @@ public interface DBIntegrityService {
      */
     /**
      *
-     * @param userID
+     * @param principalID
      * @return # of affected rows in the table "principal". It is 1 if the
-     * userId is found and deleted; it is 0 if it is not found or not deleted,
+     * principalId is found and deleted; it is 0 if it is not found or not deleted,
      * e.g. because it is in use in the table
-     * "annotationsPreincipalsPermissions"
+     * "annotationsPreincipalsAccesss"
      */
-    int deleteUser(Number userID);
+    int deletePrincipal(Number principalID);
 
     /**
      *
-     * @param userID
+     * @param principalID
      * @return # of affected rows in the table "principal". It is 1 if the
-     * userId is found and deleted; it is 0 if it is not found or not deleted,
+     * principalId is found and deleted; it is 0 if it is not found or not deleted,
      * e.g. because it is in use in the table
-     * "annotationsPreincipalsPermissions"
+     * "annotationsPreincipalsAccesss"
      */
-    int deleteUserSafe(Number userID);
+    int deletePrincipalSafe(Number principalID);
 
     int deleteCachedRepresentation(Number internalID);
 
@@ -359,7 +359,7 @@ public interface DBIntegrityService {
      * @param annotationID
      * @return result[0] = # deleted rows in the table "annotation" (1 or 0).
      * result[1] = # deleted rows in the table
-     * "annotations_principals_permissions". result[2] = # deleted rows in the
+     * "annotations_principals_accesss". result[2] = # deleted rows in the
      * table "annotations_target_Targets". result[3] = # deleted rows in the
      * table "Target".
      * @throws SQLException
@@ -374,5 +374,5 @@ public interface DBIntegrityService {
 
     ResponseBody makeNotebookResponseEnvelope(Number notebookID);
 
-    ResponseBody makePermissionResponseEnvelope(Number resourceID, Resource resource);
+    ResponseBody makeAccessResponseEnvelope(Number resourceID, Resource resource);
 }

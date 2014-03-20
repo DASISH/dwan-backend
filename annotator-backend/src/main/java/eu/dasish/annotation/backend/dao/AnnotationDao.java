@@ -20,7 +20,7 @@ package eu.dasish.annotation.backend.dao;
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationBody;
 import eu.dasish.annotation.schema.AnnotationInfo;
-import eu.dasish.annotation.schema.Permission;
+import eu.dasish.annotation.schema.Access;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.List;
@@ -48,13 +48,13 @@ public interface AnnotationDao extends ResourceDao{
      * (Constructing a complete Annotation object using  "getAnnotationWithoutTargets" and "retrieveTargetIDs" is done in "DaoDispatchter".)
      * 
      */
-    public Annotation getAnnotationWithoutTargetsAndPermissions(Number annotationID);
+    public Annotation getAnnotationWithoutTargetsAndAccesss(Number annotationID);
     
       
     public List<Number> getFilteredAnnotationIDs(Number ownerID, String text, String namespace, String after, String before);
      
   
-    public List<Number> getAnnotationIDsForUserWithPermission(Number userID, String acess);
+    public List<Number> getAnnotationIDsForPermission(Number principalID, String acess);
     
     
     public List<Number> getAnnotationIDsForTargets(List<Number> TargetIDs);   
@@ -98,10 +98,10 @@ public interface AnnotationDao extends ResourceDao{
     /**
      * 
      * @param annotationID
-     * @param userID
-     * @return permission of the userID w.r.t. annotationID, or null if the permission is not given
+     * @param principalID
+     * @return access of the principalID w.r.t. annotationID, or null if the access is not given
      */ 
-    public Permission  getPermission(Number annotationID, Number userID);
+    public Access  getAccess(Number annotationID, Number principalID);
     
     
     
@@ -113,7 +113,7 @@ public interface AnnotationDao extends ResourceDao{
      * 
      * @param annotationID
      * @return true if "annotationID" is mentioned in at least one of the joint tables:
-     * "annotations_targets", "annotations_principals_permissions", "notebook_annotations".
+     * "annotations_targets", "annotations_principals_accesss", "notebook_annotations".
      * Otherwise return "false".
      */
     //public boolean annotationIsInUse(Number annotationID);
@@ -136,12 +136,12 @@ public interface AnnotationDao extends ResourceDao{
     /**
      * 
      * @param annotationID
-     * @param userID
-     * @param permission
-     * @return # rows added to the table "annotations_principals_permissions"
-     * Sets the "permission" for the "userID" w.r.t. the annotation with "annotationID".
+     * @param principalID
+     * @param access
+     * @return # rows added to the table "annotations_principals_accesss"
+     * Sets the "access" for the "principalID" w.r.t. the annotation with "annotationID".
      */
-    public int addAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission);
+    public int addAnnotationPrincipalAccess(Number annotationID, Number principalID, Access access);
     
     
   
@@ -173,12 +173,12 @@ public interface AnnotationDao extends ResourceDao{
      /**
      * 
      * @param annotationID
-     * @param userID
-     * @param permission
-     * @return # rows updated to the table "annotations_principals_permissions"
-     * Sets the "permission" for the "userID" w.r.t. the annotation with "annotationID".
+     * @param principalID
+     * @param access
+     * @return # rows updated to the table "annotations_principals_accesss"
+     * Sets the "access" for the "principalID" w.r.t. the annotation with "annotationID".
      */
-    public int updateAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission);
+    public int updateAnnotationPrincipalAccess(Number annotationID, Number principalID, Access access);
     
     
     
@@ -209,12 +209,12 @@ public interface AnnotationDao extends ResourceDao{
    /**
     * 
     * @param annotationID
-    * @return # removed rows in the table "annotations_principals_permissions".
+    * @return # removed rows in the table "annotations_principals_accesss".
     * @throws SQLException 
     */
-    public int deleteAnnotationPrincipalPermissions(Number annotationID);
+    public int deleteAnnotationPrincipalAccesss(Number annotationID);
     
-    public int deleteAnnotationPrincipalPermission(Number annotationID, Number userID);
+    public int deleteAnnotationPrincipalAccess(Number annotationID, Number principalID);
     
     public int deleteAnnotationFromAllNotebooks(Number annotationID);
     

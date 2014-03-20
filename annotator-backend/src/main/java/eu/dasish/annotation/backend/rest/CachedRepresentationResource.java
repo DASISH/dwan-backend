@@ -58,8 +58,8 @@ public class CachedRepresentationResource extends ResourceResource {
     @Path("{cachedid: " + BackendConstants.regExpIdentifier + "}/metadata")
     @Transactional(readOnly = true)
     public JAXBElement<CachedRepresentationInfo> getCachedRepresentationInfo(@PathParam("cachedid") String externalId) throws SQLException, IOException {
-        Number remoteUserID = this.getUserID();
-        if (remoteUserID != null) {
+        Number remotePrincipalID = this.getPrincipalID();
+        if (remotePrincipalID != null) {
             final Number cachedID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalId), Resource.CACHED_REPRESENTATION);
             if (cachedID != null) {
                 final CachedRepresentationInfo cachedInfo = dbIntegrityService.getCachedRepresentationInfo(cachedID);
@@ -77,8 +77,8 @@ public class CachedRepresentationResource extends ResourceResource {
     @Path("{cachedid: " + BackendConstants.regExpIdentifier + "}/content")
     @Transactional(readOnly = true)
     public BufferedImage getCachedRepresentationContent(@PathParam("cachedid") String externalId) throws SQLException, IOException {
-        Number remoteUserID = this.getUserID();
-        if (remoteUserID != null) {
+        Number remotePrincipalID = this.getPrincipalID();
+        if (remotePrincipalID != null) {
 
             final Number cachedID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalId), Resource.CACHED_REPRESENTATION);
             if (cachedID != null) {
@@ -103,8 +103,8 @@ public class CachedRepresentationResource extends ResourceResource {
     @Path("{cachedid: " + BackendConstants.regExpIdentifier + "}/stream")
     @Transactional(readOnly = true)
     public InputStream getCachedRepresentationContentStream(@PathParam("cachedid") String externalId) throws SQLException, IOException {
-        Number remoteUserID = this.getUserID();
-        if (remoteUserID != null) {
+        Number remotePrincipalID = this.getPrincipalID();
+        if (remotePrincipalID != null) {
 
             final Number cachedID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalId), Resource.CACHED_REPRESENTATION);
             if (cachedID != null) {

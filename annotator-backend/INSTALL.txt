@@ -22,7 +22,7 @@ Contents:
 =========================================================================================
 == Placing war-file and ds#webannotator.xml at the tomcat's conf/Catalina/localhost ==
 
-You must deploy the annotator's .war file to the tomcat-webuser. Make a directory for the 
+You must deploy the annotator's .war file to the tomcat-webprincipal. Make a directory for the 
 application, like e.g. lat/webapps/dasish-web-annotator on lux16,  and deploy .war there following
 the standard TLA procedure.
 
@@ -46,7 +46,7 @@ The file must contain the fragment for the database, like e.g.on lux16:
                  type="javax.sql.DataSource"
                  driverClassName="org.postgresql.Driver"
                  url="jdbc:postgresql://localhost/dasish"                
-                 username="XXXXXXX"  
+                 principalname="XXXXXXX"  
                  password="YYYYYYY"  
                  maxActive="20"
                  maxIdle="5"    
@@ -72,7 +72,7 @@ above.
 
 On this web-page there is a number of test GET requests there which you can send if you want 
 to check if it works. If you are not in the DB yet, any request will end up with the Server 
-error message "the logged-in-user". Ask Olha to add you providing with your shibboleth 
+error message "the logged-in-principal". Ask Olha to add you providing with your shibboleth 
 remote ID. If you are in the DB you should be able to perform any request, except may be
 getting annotation. If you have read access to the test annotation, you will get it.
 
@@ -89,7 +89,7 @@ see https://addons.mozilla.org/nl/firefox/addon/restclient/
 
 Example  Posting/Putting files via curl:
 
-curl -u <user>:<password> -H "Content-Type: multipart/mixed" -F 
+curl -u <principal>:<password> -H "Content-Type: multipart/mixed" -F 
 "metadata=@cachedInfoToAdd.xml; type=application/xml " -F "content=@artnouveauspain.png; 
 type=image/png" -X POST 
 http://localhost:8080/annotator-backend/api/targets/00000000-0000-0000-0000-000000000033/fragment/"(1,1)"/cached -i -v

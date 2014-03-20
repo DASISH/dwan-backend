@@ -46,17 +46,17 @@ import com.sun.jersey.core.util.Base64;
  */
 public class DummySecurityFilter implements Filter {
 
-    private final List<String> ALLOWED_USERS = Arrays.asList(DummyPrincipal.DUMMY_PRINCIPAL.getName());
+    private final List<String> ALLOWED_PRINCIPALS = Arrays.asList(DummyPrincipal.DUMMY_PRINCIPAL.getName());
 
     /**
      * Dummy validation for unit tests
      *
-     * @param username
+     * @param principalname
      * @param password
      * @return
      */
-    private boolean isValid(String username, String password) {
-        return ALLOWED_USERS.contains(username);
+    private boolean isValid(String principalname, String password) {
+        return ALLOWED_PRINCIPALS.contains(principalname);
     }
 
     @Override
@@ -77,21 +77,21 @@ public class DummySecurityFilter implements Filter {
             String base64Decode = new String(Base64.decode(authentication.getBytes()));
             String[] values = base64Decode.split(":");
             if (values.length < 2) {
-                throw new MappableContainerException(new AuthenticationException("Invalid syntax for username and password"));
+                throw new MappableContainerException(new AuthenticationException("Invalid syntax for principalname and password"));
             }
-            final String username = values[0];
+            final String principalname = values[0];
             String password = values[1];
-            if ((username == null) || (password == null)) {
-                throw new MappableContainerException(new AuthenticationException("Missing username or password"));
+            if ((principalname == null) || (password == null)) {
+                throw new MappableContainerException(new AuthenticationException("Missing principalname or password"));
             }
-            if (!isValid(username, password)) {
-                throw new MappableContainerException(new AuthenticationException("Invalid user/password"));
+            if (!isValid(principalname, password)) {
+                throw new MappableContainerException(new AuthenticationException("Invalid principal/password"));
             }
-            principalResult = new DummyPrincipal(username);
+            principalResult = new DummyPrincipal(principalname);
         }
         final Principal principal = principalResult;
         HttpServletRequestWrapper wrapper = new HttpServletRequestWrapper(req) {
-            public boolean isUserInRole(String role) {
+            public boolean isPrincipalInRole(String role) {
                 return true;
             }
 
@@ -99,7 +99,7 @@ public class DummySecurityFilter implements Filter {
                 return false;
             }
 
-            public Principal getUserPrincipal() {
+            public Principal getPrincipalPrincipal() {
                 return principal;
             }
 

@@ -17,9 +17,9 @@
  */
 package eu.dasish.annotation.backend.dao.impl;
 
-import eu.dasish.annotation.backend.dao.UserDao;
-import eu.dasish.annotation.schema.Permission;
-import eu.dasish.annotation.schema.User;
+import eu.dasish.annotation.backend.dao.PrincipalDao;
+import eu.dasish.annotation.schema.Access;
+import eu.dasish.annotation.schema.Principal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -35,11 +35,11 @@ import org.springframework.jdbc.core.RowMapper;
  *
  * @author olhsha
  */
-public class JdbcUserDao extends JdbcResourceDao implements UserDao {
+public class JdbcPrincipalDao extends JdbcResourceDao implements PrincipalDao {
 
-    private final Logger loggerUserDao = LoggerFactory.getLogger(JdbcUserDao.class);
+    private final Logger loggerPrincipalDao = LoggerFactory.getLogger(JdbcPrincipalDao.class);
 
-    public JdbcUserDao(DataSource dataSource) {
+    public JdbcPrincipalDao(DataSource dataSource) {
         setDataSource(dataSource);
         internalIdName = principal_id;
         resourceTableName = principalTableName;
@@ -52,22 +52,22 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
 
     /////////// GETTERS //////////////////////
     @Override
-    public User getUser(Number internalID) {
+    public Principal getPrincipal(Number internalID) {
 
         if (internalID == null) {
-            loggerUserDao.debug("internalID: " + nullArgument);
+            loggerPrincipalDao.debug("internalID: " + nullArgument);
             return null;
         }
 
         StringBuilder sql = new StringBuilder("SELECT ");
         sql.append(principalStar).append(" FROM ").append(principalTableName).append(" WHERE ").append(principal_id).append("= ? LIMIT 1");
-        List<User> result = this.loggedQuery(sql.toString(), userRowMapper, internalID);
+        List<Principal> result = this.loggedQuery(sql.toString(), principalRowMapper, internalID);
         return (!result.isEmpty() ? result.get(0) : null);
     }
-    private final RowMapper<User> userRowMapper = new RowMapper<User>() {
+    private final RowMapper<Principal> principalRowMapper = new RowMapper<Principal>() {
         @Override
-        public User mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            User result = new User();
+        public Principal mapRow(ResultSet rs, int rowNumber) throws SQLException {
+            Principal result = new Principal();
             result.setURI(externalIDtoURI(rs.getString(external_id)));
             result.setDisplayName(rs.getString(principal_name));
             result.setEMail(rs.getString(e_mail));
@@ -76,31 +76,31 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
     };
 
     @Override
-    public User getUserByInfo(String eMail) {
+    public Principal getPrincipalByInfo(String eMail) {
         StringBuilder sql = new StringBuilder("SELECT ");
         sql.append(principalStar).append(" FROM ").append(principalTableName).append(" WHERE ").append("LOWER(").append(e_mail).append(")").append("= ? LIMIT 1");
-        List<User> result = this.loggedQuery(sql.toString(), userRowMapper, eMail.toLowerCase());
+        List<Principal> result = this.loggedQuery(sql.toString(), principalRowMapper, eMail.toLowerCase());
         return (!result.isEmpty() ? result.get(0) : null);
     }
 
     @Override
-    public boolean userIsInUse(Number userID) {
+    public boolean principalIsInUse(Number principalID) {
 
-        if (userID == null) {
-            loggerUserDao.debug("userID: " + nullArgument);
+        if (principalID == null) {
+            loggerPrincipalDao.debug("principalID: " + nullArgument);
             return false;
         }
 
-        StringBuilder sqlPermissions = new StringBuilder("SELECT ");
-        sqlPermissions.append(principal_id).append(" FROM ").append(permissionsTableName).append(" WHERE ").append(principal_id).append("= ? LIMIT 1");
-        List<Number> resultTargets = this.loggedQuery(sqlPermissions.toString(), internalIDRowMapper, userID);
+        StringBuilder sqlAccesss = new StringBuilder("SELECT ");
+        sqlAccesss.append(principal_id).append(" FROM ").append(accesssTableName).append(" WHERE ").append(principal_id).append("= ? LIMIT 1");
+        List<Number> resultTargets = this.loggedQuery(sqlAccesss.toString(), internalIDRowMapper, principalID);
         if (resultTargets.size() > 0) {
             return true;
         };
 
         StringBuilder sqlNotebooks = new StringBuilder("SELECT ");
         sqlNotebooks.append(owner_id).append(" FROM ").append(notebookTableName).append(" WHERE ").append(owner_id).append("= ? LIMIT 1");
-        List<Number> resultNotebooks = this.loggedQuery(sqlNotebooks.toString(), ownerIDRowMapper, userID);
+        List<Number> resultNotebooks = this.loggedQuery(sqlNotebooks.toString(), ownerIDRowMapper, principalID);
         if (resultNotebooks.size() > 0) {
             return true;
         };
@@ -108,13 +108,13 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
     }
 
     @Override
-    public boolean userExists(User user) {
-        if (user == null) {
-            loggerUserDao.debug("user: " + nullArgument);
+    public boolean principalExists(Principal principal) {
+        if (principal == null) {
+            loggerPrincipalDao.debug("principal: " + nullArgument);
             return false;
         }
 
-        String emailCriterion = user.getEMail().toLowerCase();
+        String emailCriterion = principal.getEMail().toLowerCase();
         StringBuilder sqlTargets = new StringBuilder("SELECT ");
         sqlTargets.append(principal_id).append(" FROM ").append(principalTableName).append(" WHERE ").append("LOWER(").append(e_mail).append(")= ? LIMIT 1");
         List<Number> resultTargets = this.loggedQuery(sqlTargets.toString(), internalIDRowMapper, emailCriterion);
@@ -129,7 +129,7 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
     public String getRemoteID(Number internalID) {
 
         if (internalID == null) {
-            loggerUserDao.debug("internalID: " + nullArgument);
+            loggerPrincipalDao.debug("internalID: " + nullArgument);
             return null;
         }
 
@@ -146,10 +146,10 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
     };
 
     @Override
-    public Number getUserInternalIDFromRemoteID(String remoteID) {
+    public Number getPrincipalInternalIDFromRemoteID(String remoteID) {
 
         if (remoteID == null) {
-            loggerUserDao.debug("remoteID: " + nullArgument);
+            loggerPrincipalDao.debug("remoteID: " + nullArgument);
             return null;
         }
 
@@ -160,10 +160,10 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
     }
 
     @Override
-    public String getTypeOfUserAccount(Number internalID) {
+    public String getTypeOfPrincipalAccount(Number internalID) {
 
         if (internalID == null) {
-            loggerUserDao.debug("internalID: " + nullArgument);
+            loggerPrincipalDao.debug("internalID: " + nullArgument);
             return null;
         }
 
@@ -188,23 +188,23 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
     }
 
     @Override
-    public List<Number> getPrincipalIDsWithPermissionForNotebook(Number notebookID, Permission permission) {
+    public List<Number> getPrincipalIDsWithAccessForNotebook(Number notebookID, Access access) {
         if (notebookID == null) {
-            loggerUserDao.debug("notebookID: " + nullArgument);
+            loggerPrincipalDao.debug("notebookID: " + nullArgument);
             return null;
         }
 
-        if (permission == null) {
-            loggerUserDao.debug("permission: " + nullArgument);
+        if (access == null) {
+            loggerPrincipalDao.debug("access: " + nullArgument);
             return null;
         }
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("notebookID", notebookID);
-        params.put("accessMode", permission.value());
+        params.put("accessMode", access.value());
 
         StringBuilder sql = new StringBuilder("SELECT ");
-        sql.append(principal_id).append(" FROM ").append(notebookPermissionsTableName).append(" WHERE ").
-                append(notebook_id).append(" = :notebookID AND ").append(this.permission).append(" = :accessMode");
+        sql.append(principal_id).append(" FROM ").append(notebookAccesssTableName).append(" WHERE ").
+                append(notebook_id).append(" = :notebookID AND ").append(this.access).append(" = :accessMode");
 
         return this.loggedQuery(sql.toString(), internalIDRowMapper, params);
 
@@ -212,15 +212,15 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
 
     ///////////////////// ADDERS ////////////////////////////
     @Override
-    public Number addUser(User user, String remoteID) {
+    public Number addPrincipal(Principal principal, String remoteID) {
 
         if (remoteID == null) {
-            loggerUserDao.debug("remoteID: " + nullArgument);
+            loggerPrincipalDao.debug("remoteID: " + nullArgument);
             return null;
         }
 
-        if (user == null) {
-            loggerUserDao.debug("user: " + nullArgument);
+        if (principal == null) {
+            loggerPrincipalDao.debug("principal: " + nullArgument);
             return null;
         }
 
@@ -228,10 +228,10 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
         String newExternalIdentifier = externalIdentifier.toString();
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("externalId", newExternalIdentifier);
-        params.put("principalName", user.getDisplayName());
-        params.put("email", user.getEMail());
+        params.put("principalName", principal.getDisplayName());
+        params.put("email", principal.getEMail());
         params.put("remoteID", remoteID);
-        params.put("accountType", this.user);
+        params.put("accountType", this.principal);
         StringBuilder sql = new StringBuilder("INSERT INTO ");
         sql.append(principalTableName).append("(").append(external_id).append(",").
                 append(principal_name).append(",").append(e_mail).append(",").
@@ -245,16 +245,16 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
     public boolean updateAccount(UUID externalID, String account) {
 
         if (externalID == null) {
-            loggerUserDao.debug("eternalId: " + nullArgument);
+            loggerPrincipalDao.debug("eternalId: " + nullArgument);
             return false;
         }
 
         if (account == null) {
-            loggerUserDao.debug("account: " + nullArgument);
+            loggerPrincipalDao.debug("account: " + nullArgument);
             return false;
         }
 
-        if (!account.equals(admin) && !account.equals(developer) && !account.equals(user)) {
+        if (!account.equals(admin) && !account.equals(developer) && !account.equals(principal)) {
             logger.error("the given type of account '" + account + "' does not exist.");
             return false;
         }
@@ -275,25 +275,25 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
                 return false;
             }
         } else {
-            logger.error("The user with external ID " + externalID.toString() + " is not found in the data base");
+            logger.error("The principal with external ID " + externalID.toString() + " is not found in the data base");
             return false;
         }
 
     }
 
     @Override
-    public Number updateUser(User user) {
+    public Number updatePrincipal(Principal principal) {
 
-        if (user == null) {
-            loggerUserDao.debug("user: " + nullArgument);
+        if (principal == null) {
+            loggerPrincipalDao.debug("principal: " + nullArgument);
             return null;
         }
 
-        Number principalID = this.getInternalIDFromURI(user.getURI());
+        Number principalID = this.getInternalIDFromURI(principal.getURI());
         StringBuilder sql = new StringBuilder("UPDATE ");
         sql.append(principalTableName).append(" SET ").
-                append(e_mail).append("= '").append(user.getEMail()).append("',").
-                append(principal_name).append("= '").append(user.getDisplayName()).append("' ").
+                append(e_mail).append("= '").append(principal.getEMail()).append("',").
+                append(principal_name).append("= '").append(principal.getDisplayName()).append("' ").
                 append(" WHERE ").append(principal_id).append("= ?");
         int affectedRows = this.loggedUpdate(sql.toString(), principalID);
         return principalID;
@@ -301,9 +301,9 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
 
     ////// DELETERS ////////////
     @Override
-    public int deleteUser(Number internalID) {
+    public int deletePrincipal(Number internalID) {
         if (internalID == null) {
-            loggerUserDao.debug("internalID: " + nullArgument);
+            loggerPrincipalDao.debug("internalID: " + nullArgument);
             return 0;
         }
 
@@ -315,16 +315,16 @@ public class JdbcUserDao extends JdbcResourceDao implements UserDao {
     }
 
     @Override
-    public int deleteUserSafe(Number internalID) {
+    public int deletePrincipalSafe(Number internalID) {
 
         if (internalID == null) {
-            loggerUserDao.debug("internalID: " + nullArgument);
+            loggerPrincipalDao.debug("internalID: " + nullArgument);
             return 0;
         }
 
 
-        if (userIsInUse(internalID)) {
-            loggerUserDao.debug("User is in use, and cannot be deleted.");
+        if (principalIsInUse(internalID)) {
+            loggerPrincipalDao.debug("Principal is in use, and cannot be deleted.");
             return 0;
         }
         StringBuilder sql = new StringBuilder("DELETE FROM ");

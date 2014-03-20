@@ -50,9 +50,9 @@ public class DebugResource extends ResourceResource {
     @Path("annotations")
     @Transactional(readOnly = true)
     public JAXBElement<AnnotationInfoList> getAllAnnotations() throws IOException {
-        Number remoteUserID = this.getUserID();
-        if (remoteUserID != null) {
-            String typeOfAccount = dbIntegrityService.getTypeOfUserAccount(remoteUserID);
+        Number remotePrincipalID = this.getPrincipalID();
+        if (remotePrincipalID != null) {
+            String typeOfAccount = dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID);
             if (typeOfAccount.equals(admin) || typeOfAccount.equals(developer)) {
                 final AnnotationInfoList annotationInfoList = dbIntegrityService.getAllAnnotationInfos();
                 return new ObjectFactory().createAnnotationInfoList(annotationInfoList);
@@ -68,9 +68,9 @@ public class DebugResource extends ResourceResource {
     @Path("/logDatabase/{n}")
     @Transactional(readOnly = true)
     public String getDasishBackendLog(@PathParam("n") int n) throws IOException {
-        Number remoteUserID = this.getUserID();
-        if (remoteUserID != null) {
-            String typeOfAccount = dbIntegrityService.getTypeOfUserAccount(remoteUserID);
+        Number remotePrincipalID = this.getPrincipalID();
+        if (remotePrincipalID != null) {
+            String typeOfAccount = dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID);
             if (typeOfAccount.equals(admin) || typeOfAccount.equals(developer)) {
                 return logFile("eu.dasish.annotation.backend.logDatabaseLocation", n);
             } else {
@@ -94,9 +94,9 @@ public class DebugResource extends ResourceResource {
     @Path("/logServer/{n}")
     @Transactional(readOnly = true)
     public String getDasishServerLog(@PathParam("n") int n) throws IOException {
-        Number remoteUserID = this.getUserID();
-        if (remoteUserID != null) {
-            String typeOfAccount = dbIntegrityService.getTypeOfUserAccount(remoteUserID);
+        Number remotePrincipalID = this.getPrincipalID();
+        if (remotePrincipalID != null) {
+            String typeOfAccount = dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID);
             if (typeOfAccount.equals(admin) || typeOfAccount.equals(developer)) {
                 return logFile("eu.dasish.annotation.backend.logServerLocation", n);
             } else {
@@ -110,14 +110,14 @@ public class DebugResource extends ResourceResource {
     //////////////////////////////////
     @PUT
     @Produces(MediaType.TEXT_XML)
-    @Path("account/{userId}/make/{account}")
+    @Path("account/{principalId}/make/{account}")
     @Transactional(readOnly = true)
-    public String updateUsersAccount(@PathParam("userId") String userId, @PathParam("account") String account) throws IOException {
-        Number remoteUserID = this.getUserID();
-        if (remoteUserID != null) {
-            String typeOfAccount = dbIntegrityService.getTypeOfUserAccount(remoteUserID);
+    public String updatePrincipalsAccount(@PathParam("principalId") String principalId, @PathParam("account") String account) throws IOException {
+        Number remotePrincipalID = this.getPrincipalID();
+        if (remotePrincipalID != null) {
+            String typeOfAccount = dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID);
             if (typeOfAccount.equals(admin)) {
-                final boolean update = dbIntegrityService.updateAccount(UUID.fromString(userId), account);
+                final boolean update = dbIntegrityService.updateAccount(UUID.fromString(principalId), account);
                 return (update ? "The account is updated" : "The account is not updated, see the log.");
             } else {
                 verboseOutput.ADMIN_RIGHTS_EXPECTED(dbIntegrityService.getDataBaseAdmin().getDisplayName(), dbIntegrityService.getDataBaseAdmin().getEMail());
@@ -128,12 +128,12 @@ public class DebugResource extends ResourceResource {
 
     ///////////////////////////////////////////////////
     private String logFile(String location, int n) throws IOException {
-        BufferedReader reader = new BufferedReader(new FileReader(context.getInitParameter(location)));
+        BufferedReader read = new BufferedReader(new FileReader(context.getInitParameter(location)));
         List<String> lines = new ArrayList<String>();
         StringBuilder result = new StringBuilder();
         int i = 0;
         String line;
-        while ((line = reader.readLine()) != null) {
+        while ((line = read.readLine()) != null) {
             lines.add(line);
             i++;
         }
