@@ -18,7 +18,7 @@
 package eu.dasish.annotation.backend.dao;
 
 
-import eu.dasish.annotation.schema.Permission;
+import eu.dasish.annotation.schema.Access;
 import eu.dasish.annotation.schema.Notebook;
 import eu.dasish.annotation.schema.NotebookInfo;
 import java.util.List;
@@ -45,9 +45,9 @@ public interface NotebookDao extends ResourceDao {
     
     
     
-    List<Number> getNotebookIDs(Number principalID, Permission acessMode);
+    List<Number> getNotebookIDs(Number principalID, Access acessMode);
     
-    // Returns a list of notebook Ids for the notebooks for which the given user "userID" is the owner.
+    // Returns a list of notebook Ids for the notebooks for which the given principal "principalID" is the owner.
     List<Number> getNotebookIDsOwnedBy(Number principaID);
     
    
@@ -65,7 +65,7 @@ public interface NotebookDao extends ResourceDao {
      * @param notebookID
      * @return notebook metadata for the notebook with notebookID
      */
-    Notebook getNotebookWithoutAnnotationsAndPermissionsAndOwner(Number notebookID);
+    Notebook getNotebookWithoutAnnotationsAndAccesssAndOwner(Number notebookID);
     
    
    
@@ -88,7 +88,7 @@ public interface NotebookDao extends ResourceDao {
     
     boolean setOwner(Number notebookID, Number ownerID);
     
-    boolean updateUserPermissionForNotebook(Number notebookID, Number principalID, Permission permission);
+    boolean updatePrincipalAccessForNotebook(Number notebookID, Number principalID, Access access);
     
      /**
      * 
@@ -97,11 +97,11 @@ public interface NotebookDao extends ResourceDao {
      * 
      */
     
-    public Number createNotebookWithoutPermissionsAndAnnotations(Notebook notebook, Number ownerID);
+    public Number createNotebookWithoutAccesssAndAnnotations(Notebook notebook, Number ownerID);
     
     boolean addAnnotationToNotebook(Number notebookID, Number annotationID);
     
-    boolean addPermissionToNotebook(Number notebookID, Number userID, Permission permission);
+    boolean addAccessToNotebook(Number notebookID, Number principalID, Access access);
     
     
     
@@ -116,9 +116,9 @@ public interface NotebookDao extends ResourceDao {
     
     boolean deleteAllAnnotationsFromNotebook(Number notebookID);
     
-    boolean deleteNotebookPrincipalPermission(Number notebookID, Number principalID);
+    boolean deleteNotebookPrincipalAccess(Number notebookID, Number principalID);
     
-    boolean deleteAllPermissionsForNotebook(Number notebookID);
+    boolean deleteAllAccesssForNotebook(Number notebookID);
     
     boolean deleteNotebook(Number notebookID);
 }

@@ -20,13 +20,17 @@
 -- Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 --
 
+
+INSERT INTO access(access_mode) VALUES ('write');
+INSERT INTO access(access_mode) VALUES ('read');
+
 INSERT INTO principal (principal_name, external_id, remote_id, e_mail, account) VALUES ('Twan', '00000000-0000-0000-0000-000000000111', 'twagoo@mpi.nl', 'Twan.Goosen@mpi.nl', 'developer'); --1 
 INSERT INTO principal (principal_name, external_id, remote_id, e_mail, account) VALUES ('Peter', '00000000-0000-0000-0000-000000000112', 'petwit@mpi.nl', 'Peter.Withers@mpi.nl', 'developer'); -- 2
 INSERT INTO principal (principal_name, external_id, remote_id, e_mail, account) VALUES ('Olha', '00000000-0000-0000-0000-000000000113', 'olhsha@mpi.nl', 'Olha.Shakaravska@mpi.nl', 'admin'); -- 3
-INSERT INTO principal (principal_name, external_id, remote_id, e_mail, account) VALUES ('Eric', '00000000-0000-0000-0000-000000000114', 'ericauser@mpi.nl', 'Eric.Auer@mpi.nl', 'developer'); -- 4
+INSERT INTO principal (principal_name, external_id, remote_id, e_mail, account) VALUES ('Eric', '00000000-0000-0000-0000-000000000114', 'ericaprincipal@mpi.nl', 'Eric.Auer@mpi.nl', 'developer'); -- 4
 INSERT INTO principal (principal_name, external_id, remote_id, e_mail, account) VALUES ('Daan', '00000000-0000-0000-0000-000000000115', 'broeder@mpi.ml', 'Daan.Broeder@mpi.nl', 'developer'); --5 
 INSERT INTO principal (principal_name, external_id, remote_id, e_mail, account) VALUES ('Menzo', '00000000-0000-0000-0000-000000000116', 'menwin@mpi.nl', 'Menzo.Windhouwer@mpi.nl', 'developer'); -- 6
-INSERT INTO principal (principal_name, external_id, remote_id, e_mail, account) VALUES ('Przemek', '00000000-0000-0000-0000-000000000117', 'przlen@mpi,nl', 'Przemek.Lenkiewicz@mpi.nl', 'user'); -- 7
+INSERT INTO principal (principal_name, external_id, remote_id, e_mail, account) VALUES ('Przemek', '00000000-0000-0000-0000-000000000117', 'przlen@mpi,nl', 'Przemek.Lenkiewicz@mpi.nl', 'principal'); -- 7
 INSERT INTO principal (principal_name, external_id, remote_id, e_mail, account) VALUES ('Stephanie', '00000000-0000-0000-0000-000000000118', 'gusrotst@gu.se', 'stephanie.roth@gu.se', 'developer'); -- 8
 INSERT INTO principal (principal_name, external_id, remote_id, e_mail, account) VALUES ('Olof', '00000000-0000-0000-0000-000000000119', 'gusolsol@gu.se', 'olof.olsson.2@gu.se', 'developer'); -- 9
 INSERT INTO principal (principal_name, external_id, remote_id, e_mail, account) VALUES ('Willem', '00000000-0000-0000-0000-000000000220', 'wilelb@mpi.nl', 'Willem.Elbers@mpi.nl', 'developer'); -- 10
@@ -38,8 +42,8 @@ INSERT INTO notebook (title, owner_id, external_id) VALUES ('Notebook 2', 2, '00
 INSERT INTO notebook (title, owner_id, external_id) VALUES ('Notebook 3', 3, '00000000-0000-0000-0000-000000000013'); --3
 INSERT INTO notebook (title, owner_id, external_id) VALUES ('Notebook 4', 3, '00000000-0000-0000-0000-000000000014'); --4
 
-INSERT INTO annotation (owner_id, headline,body_text, body_mimetype, external_id, last_modified, is_xml) VALUES (1, 'Sagrada Famiglia','<html><body>some html 1</body></html>', 'text/html' , '00000000-0000-0000-0000-000000000021', '2013-08-12 09:25:00.383', false); --1
-INSERT INTO annotation (owner_id, headline,body_text, body_mimetype, external_id, is_xml) VALUES (2, 'Gaudi','<html><body>some html 2</body></html>', 'text/html' , '00000000-0000-0000-0000-000000000022',false); --2
+INSERT INTO annotation (owner_id, headline,body_text, body_mimetype, external_id, last_modified, is_xml, public_) VALUES (1, 'Sagrada Famiglia','<html><body>some html 1</body></html>', 'text/html' , '00000000-0000-0000-0000-000000000021', '2013-08-12 09:25:00.383', false, 'write'); --1
+INSERT INTO annotation (owner_id, headline,body_text, body_mimetype, external_id, is_xml, public_) VALUES (2, 'Gaudi','<html><body>some html 2</body></html>', 'text/html' , '00000000-0000-0000-0000-000000000022',false, 'read'); --2
 INSERT INTO annotation (owner_id, headline,body_text, body_mimetype, external_id, is_xml) VALUES (3, 'Art Nuveau','some plain text', 'text/plain' , '00000000-0000-0000-0000-000000000023', false); --3
 INSERT INTO annotation (owner_id, headline,body_text, body_mimetype, external_id, is_xml) VALUES (3, 'Annotation to delete','<html><body>some html 4</body></html>', 'text/html' , '00000000-0000-0000-0000-000000000024',false); --4
 
@@ -98,38 +102,36 @@ INSERT INTO targets_cached_representations (target_id,  cached_representation_id
 INSERT INTO targets_cached_representations (target_id,  cached_representation_id, fragment_descriptor_in_cached) VALUES (5, 7, '(0,1)');
 
 
----- PERMISSIONS --------------------------------------------------------------------------------------------
+---- ACCESSS --------------------------------------------------------------------------------------------
 
 
-INSERT INTO permission_(permission_mode) VALUES ('writer');
-INSERT INTO permission_(permission_mode) VALUES ('reader');
 
-INSERT INTO annotations_principals_permissions (annotation_id, principal_id, permission_) VALUES (1, 2, 'writer');
-INSERT INTO annotations_principals_permissions (annotation_id, principal_id, permission_) VALUES (1, 3, 'reader');
-INSERT INTO annotations_principals_permissions (annotation_id, principal_id, permission_) VALUES (1, 11, 'reader');
+INSERT INTO annotations_principals_accesss (annotation_id, principal_id, access_) VALUES (1, 2, 'write');
+INSERT INTO annotations_principals_accesss (annotation_id, principal_id, access_) VALUES (1, 3, 'read');
+INSERT INTO annotations_principals_accesss (annotation_id, principal_id, access_) VALUES (1, 11, 'read');
 
-INSERT INTO annotations_principals_permissions (annotation_id, principal_id, permission_) VALUES (2, 1, 'reader');
-INSERT INTO annotations_principals_permissions (annotation_id, principal_id, permission_) VALUES (2, 3, 'writer');
+INSERT INTO annotations_principals_accesss (annotation_id, principal_id, access_) VALUES (2, 1, 'read');
+INSERT INTO annotations_principals_accesss (annotation_id, principal_id, access_) VALUES (2, 3, 'write');
 
-INSERT INTO annotations_principals_permissions (annotation_id, principal_id, permission_) VALUES (3, 1, 'reader');
-INSERT INTO annotations_principals_permissions (annotation_id, principal_id, permission_) VALUES (3, 2, 'reader');
+INSERT INTO annotations_principals_accesss (annotation_id, principal_id, access_) VALUES (3, 1, 'read');
+INSERT INTO annotations_principals_accesss (annotation_id, principal_id, access_) VALUES (3, 2, 'read');
 
-INSERT INTO annotations_principals_permissions (annotation_id, principal_id, permission_) VALUES (4, 2, 'writer');
-INSERT INTO annotations_principals_permissions (annotation_id, principal_id, permission_) VALUES (4, 1, 'writer');
+INSERT INTO annotations_principals_accesss (annotation_id, principal_id, access_) VALUES (4, 2, 'write');
+INSERT INTO annotations_principals_accesss (annotation_id, principal_id, access_) VALUES (4, 1, 'write');
 -- checking integrity control:
--- INSERT INTO annotations_principals_permissions (annotation_id, principal_id, permission_) VALUES (5, 5, 'reader');
+-- INSERT INTO annotations_principals_accesss (annotation_id, principal_id, access_) VALUES (5, 5, 'read');
 
-INSERT INTO notebooks_principals_permissions (notebook_id, principal_id, permission_) VALUES (1, 2, 'writer');
-INSERT INTO notebooks_principals_permissions (notebook_id, principal_id, permission_) VALUES (1, 3, 'reader');
-INSERT INTO notebooks_principals_permissions (notebook_id, principal_id, permission_) VALUES (1, 4, 'writer');
-INSERT INTO notebooks_principals_permissions (notebook_id, principal_id, permission_) VALUES (1, 5, 'reader');
-INSERT INTO notebooks_principals_permissions (notebook_id, principal_id, permission_) VALUES (1, 11, 'reader');
+INSERT INTO notebooks_principals_accesss (notebook_id, principal_id, access_) VALUES (1, 2, 'write');
+INSERT INTO notebooks_principals_accesss (notebook_id, principal_id, access_) VALUES (1, 3, 'read');
+INSERT INTO notebooks_principals_accesss (notebook_id, principal_id, access_) VALUES (1, 4, 'write');
+INSERT INTO notebooks_principals_accesss (notebook_id, principal_id, access_) VALUES (1, 5, 'read');
+INSERT INTO notebooks_principals_accesss (notebook_id, principal_id, access_) VALUES (1, 11, 'read');
 
-INSERT INTO notebooks_principals_permissions (notebook_id, principal_id, permission_) VALUES (2, 1, 'reader');
-INSERT INTO notebooks_principals_permissions (notebook_id, principal_id, permission_) VALUES (2, 3, 'writer');
-INSERT INTO notebooks_principals_permissions (notebook_id, principal_id, permission_) VALUES (2, 11, 'reader');
+INSERT INTO notebooks_principals_accesss (notebook_id, principal_id, access_) VALUES (2, 1, 'read');
+INSERT INTO notebooks_principals_accesss (notebook_id, principal_id, access_) VALUES (2, 3, 'write');
+INSERT INTO notebooks_principals_accesss (notebook_id, principal_id, access_) VALUES (2, 11, 'read');
 
 
-INSERT INTO notebooks_principals_permissions (notebook_id, principal_id, permission_) VALUES (4, 2, 'writer');
-INSERT INTO notebooks_principals_permissions (notebook_id, principal_id, permission_) VALUES (4, 1, 'writer');
-INSERT INTO notebooks_principals_permissions (notebook_id, principal_id, permission_) VALUES (4, 11, 'reader');
+INSERT INTO notebooks_principals_accesss (notebook_id, principal_id, access_) VALUES (4, 2, 'write');
+INSERT INTO notebooks_principals_accesss (notebook_id, principal_id, access_) VALUES (4, 1, 'write');
+INSERT INTO notebooks_principals_accesss (notebook_id, principal_id, access_) VALUES (4, 11, 'read');

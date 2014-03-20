@@ -49,15 +49,15 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     final static protected String principalTableName = "principal";
     // joint tablenames
     final static protected String notebooksAnnotationsTableName = "notebooks_annotations";
-    final static protected String permissionsTableName = "annotations_principals_permissions";
-    final static protected String notebookPermissionsTableName = "notebooks_principals_permissions";
+    final static protected String accesssTableName = "annotations_principals_accesss";
+    final static protected String notebookAccesssTableName = "notebooks_principals_accesss";
     final static protected String annotationsTargetsTableName = "annotations_targets";
     final static protected String targetsCachedRepresentationsTableName = "targets_cached_representations";
     // base string constants: field Names
     final static protected String account = "account";
     final static protected String admin = "admin";
     final static protected String developer = "developer";
-    final static protected String user = "user";
+    final static protected String principal = "principal";
     final static protected String annotation_id = "annotation_id";
     final static protected String notebook_id = "notebook_id";
     final static protected String target_id = "target_id";
@@ -71,7 +71,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     final static protected String notebookOwner_id = "owner_id";
     final static protected String last_modified = "last_modified";
     final static protected String version = "version";
-    final static protected String permission = "permission_";
+    final static protected String access = "access_";
     final static protected String link_uri = "link_uri";
     final static protected String cached_representation_id = "cached_representation_id";
     final static protected String sibling_Target_class = "sibling_Target_class";
@@ -83,6 +83,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     final static protected String e_mail = "e_mail";
     final static protected String remote_id = "remote_id";
     final static protected String is_xml = "is_xml";
+    final static protected String public_ = "public_";
     final static protected String fragment_descriptor = "fragment_descriptor";
     final static protected String fragment_descriptor_in_cached = "fragment_descriptor_in_cached";
     final static protected String annotationStar = annotationTableName + ".*";
@@ -212,7 +213,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     // override for notebooks and annotations
     @Override
     public List<Map<Number, String>> getPermissions(Number resourceID) {
-        return (new ArrayList<Map<Number, String>>());
+        return (new ArrayList());
     }
 
     /////////////////////////////////////////////////////
@@ -254,11 +255,11 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
             return rs.getInt(owner_id);
         }
     };
-    protected final RowMapper<Map<Number, String>> principalsPermissionsRowMapper = new RowMapper<Map<Number, String>>() {
+    protected final RowMapper<Map<Number, String>> principalsAccesssRowMapper = new RowMapper<Map<Number, String>>() {
         @Override
         public Map<Number, String> mapRow(ResultSet rs, int rowNumber) throws SQLException {
             Map<Number, String> result = new HashMap<Number, String>();
-            result.put(rs.getInt(principal_id), rs.getString(permission));
+            result.put(rs.getInt(principal_id), rs.getString(access));
             return result;
         }
     };

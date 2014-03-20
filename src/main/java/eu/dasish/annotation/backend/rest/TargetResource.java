@@ -69,8 +69,8 @@ public class TargetResource extends ResourceResource {
     @Path("{targetid: " + BackendConstants.regExpIdentifier + "}")
     @Transactional(readOnly = true)
     public JAXBElement<Target> getTarget(@PathParam("targetid") String externalIdentifier) throws SQLException, IOException {
-        Number remoteUserID = this.getUserID();
-        if (remoteUserID != null) {
+        Number remotePrincipalID = this.getPrincipalID();
+        if (remotePrincipalID != null) {
 
             final Number targetID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.TARGET);
             if (targetID != null) {
@@ -90,8 +90,8 @@ public class TargetResource extends ResourceResource {
     @Path("{targetid: " + BackendConstants.regExpIdentifier + "}/versions")
     @Transactional(readOnly = true)
     public JAXBElement<ReferenceList> getSiblingTargets(@PathParam("targetid") String externalIdentifier) throws SQLException, IOException {
-        Number remoteUserID = this.getUserID();
-        if (remoteUserID != null) {
+        Number remotePrincipalID = this.getPrincipalID();
+        if (remotePrincipalID != null) {
             final Number targetID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.TARGET);
             if (targetID != null) {
                 final ReferenceList siblings = dbIntegrityService.getTargetsForTheSameLinkAs(targetID);
@@ -111,8 +111,8 @@ public class TargetResource extends ResourceResource {
     public JAXBElement<CachedRepresentationInfo> postCached(@PathParam("targetid") String targetIdentifier,
             @PathParam("fragmentDescriptor") String fragmentDescriptor,
             MultiPart multiPart) throws SQLException, IOException {
-        Number remoteUserID = this.getUserID();
-        if (remoteUserID != null) {
+        Number remotePrincipalID = this.getPrincipalID();
+        if (remotePrincipalID != null) {
             final Number targetID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(targetIdentifier), Resource.TARGET);
             if (targetID != null) {
                 CachedRepresentationInfo metadata = multiPart.getBodyParts().get(0).getEntityAs(CachedRepresentationInfo.class);
@@ -133,8 +133,8 @@ public class TargetResource extends ResourceResource {
     @Path("{targetid: " + BackendConstants.regExpIdentifier + "}/cached/{cachedid: " + BackendConstants.regExpIdentifier + "}")
     public String deleteCachedForTarget(@PathParam("targetid") String targetExternalIdentifier,
             @PathParam("cachedid") String cachedExternalIdentifier) throws SQLException, IOException {
-        Number remoteUserID = this.getUserID();
-        if (remoteUserID != null) {
+        Number remotePrincipalID = this.getPrincipalID();
+        if (remotePrincipalID != null) {
             final Number targetID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(targetExternalIdentifier), Resource.TARGET);
             if (targetID != null) {
                 final Number cachedID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(cachedExternalIdentifier), Resource.CACHED_REPRESENTATION);

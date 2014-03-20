@@ -25,7 +25,7 @@
 ">
    <!-- Context for testing the sources service with mock implementations -->
 	   
-    <!-- Mocked users -->
-    <bean id="userDao" factory-bean="mockObjectsFactoryDao" factory-method="newUserDao" />
+    <!-- Mocked principals -->
+    <bean id="principalDao" factory-bean="mockObjectsFactoryDao" factory-method="newPrincipalDao" />
     
 </beans>

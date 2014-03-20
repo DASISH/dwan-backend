@@ -18,7 +18,7 @@
 package eu.dasish.annotation.backend.rest;
 
 import eu.dasish.annotation.schema.ObjectFactory;
-import eu.dasish.annotation.schema.User;
+import eu.dasish.annotation.schema.Principal;
 import java.io.IOException;
 import java.sql.SQLException;
 import javax.servlet.ServletException;
@@ -44,14 +44,14 @@ public class AutheticationResource extends ResourceResource {
     
     @GET
     @Produces(MediaType.TEXT_XML)
-    @Path("user")
+    @Path("principal")
     @Transactional(readOnly = true)
-    public JAXBElement<User> getCurrentUser() throws IOException {
-        Number userID = this.getUserID();
-        if (userID != null) {
-            return new ObjectFactory().createUser(dbIntegrityService.getUser(userID));
+    public JAXBElement<Principal> getCurrentPrincipal() throws IOException {
+        Number principalID = this.getPrincipalID();
+        if (principalID != null) {
+            return new ObjectFactory().createPrincipal(dbIntegrityService.getPrincipal(principalID));
         }
-        return new ObjectFactory().createUser(new User());
+        return new ObjectFactory().createPrincipal(new Principal());
     }
 
     /* the only request that redirects to the shibboleth login-page
@@ -61,23 +61,23 @@ public class AutheticationResource extends ResourceResource {
     @Produces(MediaType.TEXT_XML)
     @Path("login")
     @Transactional(readOnly = true)
-    public JAXBElement<User> loginAndGet() throws IOException {
+    public JAXBElement<Principal> loginAndGet() throws IOException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
-        String remoteUser = httpServletRequest.getRemoteUser();
+        String remotePrincipal = httpServletRequest.getRemoteUser();
         verboseOutput = new VerboseOutput(httpServletResponse, loggerServer);
-        if (remoteUser != null) {
-            if (!remoteUser.equals("anonymous")) {                
-                final Number remoteUserID = dbIntegrityService.getUserInternalIDFromRemoteID(remoteUser);
-                if (remoteUserID != null) {
-                    return new ObjectFactory().createUser(dbIntegrityService.getUser(remoteUserID));
+        if (remotePrincipal != null) {
+            if (!remotePrincipal.equals("anonymous")) {                
+                final Number remotePrincipalID = dbIntegrityService.getPrincipalInternalIDFromRemoteID(remotePrincipal);
+                if (remotePrincipalID != null) {
+                    return new ObjectFactory().createPrincipal(dbIntegrityService.getPrincipal(remotePrincipalID));
                 } else {
-                    verboseOutput.REMOTE_PRINCIPAL_NOT_FOUND(remoteUser, dbIntegrityService.getDataBaseAdmin().getDisplayName(), dbIntegrityService.getDataBaseAdmin().getEMail());
+                    verboseOutput.REMOTE_PRINCIPAL_NOT_FOUND(remotePrincipal, dbIntegrityService.getDataBaseAdmin().getDisplayName(), dbIntegrityService.getDataBaseAdmin().getEMail());
                 }
             } else {
                 verboseOutput.ANONYMOUS_PRINCIPAL();
             }
         }
-        return new ObjectFactory().createUser(new User());
+        return new ObjectFactory().createPrincipal(new Principal());
     }
 
     @GET

@@ -32,27 +32,27 @@ import java.security.Principal;
 //import de.mpg.aai.shhaa.model.AuthPrincipal;
 
 /**
- * Wrapper class to hold the userPrincipal and a displayName
+ * Wrapper class to hold the principalPrincipal and a displayName
  * 
  */
-public class UserCredentials {
+public class PrincipalCredentials {
 
-    private final Principal userPrincipal;
+    private final Principal principalPrincipal;
 
-    public UserCredentials(Principal userPrincipal) {
-        this.userPrincipal = userPrincipal;
+    public PrincipalCredentials(Principal principalPrincipal) {
+        this.principalPrincipal = principalPrincipal;
     }
 
     public Principal getPrincipal() {
-        return userPrincipal;
+        return principalPrincipal;
     }
 
     public String getPrincipalName() {
-        return userPrincipal.getName();
+        return principalPrincipal.getName();
     }
 
 //    public String getPrincipalNameMD5Hex() {
-//        return getPrincipalNameMD5Hex(userPrincipal.getName());
+//        return getPrincipalNameMD5Hex(principalPrincipal.getName());
 //    }
 //
 //    public static String getPrincipalNameMD5Hex(String name){
@@ -61,9 +61,9 @@ public class UserCredentials {
 
     public String getDisplayName() {
         String result = null;
-//        if (userPrincipal instanceof AuthPrincipal) {
+//        if (principalPrincipal instanceof AuthPrincipal) {
 //            List<String> displayNamesAttributes = Configuration.getInstance().getDisplayNameShibbolethKeys();
-//            AuthPrincipal authPrincipal = (AuthPrincipal) userPrincipal;
+//            AuthPrincipal authPrincipal = (AuthPrincipal) principalPrincipal;
 //            for (String key : displayNamesAttributes) {
 //                result = getValue(authPrincipal, key);
 //                if (result != null) {

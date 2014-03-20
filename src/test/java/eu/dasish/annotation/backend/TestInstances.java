@@ -20,11 +20,11 @@ package eu.dasish.annotation.backend;
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationBody;
 import eu.dasish.annotation.schema.AnnotationBody.TextBody;
-import eu.dasish.annotation.schema.Permission;
+import eu.dasish.annotation.schema.Access;
 import eu.dasish.annotation.schema.TargetInfo;
 import eu.dasish.annotation.schema.TargetInfoList;
-import eu.dasish.annotation.schema.UserWithPermission;
-import eu.dasish.annotation.schema.UserWithPermissionList;
+import eu.dasish.annotation.schema.Permission;
+import eu.dasish.annotation.schema.PermissionList;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 
@@ -51,21 +51,21 @@ public class TestInstances {
             System.out.println("wrongly-formatted test timestamp " + "2013-08-12T09:25:00.383000Z");
             result.setLastModified(null);
         }
-        UserWithPermissionList upL = new UserWithPermissionList();
+        PermissionList upL = new PermissionList();
         TargetInfoList targets = new TargetInfoList();
         result.setPermissions(upL);
         result.setTargets(targets);
 
-        UserWithPermission up1 = new UserWithPermission();
-        up1.setRef(baseURI + "users/00000000-0000-0000-0000-000000000112");
-        up1.setPermission(Permission.WRITER);
+        Permission up1 = new Permission();
+        up1.setPrincipalRef(baseURI + "principals/00000000-0000-0000-0000-000000000112");
+        up1.setLevel(Access.WRITE);
 
-        UserWithPermission up2 = new UserWithPermission();
-        up2.setRef(baseURI + "users/00000000-0000-0000-0000-000000000113");
-        up2.setPermission(Permission.READER);
+        Permission up2 = new Permission();
+        up2.setPrincipalRef(baseURI + "principals/00000000-0000-0000-0000-000000000113");
+        up2.setLevel(Access.READ);
 
-        upL.getUserWithPermission().add(up1);
-        upL.getUserWithPermission().add(up2);
+        upL.getPermission().add(up1);
+        upL.getPermission().add(up2);
 
         TargetInfo target1 = new TargetInfo();
         target1.setLink("http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia");
@@ -110,9 +110,9 @@ public class TestInstances {
         result.setHeadline(headline);
 
         if (baseURI != null) {
-            result.setOwnerRef(baseURI + "users/" + ownerID);
+            result.setOwnerRef(baseURI + "principals/" + ownerID);
         } else {
-            result.setOwnerRef("users/" + ownerID);
+            result.setOwnerRef("principals/" + ownerID);
         }
 
         result.setLastModified(null);

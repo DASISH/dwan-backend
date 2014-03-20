@@ -20,7 +20,7 @@ package eu.dasish.annotation.backend.dao.impl;
 import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.TestInstances;
 import eu.dasish.annotation.schema.Annotation;
-import eu.dasish.annotation.schema.Permission;
+import eu.dasish.annotation.schema.Access;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -106,18 +106,18 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
     
     ///////////////////////////////////////////
     @Test
-    public void testDeleteAnnotationPrinciplePermissions() throws SQLException{
+    public void testDeleteAnnotationPrincipleAccesss() throws SQLException{
         System.out.println("test deleteAllAnnotationTargets");
-        int result = jdbcAnnotationDao.deleteAnnotationPrincipalPermissions(1);
+        int result = jdbcAnnotationDao.deleteAnnotationPrincipalAccesss(1);
         assertEquals(3, result);
-        assertEquals(0, jdbcAnnotationDao.deleteAnnotationPrincipalPermissions(1));
+        assertEquals(0, jdbcAnnotationDao.deleteAnnotationPrincipalAccesss(1));
     }
     
     ///////////////////////////////////////////
     @Test
-    public void testAddAnnotationPrinciplePermission() throws SQLException{
+    public void testAddAnnotationPrincipleAccess() throws SQLException{
         System.out.println("test addAnnotationTargets");
-        int result = jdbcAnnotationDao.addAnnotationPrincipalPermission(1, 1, Permission.READER);
+        int result = jdbcAnnotationDao.addAnnotationPrincipalAccess(1, 1, Access.READ);
         assertEquals(1, result);
     }
     
@@ -229,14 +229,14 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
 
     /**
      *
-     * Test of getAnnotationWithoutTargetsAndPermissions method, of class JdbcAnnotationDao. Annotation
+     * Test of getAnnotationWithoutTargetsAndAccesss method, of class JdbcAnnotationDao. Annotation
      * getAnnotation(Number annotationlID)
      */
     @Test
-    public void getAnnotationWithoutTargetsAndPermissions() throws SQLException, DatatypeConfigurationException {
+    public void getAnnotationWithoutTargetsAndAccesss() throws SQLException, DatatypeConfigurationException {
         System.out.println("test getAnnotationWithoutTargets");
         jdbcAnnotationDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_annotations);
-        final Annotation result= jdbcAnnotationDao.getAnnotationWithoutTargetsAndPermissions(1);
+        final Annotation result= jdbcAnnotationDao.getAnnotationWithoutTargetsAndAccesss(1);
         
         assertEquals("Sagrada Famiglia", result.getHeadline());
         assertEquals("<html><body>some html 1</body></html>", result.getBody().getTextBody().getBody()); 
@@ -260,7 +260,7 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         
         // to provide integrity, first delete rows in the joint tables
         jdbcAnnotationDao.deleteAllAnnotationTarget(4);
-        jdbcAnnotationDao.deleteAnnotationPrincipalPermissions(4);
+        jdbcAnnotationDao.deleteAnnotationPrincipalAccesss(4);
         
         assertEquals(1, jdbcAnnotationDao.deleteAnnotation(4));
         assertEquals(0, jdbcAnnotationDao.deleteAnnotation(4));
@@ -281,7 +281,7 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         assertEquals(5, newAnnotationID);
         
         // checking
-        Annotation addedAnnotation= jdbcAnnotationDao.getAnnotationWithoutTargetsAndPermissions(5);
+        Annotation addedAnnotation= jdbcAnnotationDao.getAnnotationWithoutTargetsAndAccesss(5);
         assertFalse(null == addedAnnotation.getURI());
         assertFalse(null == addedAnnotation.getLastModified());
         assertEquals(annotationToAdd.getBody().getTextBody().getMimeType(), addedAnnotation.getBody().getTextBody().getMimeType());
@@ -357,16 +357,16 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
    
   
     
-    // public List<Map<Number, String>> retrievePermissions(Number annotationId)
+    // public List<Map<Number, String>> retrieveAccesss(Number annotationId)
     
     @Test
-    public void testRetrievePermissions (){
-        System.out.println("test Permissions");
+    public void testRetrieveAccesss (){
+        System.out.println("test Accesss");
         List<Map<Number, String>> result = jdbcAnnotationDao.getPermissions(1);
         assertEquals(3, result.size());
-        assertEquals("writer", result.get(0).get(2));
-        assertEquals("reader", result.get(1).get(3));
-        assertEquals("reader", result.get(2).get(11));
+        assertEquals("write", result.get(0).get(2));
+        assertEquals("read", result.get(1).get(3));
+        assertEquals("read", result.get(2).get(11));
         
     }
 }

@@ -85,7 +85,7 @@ public class AnnotationsTest extends JerseyTest {
     private String getApplicationContextFile() {
 	// sorry for the duplication, but JerseyTest is not aware of
 	// @ContextConfiguration
-	return "classpath:spring-config/componentscan.xml, classpath:spring-config/notebookDao.xml, classpath:spring-config/annotationDao.xml, classpath:spring-config/userDao.xml, classpath:spring-config/targetDao.xml, classpath:spring-config/cachedRepresentationDao.xml, classpath:spring-config/dbIntegrityService.xml, classpath:spring-config/jaxbMarshallerFactory.xml, classpath:spring-test-config/dataSource.xml";
+	return "classpath:spring-config/componentscan.xml, classpath:spring-config/notebookDao.xml, classpath:spring-config/annotationDao.xml, classpath:spring-config/principalDao.xml, classpath:spring-config/targetDao.xml, classpath:spring-config/cachedRepresentationDao.xml, classpath:spring-config/dbIntegrityService.xml, classpath:spring-config/jaxbMarshallerFactory.xml, classpath:spring-test-config/dataSource.xml";
     }
     
     
@@ -134,13 +134,13 @@ public class AnnotationsTest extends JerseyTest {
         assertEquals(testAnnotation.getBody().getTextBody().getBody(), entity.getBody().getTextBody().getBody());
         assertEquals(testAnnotation.getHeadline(), entity.getHeadline());
         assertEquals(testAnnotation.getOwnerRef(), entity.getOwnerRef());
-        assertEquals(3, entity.getPermissions().getUserWithPermission().size());
-        assertEquals("writer", entity.getPermissions().getUserWithPermission().get(0).getPermission().value());
-        assertEquals(resource().getURI()+"users/"+"00000000-0000-0000-0000-000000000112", entity.getPermissions().getUserWithPermission().get(0).getRef()); 
-        assertEquals("reader", entity.getPermissions().getUserWithPermission().get(1).getPermission().value()); 
-        assertEquals(resource().getURI()+"users/"+"00000000-0000-0000-0000-000000000113", entity.getPermissions().getUserWithPermission().get(1).getRef()); 
-        assertEquals("reader", entity.getPermissions().getUserWithPermission().get(1).getPermission().value()); 
-        assertEquals(resource().getURI()+"users/"+"00000000-0000-0000-0000-000000000221", entity.getPermissions().getUserWithPermission().get(2).getRef()); 
+        assertEquals(3, entity.getPermissions().getPermission().size());
+        assertEquals("write", entity.getPermissions().getPermission().get(0).getLevel().value());
+        assertEquals(resource().getURI()+"principals/"+"00000000-0000-0000-0000-000000000112", entity.getPermissions().getPermission().get(0).getPrincipalRef()); 
+        assertEquals("read", entity.getPermissions().getPermission().get(1).getLevel().value()); 
+        assertEquals(resource().getURI()+"principals/"+"00000000-0000-0000-0000-000000000113", entity.getPermissions().getPermission().get(1).getPrincipalRef()); 
+        assertEquals("read", entity.getPermissions().getPermission().get(1).getLevel().value()); 
+        assertEquals(resource().getURI()+"principals/"+"00000000-0000-0000-0000-000000000221", entity.getPermissions().getPermission().get(2).getPrincipalRef()); 
         assertEquals(2, entity.getTargets().getTargetInfo().size());
         assertEquals(resource().getURI().toString()+"targets/"+"00000000-0000-0000-0000-000000000031", entity.getTargets().getTargetInfo().get(0).getRef());
         assertEquals(resource().getURI().toString()+"targets/"+"00000000-0000-0000-0000-000000000032", entity.getTargets().getTargetInfo().get(1).getRef());
@@ -190,7 +190,7 @@ public class AnnotationsTest extends JerseyTest {
         // Adding annotation
         System.out.println("test createAnnotation");
         System.out.println("POST "+resource().getURI().toString()+"annotations/");
-        final String ownerString = resource().getURI().toString()+"users/"+"00000000-0000-0000-0000-000000000113";
+        final String ownerString = resource().getURI().toString()+"principals/"+"00000000-0000-0000-0000-000000000113";
         final Annotation annotationToAdd = new Annotation();
         final JAXBElement<Annotation> jaxbElement = (new ObjectFactory()).createAnnotation(annotationToAdd);
         annotationToAdd.setPermissions(null);
@@ -223,11 +223,11 @@ public class AnnotationsTest extends JerseyTest {
         assertEquals(annotationToAdd.getBody().getTextBody().getBody(), entityA.getBody().getTextBody().getBody());
         assertEquals(annotationToAdd.getBody().getTextBody().getMimeType(), entityA.getBody().getTextBody().getMimeType());
         assertEquals(annotationToAdd.getHeadline(), entityA.getHeadline());
-        assertEquals(0, entityA.getPermissions().getUserWithPermission().size());
+        assertEquals(0, entityA.getPermissions().getPermission().size());
         assertEquals(annotationToAdd.getOwnerRef(), entityA.getOwnerRef());
         assertEquals(annotationToAdd.getTargets().getTargetInfo().get(0).getLink(), entityA.getTargets().getTargetInfo().get(0).getLink());
         // new ref is generated
-        //assertEquals(annotationToAdd.getTargets().getTargetInfo().get(0).getRef(), entityA.getTargets().getTargetInfo().get(0).getRef());
+        //assertEquals(annotationToAdd.getTargets().getTargetInfo().get(0).getPrincipalRef(), entityA.getTargets().getTargetInfo().get(0).getPrincipalRef());
         assertEquals(annotationToAdd.getTargets().getTargetInfo().get(0).getVersion(), entityA.getTargets().getTargetInfo().get(0).getVersion());
         //last modified is updated by the server
         //assertEquals(annotationToAdd.getLastModified(), entityA.getLastModified());

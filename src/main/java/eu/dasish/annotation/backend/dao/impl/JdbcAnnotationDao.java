@@ -24,6 +24,7 @@ import eu.dasish.annotation.schema.AnnotationBody;
 import eu.dasish.annotation.schema.AnnotationBody.TextBody;
 import eu.dasish.annotation.schema.AnnotationBody.XmlBody;
 import eu.dasish.annotation.schema.AnnotationInfo;
+import eu.dasish.annotation.schema.Access;
 import eu.dasish.annotation.schema.Permission;
 import java.lang.String;
 import java.sql.ResultSet;
@@ -65,39 +66,39 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
 
     ///////////////////////////////////////////////////////////////////
     @Override
-    public List<Map<Number, String>>  getPermissions(Number annotationID) {
+    public List<Map<Number,String>>  getPermissions(Number annotationID) {
         if (annotationID == null) {
             loggerAnnotationDao.debug(nullArgument);
             return null;
         }
         StringBuilder sql = new StringBuilder("SELECT ");
-        sql.append(principal_id).append(",").append(permission).append(" FROM ").append(permissionsTableName).append(" WHERE ").append(annotation_id).append("  = ?");
+        sql.append(principal_id).append(",").append(access).append(" FROM ").append(accesssTableName).append(" WHERE ").append(annotation_id).append("  = ?");
         logger.debug("Parameter "+annotation_id+" := "+annotationID.intValue());
-        return this.loggedQuery(sql.toString(), principalsPermissionsRowMapper, annotationID);
+        return this.loggedQuery(sql.toString(), principalsAccesssRowMapper, annotationID);
     }
     
     
     @Override
-    public Permission getPermission(Number annotationID, Number userID) {
+    public Access getAccess(Number annotationID, Number principalID) {
         if (annotationID == null) {
             loggerAnnotationDao.debug("annotationID: " + nullArgument);
             return null;
         }
 
-        if (userID == null) {
-            loggerAnnotationDao.debug("userID: " + nullArgument);
+        if (principalID == null) {
+            loggerAnnotationDao.debug("principalID: " + nullArgument);
             return null;
         }
         
         Map<String, Number> params = new HashMap<String,Number>();
         params.put("annotationId", annotationID);
-        params.put("principalId", userID);
+        params.put("principalId", principalID);
         
         StringBuilder sql = new StringBuilder("SELECT ");
-        sql.append(permission).append(" FROM ").append(permissionsTableName).append(" WHERE ").
+        sql.append(access).append(" FROM ").append(accesssTableName).append(" WHERE ").
                 append(annotation_id).append("  =  :annotationId ").append(" AND ").
                 append(principal_id).append("  = :principalId").append(" LIMIT 1");
-        List<Permission> result = this.loggedQuery(sql.toString(), permissionRowMapper, params);
+        List<Access> result = this.loggedQuery(sql.toString(), accessRowMapper, params);
        
         if (result == null) {
             return null;
@@ -107,10 +108,10 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         }
         return result.get(0);
     }
-    private final RowMapper<Permission> permissionRowMapper = new RowMapper<Permission>() {
+    private final RowMapper<Access> accessRowMapper = new RowMapper<Access>() {
         @Override
-        public Permission mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            return Permission.fromValue(rs.getString(permission));
+        public Access mapRow(ResultSet rs, int rowNumber) throws SQLException {
+            return Access.fromValue(rs.getString(access));
         }
     };
 
@@ -146,24 +147,24 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
 
     ///////////////////////////////////////////////////////////////////////////////////
     @Override
-    public List<Number> getAnnotationIDsForUserWithPermission(Number userID, String access) {
+    public List<Number> getAnnotationIDsForPermission(Number principalID, String access) {
 
-        if (userID == null) {
-            loggerAnnotationDao.debug("userID: " + nullArgument);
+        if (principalID == null) {
+            loggerAnnotationDao.debug("principalID: " + nullArgument);
             return null;
         }
 
         if (access == null) {
-            logger.info("The access argument is null. I assign it a default value 'reader'.");
-            access = "reader";
+            logger.info("The access argument is null. I assign it a default value 'read'.");
+            access = "read";
         }
 
 
         StringBuilder sql = new StringBuilder("SELECT ");
-        sql.append(annotation_id).append(" FROM ").append(permissionsTableName).append(" WHERE ").
+        sql.append(annotation_id).append(" FROM ").append(accesssTableName).append(" WHERE ").
                 append(principal_id).append("  = ?").append(" AND ").
-                append(permission).append("  = ").append(access);
-        return this.loggedQuery(sql.toString(), internalIDRowMapper, userID);
+                append(access).append("  = ").append(access);
+        return this.loggedQuery(sql.toString(), internalIDRowMapper, principalID);
     }
 
     //////////////////////////////
@@ -282,7 +283,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
 
     //////////////////////////////////////////////////////////////////////////
     @Override
-    public Annotation getAnnotationWithoutTargetsAndPermissions(Number annotationID) {
+    public Annotation getAnnotationWithoutTargetsAndAccesss(Number annotationID) {
         if (annotationID == null) {
             loggerAnnotationDao.debug("annotationID: " + nullArgument);
             return null;
@@ -350,10 +351,10 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
 //            return true;
 //        }
 //
-//        StringBuilder sqlPermissions = new StringBuilder("SELECT ");
-//        sqlPermissions.append(principal_id).append(" FROM ").append(permissionsTableName).append(" WHERE ").append(annotation_id).append("= ? LIMIT 1");
-//        List<Number> resultPermissions = this.loggedQuery(sqlPermissions.toString(), principalIDRowMapper, annotationID);
-//        return (resultPermissions.size() > 0);
+//        StringBuilder sqlAccesss = new StringBuilder("SELECT ");
+//        sqlAccesss.append(principal_id).append(" FROM ").append(accesssTableName).append(" WHERE ").append(annotation_id).append("= ? LIMIT 1");
+//        List<Number> resultAccesss = this.loggedQuery(sqlAccesss.toString(), principalIDRowMapper, annotationID);
+//        return (resultAccesss.size() > 0);
 //    }
     
      @Override
@@ -441,39 +442,39 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
     }
 
     @Override
-    public int updateAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission) {
+    public int updateAnnotationPrincipalAccess(Number annotationID, Number principalID, Access access) {
 
         if (annotationID == null) {
             loggerAnnotationDao.debug("annotationID: " + nullArgument);
             return 0;
         }
 
-        if (userID == null) {
-            loggerAnnotationDao.debug("userID: " + nullArgument);
+        if (principalID == null) {
+            loggerAnnotationDao.debug("principalID: " + nullArgument);
             return 0;
         }
 
-        if (permission == null) {
-            loggerAnnotationDao.debug("permission: " + nullArgument);
+        if (access == null) {
+            loggerAnnotationDao.debug("access: " + nullArgument);
             return 0;
         }
 
         Map<String, Object> params = new HashMap<String, Object>();
 
         params.put("annotationID", annotationID);
-        params.put("principalID", userID);
+        params.put("principalID", principalID);
 
-        if (permission != null) {
-            params.put("permission", permission.value());
+        if (access != null) {
+            params.put("access", access.value());
             StringBuilder sql = new StringBuilder("UPDATE ");
-            sql.append(permissionsTableName).append(" SET ").
-                    append(this.permission).append("= :permission").
+            sql.append(accesssTableName).append(" SET ").
+                    append(this.access).append("= :access").
                     append(" WHERE ").append(annotation_id).append("= :annotationID").
                     append(" AND ").append(principal_id).append("= :principalID");
             return this.loggedUpdate(sql.toString(), params);
         } else {
             StringBuilder sql = new StringBuilder("DELETE FROM ");
-            sql.append(permissionsTableName).append(" WHERE ").append(annotation_id).append("= :annotationID").
+            sql.append(accesssTableName).append(" WHERE ").append(annotation_id).append("= :annotationID").
                     append(" AND ").append(principal_id).append("= :principalID");
             return (this.loggedUpdate(sql.toString(), params));
         }
@@ -538,32 +539,32 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
 
     /////////////////////////////////////////////////////////////////////////////////////////
     @Override
-    public int addAnnotationPrincipalPermission(Number annotationID, Number userID, Permission permission) {
+    public int addAnnotationPrincipalAccess(Number annotationID, Number principalID, Access access) {
 
         if (annotationID == null) {
             loggerAnnotationDao.debug("annotationID: " + nullArgument);
             return 0;
         }
 
-        if (userID == null) {
-            loggerAnnotationDao.debug("userID: " + nullArgument);
+        if (principalID == null) {
+            loggerAnnotationDao.debug("principalID: " + nullArgument);
             return 0;
         }
 
-        if (permission == null) {
-            loggerAnnotationDao.debug("permission: " + nullArgument);
+        if (access == null) {
+            loggerAnnotationDao.debug("access: " + nullArgument);
             return 0;
         }
 
 
-        Map<String, Object> paramsPermissions = new HashMap<String, Object>();
-        paramsPermissions.put("annotationId", annotationID);
-        paramsPermissions.put("principalId", userID);
-        paramsPermissions.put("status", permission.value());
-        StringBuilder sqlUpdatePermissionTable = new StringBuilder("INSERT INTO ");
-        sqlUpdatePermissionTable.append(permissionsTableName).append(" (").append(annotation_id).append(",").append(principal_id).append(",").append(this.permission).append(") VALUES (:annotationId, :principalId, :status)");
-        final int affectedPermissions = this.loggedUpdate(sqlUpdatePermissionTable.toString(), paramsPermissions);
-        return affectedPermissions;
+        Map<String, Object> paramsAccesss = new HashMap<String, Object>();
+        paramsAccesss.put("annotationId", annotationID);
+        paramsAccesss.put("principalId", principalID);
+        paramsAccesss.put("status", access.value());
+        StringBuilder sqlUpdateAccessTable = new StringBuilder("INSERT INTO ");
+        sqlUpdateAccessTable.append(accesssTableName).append(" (").append(annotation_id).append(",").append(principal_id).append(",").append(this.access).append(") VALUES (:annotationId, :principalId, :status)");
+        final int affectedAccesss = this.loggedUpdate(sqlUpdateAccessTable.toString(), paramsAccesss);
+        return affectedAccesss;
     }
 
     //////////////////////////////////////////////////////////////////////////////////
@@ -594,11 +595,11 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
 
     //////////////////////////////////////////////////////
     @Override
-    public int deleteAnnotationPrincipalPermissions(Number annotationID) {
+    public int deleteAnnotationPrincipalAccesss(Number annotationID) {
         if (annotationID != null) {
-            StringBuilder sqlPermissions = new StringBuilder("DELETE FROM ");
-            sqlPermissions.append(permissionsTableName).append(" WHERE ").append(annotation_id).append(" = ?");
-            return this.loggedUpdate(sqlPermissions.toString(), annotationID); // removed "permission" rows 
+            StringBuilder sqlAccesss = new StringBuilder("DELETE FROM ");
+            sqlAccesss.append(accesssTableName).append(" WHERE ").append(annotation_id).append(" = ?");
+            return this.loggedUpdate(sqlAccesss.toString(), annotationID); // removed "access" rows 
         } else {
             loggerAnnotationDao.debug("annotationID: " + nullArgument);
             return 0;
@@ -621,18 +622,18 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
 
     //////////////////////////////////////////////////////
     @Override
-    public int deleteAnnotationPrincipalPermission(Number annotationID, Number userID) {
+    public int deleteAnnotationPrincipalAccess(Number annotationID, Number principalID) {
         if (annotationID != null) {
-            if (userID != null) {
+            if (principalID != null) {
                 Map<String, Number> params = new HashMap();
                 params.put("annotationId", annotationID);
-                params.put("userId", userID);
-                StringBuilder sqlPermissions = new StringBuilder("DELETE FROM ");
-                sqlPermissions.append(permissionsTableName).append(" WHERE ").append(annotation_id).append(" = :annotationId AND ").
-                        append(principal_id).append(" = :userId");
-                return this.loggedUpdate(sqlPermissions.toString(), params);
+                params.put("principalId", principalID);
+                StringBuilder sqlAccesss = new StringBuilder("DELETE FROM ");
+                sqlAccesss.append(accesssTableName).append(" WHERE ").append(annotation_id).append(" = :annotationId AND ").
+                        append(principal_id).append(" = :principalId");
+                return this.loggedUpdate(sqlAccesss.toString(), params);
             } else {
-                loggerAnnotationDao.debug("userID: " + nullArgument);
+                loggerAnnotationDao.debug("principalID: " + nullArgument);
                 return 0;
             }
         } else {

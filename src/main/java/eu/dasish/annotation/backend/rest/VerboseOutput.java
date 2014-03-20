@@ -47,7 +47,7 @@ public class VerboseOutput {
     }
 
     private MessageStatus _NOT_LOGGED_IN(String adminName, String adminEmail) {
-        return new MessageStatus(" The user is not logged-in or its remote login is corrupted by setting to null. In the latter case contact the admin " + adminName + " via the e-mail " + adminEmail, HttpServletResponse.SC_UNAUTHORIZED);
+        return new MessageStatus(" The principal is not logged-in or its remote login is corrupted by setting to null. In the latter case contact the admin " + adminName + " via the e-mail " + adminEmail, HttpServletResponse.SC_UNAUTHORIZED);
     }
 
     private MessageStatus _FORBIDDEN_RESOURCE_ACTION(String identifier, String resource, String action, String ownerName, String ownerEMail) {
@@ -91,8 +91,8 @@ public class VerboseOutput {
 
     }
 
-    private MessageStatus _INVALID_PERMISSION_MODE(String permissionMode) {
-        return new MessageStatus(permissionMode + " is an invalid permission value, which must be either owner, or reader, or writer.", HttpServletResponse.SC_BAD_REQUEST);
+    private MessageStatus _INVALID_ACCESS_MODE(String accessMode) {
+        return new MessageStatus(accessMode + " is an invalid access value, which must be either owner, or read, or write.", HttpServletResponse.SC_BAD_REQUEST);
     }
 
     private MessageStatus _IDENTIFIER_MISMATCH(String identifier) {
@@ -153,7 +153,7 @@ public class VerboseOutput {
         this.sendMessage(this._FORBIDDEN_RESOURCE_ACTION(identifier, "annotation", "write", ownerName, ownerEMail));
     }
 
-    public void FORBIDDEN_PERMISSION_CHANGING(String identifier, String ownerName, String ownerEMail) throws IOException {
+    public void FORBIDDEN_ACCESS_CHANGING(String identifier, String ownerName, String ownerEMail) throws IOException {
         this.sendMessage(this._FORBIDDEN_RESOURCE_ACTION(identifier, "resource", "change", ownerName, ownerEMail));
     }
 
@@ -189,8 +189,8 @@ public class VerboseOutput {
         this.sendMessage(this._CACHED_REPRESENTATION_IS_NULL());
     }
 
-    public void INVALID_PERMISSION_MODE(String permissionMode) throws IOException {
-        this.sendMessage(this._INVALID_PERMISSION_MODE(permissionMode));
+    public void INVALID_ACCESS_MODE(String accessMode) throws IOException {
+        this.sendMessage(this._INVALID_ACCESS_MODE(accessMode));
     }
 
     public void IDENTIFIER_MISMATCH(String externalIdentifier) throws IOException {

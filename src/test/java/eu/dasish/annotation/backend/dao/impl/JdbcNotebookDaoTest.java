@@ -19,7 +19,7 @@ package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.schema.Notebook;
 import eu.dasish.annotation.schema.NotebookInfo;
-import eu.dasish.annotation.schema.Permission;
+import eu.dasish.annotation.schema.Access;
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.datatype.DatatypeConfigurationException;
@@ -57,11 +57,11 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest {
      */
     @Test
     public void testGetNotebookIDs() {
-        System.out.println("test getNotebookIDs for a principal with Permission");
+        System.out.println("test getNotebookIDs for a principal with Access");
         List<Number> expResult = new ArrayList<Number>();
         expResult.add(1);
         expResult.add(4);
-        List<Number> result = jdbcNotebookDao.getNotebookIDs(2, Permission.WRITER);
+        List<Number> result = jdbcNotebookDao.getNotebookIDs(2, Access.WRITE);
         assertEquals(expResult, result);
     }
 
@@ -92,13 +92,13 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest {
     }
 
     /**
-     * Test of getNotebookWithoutAnnotationsAndPermissionsAndOwner method, of
+     * Test of getNotebookWithoutAnnotationsAndAccesssAndOwner method, of
      * class JdbcNotebookDao.
      */
     @Test
-    public void testGetNotebookWithoutAnnotationsAndPermissionsAndOwner() {
-        System.out.println("test getNotebookWithoutAnnotationsAndPermissionsAndOwner");
-        Notebook result = jdbcNotebookDao.getNotebookWithoutAnnotationsAndPermissionsAndOwner(1);
+    public void testGetNotebookWithoutAnnotationsAndAccesssAndOwner() {
+        System.out.println("test getNotebookWithoutAnnotationsAndAccesssAndOwner");
+        Notebook result = jdbcNotebookDao.getNotebookWithoutAnnotationsAndAccesssAndOwner(1);
         assertEquals("00000000-0000-0000-0000-000000000011", result.getURI());
         assertEquals("Notebook 1", result.getTitle());
         assertEquals("2013-08-12T09:25:00.383000Z", result.getLastModified().toString());
@@ -113,7 +113,7 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest {
         System.out.println("test updateNotebookMetadata");
         boolean result = jdbcNotebookDao.updateNotebookMetadata(1, "Gaudi and his work", 3);
         assertEquals(true, result);
-        assertEquals("Gaudi and his work", jdbcNotebookDao.getNotebookWithoutAnnotationsAndPermissionsAndOwner(1).getTitle());
+        assertEquals("Gaudi and his work", jdbcNotebookDao.getNotebookWithoutAnnotationsAndAccesssAndOwner(1).getTitle());
         assertEquals(3, jdbcNotebookDao.getOwner(1));
     }
 
@@ -129,34 +129,34 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest {
     }
 
     /**
-     * Test of updateUserPermissionForNotebook method, of class JdbcNotebookDao.
+     * Test of updatePrincipalAccessForNotebook method, of class JdbcNotebookDao.
      */
     @Test
-    public void testUpdateUserPermissionForNotebook() {
-        System.out.println("test updateUserPermissionForNotebook");
-        boolean result = jdbcNotebookDao.updateUserPermissionForNotebook(1, 2, Permission.READER);
+    public void testUpdatePrincipalAccessForNotebook() {
+        System.out.println("test updatePrincipalAccessForNotebook");
+        boolean result = jdbcNotebookDao.updatePrincipalAccessForNotebook(1, 2, Access.READ);
         assertTrue(result);
 
         // in the next test the update should fail
-        //assertFalse(jdbcNotebookDao.updateUserPermissionForNotebook(1, 2, Permission.OWNER));
+        //assertFalse(jdbcNotebookDao.updatePrincipalAccessForNotebook(1, 2, Access.OWNER));
         //SQL throws an error, which is good
     }
 
     /**
-     * Test of createNotebookWithoutPermissionsAndAnnotations method, of class
+     * Test of createNotebookWithoutAccesssAndAnnotations method, of class
      * JdbcNotebookDao.
      */
     @Test
-    public void testCreateNotebookWithoutPermissionsAndAnnotations() throws DatatypeConfigurationException {
-        System.out.println("test createNotebookWithoutPermissionsAndAnnotations");
+    public void testCreateNotebookWithoutAccesssAndAnnotations() throws DatatypeConfigurationException {
+        System.out.println("test createNotebookWithoutAccesssAndAnnotations");
         Notebook notebook = new Notebook();
         notebook.setTitle("New test notebook");
         notebook.setLastModified(DatatypeFactory.newInstance().newXMLGregorianCalendar("2014-02-12T09:25:00.383000Z"));
-        Number result = jdbcNotebookDao.createNotebookWithoutPermissionsAndAnnotations(notebook, 3);
+        Number result = jdbcNotebookDao.createNotebookWithoutAccesssAndAnnotations(notebook, 3);
         assertEquals(5, result);
         assertEquals(3, jdbcNotebookDao.getOwner(result));
         assertNotNull(jdbcNotebookDao.getExternalID(result));
-        assertEquals("New test notebook", jdbcNotebookDao.getNotebookWithoutAnnotationsAndPermissionsAndOwner(result).getTitle());
+        assertEquals("New test notebook", jdbcNotebookDao.getNotebookWithoutAnnotationsAndAccesssAndOwner(result).getTitle());
     }
 
     /**
@@ -170,12 +170,12 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest {
     }
 
     /**
-     * Test of addPermissionToNotebook method, of class JdbcNotebookDao.
+     * Test of addAccessToNotebook method, of class JdbcNotebookDao.
      */
     @Test
-    public void testAddPermissionToNotebook() {
-        System.out.println("test addPermissionToNotebook");
-        boolean result = jdbcNotebookDao.addPermissionToNotebook(2, 4, Permission.WRITER);
+    public void testAddAccessToNotebook() {
+        System.out.println("test addAccessToNotebook");
+        boolean result = jdbcNotebookDao.addAccessToNotebook(2, 4, Access.WRITE);
         assertTrue(result);
     }
 
@@ -190,13 +190,13 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest {
     }
 
     /**
-     * Test of deleteNotebookPrincipalPermission method, of class
+     * Test of deleteNotebookPrincipalAccess method, of class
      * JdbcNotebookDao.
      */
     @Test
-    public void testDeleteNotebookPrincipalPermission() {
-        System.out.println("deleteNotebookPrincipalPermission");
-        boolean result = jdbcNotebookDao.deleteNotebookPrincipalPermission(1, 2);
+    public void testDeleteNotebookPrincipalAccess() {
+        System.out.println("deleteNotebookPrincipalAccess");
+        boolean result = jdbcNotebookDao.deleteNotebookPrincipalAccess(1, 2);
         assertTrue(result);
     }
 
@@ -212,12 +212,12 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest {
     }
 
     /**
-     * Test of deleteAllPermissionsForNotebook method, of class JdbcNotebookDao.
+     * Test of deleteAllAccesssForNotebook method, of class JdbcNotebookDao.
      */
     @Test
-    public void testDeleteAllPermissionsForNotebook() {
-        System.out.println("test deleteAllPermissionsForNotebook");
-        boolean result = jdbcNotebookDao.deleteAllPermissionsForNotebook(1);
+    public void testDeleteAllAccesssForNotebook() {
+        System.out.println("test deleteAllAccesssForNotebook");
+        boolean result = jdbcNotebookDao.deleteAllAccesssForNotebook(1);
         assertTrue(result);
     }
 
