@@ -17,6 +17,7 @@
  */
 package eu.dasish.annotation.backend.dao.impl;
 
+import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.TestInstances;
 import eu.dasish.annotation.schema.Access;
@@ -76,12 +77,16 @@ public class JdbcPrincipalDaoTest extends JdbcResourceDaoTest {
      * getInternalID(UUID UUID);
      */
     @Test
-    public void testGetInternalID() {
+    public void testGetInternalID() throws NotInDataBaseException{
         Number testOne = jdbcPrincipalDao.getInternalID(UUID.fromString("00000000-0000-0000-0000-000000000113"));
         assertEquals(3, testOne.intValue());
 
+        try {
         Number testTwo = jdbcPrincipalDao.getInternalID(UUID.fromString("00000000-0000-0000-0000-000000000ccc"));
         assertEquals(null, testTwo);
+        } catch (NotInDataBaseException e){
+            System.out.println(e);
+        }
 
     }
 
@@ -93,8 +98,6 @@ public class JdbcPrincipalDaoTest extends JdbcResourceDaoTest {
         UUID testOne = jdbcPrincipalDao.getExternalID(3);
         assertEquals("00000000-0000-0000-0000-000000000113", testOne.toString());
 
-        UUID testTwo = jdbcPrincipalDao.getExternalID(null);
-        assertEquals(null, testTwo);
     }
 
     @Test
@@ -108,7 +111,7 @@ public class JdbcPrincipalDaoTest extends JdbcResourceDaoTest {
     }
 
     @Test
-    public void testAddPrincipal() {
+    public void testAddPrincipal() throws NotInDataBaseException{
         System.out.println("test addPrincipal");
         jdbcPrincipalDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_principals);
         String freshPrincipalName = "Guilherme";
@@ -133,8 +136,7 @@ public class JdbcPrincipalDaoTest extends JdbcResourceDaoTest {
 
         int result = jdbcPrincipalDao.deletePrincipal(10);
         assertEquals(1, result);
-        Principal check = jdbcPrincipalDao.getPrincipal(10);
-        assertTrue(null==check);
+        assertEquals(0, jdbcPrincipalDao.deletePrincipal(10));
     }
     
     

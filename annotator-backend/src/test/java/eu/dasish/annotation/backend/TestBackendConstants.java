@@ -26,7 +26,7 @@ public class TestBackendConstants {
     
     public static final String _TEST_SERVLET_URI = "http://localhost:8080/annotator-backend/api/";
     public static final String _TEST_SERVLET_URI_annotations = "http://localhost:8080/annotator-backend/api/annotations/";
-    public static final String _TEST_SERVLET_URI_Targets = "http://localhost:8080/annotator-backend/api/Targets/";
+    public static final String _TEST_SERVLET_URI_targets = "http://localhost:8080/annotator-backend/api/targets/";
     public static final String _TEST_SERVLET_URI_cached = "http://localhost:8080/annotator-backend/api/cached/";
     public static final String _TEST_SERVLET_URI_principals = "http://localhost:8080/annotator-backend/api/principals/";
     public static final String _TEST_SERVLET_URI_notebooks = "http://localhost:8080/annotator-backend/api/notebooks/";

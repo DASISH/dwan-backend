@@ -19,6 +19,7 @@ package eu.dasish.annotation.backend.rest;
 
 import java.io.IOException;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.ws.http.HTTPException;
 import org.slf4j.Logger;
 
 /**
@@ -46,8 +47,8 @@ public class VerboseOutput {
         this.logger = logger;
     }
 
-    private MessageStatus _NOT_LOGGED_IN(String adminName, String adminEmail) {
-        return new MessageStatus(" The principal is not logged-in or its remote login is corrupted by setting to null. In the latter case contact the admin " + adminName + " via the e-mail " + adminEmail, HttpServletResponse.SC_UNAUTHORIZED);
+    private MessageStatus _NOT_LOGGED_IN() {
+        return new MessageStatus(" The principal is not logged-in", HttpServletResponse.SC_UNAUTHORIZED);
     }
 
     private MessageStatus _FORBIDDEN_RESOURCE_ACTION(String identifier, String resource, String action, String ownerName, String ownerEMail) {
@@ -60,6 +61,10 @@ public class VerboseOutput {
 
     private MessageStatus _REMOTE_PRINCIPAL_NOT_FOUND(String remoteID, String adminName, String adminEmail) {
         return new MessageStatus("The logged in principal with the remote ID " + remoteID + " is not found in the database or his/her internal DB identifier is corrupted by setting to null. Contact the database admin " + adminName + " by the e-mail " + adminEmail, HttpServletResponse.SC_NOT_FOUND);
+    }
+    
+    private MessageStatus _REMOTE_PRINCIPAL_NOT_FOUND(String remoteID) {
+        return new MessageStatus("The logged in principal with the remote ID " + remoteID + " is not found in the database or his/her internal DB identifier is corrupted", HttpServletResponse.SC_NOT_FOUND);
     }
 
     private MessageStatus resourceNotFound(String externalIdentifier, String resourceType) {
@@ -103,8 +108,16 @@ public class VerboseOutput {
         return new MessageStatus("The request can be performed only by the principal with the admin rights. Contact the admin " + adminName + " via e-mail " + adminEmail, HttpServletResponse.SC_FORBIDDEN);
     }
 
+     private MessageStatus _ADMIN_RIGHTS_EXPECTED() {
+        return new MessageStatus("The request can be performed only by the principal with the admin rights.", HttpServletResponse.SC_FORBIDDEN);
+    }
+    
     private MessageStatus _DEVELOPER_RIGHTS_EXPECTED() {
         return new MessageStatus("The request can be performed only by the principal with the developer's or admin rights. The logged in principal does not have either developer's or admin rights.", HttpServletResponse.SC_FORBIDDEN);
+    }
+    
+    private MessageStatus _ADMIN_NOT_FOUND() {
+        return new MessageStatus("The admin is not foun in he DB or tadmin's Data are corrupted.", HttpServletResponse.SC_NOT_FOUND);
     }
 
     private MessageStatus _PRINCIPAL_NOT_FOUND_BY_INFO(String email) {
@@ -112,7 +125,7 @@ public class VerboseOutput {
     }
 
     private MessageStatus _PRINCIPAL_IS_NOT_ADDED_TO_DB() {
-        return new MessageStatus("The principal is not added the database, probably becuase another principal with the same e-mail already exists in the data base.", HttpServletResponse.SC_BAD_REQUEST);
+        return new MessageStatus("The principal is not added the database (probably becuase another principal with the same e-mail already exists in the data base) or the data were corrupted while adding. ", HttpServletResponse.SC_BAD_REQUEST);
     }
 
     private MessageStatus _ACCOUNT_IS_NOT_UPDATED() {
@@ -126,22 +139,27 @@ public class VerboseOutput {
     private MessageStatus _ANONYMOUS_PRINCIPAL() {
         return new MessageStatus("Shibboleth fall-back.  Logged in as 'anonymous' with no rights.", HttpServletResponse.SC_UNAUTHORIZED);
     }
+    
+     private MessageStatus _WRONG_ACCESS_MODE(String accessMode) {
+        return new MessageStatus("SThe access mode "+accessMode + " is not specified.", HttpServletResponse.SC_NOT_FOUND);
+    }
 
-    private void sendMessage(MessageStatus msg) throws IOException {
+
+    private void sendMessage(MessageStatus msg) throws IOException{
         logger.debug(msg.status + ": " + msg.message);
-        httpServletResponse.sendError(msg.status, msg.message);
+        //throw new HTTPException(msg.status);
     }
 
     ///////////////////////////////
-    public void NOT_LOGGED_IN(String adminName, String adminEmail) throws IOException {
-        this.sendMessage(this._NOT_LOGGED_IN(adminName, adminEmail));
+    public void NOT_LOGGED_IN() throws IOException {
+        this.sendMessage(this._NOT_LOGGED_IN());
     }
 
-    public void FORBIDDEN_NOTEBOOK_READING(String identifier, String ownerName, String ownerEMail) throws IOException {
+    public void FORBIDDEN_NOTEBOOK_READING(String identifier, String ownerName, String ownerEMail) throws IOException  {
         this.sendMessage(this._FORBIDDEN_RESOURCE_ACTION(identifier, "notebook", "read", ownerName, ownerEMail));
     }
 
-    public void FORBIDDEN_NOTEBOOK_WRITING(String identifier, String ownerName, String ownerEMail) throws IOException {
+    public void FORBIDDEN_NOTEBOOK_WRITING(String identifier, String ownerName, String ownerEMail) throws IOException  {
         this.sendMessage(this._FORBIDDEN_RESOURCE_ACTION(identifier, "notebook", "write", ownerName, ownerEMail));
     }
 
@@ -157,15 +175,19 @@ public class VerboseOutput {
         this.sendMessage(this._FORBIDDEN_RESOURCE_ACTION(identifier, "resource", "change", ownerName, ownerEMail));
     }
 
-    public void ILLEGAL_UUID(String identifier) throws IOException {
+    public void ILLEGAL_UUID(String identifier) throws IOException, HTTPException  {
         this.sendMessage(this._ILLEGAL_UUID(identifier));
     }
 
     public void REMOTE_PRINCIPAL_NOT_FOUND(String remoteID, String adminName, String adminEmail) throws IOException {
         this.sendMessage(this._REMOTE_PRINCIPAL_NOT_FOUND(remoteID, adminName, adminEmail));
     }
+    
+    public void REMOTE_PRINCIPAL_NOT_FOUND(String remoteID) throws IOException {
+        this.sendMessage(this._REMOTE_PRINCIPAL_NOT_FOUND(remoteID));
+    }
 
-    public void PRINCIPAL_NOT_FOUND(String externalIdentifier) throws IOException {
+    public void PRINCIPAL_NOT_FOUND(String externalIdentifier) throws IOException  {
         this.sendMessage(this._PRINCIPAL_NOT_FOUND(externalIdentifier));
     }
 
@@ -177,11 +199,11 @@ public class VerboseOutput {
         this.sendMessage(this._NOTEBOOK_NOT_FOUND(externalIdentifier));
     }
 
-    public void TARGET_NOT_FOUND(String externalIdentifier) throws IOException {
+    public void TARGET_NOT_FOUND(String externalIdentifier) throws IOException  {
         this.sendMessage(this._TARGET_NOT_FOUND(externalIdentifier));
     }
 
-    public void CACHED_REPRESENTATION_NOT_FOUND(String externalIdentifier) throws IOException {
+    public void CACHED_REPRESENTATION_NOT_FOUND(String externalIdentifier) throws IOException{
         this.sendMessage(this._CACHED_REPRESENTATION_NOT_FOUND(externalIdentifier));
     }
 
@@ -200,12 +222,20 @@ public class VerboseOutput {
     public void ADMIN_RIGHTS_EXPECTED(String adminName, String adminEmail) throws IOException {
         this.sendMessage(this._ADMIN_RIGHTS_EXPECTED(adminName, adminEmail));
     }
+    
+     public void ADMIN_RIGHTS_EXPECTED() throws IOException {
+        this.sendMessage(this._ADMIN_RIGHTS_EXPECTED());
+    }
 
     public void DEVELOPER_RIGHTS_EXPECTED() throws IOException {
         this.sendMessage(this._DEVELOPER_RIGHTS_EXPECTED());
     }
+    
+    public void ADMIN_NOT_FOUND() throws IOException  {
+        this.sendMessage(this._ADMIN_NOT_FOUND());
+    }
 
-    public void PRINCIPAL_NOT_FOUND_BY_INFO(String email) throws IOException {
+    public void PRINCIPAL_NOT_FOUND_BY_INFO(String email) throws IOException  {
         this.sendMessage(this._PRINCIPAL_NOT_FOUND_BY_INFO(email));
     }
 
@@ -217,11 +247,15 @@ public class VerboseOutput {
         this.sendMessage(this._ACCOUNT_IS_NOT_UPDATED());
     }
 
-    public void LOGOUT() throws IOException {
+    public void LOGOUT() throws IOException  {
         this.sendMessage(this._LOGOUT());
     }
 
-    public void ANONYMOUS_PRINCIPAL() throws IOException {
+    public void ANONYMOUS_PRINCIPAL() throws IOException{
         this.sendMessage(this._ANONYMOUS_PRINCIPAL());
+    }
+    
+    public void WRONG_ACCESS_MODE(String accessMode) throws IOException{
+        this.sendMessage(this._WRONG_ACCESS_MODE(accessMode));
     }
 }

@@ -47,7 +47,7 @@ CREATE TABLE principal (
     remote_id text UNIQUE NOT NULL,
     principal_name text,
     e_mail text,
-    account text
+    account text NOT NULL
 );
 
 CREATE TABLE notebook (
@@ -68,7 +68,7 @@ CREATE TABLE annotation (
     body_text text,
     body_mimetype text,
     is_xml BOOLEAN,
-    public_ text REFERENCES access(access_mode)
+    public_ text REFERENCES access(access_mode) NOT NULL default 'none'
 );
 
 
@@ -99,22 +99,22 @@ CREATE TABLE cached_representation (
 --------------------- JOINT TABLES ------------------------------------
 
 CREATE TABLE annotations_targets (
-   annotation_id integer REFERENCES annotation(annotation_id), -- defining a foreign key: there must be a uniquely defined row in "annotation", that is defined by "annotation_id"
-   target_id integer REFERENCES target(target_id),
+   annotation_id integer REFERENCES annotation(annotation_id) NOT NULL, -- defining a foreign key: there must be a uniquely defined row in "annotation", that is defined by "annotation_id"
+   target_id integer REFERENCES target(target_id) NOT NULL,
    unique(annotation_id, target_id)
 );
 
 
 
 CREATE TABLE notebooks_annotations (
-    notebook_id integer REFERENCES notebook(notebook_id),
-    annotation_id integer REFERENCES annotation(annotation_id),
+    notebook_id integer REFERENCES notebook(notebook_id) NOT NULL,
+    annotation_id integer REFERENCES annotation(annotation_id) NOT NULL,
     unique(notebook_id, annotation_id)
 );
 
 CREATE TABLE targets_cached_representations (
-    target_id integer REFERENCES target(target_id),
-    cached_representation_id integer REFERENCES cached_representation(cached_representation_id),
+    target_id integer REFERENCES target(target_id) NOT NULL,
+    cached_representation_id integer REFERENCES cached_representation(cached_representation_id) NOT NULL,
     fragment_descriptor_in_cached text,
     unique(target_id, cached_representation_id)
 );
@@ -122,16 +122,16 @@ CREATE TABLE targets_cached_representations (
 
 
 CREATE TABLE annotations_principals_accesss (
-annotation_id integer REFERENCES annotation(annotation_id),
-principal_id integer REFERENCES principal(principal_id),
-access_  text REFERENCES access(access_mode),
+annotation_id integer REFERENCES annotation(annotation_id) NOT NULL,
+principal_id integer REFERENCES principal(principal_id) NOT NULL,
+access_  text REFERENCES access(access_mode) NOT NULL,
 unique(annotation_id, principal_id)
 );
 
 CREATE TABLE notebooks_principals_accesss (
-notebook_id integer REFERENCES notebook(notebook_id),
-principal_id integer REFERENCES principal(principal_id),
-access_  text REFERENCES access(access_mode),
+notebook_id integer REFERENCES notebook(notebook_id) NOT NULL,
+principal_id integer REFERENCES principal(principal_id) NOT NULL,
+access_  text REFERENCES access(access_mode) NOT NULL,
 unique(notebook_id, principal_id)
 );
 

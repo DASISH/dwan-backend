@@ -17,6 +17,7 @@
  */
 package eu.dasish.annotation.backend.dao.impl;
 
+import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.dao.NotebookDao;
 import eu.dasish.annotation.schema.Notebook;
 import eu.dasish.annotation.schema.NotebookInfo;
@@ -52,49 +53,27 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
     ////////////////////////////////////////////////
     ////////////////////////////////////////////////
     @Override
-    public Number getOwner(Number notebookID) {
-        if (notebookID == null) {
-            loggerNotebookDao.debug("notebookID: " + nullArgument);
-            return null;
-        }
+    public Number getOwner(Number notebookID){
         StringBuilder sql = new StringBuilder("SELECT ");
         sql.append(owner_id).append(" FROM ").append(notebookTableName).append(" WHERE ").
                 append(notebook_id).append(" = ?");
         List<Number> result = this.loggedQuery(sql.toString(), ownerIDRowMapper, notebookID);
-        if (result.isEmpty()) {
-            return null;
-        } else {
-            return result.get(0);
-        }
+        return result.get(0);
+
     }
-    
+
     //////////////////////////////////////////////////
     @Override
-    public List<Map<Number, String>>  getPermissions(Number notebookID) {
-        if (notebookID == null) {
-            loggerNotebookDao.debug(nullArgument);
-            return null;
-        }
+    public List<Map<Number, String>> getPermissions(Number notebookID) {
+
         StringBuilder sql = new StringBuilder("SELECT ");
         sql.append(principal_id).append(",").append(access).append(" FROM ").append(notebookAccesssTableName).append(" WHERE ").append(notebook_id).append("  = ?");
         return this.loggedQuery(sql.toString(), principalsAccesssRowMapper, notebookID);
     }
-    
-  /////////////
 
+    /////////////
     @Override
     public List<Number> getNotebookIDs(Number principalID, Access access) {
-
-        if (principalID == null) {
-            loggerNotebookDao.debug("princiaplID: " + nullArgument);
-            return null;
-        }
-
-        if (access == null) {
-            loggerNotebookDao.debug("access: " + nullArgument);
-            return null;
-        }
-
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("principalID", principalID);
         params.put("accessMode", access.value());
@@ -108,32 +87,20 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
     @Override
     public List<Number> getNotebookIDsOwnedBy(Number principalID) {
 
-        if (principalID == null) {
-            loggerNotebookDao.debug("principalID: " + nullArgument);
-            return null;
-        }
-
         StringBuilder sql = new StringBuilder("SELECT ");
         sql.append(notebook_id).append(" FROM ").append(notebookTableName).append(" WHERE ").
                 append(owner_id).append(" = ?");
         return this.loggedQuery(sql.toString(), internalIDRowMapper, principalID);
     }
 
-   
-
     @Override
-    public NotebookInfo getNotebookInfoWithoutOwner(Number notebookID) {
-        if (notebookID == null) {
-            loggerNotebookDao.debug("notebookID: " + nullArgument);
-            return null;
-        }
-
+    public NotebookInfo getNotebookInfoWithoutOwner(Number notebookID){
         StringBuilder sql = new StringBuilder("SELECT ");
         sql.append(external_id).append(" , ").append(title).
                 append(" FROM ").append(notebookTableName).append(" WHERE ").
                 append(notebook_id).append(" = :notebookID");
         List<NotebookInfo> result = this.loggedQuery(sql.toString(), notebookInfoRowMapper, notebookID);
-        return (!result.isEmpty() ? result.get(0) : null);
+        return result.get(0);
     }
     private final RowMapper<NotebookInfo> notebookInfoRowMapper = new RowMapper<NotebookInfo>() {
         @Override
@@ -146,17 +113,13 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
     };
 
     @Override
-    public Notebook getNotebookWithoutAnnotationsAndAccesssAndOwner(Number notebookID) {
-        if (notebookID == null) {
-            loggerNotebookDao.debug("notebookID: " + nullArgument);
-            return null;
-        }
+    public Notebook getNotebookWithoutAnnotationsAndAccesssAndOwner(Number notebookID){
         StringBuilder sql = new StringBuilder("SELECT ");
         sql.append(external_id).append(" , ").append(title).append(" , ").append(last_modified).
                 append(" FROM ").append(notebookTableName).append(" WHERE ").
                 append(notebook_id).append(" = :notebookID");
         List<Notebook> result = this.loggedQuery(sql.toString(), notebookRowMapper, notebookID);
-        return (!result.isEmpty() ? result.get(0) : null);
+        return result.get(0);
     }
     private final RowMapper<Notebook> notebookRowMapper = new RowMapper<Notebook>() {
         @Override
@@ -169,7 +132,6 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
         }
     };
 
-   
     /**
      *
      * UPDATERS
@@ -185,20 +147,6 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
     @Override
     public boolean updateNotebookMetadata(Number notebookID, String title, Number ownerID) {
 
-        if (notebookID == null) {
-            loggerNotebookDao.debug("notebookID: " + nullArgument);
-            return false;
-        }
-
-        if (title == null) {
-            loggerNotebookDao.debug("title: " + nullArgument);
-            return false;
-        }
-
-        if (ownerID == null) {
-            loggerNotebookDao.debug("ownerID: " + nullArgument);
-            return false;
-        }
 
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("notebookID", notebookID);
@@ -224,19 +172,9 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
             }
         }
     }
-    
+
     @Override
     public boolean setOwner(Number notebookID, Number ownerID) {
-
-        if (notebookID == null) {
-            loggerNotebookDao.debug("notebookID: " + nullArgument);
-            return false;
-        }
-
-        if (ownerID == null) {
-            loggerNotebookDao.debug("ownerID: " + nullArgument);
-            return false;
-        }
 
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("notebookID", notebookID);
@@ -263,22 +201,6 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
 
     @Override
     public boolean updatePrincipalAccessForNotebook(Number notebookID, Number principalID, Access access) {
-
-        if (notebookID == null) {
-            loggerNotebookDao.debug("notebookID: " + nullArgument);
-            return false;
-        }
-
-        if (principalID == null) {
-            loggerNotebookDao.debug("principalID: " + nullArgument);
-            return false;
-        }
-
-        if (access == null) {
-            loggerNotebookDao.debug("access: " + nullArgument);
-            return false;
-        }
-
 
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("notebookID", notebookID);
@@ -311,16 +233,7 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
      *
      */
     @Override
-    public Number createNotebookWithoutAccesssAndAnnotations(Notebook notebook, Number ownerID) {
-        if (notebook == null) {
-            loggerNotebookDao.debug("notebook: " + nullArgument);
-            return null;
-        }
-
-        if (ownerID == null) {
-            loggerNotebookDao.debug("ownerID: " + nullArgument);
-            return null;
-        }
+    public Number createNotebookWithoutAccesssAndAnnotations(Notebook notebook, Number ownerID) throws NotInDataBaseException {
 
         UUID externalID = UUID.randomUUID();
         Map<String, Object> params = new HashMap<String, Object>();
@@ -333,21 +246,11 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
         sql.append(",").append(title).
                 append(" ) VALUES (:externalId, :owner, :title)");
         int affectedRows = this.loggedUpdate(sql.toString(), params);
-        return ((affectedRows > 0) ? getInternalID(externalID) : null);
+        return getInternalID(externalID);
     }
 
     @Override
     public boolean addAnnotationToNotebook(Number notebookID, Number annotationID) {
-
-        if (notebookID == null) {
-            loggerNotebookDao.debug("notebookID: " + nullArgument);
-            return false;
-        }
-
-        if (annotationID == null) {
-            loggerNotebookDao.debug("annotationID: " + nullArgument);
-            return false;
-        }
 
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("notebookID", notebookID);
@@ -362,20 +265,6 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
 
     @Override
     public boolean addAccessToNotebook(Number notebookID, Number principalID, Access access) {
-        if (notebookID == null) {
-            loggerNotebookDao.debug("notebookID: " + nullArgument);
-            return false;
-        }
-
-        if (principalID == null) {
-            loggerNotebookDao.debug("principalID: " + nullArgument);
-            return false;
-        }
-
-        if (access == null) {
-            loggerNotebookDao.debug("premission: " + nullArgument);
-            return false;
-        }
 
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("notebookID", notebookID);
@@ -398,84 +287,57 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
      */
     @Override
     public boolean deleteAnnotationFromNotebook(Number notebookID, Number annotationID) {
-        if (notebookID != null) {
-            if (annotationID != null) {
-                Map<String, Number> params = new HashMap();
-                params.put("notebookID", notebookID);
-                params.put("annotationID", annotationID);
-                StringBuilder sql = new StringBuilder("DELETE FROM ");
-                sql.append(notebooksAnnotationsTableName).append(" WHERE ").append(notebook_id).append(" = :notebookID AND ").
-                        append(annotation_id).append(" = :annotationID");
-                int affectedRows = this.loggedUpdate(sql.toString(), params);
-                return (affectedRows > 0);
-            } else {
-                loggerNotebookDao.debug("annotationID: " + nullArgument);
-                return false;
-            }
-        } else {
-            loggerNotebookDao.debug("notebookID: " + nullArgument);
-            return false;
-        }
+
+        Map<String, Number> params = new HashMap();
+        params.put("notebookID", notebookID);
+        params.put("annotationID", annotationID);
+        StringBuilder sql = new StringBuilder("DELETE FROM ");
+        sql.append(notebooksAnnotationsTableName).append(" WHERE ").append(notebook_id).append(" = :notebookID AND ").
+                append(annotation_id).append(" = :annotationID");
+        int affectedRows = this.loggedUpdate(sql.toString(), params);
+        return (affectedRows > 0);
+
     }
 
     @Override
     public boolean deleteNotebookPrincipalAccess(Number notebookID, Number principalID) {
-        if (notebookID != null) {
-            if (principalID != null) {
-                Map<String, Number> params = new HashMap();
-                params.put("notebookID", notebookID);
-                params.put("principalID", principalID);
-                StringBuilder sqlAccesss = new StringBuilder("DELETE FROM ");
-                sqlAccesss.append(notebookAccesssTableName).append(" WHERE ").append(notebook_id).append(" = :notebookID AND ").
-                        append(principal_id).append(" = :principalID");
-                int affectedRows = this.loggedUpdate(sqlAccesss.toString(), params);
-                return (affectedRows > 0);
-            } else {
-                loggerNotebookDao.debug("principalID: " + nullArgument);
-                return false;
-            }
-        } else {
-            loggerNotebookDao.debug("notebookID: " + nullArgument);
-            return false;
-        }
+
+        Map<String, Number> params = new HashMap();
+        params.put("notebookID", notebookID);
+        params.put("principalID", principalID);
+        StringBuilder sqlAccesss = new StringBuilder("DELETE FROM ");
+        sqlAccesss.append(notebookAccesssTableName).append(" WHERE ").append(notebook_id).append(" = :notebookID AND ").
+                append(principal_id).append(" = :principalID");
+        int affectedRows = this.loggedUpdate(sqlAccesss.toString(), params);
+        return (affectedRows > 0);
+
     }
 
     @Override
     public boolean deleteAllAnnotationsFromNotebook(Number notebookID) {
-        if (notebookID != null) {
-            StringBuilder sql = new StringBuilder("DELETE FROM ");
-            sql.append(notebooksAnnotationsTableName).append(" WHERE ").append(notebook_id).append(" = ? ");
-            int affectedRows = this.loggedUpdate(sql.toString(), notebookID);
-            return (affectedRows > 0);
-        } else {
-            loggerNotebookDao.debug("notebookID: " + nullArgument);
-            return false;
-        }
+        StringBuilder sql = new StringBuilder("DELETE FROM ");
+        sql.append(notebooksAnnotationsTableName).append(" WHERE ").append(notebook_id).append(" = ? ");
+        int affectedRows = this.loggedUpdate(sql.toString(), notebookID);
+        return (affectedRows > 0);
+
     }
 
     @Override
     public boolean deleteAllAccesssForNotebook(Number notebookID) {
-        if (notebookID != null) {
-            StringBuilder sqlAccesss = new StringBuilder("DELETE FROM ");
-            sqlAccesss.append(notebookAccesssTableName).append(" WHERE ").append(notebook_id).append(" = ? ");
-            int affectedRows = this.loggedUpdate(sqlAccesss.toString(), notebookID);
-            return (affectedRows > 0);
-        } else {
-            loggerNotebookDao.debug("notebookID: " + nullArgument);
-            return false;
-        }
+
+        StringBuilder sqlAccesss = new StringBuilder("DELETE FROM ");
+        sqlAccesss.append(notebookAccesssTableName).append(" WHERE ").append(notebook_id).append(" = ? ");
+        int affectedRows = this.loggedUpdate(sqlAccesss.toString(), notebookID);
+        return (affectedRows > 0);
+
     }
 
     @Override
     public boolean deleteNotebook(Number notebookID) {
-        if (notebookID != null) {
-            StringBuilder sql = new StringBuilder("DELETE FROM ");
-            sql.append(notebookTableName).append(" WHERE ").append(notebook_id).append(" = ? ");
-            int affectedRows = this.loggedUpdate(sql.toString(), notebookID);
-            return (affectedRows > 0);
-        } else {
-            loggerNotebookDao.debug("notebookID: " + nullArgument);
-            return false;
-        }
+        StringBuilder sql = new StringBuilder("DELETE FROM ");
+        sql.append(notebookTableName).append(" WHERE ").append(notebook_id).append(" = ? ");
+        int affectedRows = this.loggedUpdate(sql.toString(), notebookID);
+        return (affectedRows > 0);
+
     }
 }

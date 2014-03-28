@@ -17,23 +17,21 @@
  */
 package eu.dasish.annotation.backend.rest;
 
-import eu.dasish.annotation.backend.BackendConstants;
-import eu.dasish.annotation.backend.Resource;
+import eu.dasish.annotation.backend.NotInDataBaseException;
+import eu.dasish.annotation.backend.NotLoggedInException;
 import eu.dasish.annotation.backend.dao.DBIntegrityService;
+import eu.dasish.annotation.schema.Principal;
 import java.io.IOException;
-import java.io.InputStream;
-import java.sql.SQLException;
-import java.util.UUID;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Providers;
+import javax.xml.ws.http.HTTPException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,41 +63,43 @@ public class ResourceResource {
     protected VerboseOutput verboseOutput;
     protected String admin = "admin";
     protected String anonym = "anonymous";
+    protected String defaultAccess = "read";
+    protected String[] admissibleAccess = {"read", "write", "owner"};
 
-    public Number getPrincipalID() throws IOException {
+    public Number getPrincipalID() throws IOException, HTTPException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         verboseOutput = new VerboseOutput(httpServletResponse, loggerServer);
         String remotePrincipal = httpServletRequest.getRemoteUser();
         if (remotePrincipal != null) {
             if (!remotePrincipal.equals(anonym)) {
-                final Number principalID = dbIntegrityService.getPrincipalInternalIDFromRemoteID(remotePrincipal);
-                if (principalID != null) {
-                    return principalID;
+                try {
+                    return dbIntegrityService.getPrincipalInternalIDFromRemoteID(remotePrincipal);
+                } catch (NotInDataBaseException e) {
+                    Principal adminPrincipal = dbIntegrityService.getDataBaseAdmin();
+                    verboseOutput.REMOTE_PRINCIPAL_NOT_FOUND(remotePrincipal, adminPrincipal.getDisplayName(), adminPrincipal.getEMail());
+                    throw new HTTPException(HttpServletResponse.SC_NOT_FOUND);
                 }
-                verboseOutput.REMOTE_PRINCIPAL_NOT_FOUND(remotePrincipal, dbIntegrityService.getDataBaseAdmin().getDisplayName(), dbIntegrityService.getDataBaseAdmin().getEMail());
-                return null;
+            } else {
+                verboseOutput.ANONYMOUS_PRINCIPAL();
+                throw new HTTPException(HttpServletResponse.SC_UNAUTHORIZED);
             }
+        } else {
+            verboseOutput.NOT_LOGGED_IN();
+            throw new HTTPException(HttpServletResponse.SC_UNAUTHORIZED);
         }
-
-        verboseOutput.NOT_LOGGED_IN(dbIntegrityService.getDataBaseAdmin().getDisplayName(), dbIntegrityService.getDataBaseAdmin().getEMail());
-        return null;
-
     }
 
     @GET
     @Produces({"text/html"})
     @Path("")
     @Transactional(readOnly = true)
-    public String welcome() throws IOException {
+    public String welcome() throws IOException, HTTPException {
         Number remotePrincipalID = this.getPrincipalID();
-        if (remotePrincipalID != null) {
-            String baseUri = uriInfo.getBaseUri().toString()+"..";
-            String welcome = "<!DOCTYPE html><body>"
-                    + "<h3>Welcome to DASISH Webannotator (DWAN)</h3><br>"
-                    +"<a href=\""+baseUri+"\"> to DWAN's test jsp page</a>"
-                    + "</body>";
-            return welcome;
-        }
-        return null;
+        String baseUri = uriInfo.getBaseUri().toString() + "..";
+        String welcome = "<!DOCTYPE html><body>"
+                + "<h3>Welcome to DASISH Webannotator (DWAN)</h3><br>"
+                + "<a href=\"" + baseUri + "\"> to DWAN's test jsp page</a>"
+                + "</body>";
+        return welcome;
     }
 }

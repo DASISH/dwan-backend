@@ -23,6 +23,7 @@
 
 INSERT INTO access(access_mode) VALUES ('write');
 INSERT INTO access(access_mode) VALUES ('read');
+INSERT INTO access(access_mode) VALUES ('none');
 
 INSERT INTO principal (principal_name, external_id, remote_id, e_mail, account) VALUES ('Twan', '00000000-0000-0000-0000-000000000111', 'twagoo@mpi.nl', 'Twan.Goosen@mpi.nl', 'developer'); --1 
 INSERT INTO principal (principal_name, external_id, remote_id, e_mail, account) VALUES ('Peter', '00000000-0000-0000-0000-000000000112', 'petwit@mpi.nl', 'Peter.Withers@mpi.nl', 'developer'); -- 2
@@ -121,17 +122,17 @@ INSERT INTO annotations_principals_accesss (annotation_id, principal_id, access_
 -- checking integrity control:
 -- INSERT INTO annotations_principals_accesss (annotation_id, principal_id, access_) VALUES (5, 5, 'read');
 
-INSERT INTO notebooks_principals_accesss (notebook_id, principal_id, access_) VALUES (1, 2, 'write');
-INSERT INTO notebooks_principals_accesss (notebook_id, principal_id, access_) VALUES (1, 3, 'read');
-INSERT INTO notebooks_principals_accesss (notebook_id, principal_id, access_) VALUES (1, 4, 'write');
-INSERT INTO notebooks_principals_accesss (notebook_id, principal_id, access_) VALUES (1, 5, 'read');
-INSERT INTO notebooks_principals_accesss (notebook_id, principal_id, access_) VALUES (1, 11, 'read');
+ INSERT INTO notebooks_principals_accesss (notebook_id, principal_id, access_) VALUES (1, 2, 'write');
+ INSERT INTO notebooks_principals_accesss (notebook_id, principal_id, access_) VALUES (1, 3, 'read');
+ INSERT INTO notebooks_principals_accesss (notebook_id, principal_id, access_) VALUES (1, 4, 'write');
+ INSERT INTO notebooks_principals_accesss (notebook_id, principal_id, access_) VALUES (1, 5, 'read');
+ INSERT INTO notebooks_principals_accesss (notebook_id, principal_id, access_) VALUES (1, 11, 'read');
 
-INSERT INTO notebooks_principals_accesss (notebook_id, principal_id, access_) VALUES (2, 1, 'read');
-INSERT INTO notebooks_principals_accesss (notebook_id, principal_id, access_) VALUES (2, 3, 'write');
-INSERT INTO notebooks_principals_accesss (notebook_id, principal_id, access_) VALUES (2, 11, 'read');
+ INSERT INTO notebooks_principals_accesss (notebook_id, principal_id, access_) VALUES (2, 1, 'read');
+ INSERT INTO notebooks_principals_accesss (notebook_id, principal_id, access_) VALUES (2, 3, 'write');
+ INSERT INTO notebooks_principals_accesss (notebook_id, principal_id, access_) VALUES (2, 11, 'read');
 
 
-INSERT INTO notebooks_principals_accesss (notebook_id, principal_id, access_) VALUES (4, 2, 'write');
-INSERT INTO notebooks_principals_accesss (notebook_id, principal_id, access_) VALUES (4, 1, 'write');
-INSERT INTO notebooks_principals_accesss (notebook_id, principal_id, access_) VALUES (4, 11, 'read');
+ INSERT INTO notebooks_principals_accesss (notebook_id, principal_id, access_) VALUES (4, 2, 'write');
+ INSERT INTO notebooks_principals_accesss (notebook_id, principal_id, access_) VALUES (4, 1, 'write');
+ INSERT INTO notebooks_principals_accesss (notebook_id, principal_id, access_) VALUES (4, 11, 'read');

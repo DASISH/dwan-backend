@@ -20,6 +20,7 @@ package eu.dasish.annotation.backend.rest;
 import com.sun.jersey.multipart.BodyPartEntity;
 import com.sun.jersey.multipart.MultiPart;
 import eu.dasish.annotation.backend.BackendConstants;
+import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.Resource;
 import eu.dasish.annotation.schema.CachedRepresentationInfo;
 import eu.dasish.annotation.schema.ObjectFactory;
@@ -30,6 +31,7 @@ import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -40,6 +42,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.xml.bind.JAXBElement;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.ws.http.HTTPException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -68,20 +71,17 @@ public class TargetResource extends ResourceResource {
     @Produces(MediaType.TEXT_XML)
     @Path("{targetid: " + BackendConstants.regExpIdentifier + "}")
     @Transactional(readOnly = true)
-    public JAXBElement<Target> getTarget(@PathParam("targetid") String externalIdentifier) throws SQLException, IOException {
+    public JAXBElement<Target> getTarget(@PathParam("targetid") String externalIdentifier) throws IOException {
         Number remotePrincipalID = this.getPrincipalID();
-        if (remotePrincipalID != null) {
-
+        try {
             final Number targetID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.TARGET);
-            if (targetID != null) {
-                final Target target = dbIntegrityService.getTarget(targetID);
-                return new ObjectFactory().createTarget(target);
-            } else {
-                verboseOutput.TARGET_NOT_FOUND(externalIdentifier);
-            }
-
+            final Target target = dbIntegrityService.getTarget(targetID);
+            return new ObjectFactory().createTarget(target);
+        } catch (NotInDataBaseException e1) {
+            verboseOutput.TARGET_NOT_FOUND(externalIdentifier);
+            throw new HTTPException(HttpServletResponse.SC_NOT_FOUND);
         }
-        return new ObjectFactory().createTarget(new Target());
+
     }
 
     // TODOD both unit tests
@@ -89,19 +89,17 @@ public class TargetResource extends ResourceResource {
     @Produces(MediaType.TEXT_XML)
     @Path("{targetid: " + BackendConstants.regExpIdentifier + "}/versions")
     @Transactional(readOnly = true)
-    public JAXBElement<ReferenceList> getSiblingTargets(@PathParam("targetid") String externalIdentifier) throws SQLException, IOException {
+    public JAXBElement<ReferenceList> getSiblingTargets(@PathParam("targetid") String externalIdentifier) throws HTTPException, IOException {
         Number remotePrincipalID = this.getPrincipalID();
-        if (remotePrincipalID != null) {
+        try {
             final Number targetID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.TARGET);
-            if (targetID != null) {
-                final ReferenceList siblings = dbIntegrityService.getTargetsForTheSameLinkAs(targetID);
-                return new ObjectFactory().createReferenceList(siblings);
-            } else {
-                verboseOutput.TARGET_NOT_FOUND(externalIdentifier);
-            }
-
+            final ReferenceList siblings = dbIntegrityService.getTargetsForTheSameLinkAs(targetID);
+            return new ObjectFactory().createReferenceList(siblings);
+        } catch (NotInDataBaseException e2) {
+            verboseOutput.TARGET_NOT_FOUND(externalIdentifier);
+            throw new HTTPException(HttpServletResponse.SC_NOT_FOUND);
         }
-        return new ObjectFactory().createReferenceList(new ReferenceList());
+
     }
 
     @POST
@@ -110,49 +108,46 @@ public class TargetResource extends ResourceResource {
     @Path("{targetid: " + BackendConstants.regExpIdentifier + "}/fragment/{fragmentDescriptor}/cached")
     public JAXBElement<CachedRepresentationInfo> postCached(@PathParam("targetid") String targetIdentifier,
             @PathParam("fragmentDescriptor") String fragmentDescriptor,
-            MultiPart multiPart) throws SQLException, IOException {
+            MultiPart multiPart) throws HTTPException, IOException {
         Number remotePrincipalID = this.getPrincipalID();
-        if (remotePrincipalID != null) {
+        try {
             final Number targetID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(targetIdentifier), Resource.TARGET);
-            if (targetID != null) {
-                CachedRepresentationInfo metadata = multiPart.getBodyParts().get(0).getEntityAs(CachedRepresentationInfo.class);
-                BodyPartEntity bpe = (BodyPartEntity) multiPart.getBodyParts().get(1).getEntity();
-                InputStream cachedSource = bpe.getInputStream();
-                final Number[] respondDB = dbIntegrityService.addCachedForTarget(targetID, fragmentDescriptor, metadata, cachedSource);
+            CachedRepresentationInfo metadata = multiPart.getBodyParts().get(0).getEntityAs(CachedRepresentationInfo.class);
+            BodyPartEntity bpe = (BodyPartEntity) multiPart.getBodyParts().get(1).getEntity();
+            InputStream cachedSource = bpe.getInputStream();
+            try {
+            final Number[] respondDB = dbIntegrityService.addCachedForTarget(targetID, fragmentDescriptor, metadata, cachedSource);           
                 final CachedRepresentationInfo cachedInfo = dbIntegrityService.getCachedRepresentationInfo(respondDB[1]);
                 return new ObjectFactory().createCashedRepresentationInfo(cachedInfo);
-            } else {
-                verboseOutput.TARGET_NOT_FOUND(targetIdentifier);
+            } catch (NotInDataBaseException e) {
+                throw new HTTPException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             }
-
+        } catch (NotInDataBaseException e2) {
+            verboseOutput.TARGET_NOT_FOUND(targetIdentifier);
+            throw new HTTPException(HttpServletResponse.SC_NOT_FOUND);
         }
-        return new ObjectFactory().createCashedRepresentationInfo(new CachedRepresentationInfo());
     }
 
     @DELETE
     @Path("{targetid: " + BackendConstants.regExpIdentifier + "}/cached/{cachedid: " + BackendConstants.regExpIdentifier + "}")
     public String deleteCachedForTarget(@PathParam("targetid") String targetExternalIdentifier,
-            @PathParam("cachedid") String cachedExternalIdentifier) throws SQLException, IOException {
+            @PathParam("cachedid") String cachedExternalIdentifier) throws HTTPException, IOException {
         Number remotePrincipalID = this.getPrincipalID();
-        if (remotePrincipalID != null) {
+        try {
             final Number targetID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(targetExternalIdentifier), Resource.TARGET);
-            if (targetID != null) {
+            try {
                 final Number cachedID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(cachedExternalIdentifier), Resource.CACHED_REPRESENTATION);
-                if (cachedID != null) {
-                    int[] resultDelete = dbIntegrityService.deleteCachedRepresentationOfTarget(targetID, cachedID);
-                    String result = Integer.toString(resultDelete[0]);
-                    return result + " pair(s) target-cached deleted.";
-                } else {
-                    verboseOutput.CACHED_REPRESENTATION_NOT_FOUND(cachedExternalIdentifier);
-                }
-            } else {
-                verboseOutput.TARGET_NOT_FOUND(targetExternalIdentifier);
+                int[] resultDelete = dbIntegrityService.deleteCachedRepresentationOfTarget(targetID, cachedID);
+                String result = Integer.toString(resultDelete[0]);
+                return result + " pair(s) target-cached deleted.";
+            } catch (NotInDataBaseException e) {
+                verboseOutput.CACHED_REPRESENTATION_NOT_FOUND(cachedExternalIdentifier);
+                throw new HTTPException(HttpServletResponse.SC_NOT_FOUND);
             }
 
+        } catch (NotInDataBaseException e2) {
+            verboseOutput.TARGET_NOT_FOUND(targetExternalIdentifier);
+            throw new HTTPException(HttpServletResponse.SC_NOT_FOUND);
         }
-        return " ";
     }
 }
-
-// xpointer(start-point(string-range(--2F--2Fdiv--5B--40id--3D--22mw-content-text--22--5D--2Fp--5B1--5D--2Ftext()--5B1--5D--2C''--2C333))--2Frange-to(string-range(--2F--2Fdiv--5B--40id--3D--22mw-content-text--22--5D--2Fp--5B1--5D--2Ftext()--5B1--5D--2C--2C339)))
-

@@ -18,6 +18,7 @@
 package eu.dasish.annotation.backend.dao;
 
 
+import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.schema.Access;
 import eu.dasish.annotation.schema.Notebook;
 import eu.dasish.annotation.schema.NotebookInfo;
@@ -97,7 +98,7 @@ public interface NotebookDao extends ResourceDao {
      * 
      */
     
-    public Number createNotebookWithoutAccesssAndAnnotations(Notebook notebook, Number ownerID);
+    public Number createNotebookWithoutAccesssAndAnnotations(Notebook notebook, Number ownerID) throws NotInDataBaseException;
     
     boolean addAnnotationToNotebook(Number notebookID, Number annotationID);
     

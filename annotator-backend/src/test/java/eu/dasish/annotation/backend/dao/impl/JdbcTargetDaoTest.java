@@ -17,6 +17,7 @@
  */
 package eu.dasish.annotation.backend.dao.impl;
 
+import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.schema.Target;
 import eu.dasish.annotation.schema.TargetInfo;
@@ -51,9 +52,9 @@ public class JdbcTargetDaoTest extends JdbcResourceDaoTest {
     @Test
     public void testStringURItoExternalID() {
         System.out.println("test stringURItoExternalID");
-        jdbcTargetDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_Targets);
+        jdbcTargetDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_targets);
         String randomUUID = UUID.randomUUID().toString();
-        String uri = TestBackendConstants._TEST_SERVLET_URI_Targets + randomUUID;
+        String uri = TestBackendConstants._TEST_SERVLET_URI_targets + randomUUID;
         String externalID = jdbcTargetDao.stringURItoExternalID(uri);
         assertEquals(randomUUID, externalID);
     }
@@ -65,9 +66,9 @@ public class JdbcTargetDaoTest extends JdbcResourceDaoTest {
     @Test
     public void testExternalIDtoURI() {
         System.out.println("test stringURItoExternalID");
-        jdbcTargetDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_Targets);
+        jdbcTargetDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_targets);
         String randomUUID = UUID.randomUUID().toString();
-        String uri = TestBackendConstants._TEST_SERVLET_URI_Targets + randomUUID;
+        String uri = TestBackendConstants._TEST_SERVLET_URI_targets + randomUUID;
         String uriResult = jdbcTargetDao.externalIDtoURI(randomUUID);
         assertEquals(uri, uriResult);
     }
@@ -87,7 +88,7 @@ public class JdbcTargetDaoTest extends JdbcResourceDaoTest {
      * Test of getInternalID method, of class JdbcTargetDao.
      */
     @Test
-    public void testGetInternalId() {
+    public void testGetInternalId() throws NotInDataBaseException{
         System.out.println("getInternalId");
         UUID externalID = UUID.fromString("00000000-0000-0000-0000-000000000031");
         Number expResult = 1;
@@ -100,10 +101,10 @@ public class JdbcTargetDaoTest extends JdbcResourceDaoTest {
      * getInternalIDFromURI(UUID externalID);
      */
     @Test
-    public void testGetInternalIDFRomURI() {
+    public void testGetInternalIDFRomURI() throws NotInDataBaseException{
         System.out.println("test getInternalIDFromURI");
-        jdbcTargetDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_Targets);
-        String uri = TestBackendConstants._TEST_SERVLET_URI_Targets + "00000000-0000-0000-0000-000000000031";
+        jdbcTargetDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_targets);
+        String uri = TestBackendConstants._TEST_SERVLET_URI_targets + "00000000-0000-0000-0000-000000000031";
         Number result = jdbcTargetDao.getInternalIDFromURI(uri);
         assertEquals(1, result.intValue());
     }
@@ -114,9 +115,9 @@ public class JdbcTargetDaoTest extends JdbcResourceDaoTest {
     @Test
     public void testGetTarget() {
         System.out.println("getTarget");
-        jdbcTargetDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_Targets);
+        jdbcTargetDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_targets);
         Target result = jdbcTargetDao.getTarget(1);
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI_Targets + "00000000-0000-0000-0000-000000000031", result.getURI());
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI_targets + "00000000-0000-0000-0000-000000000031", result.getURI());
         assertEquals("http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia" + "#" + "de_Opdracht", result.getLink());
         assertEquals("version 1.0", result.getVersion());
         // TODO :add time stamp test
@@ -152,7 +153,7 @@ public class JdbcTargetDaoTest extends JdbcResourceDaoTest {
      * Test of addTarget method, of class JdbcTargetDao.
      */
     @Test
-    public void testAddTarget() throws SQLException {
+    public void testAddTarget() throws NotInDataBaseException {
         System.out.println("addTarget");
 
         Target freshTarget = new Target();
@@ -166,7 +167,7 @@ public class JdbcTargetDaoTest extends JdbcResourceDaoTest {
         Target addedTarget = jdbcTargetDao.getTarget(result);
         assertEquals("http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia" + "#Het_ontwerp", addedTarget.getLink());
         assertEquals("version 1.0", addedTarget.getVersion());
-        assertTrue(addedTarget.getURI().startsWith(TestBackendConstants._TEST_SERVLET_URI_Targets));
+        assertTrue(addedTarget.getURI().startsWith(TestBackendConstants._TEST_SERVLET_URI_targets));
     }
 
     /**
@@ -175,14 +176,14 @@ public class JdbcTargetDaoTest extends JdbcResourceDaoTest {
     @Test
     public void testGetTargetInfos() {
         System.out.println("getTargetInfos");
-        jdbcTargetDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_Targets);
+        jdbcTargetDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_targets);
         List<Number> test = new ArrayList<Number>();
         test.add(1);
         test.add(2);
         List<TargetInfo> result = jdbcTargetDao.getTargetInfos(test);
         assertEquals(2, result.size());
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI_Targets + "00000000-0000-0000-0000-000000000031", result.get(0).getRef());
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI_Targets + "00000000-0000-0000-0000-000000000032", result.get(1).getRef());
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI_targets + "00000000-0000-0000-0000-000000000031", result.get(0).getRef());
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI_targets + "00000000-0000-0000-0000-000000000032", result.get(1).getRef());
         assertEquals("version 1.0", result.get(0).getVersion());
         assertEquals("version 1.1", result.get(1).getVersion());
         assertEquals("http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia" + "#" + "de_Opdracht", result.get(0).getLink());

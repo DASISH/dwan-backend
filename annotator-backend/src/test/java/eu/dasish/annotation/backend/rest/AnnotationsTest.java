@@ -178,7 +178,7 @@ public class AnnotationsTest extends JerseyTest {
      * api/annotations/
      */
     @Test
-    public void testCreateAnnotation() throws SQLException, InstantiationException, IllegalAccessException, DatatypeConfigurationException, Exception {
+    public void testCreateAnnotation() throws InstantiationException, IllegalAccessException, DatatypeConfigurationException{
         
           
         // Authentication  

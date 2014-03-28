@@ -17,6 +17,7 @@
  */
 package eu.dasish.annotation.backend.dao;
 
+import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.schema.Target;
 import eu.dasish.annotation.schema.TargetInfo;
 import java.sql.SQLException;
@@ -93,7 +94,7 @@ public interface TargetDao extends ResourceDao {
      * @return the internal ID of the just added Target or null if it has not
      * been added.
      */
-    public Number addTarget(Target target);
+    public Number addTarget(Target target)  throws NotInDataBaseException;
 
     /**
      *

@@ -17,7 +17,9 @@
  */
 package eu.dasish.annotation.backend.dao;
 
+import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.schema.CachedRepresentationInfo;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
@@ -25,58 +27,53 @@ import java.util.List;
  *
  * @author olhsha
  */
-public interface CachedRepresentationDao extends ResourceDao{
-    
-   
-    /** GETTERS
-     * 
-     */
-  
+public interface CachedRepresentationDao extends ResourceDao {
+
     /**
-     * 
+     * GETTERS
+     *
+     */
+    /**
+     *
      * @param internalID
-     * @return the object of the class "CachedRepresentationInfo"  with the internal id "internalID".
+     * @return the object of the class "CachedRepresentationInfo" with the
+     * internal id "internalID".
      */
     public CachedRepresentationInfo getCachedRepresentationInfo(Number internalID);
-    
-    
+
     /**
-     * 
+     *
      * @param internalID
-     * @return the Blob of the cached representation  with the internal id "internalID".
+     * @return the Blob of the cached representation with the internal id
+     * "internalID".
      */
     public InputStream getCachedRepresentationBlob(Number internalID);
-    
-    
-     /* 
+
+    /* 
      * @param targetID
      * @return the list of the cached representation's ID-s for the target the internal ID "targetID". 
      */
     public List<Number> getCachedRepresentationsForTarget(Number targetID);
-  
+
     /**
      * ADDERS
      */
-    
-     /**
-     * 
+    /**
+     *
      * @param cachedInfo
      * @param cachedBlob
-     * @return the internal ID of the just added "cached", or null if the cached representation is not added for some reason.
+     * @return the internal ID of the just added "cached", or null if the cached
+     * representation is not added for some reason.
      */
-    public Number addCachedRepresentation(CachedRepresentationInfo cachedInfo, InputStream cachedBlob);
-    
-    
-   /**
-    * DELETERS
-    */
+    public Number addCachedRepresentation(CachedRepresentationInfo cachedInfo, InputStream cachedBlob) throws NotInDataBaseException, IOException;
+
     /**
-     * 
-     * @param internalID
-     * @return  # deleted rows on the table "cached_representation".
+     * DELETERS
      */
-    public  int deleteCachedRepresentation(Number internalID);
-    
-   
-    
+    /**
+     *
+     * @param internalID
+     * @return # deleted rows on the table "cached_representation".
+     */
+    public int deleteCachedRepresentation(Number internalID);
 }

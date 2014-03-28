@@ -17,6 +17,7 @@
  */
 package eu.dasish.annotation.backend.dao.impl;
 
+import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.dao.ResourceDao;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -49,7 +50,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     final static protected String principalTableName = "principal";
     // joint tablenames
     final static protected String notebooksAnnotationsTableName = "notebooks_annotations";
-    final static protected String accesssTableName = "annotations_principals_accesss";
+    final static protected String permissionsTableName = "annotations_principals_accesss";
     final static protected String notebookAccesssTableName = "notebooks_principals_accesss";
     final static protected String annotationsTargetsTableName = "annotations_targets";
     final static protected String targetsCachedRepresentationsTableName = "targets_cached_representations";
@@ -101,31 +102,31 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     protected <T> List<T> loggedQuery(String sql, RowMapper<T> rm, Map<String, ?> args) {
         List<T> result = getSimpleJdbcTemplate().query(sql, rm, args);
         String sqlStatement = replaceInString(sql, args);
-        logger.debug("\n SQL query: " + sqlStatement+"\n");
+        logger.debug("\n SQL query: " + sqlStatement + "\n");
         return result;
     }
 
     protected <T, E> List<T> loggedQuery(String sql, RowMapper<T> rm, E arg) {
-        List<T> result = getSimpleJdbcTemplate().query(sql, rm, arg);        
-        logger.debug("\n SQL query: " + this.replaceQuestionmarkInString(sql, arg)+"\n");
+        List<T> result = getSimpleJdbcTemplate().query(sql, rm, arg);
+        logger.debug("\n SQL query: " + this.replaceQuestionmarkInString(sql, arg) + "\n");
         return result;
     }
 
     protected <T> List<T> loggedQuery(String sql, RowMapper<T> rm) {
-        logger.debug("\n SQL query: " + sql+"\n");
+        logger.debug("\n SQL query: " + sql + "\n");
         return getSimpleJdbcTemplate().query(sql, rm);
     }
 
     protected int loggedUpdate(String sql, Map<String, ?> args) {
         int result = getSimpleJdbcTemplate().update(sql, args);
         String sqlStatement = replaceInString(sql, args);
-        logger.debug("\n SQL query: " + sqlStatement+"\n");
+        logger.debug("\n SQL query: " + sqlStatement + "\n");
         return result;
     }
 
     protected <T> int loggedUpdate(String sql, T arg) {
         int result = getSimpleJdbcTemplate().update(sql, arg);
-        logger.debug("\n SQL query: " + this.replaceQuestionmarkInString(sql, arg)+"\n");
+        logger.debug("\n SQL query: " + this.replaceQuestionmarkInString(sql, arg) + "\n");
         return result;
     }
 
@@ -150,7 +151,6 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
         return result;
     }
 
-
     /////////////////// Class field SETTERS /////////////
     @Override
     public void setServiceURI(String serviceURI) {
@@ -159,54 +159,43 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
 
     //////////////////////////////////////////////////////////////////////////////////
     @Override
-    public Number getInternalID(UUID externalId) {
+    public Number getInternalID(UUID externalId) throws NotInDataBaseException {
         StringBuilder sql = new StringBuilder("SELECT ");
         sql.append(internalIdName).append(" FROM ").append(resourceTableName).append(" WHERE ").append(external_id).append("= ? LIMIT 1");
         List<Number> sqlResult = this.loggedQuery(sql.toString(), internalIDRowMapper, externalId.toString());
-
-
         if (sqlResult.isEmpty()) {
-            _logger.debug("The object with external ID " + externalId.toString() + " is not found in the database.");
-            return null;
-        } else {
-            return sqlResult.get(0);
+            throw new NotInDataBaseException("resource", externalId.toString());
         }
+
+        return sqlResult.get(0);
 
     }
 
     /////////////////////////////////////////////
     @Override
-    public UUID getExternalID(Number internalId) {
-        if (internalId == null) {
-            _logger.debug("internalId: " + nullArgument);
-            return null;
-        }
+    public UUID getExternalID(Number internalID) {
         StringBuilder sql = new StringBuilder("SELECT ");
         sql.append(external_id).append(" FROM ").append(resourceTableName).append(" WHERE ").append(internalIdName).append("= ? LIMIT 1");
-        List<UUID> sqlResult = this.loggedQuery(sql.toString(), externalIDRowMapper, internalId);
-        return (sqlResult.isEmpty() ? null : sqlResult.get(0));
+        List<UUID> sqlResult = this.loggedQuery(sql.toString(), externalIDRowMapper, internalID);
+        return sqlResult.get(0);
     }
 
     //////////////////////////////////////////////
     @Override
-    public Number getInternalIDFromURI(String uri) {
-        String externalID = stringURItoExternalID(uri);
+    public Number getInternalIDFromURI(String uri) throws NotInDataBaseException {
+        String externalID = this.stringURItoExternalID(uri);
         try {
             UUID externalUUID = UUID.fromString(externalID);
-            return getInternalID(externalUUID);
+            return this.getInternalID(externalUUID);
         } catch (IllegalArgumentException e) {
             _logger.debug(externalID + " is not a valid <uuid>.  Therefore, I expect that it is a temporary idendifier of a new resource that is not yet in the database and return null.");
-            return null;
+            throw new NotInDataBaseException("resource", externalID);
         }
     }
 
     //////////////////////////////////////////////
     @Override
     public String getURIFromInternalID(Number internalID) {
-        if (internalID == null) {
-            _logger.debug("internalID: " + nullArgument);
-            return null;
-        }
         return externalIDtoURI(getExternalID(internalID).toString());
     }
 
@@ -221,10 +210,6 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
         StringBuilder sqlTime = new StringBuilder("SELECT ");
         sqlTime.append(last_modified).append(" FROM ").append(resourceTableName).append(" WHERE ").append(internalIdName).append("= ? LIMIT 1");
         List<XMLGregorianCalendar> timeStamp = this.loggedQuery(sqlTime.toString(), timeStampRowMapper, internalID);
-
-        if (timeStamp.isEmpty()) {
-            return null;
-        }
         return timeStamp.get(0);
     }
     protected final RowMapper<XMLGregorianCalendar> timeStampRowMapper = new RowMapper<XMLGregorianCalendar>() {
@@ -248,7 +233,6 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
             return (UUID.fromString(rs.getString(external_id)));
         }
     };
-
     protected final RowMapper<Number> ownerIDRowMapper = new RowMapper<Number>() {
         @Override
         public Number mapRow(ResultSet rs, int rowNumber) throws SQLException {

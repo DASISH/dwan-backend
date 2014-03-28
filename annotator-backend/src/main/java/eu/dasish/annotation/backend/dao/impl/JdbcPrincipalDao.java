@@ -17,6 +17,7 @@
  */
 package eu.dasish.annotation.backend.dao.impl;
 
+import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.dao.PrincipalDao;
 import eu.dasish.annotation.schema.Access;
 import eu.dasish.annotation.schema.Principal;
@@ -53,16 +54,10 @@ public class JdbcPrincipalDao extends JdbcResourceDao implements PrincipalDao {
     /////////// GETTERS //////////////////////
     @Override
     public Principal getPrincipal(Number internalID) {
-
-        if (internalID == null) {
-            loggerPrincipalDao.debug("internalID: " + nullArgument);
-            return null;
-        }
-
         StringBuilder sql = new StringBuilder("SELECT ");
         sql.append(principalStar).append(" FROM ").append(principalTableName).append(" WHERE ").append(principal_id).append("= ? LIMIT 1");
         List<Principal> result = this.loggedQuery(sql.toString(), principalRowMapper, internalID);
-        return (!result.isEmpty() ? result.get(0) : null);
+        return result.get(0);
     }
     private final RowMapper<Principal> principalRowMapper = new RowMapper<Principal>() {
         @Override
@@ -76,23 +71,21 @@ public class JdbcPrincipalDao extends JdbcResourceDao implements PrincipalDao {
     };
 
     @Override
-    public Principal getPrincipalByInfo(String eMail) {
+    public Principal getPrincipalByInfo(String eMail) throws NotInDataBaseException {
         StringBuilder sql = new StringBuilder("SELECT ");
         sql.append(principalStar).append(" FROM ").append(principalTableName).append(" WHERE ").append("LOWER(").append(e_mail).append(")").append("= ? LIMIT 1");
         List<Principal> result = this.loggedQuery(sql.toString(), principalRowMapper, eMail.toLowerCase());
-        return (!result.isEmpty() ? result.get(0) : null);
+        if (result.isEmpty()) {
+            throw new NotInDataBaseException("principal");
+        }
+        return result.get(0);
     }
 
     @Override
     public boolean principalIsInUse(Number principalID) {
 
-        if (principalID == null) {
-            loggerPrincipalDao.debug("principalID: " + nullArgument);
-            return false;
-        }
-
         StringBuilder sqlAccesss = new StringBuilder("SELECT ");
-        sqlAccesss.append(principal_id).append(" FROM ").append(accesssTableName).append(" WHERE ").append(principal_id).append("= ? LIMIT 1");
+        sqlAccesss.append(principal_id).append(" FROM ").append(permissionsTableName).append(" WHERE ").append(principal_id).append("= ? LIMIT 1");
         List<Number> resultTargets = this.loggedQuery(sqlAccesss.toString(), internalIDRowMapper, principalID);
         if (resultTargets.size() > 0) {
             return true;
@@ -109,16 +102,12 @@ public class JdbcPrincipalDao extends JdbcResourceDao implements PrincipalDao {
 
     @Override
     public boolean principalExists(Principal principal) {
-        if (principal == null) {
-            loggerPrincipalDao.debug("principal: " + nullArgument);
-            return false;
-        }
 
         String emailCriterion = principal.getEMail().toLowerCase();
         StringBuilder sqlTargets = new StringBuilder("SELECT ");
         sqlTargets.append(principal_id).append(" FROM ").append(principalTableName).append(" WHERE ").append("LOWER(").append(e_mail).append(")= ? LIMIT 1");
-        List<Number> resultTargets = this.loggedQuery(sqlTargets.toString(), internalIDRowMapper, emailCriterion);
-        if (resultTargets.size() > 0) {
+        List<Number> result = this.loggedQuery(sqlTargets.toString(), internalIDRowMapper, emailCriterion);
+        if (result.size() > 0) {
             return true;
         } else {
             return false;
@@ -127,16 +116,10 @@ public class JdbcPrincipalDao extends JdbcResourceDao implements PrincipalDao {
 
     @Override
     public String getRemoteID(Number internalID) {
-
-        if (internalID == null) {
-            loggerPrincipalDao.debug("internalID: " + nullArgument);
-            return null;
-        }
-
         StringBuilder requestDB = new StringBuilder("SELECT ");
         requestDB.append(remote_id).append(" FROM ").append(principalTableName).append(" WHERE ").append(principal_id).append("= ? LIMIT 1");
         List<String> result = this.loggedQuery(requestDB.toString(), remoteIDRowMapper, internalID);
-        return (result.size() > 0) ? result.get(0) : null;
+        return result.get(0);
     }
     private final RowMapper<String> remoteIDRowMapper = new RowMapper<String>() {
         @Override
@@ -146,31 +129,23 @@ public class JdbcPrincipalDao extends JdbcResourceDao implements PrincipalDao {
     };
 
     @Override
-    public Number getPrincipalInternalIDFromRemoteID(String remoteID) {
-
-        if (remoteID == null) {
-            loggerPrincipalDao.debug("remoteID: " + nullArgument);
-            return null;
-        }
+    public Number getPrincipalInternalIDFromRemoteID(String remoteID) throws NotInDataBaseException {
 
         StringBuilder requestDB = new StringBuilder("SELECT ");
         requestDB.append(principal_id).append(" FROM ").append(principalTableName).append(" WHERE ").append(remote_id).append("= ? LIMIT 1");
         List<Number> result = this.loggedQuery(requestDB.toString(), internalIDRowMapper, remoteID);
-        return (result.size() > 0) ? result.get(0) : null;
+        if (result.isEmpty()) {
+            throw new NotInDataBaseException("principal");
+        }
+        return result.get(0);
     }
 
     @Override
-    public String getTypeOfPrincipalAccount(Number internalID) {
-
-        if (internalID == null) {
-            loggerPrincipalDao.debug("internalID: " + nullArgument);
-            return null;
-        }
-
+    public String getTypeOfPrincipalAccount(Number internalID){
         StringBuilder requestDB = new StringBuilder("SELECT ");
         requestDB.append(account).append(" FROM ").append(principalTableName).append(" WHERE ").append(principal_id).append("= ? LIMIT 1");
         List<String> result = this.loggedQuery(requestDB.toString(), adminRightsRowMapper, internalID);
-        return (result.size() > 0) ? result.get(0) : null;
+        return result.get(0);
     }
     private final RowMapper<String> adminRightsRowMapper = new RowMapper<String>() {
         @Override
@@ -184,20 +159,12 @@ public class JdbcPrincipalDao extends JdbcResourceDao implements PrincipalDao {
         StringBuilder requestDB = new StringBuilder("SELECT ");
         requestDB.append(principal_id).append(" FROM ").append(principalTableName).append(" WHERE account = 'admin'  LIMIT 1");
         List<Number> result = this.loggedQuery(requestDB.toString(), internalIDRowMapper);
-        return (result.size() > 0) ? result.get(0) : null;
+        return result.get(0);
     }
 
     @Override
     public List<Number> getPrincipalIDsWithAccessForNotebook(Number notebookID, Access access) {
-        if (notebookID == null) {
-            loggerPrincipalDao.debug("notebookID: " + nullArgument);
-            return null;
-        }
 
-        if (access == null) {
-            loggerPrincipalDao.debug("access: " + nullArgument);
-            return null;
-        }
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("notebookID", notebookID);
         params.put("accessMode", access.value());
@@ -212,17 +179,7 @@ public class JdbcPrincipalDao extends JdbcResourceDao implements PrincipalDao {
 
     ///////////////////// ADDERS ////////////////////////////
     @Override
-    public Number addPrincipal(Principal principal, String remoteID) {
-
-        if (remoteID == null) {
-            loggerPrincipalDao.debug("remoteID: " + nullArgument);
-            return null;
-        }
-
-        if (principal == null) {
-            loggerPrincipalDao.debug("principal: " + nullArgument);
-            return null;
-        }
+    public Number addPrincipal(Principal principal, String remoteID) throws NotInDataBaseException {
 
         UUID externalIdentifier = UUID.randomUUID();
         String newExternalIdentifier = externalIdentifier.toString();
@@ -231,82 +188,51 @@ public class JdbcPrincipalDao extends JdbcResourceDao implements PrincipalDao {
         params.put("principalName", principal.getDisplayName());
         params.put("email", principal.getEMail());
         params.put("remoteID", remoteID);
-        params.put("accountType", this.principal);
+        params.put("accountType", "user");
         StringBuilder sql = new StringBuilder("INSERT INTO ");
         sql.append(principalTableName).append("(").append(external_id).append(",").
                 append(principal_name).append(",").append(e_mail).append(",").
                 append(remote_id).append(",").append(account).append(" ) VALUES (:externalId, :principalName, :email, :remoteID, :accountType)");
         final int affectedRows = this.loggedUpdate(sql.toString(), params);
-        return (affectedRows > 0 ? getInternalID(externalIdentifier) : null);
+        return getInternalID(externalIdentifier);
     }
 
     ////////// UPDATERS ///////////////////////
     @Override
-    public boolean updateAccount(UUID externalID, String account) {
-
-        if (externalID == null) {
-            loggerPrincipalDao.debug("eternalId: " + nullArgument);
-            return false;
-        }
-
-        if (account == null) {
-            loggerPrincipalDao.debug("account: " + nullArgument);
-            return false;
-        }
-
-        if (!account.equals(admin) && !account.equals(developer) && !account.equals(principal)) {
-            logger.error("the given type of account '" + account + "' does not exist.");
-            return false;
-        }
+    public boolean updateAccount(UUID externalID, String account) throws NotInDataBaseException {
         Number principalID = this.getInternalID(externalID);
-        if (principalID != null) {
-            Map<String, Object> params = new HashMap<String, Object>();
-            params.put("externalId", externalID.toString());
-            params.put("accountType", account);
-            StringBuilder sql = new StringBuilder("UPDATE ");
-            sql.append(principalTableName).append(" SET ").
-                    append(this.account).append("= :accountType").
-                    append(" WHERE ").append(external_id).append("= :externalId");
-            int affectedRows = this.loggedUpdate(sql.toString(), params);
-            if (affectedRows > 0) {
-                return true;
-            } else {
-                logger.error("For some reason the database refuses update the account of " + externalID.toString() + " . Consult the servers' respond.");
-                return false;
-            }
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("externalId", externalID.toString());
+        params.put("accountType", account);
+        StringBuilder sql = new StringBuilder("UPDATE ");
+        sql.append(principalTableName).append(" SET ").
+                append(this.account).append("= :accountType").
+                append(" WHERE ").append(external_id).append("= :externalId");
+        int affectedRows = this.loggedUpdate(sql.toString(), params);
+        if (affectedRows > 0) {
+            return true;
         } else {
-            logger.error("The principal with external ID " + externalID.toString() + " is not found in the data base");
+            logger.error("For some reason the database refuses update the account of " + externalID.toString() + " . Consult the servers' respond.");
             return false;
         }
 
     }
 
     @Override
-    public Number updatePrincipal(Principal principal) {
-
-        if (principal == null) {
-            loggerPrincipalDao.debug("principal: " + nullArgument);
-            return null;
-        }
-
+    public int updatePrincipal(Principal principal) throws NotInDataBaseException {
         Number principalID = this.getInternalIDFromURI(principal.getURI());
         StringBuilder sql = new StringBuilder("UPDATE ");
         sql.append(principalTableName).append(" SET ").
                 append(e_mail).append("= '").append(principal.getEMail()).append("',").
                 append(principal_name).append("= '").append(principal.getDisplayName()).append("' ").
                 append(" WHERE ").append(principal_id).append("= ?");
-        int affectedRows = this.loggedUpdate(sql.toString(), principalID);
-        return principalID;
+        return this.loggedUpdate(sql.toString(), principalID);
+
     }
 
     ////// DELETERS ////////////
     @Override
     public int deletePrincipal(Number internalID) {
-        if (internalID == null) {
-            loggerPrincipalDao.debug("internalID: " + nullArgument);
-            return 0;
-        }
-
 
         StringBuilder sql = new StringBuilder("DELETE FROM ");
         sql.append(principalTableName).append(" where ").append(principal_id).append(" = ?");
@@ -316,12 +242,6 @@ public class JdbcPrincipalDao extends JdbcResourceDao implements PrincipalDao {
 
     @Override
     public int deletePrincipalSafe(Number internalID) {
-
-        if (internalID == null) {
-            loggerPrincipalDao.debug("internalID: " + nullArgument);
-            return 0;
-        }
-
 
         if (principalIsInUse(internalID)) {
             loggerPrincipalDao.debug("Principal is in use, and cannot be deleted.");

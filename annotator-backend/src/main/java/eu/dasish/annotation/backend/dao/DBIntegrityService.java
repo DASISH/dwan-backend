@@ -17,6 +17,8 @@
  */
 package eu.dasish.annotation.backend.dao;
 
+import eu.dasish.annotation.backend.NotInDataBaseException;
+import eu.dasish.annotation.backend.PrincipalExists;
 import eu.dasish.annotation.backend.Resource;
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationBody;
@@ -32,6 +34,7 @@ import eu.dasish.annotation.schema.ResponseBody;
 import eu.dasish.annotation.schema.Target;
 import eu.dasish.annotation.schema.TargetInfo;
 import eu.dasish.annotation.schema.Principal;
+import java.io.IOException;
 import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.List;
@@ -51,9 +54,9 @@ public interface DBIntegrityService {
      * GETTERS
      */
       
-    Number getResourceInternalIdentifier(UUID externalID, Resource resource);
+    Number getResourceInternalIdentifier(UUID externalID, Resource resource) throws NotInDataBaseException;
 
-    Number getResourceInternalIdentifierFromURI(String uri, Resource resource);
+    Number getResourceInternalIdentifierFromURI(String uri, Resource resource) throws NotInDataBaseException;
 
     UUID getResourceExternalIdentifier(Number resourceID, Resource resource);
 
@@ -75,7 +78,7 @@ public interface DBIntegrityService {
      * read, write) to them, -- namespace ???, -- owned by "owner", --
      * created after time-samp "after and before time-stamp "before".
      */
-    List<Number> getFilteredAnnotationIDs(UUID ownerId, String link, String text, Number inloggedPrincipalID, String access, String namespace, String after, String before);
+    List<Number> getFilteredAnnotationIDs(UUID ownerId, String link, String text, Number inloggedPrincipalID, String  accessMode, String namespace, String after, String before) throws NotInDataBaseException;
 
     AnnotationInfoList getAllAnnotationInfos();
 
@@ -94,8 +97,10 @@ public interface DBIntegrityService {
      * read, write) to them, -- namespace ???, -- owned by "owner", --
      * created after time-samp "after and before time-stamp "before".
      */
-    AnnotationInfoList getFilteredAnnotationInfos(UUID ownerId, String word, String text, Number inloggedPrincipalID, String access, String namespace, String after, String before);
+    AnnotationInfoList getFilteredAnnotationInfos(UUID ownerId, String link, String text, Number inloggedPrincipalID, String access, String namespace, String after, String before) throws NotInDataBaseException;
 
+  
+    
     /**
      *
      * @param internalID
@@ -159,18 +164,18 @@ public interface DBIntegrityService {
      * @param principalID
      * @return principal with "principalID"
      */
-    Principal getPrincipal(Number principalID);
+    Principal getPrincipal(Number principalID) ;
 
     /**
      *
      * @param eMail
      * @return principal with e-mail "eMail"
      */
-    Principal getPrincipalByInfo(String eMail);
+    Principal getPrincipalByInfo(String eMail) throws NotInDataBaseException;
 
     String getPrincipalRemoteID(Number internalID);
 
-    Number getPrincipalInternalIDFromRemoteID(String remoteID);
+    Number getPrincipalInternalIDFromRemoteID(String remoteID) throws NotInDataBaseException;
 
     /**
      *
@@ -180,17 +185,18 @@ public interface DBIntegrityService {
      * access is not given
      */
     Access getAccess(Number annotationID, Number principalID);
+    
+    Access getPublicAttribute(Number annotationID);
 
     String getTypeOfPrincipalAccount(Number principalID);
     
-    Principal getDataBaseAdmin();
+    Principal getDataBaseAdmin() ;
 
-    boolean canRead(Number principalID, Number annotationID);
+    boolean canDo(Access access, Number principalID, Number annotationID);
 
-    boolean canWrite(Number principalID, Number annotationID);
-
+    
     /// notebooks ///
-    NotebookInfoList getNotebooks(Number prinipalID, String access);
+    NotebookInfoList getNotebooks(Number prinipalID, Access access);
 
     boolean hasAccess(Number notebookID, Number principalID, Access access);
 
@@ -207,14 +213,14 @@ public interface DBIntegrityService {
     /**
      * UPDATERS
      */
-    boolean updateAccount(UUID principalExternalID, String account);
+    boolean updateAccount(UUID principalExternalID, String account) throws NotInDataBaseException;
 
     /**
      *
      * @param annotation
      * @return 1 of the annotation if it is updated
      */
-    int updateAnnotation(Annotation annotation);
+    int updateAnnotation(Annotation annotation) throws NotInDataBaseException;
 
     /**
      *
@@ -242,12 +248,14 @@ public interface DBIntegrityService {
      * @return # of rows updated or added in the table
      * annotations_principals_accesss
      */
-    int updatePermissions(Number annotationID, PermissionList permissionList);
-
-    Number updatePrincipal(Principal principal);
+    int updatePermissions(Number annotationID, PermissionList permissionList) throws NotInDataBaseException ;
+    
+    int updatePublicAttribute(Number annotationID, Access publicAttribute);
+    
+    int updatePrincipal(Principal principal) throws NotInDataBaseException;
 
     /// notebooks ///
-    boolean updateNotebookMetadata(Number notebookID, NotebookInfo upToDateNotebookInfo);
+    boolean updateNotebookMetadata(Number notebookID, NotebookInfo upToDateNotebookInfo) throws NotInDataBaseException;
 
     boolean addAnnotationToNotebook(Number notebookID, Number annotationID);
 
@@ -264,7 +272,7 @@ public interface DBIntegrityService {
      * internal ID of the added cached (a new one if "cached" was new for the
      * Data Base).
      */
-    Number[] addCachedForTarget(Number targetID, String fragmentDescriptor, CachedRepresentationInfo cachedInfo, InputStream cachedBlob);
+    Number[] addCachedForTarget(Number targetID, String fragmentDescriptor, CachedRepresentationInfo cachedInfo, InputStream cachedBlob) throws NotInDataBaseException, IOException;
 
     /**
      *
@@ -277,7 +285,7 @@ public interface DBIntegrityService {
      * all Targets are old, then the map is empty.
      * @throws SQLException
      */
-    Map<String, String> addTargetsForAnnotation(Number annotationID, List<TargetInfo> targets);
+    Map<String, String> addTargetsForAnnotation(Number annotationID, List<TargetInfo> targets)  throws NotInDataBaseException;
 
     /**
      *
@@ -287,7 +295,7 @@ public interface DBIntegrityService {
      * not added) by the owner "principalID". calls "addTargetsForAnnotation"
      * @throws SQLException
      */
-    Number addPrincipalsAnnotation(Number ownerID, Annotation annotation);
+    Number addPrincipalsAnnotation(Number ownerID, Annotation annotation) throws NotInDataBaseException;
 
     /**
      *
@@ -297,14 +305,15 @@ public interface DBIntegrityService {
      * added for some reason (already exists)
      * @throws SQLException
      */
-    Number addPrincipal(Principal principal, String remoteID);
+    Number addPrincipal(Principal principal, String remoteID) throws NotInDataBaseException, PrincipalExists;
 
     int addAnnotationPrincipalAccess(Number annotationID, Number principalID, Access access);
-
+    
+    
     /// notebooks ////
-    Number createNotebook(Notebook notebook, Number ownerID);
+    Number createNotebook(Notebook notebook, Number ownerID) throws NotInDataBaseException;
 
-    boolean createAnnotationInNotebook(Number notebookID, Annotation annotation, Number ownerID);
+    boolean createAnnotationInNotebook(Number notebookID, Annotation annotation, Number ownerID) throws NotInDataBaseException;
 
     /**
      * DELETERS
@@ -350,10 +359,11 @@ public interface DBIntegrityService {
      * "cached_representation".
      *
      */
-    int[] deleteAllCachedRepresentationsOfTarget(Number versionID);
+    int[] deleteAllCachedRepresentationsOfTarget(Number targetID);
 
     int deleteTarget(Number internalID);
-
+    
+   
     /**
      *
      * @param annotationID
