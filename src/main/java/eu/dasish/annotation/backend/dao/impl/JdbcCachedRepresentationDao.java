@@ -17,6 +17,7 @@
  */
 package eu.dasish.annotation.backend.dao.impl;
 
+import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.dao.CachedRepresentationDao;
 import eu.dasish.annotation.schema.CachedRepresentationInfo;
 import java.io.IOException;
@@ -40,10 +41,8 @@ import org.slf4j.LoggerFactory;
  */
 public class JdbcCachedRepresentationDao extends JdbcResourceDao implements CachedRepresentationDao {
 
-    private  final Logger loggerCachedDao = LoggerFactory.getLogger(JdbcCachedRepresentationDao.class);
-    
-    
-    
+    private final Logger loggerCachedDao = LoggerFactory.getLogger(JdbcCachedRepresentationDao.class);
+
     public JdbcCachedRepresentationDao(DataSource dataSource) {
         setDataSource(dataSource);
         internalIdName = cached_representation_id;
@@ -57,18 +56,10 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
 
     /////////////////////////// GETTERS  ////////////////////////////////////////
     @Override
-    public CachedRepresentationInfo getCachedRepresentationInfo(Number internalID) {
-        if (internalID == null) {
-            loggerCachedDao.debug("internalID: " + nullArgument);
-            return null;
-        }
+    public CachedRepresentationInfo getCachedRepresentationInfo(Number internalID){
         StringBuilder sql = new StringBuilder("SELECT ");
         sql.append(cachedRepresentationStar).append(" FROM ").append(cachedRepresentationTableName).append(" WHERE ").append(cached_representation_id).append("= ? LIMIT 1");
         List<CachedRepresentationInfo> result = this.loggedQuery(sql.toString(), cachedRepresentationRowMapper, internalID);
-
-        if (result.isEmpty()) {
-            return null;
-        }
         return result.get(0);
     }
     private final RowMapper<CachedRepresentationInfo> cachedRepresentationRowMapper = new RowMapper<CachedRepresentationInfo>() {
@@ -85,20 +76,10 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
 
     /////////////////////////// GETTERS  ////////////////////////////////////////
     @Override
-    public InputStream getCachedRepresentationBlob(Number internalID) {
-        
-        if (internalID == null) {
-            loggerCachedDao.debug("internalID: " + nullArgument);
-            return null;
-        }
+    public InputStream getCachedRepresentationBlob(Number internalID){
         StringBuilder sql = new StringBuilder("SELECT ");
         sql.append(file_).append(" FROM ").append(cachedRepresentationTableName).append(" WHERE ").append(cached_representation_id).append("= ? LIMIT 1");
         List<InputStream> result = this.loggedQuery(sql.toString(), cachedRepresentationBlobRowMapper, internalID);
-
-        if (result.isEmpty()) {
-            return null;
-        }
-
         return result.get(0);
     }
     private final RowMapper<InputStream> cachedRepresentationBlobRowMapper = new RowMapper<InputStream>() {
@@ -108,25 +89,17 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
         }
     };
 
-   
-    
-       /////////////////////////////////////////
+    /////////////////////////////////////////
     @Override
     public List<Number> getCachedRepresentationsForTarget(Number targetID) {
-
-        if (targetID == null) {
-            loggerCachedDao.debug("targetID: " + nullArgument);
-            return null;
-        }
 
         String sql = "SELECT " + cached_representation_id + " FROM " + targetsCachedRepresentationsTableName + " WHERE " + target_id + " = ?";
         return this.loggedQuery(sql, internalIDRowMapper, targetID);
     }
 
-
     //////////////////////// ADDERS ///////////////////////////////
     @Override
-    public Number addCachedRepresentation(CachedRepresentationInfo cachedInfo, InputStream streamCached) {
+    public Number addCachedRepresentation(CachedRepresentationInfo cachedInfo, InputStream streamCached) throws NotInDataBaseException, IOException {
         try {
             UUID externalIdentifier = UUID.randomUUID();
             Map<String, Object> params = new HashMap<String, Object>();
@@ -138,11 +111,11 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
             StringBuilder sql = new StringBuilder("INSERT INTO ");
             sql.append(cachedRepresentationTableName).append("(").append(external_id).append(",").append(mime_type).append(",").append(tool).append(",").append(type_).append(",").append(file_).append(" ) VALUES (:externalId, :mime_type,  :tool, :type, :blob)");
             final int affectedRows = this.loggedUpdate(sql.toString(), params);
-            return (affectedRows > 0 ? getInternalID(externalIdentifier) : null);
+            return getInternalID(externalIdentifier);
 
         } catch (IOException ioe) {
             loggerCachedDao.debug(ioe + "while adding cached representation");
-            return null;
+            throw ioe;
         }
 
     }
@@ -150,12 +123,12 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
     /////////////////////// DELETERS  //////////////////////////////////////////////
     @Override
     public int deleteCachedRepresentation(Number internalID) {
-        
+
         if (internalID == null) {
             loggerCachedDao.debug("internalID: " + nullArgument);
             return 0;
         }
-               
+
         StringBuilder sql = new StringBuilder("DELETE FROM ");
         sql.append(cachedRepresentationTableName).append(" WHERE ").append(cached_representation_id).append(" = ?");
         return this.loggedUpdate(sql.toString(), internalID);

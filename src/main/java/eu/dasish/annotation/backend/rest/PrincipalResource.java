@@ -17,6 +17,8 @@
  */
 package eu.dasish.annotation.backend.rest;
 
+import eu.dasish.annotation.backend.NotInDataBaseException;
+import eu.dasish.annotation.backend.PrincipalExists;
 import eu.dasish.annotation.backend.Resource;
 import eu.dasish.annotation.schema.CurrentPrincipalInfo;
 import eu.dasish.annotation.schema.ObjectFactory;
@@ -25,6 +27,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -37,6 +40,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.xml.bind.JAXBElement;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.ws.http.HTTPException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -60,19 +64,17 @@ public class PrincipalResource extends ResourceResource {
     @Produces(MediaType.TEXT_XML)
     @Path("{principalid}")
     @Transactional(readOnly = true)
-    public JAXBElement<Principal> getPrincipal(@PathParam("principalid") String externalIdentifier) throws SQLException, IOException {
+    public JAXBElement<Principal> getPrincipal(@PathParam("principalid") String externalIdentifier) throws IOException {
         Number remotePrincipalID = this.getPrincipalID();
-        if (remotePrincipalID != null) {
+        try {
             final Number principalID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.PRINCIPAL);
-            if (principalID != null) {
-                final Principal principal = dbIntegrityService.getPrincipal(principalID);
-                return new ObjectFactory().createPrincipal(principal);
-            } else {
-                verboseOutput.PRINCIPAL_NOT_FOUND(externalIdentifier);
-            }
-
+            final Principal principal = dbIntegrityService.getPrincipal(principalID);
+            return new ObjectFactory().createPrincipal(principal);
+        } catch (NotInDataBaseException e) {
+            verboseOutput.PRINCIPAL_NOT_FOUND(externalIdentifier);
+            throw new HTTPException(HttpServletResponse.SC_FORBIDDEN);
         }
-        return new ObjectFactory().createPrincipal(new Principal());
+
     }
 
     @GET
@@ -81,27 +83,23 @@ public class PrincipalResource extends ResourceResource {
     @Transactional(readOnly = true)
     public String getAdmin() throws IOException {
         Number remotePrincipalID = this.getPrincipalID();
-        if (remotePrincipalID != null) {
-            return "The admin of the server database " + dbIntegrityService.getDataBaseAdmin().getDisplayName() + " is availiable via e-mail " + dbIntegrityService.getDataBaseAdmin().getEMail();
-        }
-        return "You are not geconginsed as a registered principal.";
+        return "The admin of the server database " + dbIntegrityService.getDataBaseAdmin().getDisplayName() + " is availiable via e-mail " + dbIntegrityService.getDataBaseAdmin().getEMail();
     }
 
     @GET
     @Produces(MediaType.TEXT_XML)
     @Path("/info")
     @Transactional(readOnly = true)
-    public JAXBElement<Principal> getPrincipalByInfo(@QueryParam("email") String email) throws SQLException, IOException {
+    public JAXBElement<Principal> getPrincipalByInfo(@QueryParam("email") String email) throws IOException {
         Number remotePrincipalID = this.getPrincipalID();
-        if (remotePrincipalID != null) {
+        try {
             final Principal principal = dbIntegrityService.getPrincipalByInfo(email);
-            if (principal != null) {
-                return new ObjectFactory().createPrincipal(principal);
-            } else {
-                verboseOutput.PRINCIPAL_NOT_FOUND_BY_INFO(email);
-            }
+            return new ObjectFactory().createPrincipal(principal);
+        } catch (NotInDataBaseException e) {
+            verboseOutput.PRINCIPAL_NOT_FOUND_BY_INFO(email);
+            throw new HTTPException(HttpServletResponse.SC_NOT_FOUND);
         }
-        return new ObjectFactory().createPrincipal(new Principal());
+
     }
 
     @GET
@@ -110,41 +108,44 @@ public class PrincipalResource extends ResourceResource {
     @Transactional(readOnly = true)
     public JAXBElement<CurrentPrincipalInfo> getCurrentPrincipalInfo(@PathParam("principalid") String externalIdentifier) throws IOException {
         Number remotePrincipalID = this.getPrincipalID();
-        if (remotePrincipalID != null) {
+        try {
             final Number principalID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.PRINCIPAL);
-            if (principalID != null) {
-                final CurrentPrincipalInfo principalInfo = new CurrentPrincipalInfo();
-                principalInfo.setRef(dbIntegrityService.getResourceURI(principalID, Resource.PRINCIPAL));
-                principalInfo.setCurrentPrincipal(ifLoggedIn(principalID));
-                return new ObjectFactory().createCurrentPrincipalInfo(principalInfo);
-            } else {
-                verboseOutput.PRINCIPAL_NOT_FOUND(externalIdentifier);
-            }
-
+            final CurrentPrincipalInfo principalInfo = new CurrentPrincipalInfo();
+            principalInfo.setRef(dbIntegrityService.getResourceURI(principalID, Resource.PRINCIPAL));
+            principalInfo.setCurrentPrincipal(ifLoggedIn(principalID));
+            return new ObjectFactory().createCurrentPrincipalInfo(principalInfo);
+        } catch (NotInDataBaseException e) {
+            verboseOutput.PRINCIPAL_NOT_FOUND(externalIdentifier);
+            throw new HTTPException(HttpServletResponse.SC_NOT_FOUND);
         }
-        return new ObjectFactory().createCurrentPrincipalInfo(new CurrentPrincipalInfo());
+
     }
 
     @POST
     @Consumes(MediaType.APPLICATION_XML)
     @Produces(MediaType.APPLICATION_XML)
     @Path("{remoteId}")
-    public JAXBElement<Principal> addPrincipal(@PathParam("remoteId") String remoteId, Principal principal) throws SQLException, IOException {
+    public JAXBElement<Principal> addPrincipal(@PathParam("remoteId") String remoteId, Principal principal) throws IOException {
         Number remotePrincipalID = this.getPrincipalID();
-        if (remotePrincipalID != null) {
-            if (dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID).equals(admin)) {
-                final Number principalID = dbIntegrityService.addPrincipal(principal, remoteId);
-                if (principalID != null) {
+        if (dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID).equals(admin)) {
+            try {
+                try {
+                    final Number principalID = dbIntegrityService.addPrincipal(principal, remoteId);
                     final Principal addedPrincipal = dbIntegrityService.getPrincipal(principalID);
                     return new ObjectFactory().createPrincipal(addedPrincipal);
-                } else {
+                } catch (NotInDataBaseException e1) {
                     verboseOutput.PRINCIPAL_IS_NOT_ADDED_TO_DB();
+                    throw new HTTPException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 }
-            } else {
-                verboseOutput.ADMIN_RIGHTS_EXPECTED(dbIntegrityService.getDataBaseAdmin().getDisplayName(), dbIntegrityService.getDataBaseAdmin().getEMail());
+            } catch (PrincipalExists e) {
+                verboseOutput.PRINCIPAL_IS_NOT_ADDED_TO_DB();
+                throw new HTTPException(HttpServletResponse.SC_BAD_REQUEST);
             }
+        } else {
+            verboseOutput.ADMIN_RIGHTS_EXPECTED();
+            throw new HTTPException(HttpServletResponse.SC_FORBIDDEN);
         }
-        return new ObjectFactory().createPrincipal(new Principal());
+
     }
 
     @PUT
@@ -153,20 +154,19 @@ public class PrincipalResource extends ResourceResource {
     @Path("")
     public JAXBElement<Principal> updatePrincipal(Principal principal) throws IOException {
         Number remotePrincipalID = this.getPrincipalID();
-        if (remotePrincipalID != null) {
-            if (dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID).equals(admin)) {
+        if (dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID).equals(admin)) {
+            try {
                 final Number principalID = dbIntegrityService.updatePrincipal(principal);
-                if (principalID != null) {
-                    final Principal addedPrincipal = dbIntegrityService.getPrincipal(principalID);
-                    return new ObjectFactory().createPrincipal(addedPrincipal);
-                } else {
-                    verboseOutput.PRINCIPAL_NOT_FOUND(principal.getURI());
-                }
-            } else {
-                verboseOutput.ADMIN_RIGHTS_EXPECTED(dbIntegrityService.getDataBaseAdmin().getDisplayName(), dbIntegrityService.getDataBaseAdmin().getEMail());
+                final Principal addedPrincipal = dbIntegrityService.getPrincipal(principalID);
+                return new ObjectFactory().createPrincipal(addedPrincipal);
+            } catch (NotInDataBaseException e) {
+                verboseOutput.PRINCIPAL_NOT_FOUND(principal.getURI());
+                throw new HTTPException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             }
+        } else {
+            verboseOutput.ADMIN_RIGHTS_EXPECTED();
+            throw new HTTPException(HttpServletResponse.SC_FORBIDDEN);
         }
-        return new ObjectFactory().createPrincipal(new Principal());
     }
 
     @PUT
@@ -174,59 +174,62 @@ public class PrincipalResource extends ResourceResource {
     @Path("{externalId}/account/{accountType}")
     public String updatePrincipalAccount(@PathParam("externalId") String externalId, @PathParam("accountType") String accountType) throws IOException {
         Number remotePrincipalID = this.getPrincipalID();
-        if (remotePrincipalID != null) {
-            if (dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID).equals(admin)) {
+        if (dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID).equals(admin)) {
+            try {
                 final boolean updated = dbIntegrityService.updateAccount(UUID.fromString(externalId), accountType);
                 if (updated) {
                     return "The account was updated to " + dbIntegrityService.getTypeOfPrincipalAccount(dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalId), Resource.PRINCIPAL));
                 } else {
                     verboseOutput.ACCOUNT_IS_NOT_UPDATED();
+                    throw new HTTPException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 }
-            } else {
-                verboseOutput.ADMIN_RIGHTS_EXPECTED(dbIntegrityService.getDataBaseAdmin().getDisplayName(), dbIntegrityService.getDataBaseAdmin().getEMail());
+            } catch (NotInDataBaseException e) {
+                throw new HTTPException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             }
+        } else {
+            verboseOutput.ADMIN_RIGHTS_EXPECTED();
+            throw new HTTPException(HttpServletResponse.SC_FORBIDDEN);
         }
-        return " ";
+
     }
 
     @DELETE
     @Path("{principalId}")
     public String deletePrincipal(@PathParam("principalId") String externalIdentifier) throws IOException {
         Number remotePrincipalID = this.getPrincipalID();
-        if (remotePrincipalID != null) {
-            if (dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID).equals(admin)) {
+        if (dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID).equals(admin)) {
+            try {
                 final Number principalID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.PRINCIPAL);
-                if (principalID != null) {
-                    final Integer result = dbIntegrityService.deletePrincipal(principalID);
-                    return "There is " + result.toString() + " row deleted";
-                } else {
-                    verboseOutput.PRINCIPAL_NOT_FOUND(externalIdentifier);
-                }
-            } else {
-                verboseOutput.ADMIN_RIGHTS_EXPECTED(dbIntegrityService.getDataBaseAdmin().getDisplayName(), dbIntegrityService.getDataBaseAdmin().getEMail());
+                final Integer result = dbIntegrityService.deletePrincipal(principalID);
+                return "There is " + result.toString() + " row deleted";
+            } catch (NotInDataBaseException e) {
+                verboseOutput.PRINCIPAL_NOT_FOUND(externalIdentifier);
+                throw new HTTPException(HttpServletResponse.SC_NOT_FOUND);
             }
+        } else {
+            verboseOutput.ADMIN_RIGHTS_EXPECTED();
+            throw new HTTPException(HttpServletResponse.SC_FORBIDDEN);
         }
-        return " ";
     }
 
     @DELETE
     @Path("{principalId}/safe")
     public String deletePrincipalSafe(@PathParam("principalId") String externalIdentifier) throws IOException {
         Number remotePrincipalID = this.getPrincipalID();
-        if (remotePrincipalID != null) {
-            if (dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID).equals(admin)) {
+        if (dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID).equals(admin)) {
+            try {
                 final Number principalID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.PRINCIPAL);
-                if (principalID != null) {
-                    final Integer result = dbIntegrityService.deletePrincipalSafe(principalID);
-                    return "There is " + result.toString() + " row deleted";
-                } else {
-                    verboseOutput.PRINCIPAL_NOT_FOUND(externalIdentifier);
-                }
-            } else {
-                verboseOutput.ADMIN_RIGHTS_EXPECTED(dbIntegrityService.getDataBaseAdmin().getDisplayName(), dbIntegrityService.getDataBaseAdmin().getEMail());
+                final int result = dbIntegrityService.deletePrincipalSafe(principalID);
+                return "There is " + result + " row deleted";
+            } catch (NotInDataBaseException e) {
+                verboseOutput.PRINCIPAL_NOT_FOUND(externalIdentifier);
+                throw new HTTPException(HttpServletResponse.SC_NOT_FOUND);
             }
+        } else {
+            verboseOutput.ADMIN_RIGHTS_EXPECTED();
+            throw new HTTPException(HttpServletResponse.SC_FORBIDDEN);
         }
-        return " ";
+
     }
 
     private boolean ifLoggedIn(Number principalID) {

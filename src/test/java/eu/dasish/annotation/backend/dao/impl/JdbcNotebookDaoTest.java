@@ -17,6 +17,7 @@
  */
 package eu.dasish.annotation.backend.dao.impl;
 
+import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.schema.Notebook;
 import eu.dasish.annotation.schema.NotebookInfo;
 import eu.dasish.annotation.schema.Access;
@@ -26,7 +27,6 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -78,7 +78,6 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest {
         assertEquals(expResult, result);
     }
 
-  
     /**
      * Test of getNotebookInfoWithoutOwner method, of class JdbcNotebookDao.
      */
@@ -92,8 +91,8 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest {
     }
 
     /**
-     * Test of getNotebookWithoutAnnotationsAndAccesssAndOwner method, of
-     * class JdbcNotebookDao.
+     * Test of getNotebookWithoutAnnotationsAndAccesssAndOwner method, of class
+     * JdbcNotebookDao.
      */
     @Test
     public void testGetNotebookWithoutAnnotationsAndAccesssAndOwner() {
@@ -104,7 +103,6 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest {
         assertEquals("2013-08-12T09:25:00.383000Z", result.getLastModified().toString());
     }
 
-   
     /**
      * Test of updateNotebookMetadata method, of class JdbcNotebookDao.
      */
@@ -129,7 +127,8 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest {
     }
 
     /**
-     * Test of updatePrincipalAccessForNotebook method, of class JdbcNotebookDao.
+     * Test of updatePrincipalAccessForNotebook method, of class
+     * JdbcNotebookDao.
      */
     @Test
     public void testUpdatePrincipalAccessForNotebook() {
@@ -147,7 +146,7 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest {
      * JdbcNotebookDao.
      */
     @Test
-    public void testCreateNotebookWithoutAccesssAndAnnotations() throws DatatypeConfigurationException {
+    public void testCreateNotebookWithoutAccesssAndAnnotations() throws NotInDataBaseException, DatatypeConfigurationException {
         System.out.println("test createNotebookWithoutAccesssAndAnnotations");
         Notebook notebook = new Notebook();
         notebook.setTitle("New test notebook");
@@ -190,8 +189,7 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest {
     }
 
     /**
-     * Test of deleteNotebookPrincipalAccess method, of class
-     * JdbcNotebookDao.
+     * Test of deleteNotebookPrincipalAccess method, of class JdbcNotebookDao.
      */
     @Test
     public void testDeleteNotebookPrincipalAccess() {
@@ -227,8 +225,7 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest {
     @Test
     public void testDeleteNotebook() {
         System.out.println("test deleteNotebook");
-        boolean result = jdbcNotebookDao.deleteNotebook(3);
-        assertTrue(result);
-        assertNull(jdbcNotebookDao.getExternalID(3));
+        assertTrue(jdbcNotebookDao.deleteNotebook(3));
+        assertFalse(jdbcNotebookDao.deleteNotebook(3));
     }
 }

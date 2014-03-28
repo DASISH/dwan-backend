@@ -88,7 +88,7 @@ public class TestInstances {
 
         TargetInfo TargetInfo = new TargetInfo();
         TargetInfo.setLink("http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia");
-        TargetInfo.setRef(TestBackendConstants._TEST_SERVLET_URI_Targets + "00000000-0000-0000-0000-000000000031");
+        TargetInfo.setRef(TestBackendConstants._TEST_SERVLET_URI_targets + "00000000-0000-0000-0000-000000000031");
         TargetInfo.setVersion("version 1.0");
 
         TargetInfoList targetInfos = new TargetInfoList();

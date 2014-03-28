@@ -17,6 +17,7 @@
  */
 package eu.dasish.annotation.backend.rest;
 
+import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.schema.AnnotationInfoList;
 import eu.dasish.annotation.schema.ObjectFactory;
 import java.io.BufferedReader;
@@ -25,6 +26,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -32,6 +34,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.xml.bind.JAXBElement;
+import javax.xml.ws.http.HTTPException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,42 +52,38 @@ public class DebugResource extends ResourceResource {
     @Produces(MediaType.TEXT_XML)
     @Path("annotations")
     @Transactional(readOnly = true)
-    public JAXBElement<AnnotationInfoList> getAllAnnotations() throws IOException {
+    public JAXBElement<AnnotationInfoList> getAllAnnotations() throws IOException{
         Number remotePrincipalID = this.getPrincipalID();
-        if (remotePrincipalID != null) {
-            String typeOfAccount = dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID);
-            if (typeOfAccount.equals(admin) || typeOfAccount.equals(developer)) {
-                final AnnotationInfoList annotationInfoList = dbIntegrityService.getAllAnnotationInfos();
-                return new ObjectFactory().createAnnotationInfoList(annotationInfoList);
-            } else {
-                verboseOutput.DEVELOPER_RIGHTS_EXPECTED();
-            }
+        String typeOfAccount = dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID);
+        if (typeOfAccount.equals(admin) || typeOfAccount.equals(developer)) {
+            final AnnotationInfoList annotationInfoList = dbIntegrityService.getAllAnnotationInfos();
+            return new ObjectFactory().createAnnotationInfoList(annotationInfoList);
+        } else {
+            verboseOutput.DEVELOPER_RIGHTS_EXPECTED();
+            return new ObjectFactory().createAnnotationInfoList(new AnnotationInfoList());
         }
-        return new ObjectFactory().createAnnotationInfoList(new AnnotationInfoList());
     }
 
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     @Path("/logDatabase/{n}")
     @Transactional(readOnly = true)
-    public String getDasishBackendLog(@PathParam("n") int n) throws IOException {
+    public String getDasishBackendLog(@PathParam("n") int n) throws IOException{
         Number remotePrincipalID = this.getPrincipalID();
-        if (remotePrincipalID != null) {
-            String typeOfAccount = dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID);
-            if (typeOfAccount.equals(admin) || typeOfAccount.equals(developer)) {
-                return logFile("eu.dasish.annotation.backend.logDatabaseLocation", n);
-            } else {
-                verboseOutput.DEVELOPER_RIGHTS_EXPECTED();
-            }
+        String typeOfAccount = dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID);
+        if (typeOfAccount.equals(admin) || typeOfAccount.equals(developer)) {
+            return logFile("eu.dasish.annotation.backend.logDatabaseLocation", n);
+        } else {
+            verboseOutput.DEVELOPER_RIGHTS_EXPECTED();
+            return " ";
         }
-        return " ";
     }
 
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     @Path("/remoteID")
     @Transactional(readOnly = true)
-    public String getLoggedInRemoteID(){
+    public String getLoggedInRemoteID() {
         return httpServletRequest.getRemoteUser();
     }
 
@@ -93,18 +92,16 @@ public class DebugResource extends ResourceResource {
     @Produces(MediaType.TEXT_PLAIN)
     @Path("/logServer/{n}")
     @Transactional(readOnly = true)
-    public String getDasishServerLog(@PathParam("n") int n) throws IOException {
+    public String getDasishServerLog(@PathParam("n") int n) throws IOException{
         Number remotePrincipalID = this.getPrincipalID();
-        if (remotePrincipalID != null) {
-            String typeOfAccount = dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID);
-            if (typeOfAccount.equals(admin) || typeOfAccount.equals(developer)) {
-                return logFile("eu.dasish.annotation.backend.logServerLocation", n);
-            } else {
-                verboseOutput.DEVELOPER_RIGHTS_EXPECTED();
-            }
-        }
-        return " ";
+        String typeOfAccount = dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID);
+        if (typeOfAccount.equals(admin) || typeOfAccount.equals(developer)) {
+            return logFile("eu.dasish.annotation.backend.logServerLocation", n);
+        } else {
+            verboseOutput.DEVELOPER_RIGHTS_EXPECTED();
+            return " ";
 
+        }
     }
 
     //////////////////////////////////
@@ -112,18 +109,21 @@ public class DebugResource extends ResourceResource {
     @Produces(MediaType.TEXT_XML)
     @Path("account/{principalId}/make/{account}")
     @Transactional(readOnly = true)
-    public String updatePrincipalsAccount(@PathParam("principalId") String principalId, @PathParam("account") String account) throws IOException {
+    public String updatePrincipalsAccount(@PathParam("principalId") String principalId, @PathParam("account") String account) throws IOException{
         Number remotePrincipalID = this.getPrincipalID();
-        if (remotePrincipalID != null) {
-            String typeOfAccount = dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID);
-            if (typeOfAccount.equals(admin)) {
-                final boolean update = dbIntegrityService.updateAccount(UUID.fromString(principalId), account);
-                return (update ? "The account is updated" : "The account is not updated, see the log.");
-            } else {
-                verboseOutput.ADMIN_RIGHTS_EXPECTED(dbIntegrityService.getDataBaseAdmin().getDisplayName(), dbIntegrityService.getDataBaseAdmin().getEMail());
+        String typeOfAccount = dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID);
+        if (typeOfAccount.equals(admin)) {
+            try{
+            final boolean update = dbIntegrityService.updateAccount(UUID.fromString(principalId), account);
+            return (update ? "The account is updated" : "The account is not updated, see the log.");
+            } catch (NotInDataBaseException e){
+                throw new HTTPException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             }
-        } 
-        return " ";
+        } else {
+            verboseOutput.ADMIN_RIGHTS_EXPECTED(dbIntegrityService.getDataBaseAdmin().getDisplayName(), dbIntegrityService.getDataBaseAdmin().getEMail());
+            return " ";
+        }
+
     }
 
     ///////////////////////////////////////////////////

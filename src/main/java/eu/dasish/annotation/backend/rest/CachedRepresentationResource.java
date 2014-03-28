@@ -18,6 +18,7 @@
 package eu.dasish.annotation.backend.rest;
 
 import eu.dasish.annotation.backend.BackendConstants;
+import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.Resource;
 import eu.dasish.annotation.schema.CachedRepresentationInfo;
 import eu.dasish.annotation.schema.ObjectFactory;
@@ -28,6 +29,7 @@ import java.sql.SQLException;
 import java.util.UUID;
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -35,6 +37,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.xml.bind.JAXBElement;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.ws.http.HTTPException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,71 +60,63 @@ public class CachedRepresentationResource extends ResourceResource {
     @Produces(MediaType.TEXT_XML)
     @Path("{cachedid: " + BackendConstants.regExpIdentifier + "}/metadata")
     @Transactional(readOnly = true)
-    public JAXBElement<CachedRepresentationInfo> getCachedRepresentationInfo(@PathParam("cachedid") String externalId) throws SQLException, IOException {
+    public JAXBElement<CachedRepresentationInfo> getCachedRepresentationInfo(@PathParam("cachedid") String externalId) throws IOException{
         Number remotePrincipalID = this.getPrincipalID();
-        if (remotePrincipalID != null) {
+        try {
             final Number cachedID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalId), Resource.CACHED_REPRESENTATION);
-            if (cachedID != null) {
-                final CachedRepresentationInfo cachedInfo = dbIntegrityService.getCachedRepresentationInfo(cachedID);
-                return new ObjectFactory().createCashedRepresentationInfo(cachedInfo);
-            } else {
-                verboseOutput.CACHED_REPRESENTATION_NOT_FOUND(externalId);
-            }
 
+            final CachedRepresentationInfo cachedInfo = dbIntegrityService.getCachedRepresentationInfo(cachedID);
+            return new ObjectFactory().createCashedRepresentationInfo(cachedInfo);
+
+        } catch (NotInDataBaseException e2) {
+            verboseOutput.CACHED_REPRESENTATION_NOT_FOUND(externalId);
+            throw new HTTPException(HttpServletResponse.SC_NOT_FOUND);
         }
-        return new ObjectFactory().createCashedRepresentationInfo(new CachedRepresentationInfo());
     }
 
     @GET
     @Produces({"image/jpeg", "image/png"})
     @Path("{cachedid: " + BackendConstants.regExpIdentifier + "}/content")
     @Transactional(readOnly = true)
-    public BufferedImage getCachedRepresentationContent(@PathParam("cachedid") String externalId) throws SQLException, IOException {
+    public BufferedImage getCachedRepresentationContent(@PathParam("cachedid") String externalId) throws IOException{
         Number remotePrincipalID = this.getPrincipalID();
-        if (remotePrincipalID != null) {
-
+        try {
             final Number cachedID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalId), Resource.CACHED_REPRESENTATION);
-            if (cachedID != null) {
-                InputStream dbRespond = dbIntegrityService.getCachedRepresentationBlob(cachedID);
-                if (dbRespond != null) {
-                    ImageIO.setUseCache(false);
-                    BufferedImage result = ImageIO.read(dbRespond);
-                    return result;
-                } else {
-                    verboseOutput.CACHED_REPRESENTATION_IS_NULL();
-                }
+            InputStream dbRespond = dbIntegrityService.getCachedRepresentationBlob(cachedID);
+            if (dbRespond != null) {
+                ImageIO.setUseCache(false);
+                BufferedImage result = ImageIO.read(dbRespond);
+                return result;
             } else {
-                verboseOutput.CACHED_REPRESENTATION_NOT_FOUND(externalId);
+                verboseOutput.CACHED_REPRESENTATION_IS_NULL();
+                return new BufferedImage(20, 20, BufferedImage.TYPE_INT_ARGB);
             }
 
+        } catch (NotInDataBaseException e) {
+            verboseOutput.CACHED_REPRESENTATION_NOT_FOUND(externalId);
+            throw new HTTPException(HttpServletResponse.SC_NOT_FOUND);
         }
-        return new BufferedImage(20, 20, BufferedImage.TYPE_INT_ARGB);
     }
-    
+
     @GET
     @Produces({"text/plain", "text/html", "text/xml", "application/zip"})
     @Path("{cachedid: " + BackendConstants.regExpIdentifier + "}/stream")
     @Transactional(readOnly = true)
-    public InputStream getCachedRepresentationContentStream(@PathParam("cachedid") String externalId) throws SQLException, IOException {
+    public InputStream getCachedRepresentationContentStream(@PathParam("cachedid") String externalId) throws IOException{
         Number remotePrincipalID = this.getPrincipalID();
-        if (remotePrincipalID != null) {
-
+        try {
             final Number cachedID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalId), Resource.CACHED_REPRESENTATION);
-            if (cachedID != null) {
-                InputStream dbRespond = dbIntegrityService.getCachedRepresentationBlob(cachedID);
-                if (dbRespond != null) {
-//                    byte[] bytes = new byte[1024];
-//                    int result = dbRespond.read(bytes);
-//                    return bytes;
-                     return dbRespond;
-                } else {
-                    verboseOutput.CACHED_REPRESENTATION_IS_NULL();
-                }
+            InputStream dbRespond = dbIntegrityService.getCachedRepresentationBlob(cachedID);
+            if (dbRespond != null) {
+                return dbRespond;
             } else {
-                verboseOutput.CACHED_REPRESENTATION_NOT_FOUND(externalId);
+                verboseOutput.CACHED_REPRESENTATION_IS_NULL();
+                return null;
             }
-
+            
+        } catch (NotInDataBaseException e) {
+            verboseOutput.CACHED_REPRESENTATION_NOT_FOUND(externalId);
+            throw new HTTPException(HttpServletResponse.SC_NOT_FOUND);
         }
-        return null;
     }
 }

@@ -17,6 +17,7 @@
  */
 package eu.dasish.annotation.backend.dao.impl;
 
+import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.TestInstances;
 import eu.dasish.annotation.schema.Annotation;
@@ -108,9 +109,9 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
     @Test
     public void testDeleteAnnotationPrincipleAccesss() throws SQLException{
         System.out.println("test deleteAllAnnotationTargets");
-        int result = jdbcAnnotationDao.deleteAnnotationPrincipalAccesss(1);
+        int result = jdbcAnnotationDao.deleteAnnotationPermissions(1);
         assertEquals(3, result);
-        assertEquals(0, jdbcAnnotationDao.deleteAnnotationPrincipalAccesss(1));
+        assertEquals(0, jdbcAnnotationDao.deleteAnnotationPermissions(1));
     }
     
     ///////////////////////////////////////////
@@ -128,47 +129,7 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         assertEquals(1, jdbcAnnotationDao.addAnnotationTarget(1,3));
     }
     
-    ////////////////////////////////
-    
-//    @Test
-//    public void testGetAnnotationInfos() {
-//        System.out.println("getAnnotationInfos");
-//        List<Number> annotIds = new ArrayList<Number>();
-//        annotIds.add(2);
-//        annotIds.add(3);
-//        annotIds.add(4);
-//
-//        jdbcAnnotationDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_annotations);
-//        final List<AnnotationInfo> annotationInfos = jdbcAnnotationDao.getAnnotationInfos(annotIds);
-//        assertEquals(3, annotationInfos.size());
-//
-//        assertEquals("Sagrada Famiglia", annotationInfos.get(0).getHeadline());
-//        assertEquals(String.valueOf(TestBackendConstants._TEST_ANNOT_2_OWNER), annotationInfos.get(0).getOwnerRef());
-//        assertEquals(TestBackendConstants._TEST_SERVLET_URI_annotations +"00000000-0000-0000-0000-000000000021",
-//           annotationInfos.get(0).getRef());          
-//        //assertEquals(TestBackendConstants._TEST_ANNOT_1_TARGETS, annotationInfos.get(0).getTargetTargets());
-//
-//        assertEquals("Gaudi", annotationInfos.get(1).getHeadline());
-//        assertEquals(String.valueOf(TestBackendConstants._TEST_ANNOT_3_OWNER), annotationInfos.get(1).getOwnerRef());
-//        assertEquals(TestBackendConstants._TEST_SERVLET_URI_annotations + "00000000-0000-0000-0000-000000000022",
-//           annotationInfos.get(1).getRef()); 
-//        //assertEquals(TestBackendConstants._TEST_ANNOT_2_TARGETS, annotationInfos.get(1).getTargetTargets());
-//
-//        assertEquals(TestBackendConstants._TEST_ANNOT_4_HEADLINE, annotationInfos.get(2).getHeadline());
-//        assertEquals(String.valueOf(TestBackendConstants._TEST_ANNOT_4_OWNER), annotationInfos.get(2).getOwnerRef());
-//        assertEquals(TestBackendConstants._TEST_SERVLET_URI_annotations + "00000000-0000-0000-0000-000000000023",
-//           annotationInfos.get(2).getRef()); 
-//        //assertEquals(TestBackendConstants._TEST_ANNOT_3_TARGETS, annotationInfos.get(2).getTargetTargets());
-//
-//        final List<AnnotationInfo> annotationInfosNull = jdbcAnnotationDao.getAnnotationInfos(null);
-//        assertEquals(null, annotationInfosNull);
-//
-//        final List<AnnotationInfo> annotationInfosZeroSize = jdbcAnnotationDao.getAnnotationInfos(new ArrayList<Number>());
-//        assertEquals(0, annotationInfosZeroSize.size());
-//
-//
-//    }
-
+  
     /**
      * Test of getAnnotationREFs method, of class JdbcAnnotationDao.
      * List<ReTargetREF> getAnnotationREFs(List<Number> annotationIDs)
@@ -191,9 +152,6 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         final List<String> testListTwo = jdbcAnnotationDao.getAnnotationREFs(new ArrayList<Number>());
         assertEquals(0, testListTwo.size());
 
-        final List<String> testListThree = jdbcAnnotationDao.getAnnotationREFs(null);
-        assertEquals(null, testListThree);
-
     }
 
     /**
@@ -202,14 +160,17 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
      * getAnnotationID(UUID externalID)
      */
     @Test
-    public void getInternalID() throws SQLException {
+    public void getInternalID() throws NotInDataBaseException {
         System.out.println("test getInternalID");
 
         final Number annotaionId = jdbcAnnotationDao.getInternalID(UUID.fromString("00000000-0000-0000-0000-000000000021"));
         assertEquals(1, annotaionId.intValue());
 
+        try {
         final Number annotaionIdNE = jdbcAnnotationDao.getInternalID(UUID.fromString("00000000-0000-0000-0000-0000000000cc"));
-        assertEquals(null, annotaionIdNE);
+        } catch (NotInDataBaseException e) {
+           System.out.println(e); 
+        }
 
        
     }
@@ -219,7 +180,7 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
      * public Number getInternalIDFromURI(UUID externalID);
      */
     @Test
-    public void testGetInternalIDFRomURI() {
+    public void testGetInternalIDFRomURI() throws NotInDataBaseException{
         System.out.println("test getInternalIDFromURI");
         jdbcAnnotationDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_annotations);
         String uri = TestBackendConstants._TEST_SERVLET_URI_annotations+"00000000-0000-0000-0000-000000000021";
@@ -229,14 +190,14 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
 
     /**
      *
-     * Test of getAnnotationWithoutTargetsAndAccesss method, of class JdbcAnnotationDao. Annotation
+     * Test of getAnnotationWithoutTargetsAndPemissions method, of class JdbcAnnotationDao. Annotation
      * getAnnotation(Number annotationlID)
      */
     @Test
     public void getAnnotationWithoutTargetsAndAccesss() throws SQLException, DatatypeConfigurationException {
         System.out.println("test getAnnotationWithoutTargets");
         jdbcAnnotationDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_annotations);
-        final Annotation result= jdbcAnnotationDao.getAnnotationWithoutTargetsAndAccesss(1);
+        final Annotation result= jdbcAnnotationDao.getAnnotationWithoutTargetsAndPemissions(1);
         
         assertEquals("Sagrada Famiglia", result.getHeadline());
         assertEquals("<html><body>some html 1</body></html>", result.getBody().getTextBody().getBody()); 
@@ -260,7 +221,7 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         
         // to provide integrity, first delete rows in the joint tables
         jdbcAnnotationDao.deleteAllAnnotationTarget(4);
-        jdbcAnnotationDao.deleteAnnotationPrincipalAccesss(4);
+        jdbcAnnotationDao.deleteAnnotationPermissions(4);
         
         assertEquals(1, jdbcAnnotationDao.deleteAnnotation(4));
         assertEquals(0, jdbcAnnotationDao.deleteAnnotation(4));
@@ -281,7 +242,7 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         assertEquals(5, newAnnotationID);
         
         // checking
-        Annotation addedAnnotation= jdbcAnnotationDao.getAnnotationWithoutTargetsAndAccesss(5);
+        Annotation addedAnnotation= jdbcAnnotationDao.getAnnotationWithoutTargetsAndPemissions(5);
         assertFalse(null == addedAnnotation.getURI());
         assertFalse(null == addedAnnotation.getLastModified());
         assertEquals(annotationToAdd.getBody().getTextBody().getMimeType(), addedAnnotation.getBody().getTextBody().getMimeType());
@@ -297,8 +258,8 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
     
     **/
     @Test    
-    public void testRetrieveAnnotationList() {
-        System.out.println("test retrieveAnnotationlist");
+    public void testGetAnnotationIDsForTargets() {
+        System.out.println("test getAnnotationIDsForTargets");
         List<Number> targets = new ArrayList<Number>();
         targets.add(1);
         targets.add(2);
@@ -317,9 +278,6 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
 
         final UUID externalId = jdbcAnnotationDao.getExternalID(1);
         assertEquals(UUID.fromString("00000000-0000-0000-0000-000000000021"), externalId);
-        
-        final UUID externalIdThree = jdbcAnnotationDao.getExternalID(null);
-        assertEquals(null, externalIdThree);
 
     }
     
@@ -356,17 +314,57 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
     //////////////////////////////////
    
   
-    
-    // public List<Map<Number, String>> retrieveAccesss(Number annotationId)
-    
     @Test
-    public void testRetrieveAccesss (){
-        System.out.println("test Accesss");
+    public void testGetReprmissions (){
+        System.out.println("test getPermissions");
         List<Map<Number, String>> result = jdbcAnnotationDao.getPermissions(1);
         assertEquals(3, result.size());
         assertEquals("write", result.get(0).get(2));
         assertEquals("read", result.get(1).get(3));
         assertEquals("read", result.get(2).get(11));
+        
+    }
+    
+    // getAnnotationIDsForPermission(Number principalID, Access access)
+    
+    @Test
+    public void testAnnotationIDsForPermission (){
+        System.out.println("test getAnnotationIDsForPermission");
+        List<Number> result = jdbcAnnotationDao.getAnnotationIDsForPermission(1, Access.READ);
+        assertEquals(3, result.size());
+        assertEquals(2, result.get(0));
+        assertEquals(3, result.get(1));
+        assertEquals(4, result.get(2));
+        
+        List<Number> resultTwo = jdbcAnnotationDao.getAnnotationIDsForPermission(1, Access.WRITE);
+        assertEquals(1, resultTwo.size());
+        assertEquals(4, resultTwo.get(0));
+        
+        List<Number> resultThree = jdbcAnnotationDao.getAnnotationIDsForPermission(1, Access.NONE);
+        assertEquals(0, resultThree.size());
+        
+    }
+    
+    
+    // getAnnotationIDsForPublicAccess
+    
+    @Test
+    public void testAnnotationIDsForPublicAccess (){
+        System.out.println("test getAnnotationIDsForPublicAccess");
+        List<Number> result = jdbcAnnotationDao.getAnnotationIDsForPublicAccess(Access.READ);
+        assertEquals(2, result.size());
+        assertTrue(result.contains(1));
+        assertTrue(result.contains(2));
+        
+        List<Number> resultTwo = jdbcAnnotationDao.getAnnotationIDsForPublicAccess(Access.WRITE);
+        assertEquals(1, resultTwo.size());
+        assertEquals(1, resultTwo.get(0));
+        
+        
+        List<Number> resultThree = jdbcAnnotationDao.getAnnotationIDsForPublicAccess(Access.NONE);
+        assertEquals(2, resultThree.size());
+        assertTrue(resultThree.contains(3));
+        assertTrue(resultThree.contains(4));
         
     }
 }

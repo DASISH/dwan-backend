@@ -17,10 +17,12 @@
  */
 package eu.dasish.annotation.backend.rest;
 
+import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.Resource;
 import eu.dasish.annotation.backend.dao.DBIntegrityService;
 import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.TestInstances;
+import eu.dasish.annotation.schema.Access;
 import eu.dasish.annotation.schema.Action;
 import eu.dasish.annotation.schema.ActionList;
 import eu.dasish.annotation.schema.AnnotationBody;
@@ -124,7 +126,7 @@ public class AnnotationResourceTest {
                 will(returnValue(1));
  
 
-                oneOf(mockDbIntegrityService).canRead(3, 1);
+                oneOf(mockDbIntegrityService).canDo(Access.READ, 3, 1);
                 will(returnValue(true));
 
                 oneOf(mockDbIntegrityService).getAnnotation(1);
@@ -141,7 +143,7 @@ public class AnnotationResourceTest {
      * Test of deleteAnnotation method, of class AnnotationResource.
      */
     @Test
-    public void testDeleteAnnotation() throws SQLException, IOException {
+    public void testDeleteAnnotation() throws NotInDataBaseException, IOException {
         System.out.println("deleteAnnotation");
 
         final int[] mockDelete = new int[4];

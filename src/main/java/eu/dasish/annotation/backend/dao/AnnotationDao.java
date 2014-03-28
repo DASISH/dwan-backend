@@ -17,14 +17,13 @@
  */
 package eu.dasish.annotation.backend.dao;
 
+import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationBody;
 import eu.dasish.annotation.schema.AnnotationInfo;
 import eu.dasish.annotation.schema.Access;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created on : Jun 27, 2013, 10:34:13 AM
@@ -48,13 +47,15 @@ public interface AnnotationDao extends ResourceDao{
      * (Constructing a complete Annotation object using  "getAnnotationWithoutTargets" and "retrieveTargetIDs" is done in "DaoDispatchter".)
      * 
      */
-    public Annotation getAnnotationWithoutTargetsAndAccesss(Number annotationID);
+    public Annotation getAnnotationWithoutTargetsAndPemissions(Number annotationID);
     
       
     public List<Number> getFilteredAnnotationIDs(Number ownerID, String text, String namespace, String after, String before);
      
   
-    public List<Number> getAnnotationIDsForPermission(Number principalID, String acess);
+    public List<Number> getAnnotationIDsForPermission(Number principalID, Access acess);
+    
+    public List<Number> getAnnotationIDsForPublicAccess(Access access);
     
     
     public List<Number> getAnnotationIDsForTargets(List<Number> TargetIDs);   
@@ -102,6 +103,8 @@ public interface AnnotationDao extends ResourceDao{
      * @return access of the principalID w.r.t. annotationID, or null if the access is not given
      */ 
     public Access  getAccess(Number annotationID, Number principalID);
+    
+    public Access getPublicAttribute(Number annotationID);
     
     
     
@@ -151,7 +154,7 @@ public interface AnnotationDao extends ResourceDao{
      * @return  the internal ID of the added annotation, if it is added, or null otherwise.
      **/
     
-    public Number addAnnotation(Annotation annotation, Number newOwnerID);
+    public Number addAnnotation(Annotation annotation, Number newOwnerID)  throws NotInDataBaseException;
  
      
     /////// UPDATERS //////////////////
@@ -181,6 +184,7 @@ public interface AnnotationDao extends ResourceDao{
     public int updateAnnotationPrincipalAccess(Number annotationID, Number principalID, Access access);
     
     
+    public int updatePublicAttribute(Number annotationID, Access access);
     
     
    /**
@@ -212,7 +216,7 @@ public interface AnnotationDao extends ResourceDao{
     * @return # removed rows in the table "annotations_principals_accesss".
     * @throws SQLException 
     */
-    public int deleteAnnotationPrincipalAccesss(Number annotationID);
+    public int deleteAnnotationPermissions(Number annotationID);
     
     public int deleteAnnotationPrincipalAccess(Number annotationID, Number principalID);
     

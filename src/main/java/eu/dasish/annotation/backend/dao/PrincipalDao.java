@@ -17,6 +17,7 @@
  */
 package eu.dasish.annotation.backend.dao;
 
+import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.schema.Access;
 import eu.dasish.annotation.schema.Principal;
 import java.util.List;
@@ -31,7 +32,7 @@ public interface PrincipalDao extends ResourceDao{
     
      public Principal getPrincipal(Number internalID);
      
-     public Principal getPrincipalByInfo(String  eMail);
+     public Principal getPrincipalByInfo(String  eMail) throws NotInDataBaseException;
      
      public Number getDBAdminID();
      
@@ -46,15 +47,15 @@ public interface PrincipalDao extends ResourceDao{
      public String getRemoteID(Number internalID);
      
      
-     public Number getPrincipalInternalIDFromRemoteID(String remoteID);
+     public Number getPrincipalInternalIDFromRemoteID(String remoteID) throws NotInDataBaseException;
      
      public List<Number> getPrincipalIDsWithAccessForNotebook(Number notebookID, Access access);
      
-     public boolean updateAccount(UUID externalID, String account);
+     public boolean updateAccount(UUID externalID, String account) throws NotInDataBaseException;
      
-     public Number updatePrincipal(Principal principal);
+     public int updatePrincipal(Principal principal) throws NotInDataBaseException;
     
-     public Number addPrincipal(Principal principal, String remoteID);
+     public Number addPrincipal(Principal principal, String remoteID) throws NotInDataBaseException;
      
      public int deletePrincipal(Number intenralID);
      

@@ -18,6 +18,7 @@
 package eu.dasish.annotation.backend.dao;
 
 
+import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.schema.Permission;
 import java.util.List;
 import java.util.Map;
@@ -33,10 +34,10 @@ public interface ResourceDao {
     public void setServiceURI(String serviceURI);
     
    
-    public Number getInternalID(UUID externalId);
+    public Number getInternalID(UUID externalId) throws NotInDataBaseException;
     
   
-    public Number getInternalIDFromURI(String uri);
+    public Number getInternalIDFromURI(String uri) throws NotInDataBaseException;
     
   
     public UUID getExternalID(Number internalId);

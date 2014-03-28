@@ -17,6 +17,7 @@
  */
 package eu.dasish.annotation.backend.dao.impl;
 
+import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.schema.CachedRepresentationInfo;
 import java.io.UnsupportedEncodingException;
@@ -96,7 +97,7 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest {
      * public Number getInternalId(UUID externalID);
      */
     @Test
-    public void testGetInternalId() {
+    public void testGetInternalId() throws NotInDataBaseException{
         System.out.println("test getInternalID");
         UUID externalID = UUID.fromString("00000000-0000-0000-0000-000000000051");
         Number result = jdbcCachedRepresentationDao.getInternalID(externalID);
@@ -109,7 +110,7 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest {
      * public Number getInternalIDFromURI(UUID externalID);
      */
     @Test
-    public void testGetInternalIDFRomURI() {
+    public void testGetInternalIDFRomURI() throws NotInDataBaseException{
         System.out.println("test getInternalIDFromURI");
         jdbcCachedRepresentationDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_cached);
         String uri = TestBackendConstants._TEST_SERVLET_URI_cached +"00000000-0000-0000-0000-000000000051";

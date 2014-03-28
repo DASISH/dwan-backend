@@ -17,18 +17,21 @@
  */
 package eu.dasish.annotation.backend.rest;
 
+import eu.dasish.annotation.backend.NotInDataBaseException;
+import eu.dasish.annotation.backend.NotLoggedInException;
 import eu.dasish.annotation.schema.ObjectFactory;
 import eu.dasish.annotation.schema.Principal;
 import java.io.IOException;
 import java.sql.SQLException;
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.xml.bind.JAXBElement;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.ws.http.HTTPException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,18 +43,14 @@ import org.springframework.transaction.annotation.Transactional;
 @Path("/authentication")
 @Transactional(rollbackFor = {Exception.class, SQLException.class, IOException.class, ParserConfigurationException.class})
 public class AutheticationResource extends ResourceResource {
-    
-    
+
     @GET
     @Produces(MediaType.TEXT_XML)
     @Path("principal")
     @Transactional(readOnly = true)
-    public JAXBElement<Principal> getCurrentPrincipal() throws IOException {
+    public JAXBElement<Principal> getCurrentPrincipal() throws IOException{
         Number principalID = this.getPrincipalID();
-        if (principalID != null) {
-            return new ObjectFactory().createPrincipal(dbIntegrityService.getPrincipal(principalID));
-        }
-        return new ObjectFactory().createPrincipal(new Principal());
+        return new ObjectFactory().createPrincipal(dbIntegrityService.getPrincipal(principalID));
     }
 
     /* the only request that redirects to the shibboleth login-page
@@ -61,30 +60,29 @@ public class AutheticationResource extends ResourceResource {
     @Produces(MediaType.TEXT_XML)
     @Path("login")
     @Transactional(readOnly = true)
-    public JAXBElement<Principal> loginAndGet() throws IOException {
+    public JAXBElement<Principal> loginAndGet() throws IOException{
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         String remotePrincipal = httpServletRequest.getRemoteUser();
         verboseOutput = new VerboseOutput(httpServletResponse, loggerServer);
-        if (remotePrincipal != null) {
-            if (!remotePrincipal.equals("anonymous")) {                
-                final Number remotePrincipalID = dbIntegrityService.getPrincipalInternalIDFromRemoteID(remotePrincipal);
-                if (remotePrincipalID != null) {
-                    return new ObjectFactory().createPrincipal(dbIntegrityService.getPrincipal(remotePrincipalID));
-                } else {
-                    verboseOutput.REMOTE_PRINCIPAL_NOT_FOUND(remotePrincipal, dbIntegrityService.getDataBaseAdmin().getDisplayName(), dbIntegrityService.getDataBaseAdmin().getEMail());
-                }
-            } else {
-                verboseOutput.ANONYMOUS_PRINCIPAL();
+        if (!remotePrincipal.equals("anonymous")) {
+            try {
+            final Number remotePrincipalID = dbIntegrityService.getPrincipalInternalIDFromRemoteID(remotePrincipal);
+            return new ObjectFactory().createPrincipal(dbIntegrityService.getPrincipal(remotePrincipalID));
+            } catch (NotInDataBaseException e) {
+                verboseOutput.REMOTE_PRINCIPAL_NOT_FOUND(remotePrincipal);
+                throw new HTTPException(HttpServletResponse.SC_NOT_FOUND);
             }
+        } else {
+            verboseOutput.ANONYMOUS_PRINCIPAL();
+            return new ObjectFactory().createPrincipal(new Principal());
         }
-        return new ObjectFactory().createPrincipal(new Principal());
     }
 
     @GET
     @Produces(MediaType.TEXT_XML)
     @Path("logout")
     @Transactional(readOnly = true)
-    public void logout() throws IOException, ServletException {
+    public void logout() throws IOException {
         httpServletResponse.sendRedirect(context.getInitParameter("eu.dasish.annotation.backend.logout"));
     }
 }
