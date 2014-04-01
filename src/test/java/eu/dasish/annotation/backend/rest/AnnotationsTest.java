@@ -27,10 +27,12 @@ import com.sun.jersey.test.framework.JerseyTest;
 import com.sun.jersey.test.framework.WebAppDescriptor;
 import eu.dasish.annotation.backend.TestInstances;
 import eu.dasish.annotation.backend.dao.impl.JdbcResourceDaoTest;
+import eu.dasish.annotation.schema.Access;
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationBody;
 import eu.dasish.annotation.schema.AnnotationBody.TextBody;
 import eu.dasish.annotation.schema.ObjectFactory;
+import eu.dasish.annotation.schema.PermissionList;
 import eu.dasish.annotation.schema.ResponseBody;
 import eu.dasish.annotation.schema.TargetInfo;
 import eu.dasish.annotation.schema.TargetInfoList;
@@ -46,7 +48,6 @@ import javax.xml.datatype.DatatypeFactory;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -213,6 +214,10 @@ public class AnnotationsTest extends JerseyTest {
         textBody.setBody("yanuk - zek");
         annotationBody.setTextBody(textBody);
         annotationToAdd.setBody(annotationBody);
+        
+        PermissionList permissions = new PermissionList();
+        permissions.setPublic(Access.WRITE);
+        annotationToAdd.setPermissions(permissions);
       
         Builder responseBuilder = getAuthenticatedResource(resource().path("annotations/")).type(MediaType.APPLICATION_XML).accept(MediaType.APPLICATION_XML);        
         ClientResponse response = responseBuilder.post(ClientResponse.class, jaxbElement);
@@ -232,6 +237,7 @@ public class AnnotationsTest extends JerseyTest {
         //last modified is updated by the server
         //assertEquals(annotationToAdd.getLastModified(), entityA.getLastModified());
         assertEquals(annotationToAdd.getOwnerRef(), entityA.getOwnerRef());
+        assertEquals(Access.WRITE, entityA.getPermissions().getPublic());
     }
     
     

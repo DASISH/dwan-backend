@@ -40,7 +40,7 @@ public class Helpers {
 
     //exception messages
     final static public String INVALID_BODY_EXCEPTION = "Invalide annotation body: both, text and xml options, are null.";
-   
+
     public static String replace(String text, Map<String, String> pairs) {
         String result = (new StringBuilder(text)).toString();
         for (String tempTarget : pairs.keySet()) {
@@ -49,24 +49,12 @@ public class Helpers {
         return result;
     }
 
-    public static Element stringToElement(String string) {
-        try {
-            DocumentBuilder dbf = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-            try {
-                try {
-                    InputStream is = new ByteArrayInputStream(string.getBytes("UTF-16"));
-                    Document doc = dbf.parse(is);
-                    return doc.getDocumentElement();
-                } catch (SAXException saxException) {
-                    System.out.println(saxException);
-                }
-            } catch (IOException ioe) {
-                System.out.println(ioe);
-            }
-        } catch (ParserConfigurationException parserException) {
-            System.out.println(parserException);
-        }
-        return null;
+    public static Element stringToElement(String string) throws ParserConfigurationException, IOException, SAXException {
+        DocumentBuilder dbf = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+        InputStream is = new ByteArrayInputStream(string.getBytes("UTF-16"));
+        Document doc = dbf.parse(is);
+        return doc.getDocumentElement();
+
     }
 
     public static String elementToString(Element element) {
@@ -76,6 +64,4 @@ public class Helpers {
         String result = serializer.writeToString(element);
         return result;
     }
-    
-    
 }

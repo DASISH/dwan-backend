@@ -44,7 +44,8 @@ public class TestInstances {
 
     private Annotation makeAnnotationOne(String baseURI) {
         Annotation result = makeAnnotation(baseURI, "<html><body>some html 1</body></html>", "text/html", "Sagrada Famiglia", "00000000-0000-0000-0000-000000000111");
-
+        result.setURI(baseURI+"/annotations/00000000-0000-0000-0000-000000000021");
+        
         try {
             result.setLastModified(DatatypeFactory.newInstance().newXMLGregorianCalendar("2013-08-12T09:25:00.383000Z"));
         } catch (DatatypeConfigurationException dce) {
@@ -94,11 +95,15 @@ public class TestInstances {
         TargetInfoList targetInfos = new TargetInfoList();
         targetInfos.getTargetInfo().add(TargetInfo);
         result.setTargets(targetInfos);
-
+        
+        PermissionList permissions = new PermissionList();
+        permissions.setPublic(Access.WRITE);
+        result.setPermissions(permissions);
+        
         return result;
     }
 
-    private Annotation makeAnnotation(String baseURI, String bodyTxt, String bodyMimeType, String headline, String ownerID) {
+    private Annotation makeAnnotation(String baseURI, String bodyTxt, String bodyMimeType, String headline, String ownerExternalId) {
         Annotation result = new Annotation();
         AnnotationBody body = new AnnotationBody();
         result.setBody(body);
@@ -110,9 +115,9 @@ public class TestInstances {
         result.setHeadline(headline);
 
         if (baseURI != null) {
-            result.setOwnerRef(baseURI + "principals/" + ownerID);
+            result.setOwnerRef(baseURI + "principals/" + ownerExternalId);
         } else {
-            result.setOwnerRef("principals/" + ownerID);
+            result.setOwnerRef("principals/" + ownerExternalId);
         }
 
         result.setLastModified(null);

@@ -73,7 +73,7 @@ public interface AnnotationDao extends ResourceDao{
      * @return annotationInfo  for the annotation with the internal annotationID.
      * 
      */
-    public AnnotationInfo getAnnotationInfoWithoutTargets(Number annotationID);    
+    public AnnotationInfo getAnnotationInfoWithoutTargetsAndOwner(Number annotationID);    
    
     /**
      * 
@@ -170,7 +170,7 @@ public interface AnnotationDao extends ResourceDao{
      * @return # of updated rows in "annotation" table after updating the annotation. Should return 1 if update  happens
      * @throws SQLException 
      */
-    public int updateAnnotation(Annotation annotation, Number ownerID);
+    public int updateAnnotation(Annotation annotation, Number annotationID, Number ownerID);
     
     
      /**

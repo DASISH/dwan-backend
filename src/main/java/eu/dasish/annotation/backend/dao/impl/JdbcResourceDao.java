@@ -19,6 +19,7 @@ package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.dao.ResourceDao;
+import eu.dasish.annotation.schema.Access;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -204,6 +205,11 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     public List<Map<Number, String>> getPermissions(Number resourceID) {
         return (new ArrayList());
     }
+    
+    @Override
+    public Access getPublicAttribute(Number resourceID) {
+        return Access.NONE;
+    }
 
     /////////////////////////////////////////////////////
     protected XMLGregorianCalendar retrieveTimeStamp(Number internalID) {
@@ -244,6 +250,13 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
         public Map<Number, String> mapRow(ResultSet rs, int rowNumber) throws SQLException {
             Map<Number, String> result = new HashMap<Number, String>();
             result.put(rs.getInt(principal_id), rs.getString(access));
+            return result;
+        }
+    };
+     protected final RowMapper<Access> public_RowMapper = new RowMapper<Access>() {
+        @Override
+        public Access mapRow(ResultSet rs, int rowNumber) throws SQLException {
+            Access result = Access.fromValue(rs.getString(public_));
             return result;
         }
     };
