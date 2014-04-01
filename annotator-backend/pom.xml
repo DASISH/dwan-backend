@@ -261,7 +261,7 @@
                                         <groupId>eu.dasish.annotation</groupId>
                                         <artifactId>annotator-schema</artifactId>
                                         <version>1.0-SNAPSHOT</version>
-                                        <resource>DASISH-schema.xsd</resource>
+                                        <resource>DASISH-schema-pilot.xsd</resource>
                                     </dependencyResource>
                                 </schema>
                             </schemas>

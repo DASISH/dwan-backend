@@ -26,6 +26,7 @@ import eu.dasish.annotation.schema.AnnotationBody.TextBody;
 import eu.dasish.annotation.schema.AnnotationBody.XmlBody;
 import eu.dasish.annotation.schema.AnnotationInfo;
 import eu.dasish.annotation.schema.Access;
+import java.io.IOException;
 import java.lang.String;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -36,9 +37,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import javax.sql.DataSource;
+import javax.xml.parsers.ParserConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.RowMapper;
+import org.xml.sax.SAXException;
 
 /**
  * Created on : Jun 27, 2013, 10:30:52 AM
@@ -102,7 +105,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         StringBuilder sql = new StringBuilder("SELECT ");
         sql.append(public_).append(" FROM ").append(annotationTableName).append(" WHERE ").
                 append(annotation_id).append("  =  ? ").append(" LIMIT 1");
-        List<Access> result = this.loggedQuery(sql.toString(), accessRowMapper, annotationID);
+        List<Access> result = this.loggedQuery(sql.toString(), public_RowMapper, annotationID);
         return result.get(0);
     }
 
@@ -201,11 +204,11 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         params.put("limit", limit);
 
         StringBuilder query = new StringBuilder("SELECT DISTINCT ");
-        query.append(annotation_id).append(" FROM ").append(annotationsTargetsTableName).append(" WHERE ").append(annotation_id).append(" IN ");
+        query.append(annotation_id).append(", ").append(orderedBy).append(" FROM ").append(annotationTableName).append(" WHERE ").append(annotation_id).append(" IN ");
         query.append(values).append(" ORDER BY ").append(orderedBy).append(" ").append(direction).append(" ");
 
         if (limit > -1) {
-            query.append(direction).append(" LIMIT :limit ");
+            query.append(" LIMIT :limit ");
         }
 
         query.append(" OFFSET :offset ");
@@ -214,7 +217,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
 
     //////////////////////////////////////////////////////////////////////
     @Override
-    public AnnotationInfo getAnnotationInfoWithoutTargets(Number annotationID) {
+    public AnnotationInfo getAnnotationInfoWithoutTargetsAndOwner(Number annotationID) {
         StringBuilder sql = new StringBuilder("SELECT  ");
         sql.append(annotationStar).append(" FROM ").append(annotationTableName).append(" WHERE ").append(annotation_id).append("  = ? ");
         List<AnnotationInfo> result = this.loggedQuery(sql.toString(), annotationInfoRowMapper, annotationID);
@@ -261,7 +264,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
 
     //////////////////////////////////////////////////////////////////////////
     @Override
-    public Annotation getAnnotationWithoutTargetsAndPemissions(Number annotationID){
+    public Annotation getAnnotationWithoutTargetsAndPemissions(Number annotationID) {
 
         StringBuilder sql = new StringBuilder("SELECT ");
         sql.append(annotationStar).append(" FROM ").append(annotationTableName).append(" WHERE ").append(annotation_id).append("= ? LIMIT  1");
@@ -278,8 +281,24 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
                 body.setTextBody(null);
                 XmlBody xmlBody = new XmlBody();
                 xmlBody.setMimeType(rs.getString(body_mimetype));
-                xmlBody.setAny(Helpers.stringToElement(rs.getString(body_text)));
-                body.setXmlBody(xmlBody);
+                String bodyText = rs.getString(body_text);
+                try {
+                    try {
+                        try {
+                            xmlBody.setAny(Helpers.stringToElement(bodyText));
+                            body.setXmlBody(xmlBody);
+                        } catch (SAXException e3) {
+                            body.setXmlBody(null);
+                            throw new SQLException(" body field  " + bodyText + " causes " + e3);
+                        }
+                    } catch (IOException e2) {
+                        body.setXmlBody(null);
+                        throw new SQLException("body field" + bodyText + " causes " + e2);
+                    }
+                } catch (ParserConfigurationException e1) {
+                    body.setXmlBody(null);
+                    throw new SQLException(" body field   " + bodyText + " causes " + e1);
+                }
             } else {
                 body.setXmlBody(null);
                 TextBody textBody = new TextBody();
@@ -370,7 +389,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
 
     // TODO Unit test
     @Override
-    public int updateAnnotation(Annotation annotation, Number newOwnerID) {
+    public int updateAnnotation(Annotation annotation, Number annotationID, Number newOwnerID) {
 
         String[] body = retrieveBodyComponents(annotation.getBody());
         String externalID = stringURItoExternalID(annotation.getURI());
@@ -380,8 +399,8 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         params.put("bodyMimeType", body[1]);
         params.put("headline", annotation.getHeadline());
         params.put("isXml", annotation.getBody().getXmlBody() != null);
-        params.put("externalID", externalID);
-
+        params.put("externalId", externalID);
+        params.put("annotationId", annotationID);
 
         StringBuilder sql = new StringBuilder("UPDATE ");
         sql.append(annotationTableName).append(" SET ").
@@ -390,9 +409,11 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
                 append(body_mimetype).append("= :bodyMimeType ,").
                 append(headline).append("=  :headline ,").
                 append(last_modified).append("=  default,").
-                append(is_xml).append("= :isXml").
-                append(" WHERE ").append(external_id).append("= :externalID");
+                append(is_xml).append("= :isXml, ").
+                append(external_id).append("= :externalId").
+                append(" WHERE ").append(annotation_id).append("= :annotationId"); 
         int affectedRows = this.loggedUpdate(sql.toString(), params);
+        
         return affectedRows;
     }
 
@@ -421,9 +442,9 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         params.put("access", access.value());
         params.put("annotationId", annotationID);
         StringBuilder sql = new StringBuilder("UPDATE ");
-        sql.append(permissionsTableName).append(" SET ").
-                append(this.access).append("= :access").
-                append(" WHERE ").append(annotation_id).append("= :annotationID");
+        sql.append(annotationTableName).append(" SET ").
+                append(public_).append("= :access").
+                append(" WHERE ").append(annotation_id).append("= :annotationId");
         return this.loggedUpdate(sql.toString(), params);
     }
 

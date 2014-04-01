@@ -33,7 +33,8 @@ see implementation details http://jersey.java.net/nonav/documentation/latest/jax
     </context-param>
     <context-param>
         <param-name>eu.dasish.annotation.backend.schemaLocation</param-name>
-        <param-value>http://www.dasish.eu/ns/addit https://svn.clarin.eu/DASISH/t5.6/schema/trunk/annotator-schema/src/main/resources/DASISH-schema.xsd</param-value>
+        <!-- <param-value>http://www.dasish.eu/ns/addit https://svn.clarin.eu/DASISH/t5.6/schema/trunk/annotator-schema/src/main/resources/DASISH-schema.xsd</param-value> --!>
+    <param-value>http://www.dasish.eu/ns/addit https://svn.clarin.eu/DASISH/t5.6/schema/branches/pilot-schema/src/main/resources/DASISH-schema-pilot.xsd</param-value> 
     </context-param>
     <context-param>
         <param-name>eu.dasish.annotation.backend.logDatabaseLocation</param-name>

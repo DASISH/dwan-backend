@@ -308,8 +308,6 @@ public interface DBIntegrityService {
     Number addPrincipal(Principal principal, String remoteID) throws NotInDataBaseException, PrincipalExists;
 
     int addAnnotationPrincipalAccess(Number annotationID, Number principalID, Access access);
-    
-    
     /// notebooks ////
     Number createNotebook(Notebook notebook, Number ownerID) throws NotInDataBaseException;
 
@@ -318,6 +316,9 @@ public interface DBIntegrityService {
     /**
      * DELETERS
      */
+    
+    int deleteAnnotationPrincipalAccess(Number annotationID, Number principalID); 
+    
     /**
      *
      * @param principalID

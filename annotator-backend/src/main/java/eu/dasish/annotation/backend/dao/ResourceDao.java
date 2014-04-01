@@ -17,8 +17,8 @@
  */
 package eu.dasish.annotation.backend.dao;
 
-
 import eu.dasish.annotation.backend.NotInDataBaseException;
+import eu.dasish.annotation.schema.Access;
 import eu.dasish.annotation.schema.Permission;
 import java.util.List;
 import java.util.Map;
@@ -29,35 +29,33 @@ import java.util.UUID;
  * @author olhsha
  */
 public interface ResourceDao {
-    
-    
-    public void setServiceURI(String serviceURI);
-    
-   
-    public Number getInternalID(UUID externalId) throws NotInDataBaseException;
-    
-  
-    public Number getInternalIDFromURI(String uri) throws NotInDataBaseException;
-    
-  
-    public UUID getExternalID(Number internalId);
-    
-  
-    public String externalIDtoURI(String externalID);
-    
+
+    void setServiceURI(String serviceURI);
+
+    Number getInternalID(UUID externalId) throws NotInDataBaseException;
+
+    Number getInternalIDFromURI(String uri) throws NotInDataBaseException;
+
+    UUID getExternalID(Number internalId);
+
+    String externalIDtoURI(String externalID);
+
     /**
-     * 
+     *
      * @param stringURI
      * @return returns the extranlID which is a suffix of stringURI
      */
-    public String stringURItoExternalID(String stringURI);
-    
+    String stringURItoExternalID(String stringURI);
+
     /**
-     * 
+     *
      * @param internalID
-     * @return URI string of the resource )of the type set in resourceTableName) with internalID
+     * @return URI string of the resource )of the type set in resourceTableName)
+     * with internalID
      */
-    public String getURIFromInternalID(Number internalID);
-    
-    public List<Map<Number, String>>  getPermissions(Number resourceID); 
+    String getURIFromInternalID(Number internalID);
+
+    List<Map<Number, String>> getPermissions(Number resourceID);
+
+    Access getPublicAttribute(Number resourceID);
 }

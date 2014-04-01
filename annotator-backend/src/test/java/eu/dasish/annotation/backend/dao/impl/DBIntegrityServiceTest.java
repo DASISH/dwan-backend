@@ -102,9 +102,9 @@ public class DBIntegrityServiceTest {
      * DBIntegrityServiceImlp.
      */
     @Test
-    public void testGetAnnotationInternalIdentifier() throws NotInDataBaseException{
+    public void testGetAnnotationInternalIdentifier() throws NotInDataBaseException {
         System.out.println("getAnnotationInternalIdentifier");
-        final UUID externalID = UUID.fromString("00000000-0000-0000-0000-000000000021");       
+        final UUID externalID = UUID.fromString("00000000-0000-0000-0000-000000000021");
         //dbIntegrityService.setResourceList();
         mockeryDao.checking(new Expectations() {
             {
@@ -138,7 +138,7 @@ public class DBIntegrityServiceTest {
      * DBIntegrityServiceImlp.
      */
     @Test
-    public void testGetPrincipalInternalIdentifier() throws NotInDataBaseException{
+    public void testGetPrincipalInternalIdentifier() throws NotInDataBaseException {
         System.out.println("getPrincipalInternalIdentifier");
 
         final UUID externalID = UUID.fromString("00000000-0000-0000-0000-000000000111");
@@ -245,6 +245,9 @@ public class DBIntegrityServiceTest {
                 oneOf(annotationDao).getPermissions(1);
                 will(returnValue(listMap));
 
+                oneOf(annotationDao).getPublicAttribute(1);
+                will(returnValue(Access.WRITE));
+
                 oneOf(principalDao).getURIFromInternalID(2);
                 will(returnValue(uri2));
 
@@ -273,13 +276,15 @@ public class DBIntegrityServiceTest {
 
         assertEquals(Access.READ, result.getPermissions().getPermission().get(1).getLevel());
         assertEquals(uri3, result.getPermissions().getPermission().get(1).getPrincipalRef());
+
+        assertEquals(Access.WRITE, result.getPermissions().getPublic());
     }
 
     /**
      * Test of getFilteredAnnotationIDs method, of class DBIntegrityServiceImlp.
      */
     @Test
-    public void testGetFilteredAnnotationIDs() throws NotInDataBaseException{
+    public void testGetFilteredAnnotationIDs() throws NotInDataBaseException {
         System.out.println("test getFilteredAnnotationIDs");
 
         final List<Number> mockTargetIDs = new ArrayList<Number>();
@@ -292,20 +297,20 @@ public class DBIntegrityServiceTest {
         final List<Number> mockAnnotationIDs2 = new ArrayList<Number>();
         mockAnnotationIDs2.add(1);
         mockAnnotationIDs2.add(2);
-        
-         
+
+
         final List<Number> mockAnnotationIDsOwned = new ArrayList<Number>();
         mockAnnotationIDsOwned.add(3);
-        
+
         final List<Number> mockAnnotationIDsRead = new ArrayList<Number>();
         mockAnnotationIDsRead.add(1);
-        
+
         final List<Number> mockAnnotationIDsWrite = new ArrayList<Number>();
         mockAnnotationIDsWrite.add(2);
-        
+
         final List<Number> mockAnnotationIDsPublicRead = new ArrayList<Number>();
         mockAnnotationIDsRead.add(2);
-        
+
         final List<Number> mockAnnotationIDsPublicWrite = new ArrayList<Number>();
         mockAnnotationIDsWrite.add(1);
 
@@ -315,8 +320,8 @@ public class DBIntegrityServiceTest {
 //        final List<Number> mockRetval = new ArrayList<Number>();
 //        mockRetval.add(1);
 
-        final Number loggedIn = 3; 
-        
+        final Number loggedIn = 3;
+
         mockeryDao.checking(new Expectations() {
             {
                 oneOf(targetDao).getTargetsReferringTo("nl.wikipedia.org");
@@ -327,19 +332,19 @@ public class DBIntegrityServiceTest {
 
                 oneOf(annotationDao).getFilteredAnnotationIDs(null, "some html 1", null, after, before);
                 will(returnValue(mockAnnotationIDs1));
-                
+
                 oneOf(annotationDao).getAnnotationIDsForPermission(loggedIn, Access.READ);
                 will(returnValue(mockAnnotationIDsRead));
-                
+
                 oneOf(annotationDao).getAnnotationIDsForPublicAccess(Access.READ);
                 will(returnValue(mockAnnotationIDsPublicRead));
-                
+
                 oneOf(annotationDao).getAnnotationIDsForPermission(loggedIn, Access.WRITE);
                 will(returnValue(mockAnnotationIDsWrite));
-                
+
                 oneOf(annotationDao).getAnnotationIDsForPublicAccess(Access.WRITE);
                 will(returnValue(mockAnnotationIDsPublicWrite));
-                
+
                 oneOf(annotationDao).getFilteredAnnotationIDs(loggedIn, null, null, null, null);
                 will(returnValue(mockAnnotationIDsOwned));
 
@@ -407,20 +412,20 @@ public class DBIntegrityServiceTest {
         final String after = (new Timestamp(0)).toString();
         final String before = (new Timestamp(System.currentTimeMillis())).toString();
 
-        
-        
+
+
         final List<Number> mockAnnotationIDsOwned = new ArrayList<Number>();
         mockAnnotationIDsOwned.add(3);
-        
+
         final List<Number> mockAnnotationIDsRead = new ArrayList<Number>();
         mockAnnotationIDsRead.add(1);
-        
+
         final List<Number> mockAnnotationIDsWrite = new ArrayList<Number>();
         mockAnnotationIDsWrite.add(2);
-        
+
         final List<Number> mockAnnotationIDsPublicRead = new ArrayList<Number>();
         mockAnnotationIDsRead.add(2);
-        
+
         final List<Number> mockAnnotationIDsPublicWrite = new ArrayList<Number>();
         mockAnnotationIDsWrite.add(1);
 
@@ -452,23 +457,23 @@ public class DBIntegrityServiceTest {
 
                 oneOf(annotationDao).getAnnotationIDsForPermission(loggedIn, Access.READ);
                 will(returnValue(mockAnnotationIDsRead));
-                
+
                 oneOf(annotationDao).getAnnotationIDsForPublicAccess(Access.READ);
                 will(returnValue(mockAnnotationIDsPublicRead));
-                
+
                 oneOf(annotationDao).getAnnotationIDsForPermission(loggedIn, Access.WRITE);
                 will(returnValue(mockAnnotationIDsWrite));
-                
+
                 oneOf(annotationDao).getAnnotationIDsForPublicAccess(Access.WRITE);
                 will(returnValue(mockAnnotationIDsPublicWrite));
-                
+
                 oneOf(annotationDao).getFilteredAnnotationIDs(loggedIn, null, null, null, null);
                 will(returnValue(mockAnnotationIDsOwned));
 
 
 //                ///////////////////////////////////
 //                
-                oneOf(annotationDao).getAnnotationInfoWithoutTargets(1);
+                oneOf(annotationDao).getAnnotationInfoWithoutTargetsAndOwner(1);
                 will(returnValue(mockAnnotInfo));
 
                 oneOf(annotationDao).getOwner(1);
@@ -627,7 +632,7 @@ public class DBIntegrityServiceTest {
         mockTargetListTwo.add(testTargetTwo);
 
         final UUID mockNewTargetUUID = UUID.randomUUID();
-        final NotInDataBaseException e  = new NotInDataBaseException(tempTargetID);
+        final NotInDataBaseException e = new NotInDataBaseException(tempTargetID);
 
         mockeryDao.checking(new Expectations() {
             {
@@ -682,16 +687,27 @@ public class DBIntegrityServiceTest {
                 oneOf(annotationDao).updateAnnotationBody(5, testAnnotation.getBody().getTextBody().getBody(), testAnnotation.getBody().getTextBody().getMimeType(), false);
                 will(returnValue(1)); // the DB update will be called at perform anyway, even if the body is not changed (can be optimized)
 
-
+                oneOf(annotationDao).updatePublicAttribute(5, Access.WRITE);
+                will(returnValue(1));
             }
         });
 
         Number result = dbIntegrityService.addPrincipalsAnnotation(3, testAnnotation);
         assertEquals(5, result);
+
+//        Annotation newAnnotation = dbIntegrityService.getAnnotation(5);
+//        assertEquals(TestBackendConstants._TEST_SERVLET_URI_principals + "00000000-0000-0000-0000-000000000113", newAnnotation.getOwnerRef());
+//        assertEquals(testAnnotation.getHeadline(), newAnnotation.getHeadline());
+//        assertEquals(testAnnotation.getBody().getTextBody().getBody(), newAnnotation.getBody().getTextBody().getBody());
+//        assertEquals(testAnnotation.getBody().getTextBody().getMimeType(), newAnnotation.getBody().getTextBody().getMimeType());
+//        assertEquals(testAnnotation.getPermissions().getPermission().size(), newAnnotation.getPermissions().getPermission().size());
+//        assertEquals(Access.WRITE, newAnnotation.getPermissions().getPublic());
+//        assertEquals(testAnnotation.getTargets().getTargetInfo().size(), newAnnotation.getTargets().getTargetInfo().size());
+
     }
 
     @Test
-    public void testAddPrincipal() throws NotInDataBaseException, PrincipalExists{
+    public void testAddPrincipal() throws NotInDataBaseException, PrincipalExists {
         System.out.println("test addPrincipal");
         final Principal freshPrincipal = new Principal();
         freshPrincipal.setDisplayName("Guilherme");
@@ -724,11 +740,10 @@ public class DBIntegrityServiceTest {
         PrincipalExists ex = null;
         try {
             dbIntegrityService.addPrincipal(principal, "olhsha@mpi.nl");
-        }
-        catch (PrincipalExists e) {
+        } catch (PrincipalExists e) {
             ex = e;
         }
-        assertFalse(ex==null);
+        assertFalse(ex == null);
     }
 
     //////////////////// DELETERS ////////////////
@@ -848,7 +863,7 @@ public class DBIntegrityServiceTest {
 
                 oneOf(cachedRepresentationDao).deleteCachedRepresentation(3);
                 will(returnValue(1));
-                
+
                 oneOf(annotationDao).targetIsInUse(2);
                 will(returnValue(true));
 
@@ -857,8 +872,8 @@ public class DBIntegrityServiceTest {
 
                 oneOf(annotationDao).deleteAnnotationFromAllNotebooks(2);
                 will(returnValue(1));
-                
-                
+
+
             }
         });
         int[] result = dbIntegrityService.deleteAnnotation(2);// the Target will be deleted because it is not referred by any annotation
@@ -870,23 +885,20 @@ public class DBIntegrityServiceTest {
         assertEquals(1, result[4]); // deleted from 1 notebook
     }
 
-
     /**
      * NOTEBOOKS
      */
     /**
      * Getters
      */
-   
 //     public Number getNotebookInternalIdentifier(UUID externalIdentifier){
 //        return notebookDao.getInternalID(externalIdentifier);
 //    }
-    
     @Test
-    public void testGetNotebookInternalIdentifier() throws NotInDataBaseException{
-        
+    public void testGetNotebookInternalIdentifier() throws NotInDataBaseException {
+
         final UUID mockUUID = UUID.fromString("00000000-0000-0000-0000-000000000021");
-        
+
         mockeryDao.checking(new Expectations() {
             {
                 oneOf(notebookDao).getInternalID(mockUUID);
@@ -894,12 +906,10 @@ public class DBIntegrityServiceTest {
             }
         });
 
-       assertEquals(1, dbIntegrityService.getResourceInternalIdentifier(mockUUID, Resource.NOTEBOOK));
-    
-    }  
-       
-    
-    
+        assertEquals(1, dbIntegrityService.getResourceInternalIdentifier(mockUUID, Resource.NOTEBOOK));
+
+    }
+
 //    public NotebookInfoList getNotebooks(Number principalID, String access) {
 //        NotebookInfoList result = new NotebookInfoList();
 //        if (access.equalsIgnoreCase("read") || access.equalsIgnoreCase("write")) {
@@ -1036,20 +1046,19 @@ public class DBIntegrityServiceTest {
         assertEquals(TestBackendConstants._TEST_SERVLET_URI_notebooks + "00000000-0000-0000-0000-000000000013", result.getRef().get(0));
         assertEquals(TestBackendConstants._TEST_SERVLET_URI_notebooks + "00000000-0000-0000-0000-000000000014", result.getRef().get(1));
     }
-    
- /*      public boolean hasAccess(Number notebookID, Number principalID, Access access){
-        List<Number> notebookIDs = notebookDao.getNotebookIDs(principalID, access);
-        if (notebookIDs == null) {
-            return false;
-        } 
-        return notebookIDs.contains(notebookID);
-    } */
-    
+
+    /*      public boolean hasAccess(Number notebookID, Number principalID, Access access){
+     List<Number> notebookIDs = notebookDao.getNotebookIDs(principalID, access);
+     if (notebookIDs == null) {
+     return false;
+     } 
+     return notebookIDs.contains(notebookID);
+     } */
     @Test
     public void testHasAccess() {
 
-        
-        final Access write = Access.fromValue("write"); 
+
+        final Access write = Access.fromValue("write");
         final List<Number> mockNotebookIDwrite = new ArrayList<Number>();
         mockNotebookIDwrite.add(1);
         mockNotebookIDwrite.add(4);
@@ -1058,7 +1067,7 @@ public class DBIntegrityServiceTest {
             {
                 oneOf(notebookDao).getNotebookIDs(2, write);
                 will(returnValue(mockNotebookIDwrite));
-                
+
                 oneOf(notebookDao).getNotebookIDs(2, write);
                 will(returnValue(mockNotebookIDwrite));
 
@@ -1068,24 +1077,24 @@ public class DBIntegrityServiceTest {
         assertTrue(dbIntegrityService.hasAccess(4, 2, write));
         assertFalse(dbIntegrityService.hasAccess(5, 2, write));
     }
-    
+
     /*
      public ReferenceList getPrincipals(Number notebookID, String access) {
-        ReferenceList result = new ReferenceList();
-        List<Number> principalIDs = notebookDao.getPrincipalIDsWithAccess(notebookID, Access.fromValue(access));
-        for (Number principalID : principalIDs) {
-            String reference = principalDao.getURIFromInternalID(principalID);
-            result.getRef().add(reference);
-        }
-        return result;
-    }
+     ReferenceList result = new ReferenceList();
+     List<Number> principalIDs = notebookDao.getPrincipalIDsWithAccess(notebookID, Access.fromValue(access));
+     for (Number principalID : principalIDs) {
+     String reference = principalDao.getURIFromInternalID(principalID);
+     result.getRef().add(reference);
+     }
+     return result;
+     }
      }*/
     @Test
     public void testGetPrincipals() {
         final List<Number> mockPrincipalIDs = new ArrayList<Number>();
         mockPrincipalIDs.add(2);
         mockPrincipalIDs.add(4);
-        
+
         mockeryDao.checking(new Expectations() {
             {
                 oneOf(principalDao).getPrincipalIDsWithAccessForNotebook(1, Access.WRITE);
@@ -1139,25 +1148,23 @@ public class DBIntegrityServiceTest {
 //        result.setAccesss(ups);
 //        return result;
 //    }
-
-
     @Test
-    public void testGetNotebook() throws DatatypeConfigurationException{
+    public void testGetNotebook() throws DatatypeConfigurationException {
 
         final Notebook mockNotebook = new Notebook();
         mockNotebook.setURI("serviceURI/notebooks/00000000-0000-0000-0000-000000000012");
         mockNotebook.setTitle("Notebook 2");
         mockNotebook.setLastModified(DatatypeFactory.newInstance().newXMLGregorianCalendar("2014-02-12T09:25:00.383000Z"));
-        
+
         final List<Number> mockAnnotations = new ArrayList<Number>();
         mockAnnotations.add(3);
-        
+
         final List<Number> mockREADs = new ArrayList<Number>();
         mockREADs.add(1);
-        
+
         final List<Number> mockWRITEs = new ArrayList<Number>();
         mockWRITEs.add(3);
-        
+
         mockeryDao.checking(new Expectations() {
             {
                 oneOf(notebookDao).getNotebookWithoutAnnotationsAndAccesssAndOwner(2);
@@ -1171,23 +1178,23 @@ public class DBIntegrityServiceTest {
 
                 oneOf(annotationDao).getAnnotations(2);
                 will(returnValue(mockAnnotations));
-                
+
                 oneOf(annotationDao).getURIFromInternalID(3);
                 will(returnValue("serviceURI/annotations/00000000-0000-0000-0000-000000000023"));
-                
+
                 oneOf(principalDao).getPrincipalIDsWithAccessForNotebook(2, Access.READ);
                 will(returnValue(mockREADs));
-                
+
                 oneOf(principalDao).getURIFromInternalID(1);
                 will(returnValue("serviceURI/principals/00000000-0000-0000-0000-000000000111"));
-                
+
                 oneOf(principalDao).getPrincipalIDsWithAccessForNotebook(2, Access.WRITE);
                 will(returnValue(mockWRITEs));
-                
+
                 oneOf(principalDao).getURIFromInternalID(3);
                 will(returnValue("serviceURI/principals/00000000-0000-0000-0000-000000000113"));
 
-                
+
 
             }
         });
@@ -1204,7 +1211,7 @@ public class DBIntegrityServiceTest {
         assertEquals("read", result.getPermissions().getPermission().get(0).getLevel().value());
         assertEquals("serviceURI/principals/00000000-0000-0000-0000-000000000113", result.getPermissions().getPermission().get(1).getPrincipalRef());
         assertEquals("write", result.getPermissions().getPermission().get(1).getLevel().value());
-        
+
     }
 
     @Test
@@ -1247,7 +1254,7 @@ public class DBIntegrityServiceTest {
 //        return notebookDao.updateNotebookMetadata(notebookID, upToDateNotebookInfo.getTitle(), ownerID);
 //    }
     @Test
-    public void testUpdateNotebookMetadata() throws NotInDataBaseException{
+    public void testUpdateNotebookMetadata() throws NotInDataBaseException {
 
         final NotebookInfo mockNotebookInfo = new NotebookInfo();
         mockNotebookInfo.setOwnerRef(TestBackendConstants._TEST_SERVLET_URI_principals + "00000000-0000-0000-0000-000000000113");
@@ -1300,7 +1307,7 @@ public class DBIntegrityServiceTest {
 //        return notebookID;
 //    }
     @Test
-    public void testCreateNotebook() throws NotInDataBaseException{
+    public void testCreateNotebook() throws NotInDataBaseException {
 
         final Notebook notebook = new Notebook();
         notebook.setOwnerRef("tmpXXX");
@@ -1351,7 +1358,7 @@ public class DBIntegrityServiceTest {
 //        return notebookDao.addAnnotationToNotebook(notebookID, newAnnotationID);
 //    }
     @Test
-    public void testCreateAnnotationInNotebook() throws NotInDataBaseException{
+    public void testCreateAnnotationInNotebook() throws NotInDataBaseException {
 
         final Annotation testAnnotation = testInstances.getAnnotationToAdd();
 
@@ -1369,6 +1376,9 @@ public class DBIntegrityServiceTest {
 
                 oneOf(annotationDao).updateAnnotationBody(5, testAnnotation.getBody().getTextBody().getBody(), testAnnotation.getBody().getTextBody().getMimeType(), false);
                 will(returnValue(1)); // the DB update will be called at perform anyway, even if the body is not changed (can be optimized)
+
+                oneOf(annotationDao).updatePublicAttribute(5, Access.WRITE);
+                will(returnValue(1));
 
                 /////////////////////////
 
