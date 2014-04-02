@@ -214,10 +214,14 @@ public class DBIntegrityServiceTest {
         Map<Number, String> map3 = new HashMap<Number, String>();
         map3.put(3, "read");
         listMap.add(map3);
+        Map<Number, String> map4 = new HashMap<Number, String>();
+        map4.put(11, "read");
+        listMap.add(map4);
 
         final String uri1 = TestBackendConstants._TEST_SERVLET_URI_principals + "00000000-0000-0000-0000-000000000111";
         final String uri2 = TestBackendConstants._TEST_SERVLET_URI_principals + "00000000-0000-0000-0000-000000000112";
         final String uri3 = TestBackendConstants._TEST_SERVLET_URI_principals + "00000000-0000-0000-0000-000000000113";
+        final String uri4 = TestBackendConstants._TEST_SERVLET_URI_principals + "00000000-0000-0000-0000-000000000221";
 
 
         mockeryDao.checking(new Expectations() {
@@ -240,7 +244,7 @@ public class DBIntegrityServiceTest {
                 oneOf(targetDao).getTarget(2);
                 will(returnValue(mockTargetTwo));
 
-                /// getAccesssForAnnotation
+                /// getPermissionsForAnnotation
 
                 oneOf(annotationDao).getPermissions(1);
                 will(returnValue(listMap));
@@ -253,6 +257,9 @@ public class DBIntegrityServiceTest {
 
                 oneOf(principalDao).getURIFromInternalID(3);
                 will(returnValue(uri3));
+
+                oneOf(principalDao).getURIFromInternalID(11);
+                will(returnValue(uri4));
             }
         });
 
@@ -271,11 +278,16 @@ public class DBIntegrityServiceTest {
         assertEquals(mockTargetTwo.getURI(), result.getTargets().getTargetInfo().get(1).getRef());
         assertEquals(mockTargetTwo.getVersion(), result.getTargets().getTargetInfo().get(1).getVersion());
 
+        assertEquals(3, result.getPermissions().getPermission().size());
+
         assertEquals(Access.WRITE, result.getPermissions().getPermission().get(0).getLevel());
         assertEquals(uri2, result.getPermissions().getPermission().get(0).getPrincipalRef());
 
         assertEquals(Access.READ, result.getPermissions().getPermission().get(1).getLevel());
         assertEquals(uri3, result.getPermissions().getPermission().get(1).getPrincipalRef());
+
+        assertEquals(Access.READ, result.getPermissions().getPermission().get(2).getLevel());
+        assertEquals(uri4, result.getPermissions().getPermission().get(2).getPrincipalRef());
 
         assertEquals(Access.WRITE, result.getPermissions().getPublic());
     }
@@ -355,6 +367,157 @@ public class DBIntegrityServiceTest {
         List result = dbIntegrityService.getFilteredAnnotationIDs(null, "nl.wikipedia.org", "some html 1", 3, "read", null, after, before);
         assertEquals(1, result.size());
         assertEquals(1, result.get(0));
+    }
+
+    @Test
+    public void testGetFilteredAnnotationIDs2() throws NotInDataBaseException {
+        System.out.println("test getFilteredAnnotationIDs");
+
+        final List<Number> mockTargetIDs = new ArrayList<Number>();
+        mockTargetIDs.add(1);
+        mockTargetIDs.add(2);
+
+        final List<Number> mockAnnotationIDs1 = new ArrayList<Number>();
+        mockAnnotationIDs1.add(1);
+
+        final List<Number> mockAnnotationIDs2 = new ArrayList<Number>();
+        mockAnnotationIDs2.add(1);
+        mockAnnotationIDs2.add(2);
+
+
+        final List<Number> mockAnnotationIDsOwned = new ArrayList<Number>();
+        mockAnnotationIDsOwned.add(3);
+
+        final List<Number> mockAnnotationIDsRead = new ArrayList<Number>();
+        mockAnnotationIDsRead.add(1);
+
+        final List<Number> mockAnnotationIDsWrite = new ArrayList<Number>();
+        mockAnnotationIDsWrite.add(2);
+
+        final List<Number> mockAnnotationIDsPublicRead = new ArrayList<Number>();
+        mockAnnotationIDsRead.add(2);
+
+        final List<Number> mockAnnotationIDsPublicWrite = new ArrayList<Number>();
+        mockAnnotationIDsWrite.add(1);
+
+        final String after = (new Timestamp(0)).toString();
+        final String before = (new Timestamp(System.currentTimeMillis())).toString();
+
+//        final List<Number> mockRetval = new ArrayList<Number>();
+//        mockRetval.add(1);
+
+        final Number loggedIn = 3;
+
+        mockeryDao.checking(new Expectations() {
+            {
+                oneOf(targetDao).getTargetsReferringTo("nl.wikipedia.org");
+                will(returnValue(mockTargetIDs));
+
+                oneOf(annotationDao).getAnnotationIDsForTargets(mockTargetIDs);
+                will(returnValue(mockAnnotationIDs2));
+
+                oneOf(annotationDao).getFilteredAnnotationIDs(null, "some html 1", null, after, before);
+                will(returnValue(mockAnnotationIDs1));
+
+                oneOf(annotationDao).getAnnotationIDsForPermission(loggedIn, Access.READ);
+                will(returnValue(mockAnnotationIDsRead));
+
+                oneOf(annotationDao).getAnnotationIDsForPublicAccess(Access.READ);
+                will(returnValue(mockAnnotationIDsPublicRead));
+
+                oneOf(annotationDao).getAnnotationIDsForPermission(loggedIn, Access.WRITE);
+                will(returnValue(mockAnnotationIDsWrite));
+
+                oneOf(annotationDao).getAnnotationIDsForPublicAccess(Access.WRITE);
+                will(returnValue(mockAnnotationIDsPublicWrite));
+
+                oneOf(annotationDao).getFilteredAnnotationIDs(loggedIn, null, null, null, null);
+                will(returnValue(mockAnnotationIDsOwned));
+
+            }
+        });
+
+
+        List result = dbIntegrityService.getFilteredAnnotationIDs(null, "nl.wikipedia.org", "some html 1", 3, "write", null, after, before);
+        assertEquals(1, result.size());
+        assertEquals(1, result.get(0));
+    }
+
+    @Test
+    public void testGetFilteredAnnotationIDs3() throws NotInDataBaseException {
+        System.out.println("test getFilteredAnnotationIDs");
+
+        final List<Number> mockTargetIDs = new ArrayList<Number>();
+        mockTargetIDs.add(1);
+        mockTargetIDs.add(2);
+
+        final List<Number> mockAnnotationIDs2 = new ArrayList<Number>();
+        mockAnnotationIDs2.add(1);
+        mockAnnotationIDs2.add(2);
+
+
+        final String after = (new Timestamp(0)).toString();
+        final String before = (new Timestamp(System.currentTimeMillis())).toString();
+
+//        final List<Number> mockRetval = new ArrayList<Number>();
+//        mockRetval.add(1);
+
+        final Number loggedIn = 3;
+
+        mockeryDao.checking(new Expectations() {
+            {
+                oneOf(targetDao).getTargetsReferringTo("nl.wikipedia.org");
+                will(returnValue(mockTargetIDs));
+
+                oneOf(annotationDao).getAnnotationIDsForTargets(mockTargetIDs);
+                will(returnValue(mockAnnotationIDs2));
+
+                oneOf(annotationDao).getFilteredAnnotationIDs(loggedIn, "some html 1", null, after, before);
+                will(returnValue(new ArrayList<Number>()));
+
+
+            }
+        });
+
+
+        List result = dbIntegrityService.getFilteredAnnotationIDs(null, "nl.wikipedia.org", "some html 1", 3, "owner", null, after, before);
+        assertEquals(0, result.size());
+    }
+
+    @Test
+    public void testGetFilteredAnnotationIDs4() throws NotInDataBaseException {
+        System.out.println("test getFilteredAnnotationIDs");
+
+        final List<Number> mockTargetIDs = new ArrayList<Number>();
+        mockTargetIDs.add(1);
+        mockTargetIDs.add(2);
+
+        final List<Number> mockAnnotationIDs2 = new ArrayList<Number>();
+        mockAnnotationIDs2.add(1);
+        mockAnnotationIDs2.add(2);
+
+
+        final String after = (new Timestamp(0)).toString();
+        final String before = (new Timestamp(System.currentTimeMillis())).toString();
+
+//        final List<Number> mockRetval = new ArrayList<Number>();
+//        mockRetval.add(1);
+
+        final Number loggedIn = 3;
+
+        mockeryDao.checking(new Expectations() {
+            {
+
+                oneOf(principalDao).getExternalID(loggedIn);
+                will(returnValue(UUID.fromString("00000000-0000-0000-0000-000000000113")));
+
+
+            }
+        });
+
+
+        List result = dbIntegrityService.getFilteredAnnotationIDs(UUID.fromString("00000000-0000-0000-0000-000000000111"), "nl.wikipedia.org", "some html 1", 3, "owner", null, after, before);
+        assertEquals(0, result.size());
     }
 
     @Test
@@ -1420,5 +1583,309 @@ public class DBIntegrityServiceTest {
         });
 
         assertTrue(dbIntegrityService.deleteNotebook(1));
+    }
+
+    @Test
+    public void testGetAccess() {
+        System.out.println("test getAccess");
+
+        mockeryDao.checking(new Expectations() {
+            {
+
+                oneOf(annotationDao).getAccess(1, 3);
+                will(returnValue(Access.READ));
+
+                oneOf(annotationDao).getPublicAttribute(1);
+                will(returnValue(Access.WRITE));
+
+            }
+        });
+
+        assertEquals(Access.WRITE, dbIntegrityService.getAccess(1, 3));
+
+        //////
+
+        mockeryDao.checking(new Expectations() {
+            {
+                oneOf(annotationDao).getAccess(2, 3);
+                will(returnValue(Access.READ));
+
+                oneOf(annotationDao).getPublicAttribute(2);
+                will(returnValue(Access.READ));
+
+            }
+        });
+        assertEquals(Access.READ, dbIntegrityService.getAccess(2, 3));
+
+        //////
+
+        mockeryDao.checking(new Expectations() {
+            {
+                oneOf(annotationDao).getAccess(3, 3);
+                will(returnValue(Access.NONE));
+
+                oneOf(annotationDao).getPublicAttribute(3);
+                will(returnValue(Access.NONE));
+
+            }
+        });
+        assertEquals(Access.NONE, dbIntegrityService.getAccess(3, 3));
+
+        //////
+    }
+
+    @Test
+    public void testPublicAttribute() {
+
+        System.out.println("test getPublicAttribute");
+        mockeryDao.checking(new Expectations() {
+            {
+                oneOf(annotationDao).getPublicAttribute(2);
+                will(returnValue(Access.READ));
+
+            }
+        });
+        assertEquals(Access.READ, dbIntegrityService.getPublicAttribute(2));
+    }
+
+//      @Override
+//    public int updateAnnotation(Annotation annotation) throws NotInDataBaseException {
+//        Number annotationID = annotationDao.getInternalIDFromURI(annotation.getURI());
+//        int updatedAnnotations = annotationDao.updateAnnotation(annotation, annotationID, principalDao.getInternalIDFromURI(annotation.getOwnerRef()));
+//        int deletedTargets = annotationDao.deleteAllAnnotationTarget(annotationID);
+//        int deletedPrinsipalsAccesss = annotationDao.deleteAnnotationPermissions(annotationID);
+//        int addedTargets = addTargets(annotation, annotationID);
+//        int addedPrincipalsAccesss = addPermissions(annotation.getPermissions().getPermission(), annotationID);
+//        int updatedPublicAttribute = annotationDao.updatePublicAttribute(annotationID, annotation.getPermissions().getPublic());
+//        return updatedAnnotations;
+//    }
+//    for (TargetInfo targetInfo : targets) {
+//            try {
+//                Number targetIDRunner = targetDao.getInternalIDFromURI(targetInfo.getRef());
+//                int affectedRows = annotationDao.addAnnotationTarget(annotationID, targetIDRunner);
+//            } catch (NotInDataBaseException e) {
+//                Target newTarget = this.createFreshTarget(targetInfo);
+//                Number targetID = targetDao.addTarget(newTarget);
+//                String targetTemporaryID = targetDao.stringURItoExternalID(targetInfo.getRef());
+//                result.put(targetTemporaryID, targetDao.getExternalID(targetID).toString());
+//                int affectedRows = annotationDao.addAnnotationTarget(annotationID, targetID);
+//            }
+//        }
+    @Test
+    public void testUpdateAnnotation() throws NotInDataBaseException {
+
+        System.out.println("test updateAnnotation");
+
+        final Annotation annotation = (new TestInstances(TestBackendConstants._TEST_SERVLET_URI)).getAnnotationOne();
+        final NotInDataBaseException e = new NotInDataBaseException("00000000-0000-0000-0000-000000000031");
+        final String mockTempID = "00000000-0000-0000-0000-000000000031";
+        final UUID mockNewID = UUID.randomUUID();
+        final PermissionList permissions = annotation.getPermissions();
+
+
+        System.out.println("test updateAnnotation");
+        mockeryDao.checking(new Expectations() {
+            {
+                oneOf(annotationDao).getInternalIDFromURI(annotation.getURI());
+                will(returnValue(1));
+
+                oneOf(principalDao).getInternalIDFromURI(annotation.getOwnerRef());
+                will(returnValue(1));
+
+                oneOf(annotationDao).updateAnnotation(annotation, 1, 1);
+                will(returnValue(1));
+
+                oneOf(annotationDao).deleteAllAnnotationTarget(1);
+                will(returnValue(1));
+
+                oneOf(annotationDao).deleteAnnotationPermissions(1);
+                will(returnValue(3));
+
+
+                /// adding the first target, nt foind in the DB
+
+                oneOf(targetDao).getInternalIDFromURI(annotation.getTargets().getTargetInfo().get(0).getRef());
+                will(throwException(e));
+
+                oneOf(targetDao).addTarget(with(aNonNull(Target.class)));
+                will(returnValue(8));
+
+                oneOf(targetDao).stringURItoExternalID(annotation.getTargets().getTargetInfo().get(0).getRef());
+                will(returnValue(mockTempID));
+
+                oneOf(targetDao).getExternalID(8);
+                will(returnValue(mockNewID));
+
+                oneOf(annotationDao).addAnnotationTarget(1, 8);
+                will(returnValue(1));
+
+                /////////
+                oneOf(targetDao).getInternalIDFromURI(annotation.getTargets().getTargetInfo().get(1).getRef());
+                will(returnValue(2));
+
+                oneOf(annotationDao).addAnnotationTarget(1, 2);
+                will(returnValue(1));
+
+                /////
+                oneOf(principalDao).getInternalIDFromURI(permissions.getPermission().get(0).getPrincipalRef());
+                will(returnValue(2));
+
+                oneOf(annotationDao).addAnnotationPrincipalAccess(1, 2, Access.WRITE);
+                will(returnValue(1));
+
+                oneOf(principalDao).getInternalIDFromURI(permissions.getPermission().get(1).getPrincipalRef());
+                will(returnValue(3));
+
+                oneOf(annotationDao).addAnnotationPrincipalAccess(1, 3, Access.READ);
+                will(returnValue(1));
+
+
+                ////
+
+                oneOf(annotationDao).updateAnnotationBody(1, annotation.getBody().getTextBody().getBody(), "text/html", false);
+                will(returnValue(1));
+
+                ///
+
+                oneOf(annotationDao).updatePublicAttribute(1, permissions.getPublic());
+                will(returnValue(1));
+
+
+            }
+        });
+        assertEquals(1, dbIntegrityService.updateAnnotation(annotation));
+    }
+
+//    public int updateAnnotationPrincipalAccess(Number annotationID, Number principalID, Access access) {
+//        int result;
+//        Access currentAccess = annotationDao.getAccess(annotationID, principalID);
+//        if (currentAccess != Access.NONE) {
+//            result = annotationDao.updateAnnotationPrincipalAccess(annotationID, principalID, access);
+//        } else {
+//            if (!access.equals(Access.NONE)) {
+//                result = annotationDao.deleteAnnotationPrincipalAccess(annotationID, principalID);
+//                result = annotationDao.addAnnotationPrincipalAccess(annotationID, principalID, access);
+//            } else {
+//                result = 0;
+//            }
+//        }
+//        return result;
+//    }
+    @Test
+    public void testUpdateAnnotationPrinciaplAccess() {
+        System.out.println("test updateAnnotationPrincipalAccess");
+        mockeryDao.checking(new Expectations() {
+            {
+                oneOf(annotationDao).getAccess(1, 2);
+                will(returnValue(Access.WRITE));
+
+                oneOf(annotationDao).updateAnnotationPrincipalAccess(1, 2, Access.READ);
+                will(returnValue(1));
+
+                oneOf(annotationDao).getAccess(1, 4);
+                will(returnValue(Access.NONE));
+
+                oneOf(annotationDao).deleteAnnotationPrincipalAccess(1, 4);
+                will(returnValue(0));
+
+                oneOf(annotationDao).addAnnotationPrincipalAccess(1, 4, Access.WRITE);
+                will(returnValue(1));
+
+            }
+        });
+
+        assertEquals(1, dbIntegrityService.updateAnnotationPrincipalAccess(1, 2, Access.READ));
+        assertEquals(1, dbIntegrityService.updateAnnotationPrincipalAccess(1, 4, Access.WRITE));
+    }
+
+    @Test
+    public void testUpdatePermissions() throws NotInDataBaseException {
+        System.out.println("test updatePermissions");
+
+        final Annotation annotation = (new TestInstances(TestBackendConstants._TEST_SERVLET_URI)).getAnnotationOne();
+        final PermissionList permissions = annotation.getPermissions();
+
+
+        mockeryDao.checking(new Expectations() {
+            {
+                /////
+                oneOf(annotationDao).updatePublicAttribute(1, permissions.getPublic());
+                will(returnValue(1));
+
+                oneOf(principalDao).getInternalIDFromURI(permissions.getPermission().get(0).getPrincipalRef());
+                will(returnValue(2));
+
+                oneOf(annotationDao).getAccess(1, 2);
+                will(returnValue(Access.WRITE));
+
+                oneOf(principalDao).getInternalIDFromURI(permissions.getPermission().get(1).getPrincipalRef());
+                will(returnValue(3));
+
+                oneOf(annotationDao).getAccess(1, 3);
+                will(returnValue(Access.WRITE));
+
+                oneOf(annotationDao).updateAnnotationPrincipalAccess(1, 3, Access.READ);
+                will(returnValue(1));
+
+            }
+        });
+
+        assertEquals(1, dbIntegrityService.updatePermissions(1, permissions));
+
+    }
+
+    @Test
+    public void testUpdatePermissions2() throws NotInDataBaseException {
+        System.out.println("test updatePermissions 2");
+
+        final PermissionList permissions = new PermissionList();
+        permissions.setPublic(Access.READ);
+        Permission permission = new Permission();
+        permissions.getPermission().add(permission);
+        permission.setLevel(Access.WRITE);
+        permission.setPrincipalRef(TestBackendConstants._TEST_SERVLET_URI_principals + "00000000-0000-0000-0000-000000000220");
+
+        mockeryDao.checking(new Expectations() {
+            {
+                /////
+                oneOf(annotationDao).updatePublicAttribute(1, permissions.getPublic());
+                will(returnValue(1));
+
+                oneOf(principalDao).getInternalIDFromURI(permissions.getPermission().get(0).getPrincipalRef());
+                will(returnValue(10));
+
+                oneOf(annotationDao).getAccess(1, 10);
+                will(returnValue(Access.NONE));
+
+                oneOf(annotationDao).deleteAnnotationPrincipalAccess(1, 10);
+                will(returnValue(0));
+
+                oneOf(annotationDao).addAnnotationPrincipalAccess(1, 10, permissions.getPermission().get(0).getLevel());
+                will(returnValue(1));
+
+            }
+        });
+
+        assertEquals(1, dbIntegrityService.updatePermissions(1, permissions));
+
+    }
+
+    @Test
+    public void testUpdatePublicAttribute(){
+        System.out.println("test updatePublicAttribute");
+
+        
+        mockeryDao.checking(new Expectations() {
+            {
+                /////
+                oneOf(annotationDao).updatePublicAttribute(1, Access.NONE);
+                will(returnValue(1));
+
+
+            }
+        });
+
+        assertEquals(1, dbIntegrityService.updatePublicAttribute(1, Access.NONE));
+
     }
 }

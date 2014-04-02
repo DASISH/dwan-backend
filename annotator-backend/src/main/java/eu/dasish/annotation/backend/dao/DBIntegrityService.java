@@ -307,8 +307,7 @@ public interface DBIntegrityService {
      */
     Number addPrincipal(Principal principal, String remoteID) throws NotInDataBaseException, PrincipalExists;
 
-    int addAnnotationPrincipalAccess(Number annotationID, Number principalID, Access access);
-    /// notebooks ////
+       /// notebooks ////
     Number createNotebook(Notebook notebook, Number ownerID) throws NotInDataBaseException;
 
     boolean createAnnotationInNotebook(Number notebookID, Annotation annotation, Number ownerID) throws NotInDataBaseException;
