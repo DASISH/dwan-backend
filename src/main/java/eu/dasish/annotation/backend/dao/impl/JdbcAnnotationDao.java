@@ -392,8 +392,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
     public int updateAnnotation(Annotation annotation, Number annotationID, Number newOwnerID) {
 
         String[] body = retrieveBodyComponents(annotation.getBody());
-        //debug
-        System.out.println(annotation.getURI());
+        
         String externalID = this.stringURItoExternalID(annotation.getURI());
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("owner", newOwnerID);

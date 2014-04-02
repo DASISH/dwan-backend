@@ -275,6 +275,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     public String stringURItoExternalID(String stringURI) {
         // debug
         System.out.println("test Input stringURItoExternalID : "+stringURI);
+        System.out.println("test serviceUri : "+_serviceURI);
         if (stringURI.length() > _serviceURI.length()) {
             return stringURI.substring(_serviceURI.length());
         } else {

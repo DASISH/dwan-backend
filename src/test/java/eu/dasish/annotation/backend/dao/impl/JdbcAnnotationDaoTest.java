@@ -494,10 +494,10 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
     }
 
     @Test
-    @Ignore
     public void testUpdateAnnotation() {
-        System.out.println("KOUKOUK!!!!");
-
+        System.out.println("test UpdateAnnotation");
+        jdbcAnnotationDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_annotations);
+        
         Annotation annotation = testInstances.getAnnotationOne();
         annotation.setHeadline("updated headline 1");
         annotation.getBody().getTextBody().setBody("updated some html 1");
@@ -506,10 +506,11 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         System.out.println(annotation.getURI());
         int result = jdbcAnnotationDao.updateAnnotation(annotation,1, 1);
         assertEquals(1, result);
-//        Annotation check = jdbcAnnotationDao.getAnnotationWithoutTargetsAndPemissions(1);
-//        assertEquals("updated some html 1", check.getBody().getTextBody().getBody());
-//        assertEquals("text/plain", check.getBody().getTextBody().getMimeType());
-//        assertEquals("updated headline 1", check.getHeadline());
+        System.out.println(" annotation updated");
+        Annotation check = jdbcAnnotationDao.getAnnotationWithoutTargetsAndPemissions(1);
+        assertEquals("updated some html 1", check.getBody().getTextBody().getBody());
+        assertEquals("text/plain", check.getBody().getTextBody().getMimeType());
+        assertEquals("updated headline 1", check.getHeadline());
 
     }
 }
