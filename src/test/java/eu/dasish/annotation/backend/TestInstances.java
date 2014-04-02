@@ -44,7 +44,7 @@ public class TestInstances {
 
     private Annotation makeAnnotationOne(String baseURI) {
         Annotation result = makeAnnotation(baseURI, "<html><body>some html 1</body></html>", "text/html", "Sagrada Famiglia", "00000000-0000-0000-0000-000000000111");
-        result.setURI(baseURI+"/annotations/00000000-0000-0000-0000-000000000021");
+        result.setURI(baseURI+"annotations/00000000-0000-0000-0000-000000000021");
         
         try {
             result.setLastModified(DatatypeFactory.newInstance().newXMLGregorianCalendar("2013-08-12T09:25:00.383000Z"));

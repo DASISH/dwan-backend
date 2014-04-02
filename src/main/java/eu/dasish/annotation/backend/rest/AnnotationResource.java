@@ -285,12 +285,8 @@ public class AnnotationResource extends ResourceResource {
             try {
                 final Number annotationID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(annotationExternalId), Resource.ANNOTATION);
                 if (remotePrincipalID.equals(dbIntegrityService.getAnnotationOwnerID(annotationID)) || dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID).equals(admin)) {
-
-                    int result = (dbIntegrityService.getAccess(annotationID, principalID) != null)
-                            ? dbIntegrityService.updateAnnotationPrincipalAccess(annotationID, principalID, access)
-                            : dbIntegrityService.addAnnotationPrincipalAccess(annotationID, principalID, access);
+                    int result = dbIntegrityService.updateAnnotationPrincipalAccess(annotationID, principalID, access);
                     return result + " rows are updated/added";
-
                 } else {
                     verboseOutput.FORBIDDEN_ACCESS_CHANGING(annotationExternalId, dbIntegrityService.getAnnotationOwner(annotationID).getDisplayName(), dbIntegrityService.getAnnotationOwner(annotationID).getEMail());
                     throw new HTTPException(HttpServletResponse.SC_FORBIDDEN);
@@ -310,7 +306,7 @@ public class AnnotationResource extends ResourceResource {
     @Consumes(MediaType.APPLICATION_XML)
     @Produces(MediaType.APPLICATION_XML)
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}/accesss/")
-    public JAXBElement<ResponseBody> updateAccesss(@PathParam("annotationid") String annotationExternalId, PermissionList accesss) throws IOException {
+    public JAXBElement<ResponseBody> updatePermissions(@PathParam("annotationid") String annotationExternalId, PermissionList accesss) throws IOException {
         Number remotePrincipalID = this.getPrincipalID();
         try {
             final Number annotationID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(annotationExternalId), Resource.ANNOTATION);
