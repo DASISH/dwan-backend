@@ -20,6 +20,7 @@ package eu.dasish.annotation.backend.dao.impl;
 import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.Resource;
 import eu.dasish.annotation.backend.Helpers;
+import eu.dasish.annotation.backend.PrincipalCannotBeDeleted;
 import eu.dasish.annotation.backend.PrincipalExists;
 import eu.dasish.annotation.backend.dao.AnnotationDao;
 import eu.dasish.annotation.backend.dao.CachedRepresentationDao;
@@ -687,14 +688,11 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
 
     ////////////// DELETERS //////////////////
     @Override
-    public int deletePrincipal(Number principalID) {
+    public int deletePrincipal(Number principalID) throws PrincipalCannotBeDeleted{
         return principalDao.deletePrincipal(principalID);
     }
 
-    @Override
-    public int deletePrincipalSafe(Number principalID) {
-        return principalDao.deletePrincipalSafe(principalID);
-    }
+   
 
     @Override
     public int deleteCachedRepresentation(Number internalID) {

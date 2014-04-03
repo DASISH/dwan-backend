@@ -18,6 +18,7 @@
 package eu.dasish.annotation.backend.rest;
 
 import eu.dasish.annotation.backend.NotInDataBaseException;
+import eu.dasish.annotation.backend.PrincipalCannotBeDeleted;
 import eu.dasish.annotation.backend.PrincipalExists;
 import eu.dasish.annotation.backend.Resource;
 import eu.dasish.annotation.schema.CurrentPrincipalInfo;
@@ -72,7 +73,7 @@ public class PrincipalResource extends ResourceResource {
             return new ObjectFactory().createPrincipal(principal);
         } catch (NotInDataBaseException e) {
             verboseOutput.PRINCIPAL_NOT_FOUND(externalIdentifier);
-            throw new HTTPException(HttpServletResponse.SC_FORBIDDEN);
+            throw new HTTPException(HttpServletResponse.SC_NOT_FOUND);
         }
 
     }
@@ -102,6 +103,7 @@ public class PrincipalResource extends ResourceResource {
 
     }
 
+    
     @GET
     @Produces(MediaType.TEXT_XML)
     @Path("{principalid}/current")
@@ -112,7 +114,7 @@ public class PrincipalResource extends ResourceResource {
             final Number principalID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.PRINCIPAL);
             final CurrentPrincipalInfo principalInfo = new CurrentPrincipalInfo();
             principalInfo.setRef(dbIntegrityService.getResourceURI(principalID, Resource.PRINCIPAL));
-            principalInfo.setCurrentPrincipal(ifLoggedIn(principalID));
+            principalInfo.setCurrentPrincipal(this.ifLoggedIn(principalID));
             return new ObjectFactory().createCurrentPrincipalInfo(principalInfo);
         } catch (NotInDataBaseException e) {
             verboseOutput.PRINCIPAL_NOT_FOUND(externalIdentifier);
@@ -193,6 +195,8 @@ public class PrincipalResource extends ResourceResource {
 
     }
 
+  
+
     @DELETE
     @Path("{principalId}")
     public String deletePrincipal(@PathParam("principalId") String externalIdentifier) throws IOException {
@@ -200,27 +204,13 @@ public class PrincipalResource extends ResourceResource {
         if (dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID).equals(admin)) {
             try {
                 final Number principalID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.PRINCIPAL);
-                final Integer result = dbIntegrityService.deletePrincipal(principalID);
-                return "There is " + result.toString() + " row deleted";
-            } catch (NotInDataBaseException e) {
-                verboseOutput.PRINCIPAL_NOT_FOUND(externalIdentifier);
-                throw new HTTPException(HttpServletResponse.SC_NOT_FOUND);
-            }
-        } else {
-            verboseOutput.ADMIN_RIGHTS_EXPECTED();
-            throw new HTTPException(HttpServletResponse.SC_FORBIDDEN);
-        }
-    }
-
-    @DELETE
-    @Path("{principalId}/safe")
-    public String deletePrincipalSafe(@PathParam("principalId") String externalIdentifier) throws IOException {
-        Number remotePrincipalID = this.getPrincipalID();
-        if (dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID).equals(admin)) {
-            try {
-                final Number principalID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.PRINCIPAL);
-                final int result = dbIntegrityService.deletePrincipalSafe(principalID);
+                try {
+                final int result = dbIntegrityService.deletePrincipal(principalID);
                 return "There is " + result + " row deleted";
+                } catch (PrincipalCannotBeDeleted e2) {
+                    verboseOutput.PRINCIPAL_CANNOT_BE_DELETED(externalIdentifier);
+                    throw new HTTPException(HttpServletResponse.SC_FORBIDDEN);
+                }
             } catch (NotInDataBaseException e) {
                 verboseOutput.PRINCIPAL_NOT_FOUND(externalIdentifier);
                 throw new HTTPException(HttpServletResponse.SC_NOT_FOUND);
@@ -232,6 +222,7 @@ public class PrincipalResource extends ResourceResource {
 
     }
 
+    // silly because it is trivial. harvest all logged in users via shibboleth!!
     private boolean ifLoggedIn(Number principalID) {
         return (httpServletRequest.getRemoteUser()).equals(dbIntegrityService.getPrincipalRemoteID(principalID));
     }

@@ -18,6 +18,7 @@
 package eu.dasish.annotation.backend.dao;
 
 import eu.dasish.annotation.backend.NotInDataBaseException;
+import eu.dasish.annotation.backend.PrincipalCannotBeDeleted;
 import eu.dasish.annotation.backend.PrincipalExists;
 import eu.dasish.annotation.backend.Resource;
 import eu.dasish.annotation.schema.Annotation;
@@ -326,18 +327,9 @@ public interface DBIntegrityService {
      * e.g. because it is in use in the table
      * "annotationsPreincipalsAccesss"
      */
-    int deletePrincipal(Number principalID);
+    int deletePrincipal(Number principalID) throws PrincipalCannotBeDeleted;
 
-    /**
-     *
-     * @param principalID
-     * @return # of affected rows in the table "principal". It is 1 if the
-     * principalId is found and deleted; it is 0 if it is not found or not deleted,
-     * e.g. because it is in use in the table
-     * "annotationsPreincipalsAccesss"
-     */
-    int deletePrincipalSafe(Number principalID);
-
+   
     int deleteCachedRepresentation(Number internalID);
 
     /**

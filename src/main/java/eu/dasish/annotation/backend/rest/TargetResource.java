@@ -137,9 +137,8 @@ public class TargetResource extends ResourceResource {
             final Number targetID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(targetExternalIdentifier), Resource.TARGET);
             try {
                 final Number cachedID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(cachedExternalIdentifier), Resource.CACHED_REPRESENTATION);
-                int[] resultDelete = dbIntegrityService.deleteCachedRepresentationOfTarget(targetID, cachedID);
-                String result = Integer.toString(resultDelete[0]);
-                return result + " pair(s) target-cached deleted.";
+                int[] result = dbIntegrityService.deleteCachedRepresentationOfTarget(targetID, cachedID);
+                return result[0] + " pair(s) target-cached deleted.";
             } catch (NotInDataBaseException e) {
                 verboseOutput.CACHED_REPRESENTATION_NOT_FOUND(cachedExternalIdentifier);
                 throw new HTTPException(HttpServletResponse.SC_NOT_FOUND);

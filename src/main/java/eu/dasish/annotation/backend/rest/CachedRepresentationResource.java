@@ -60,7 +60,7 @@ public class CachedRepresentationResource extends ResourceResource {
     @Produces(MediaType.TEXT_XML)
     @Path("{cachedid: " + BackendConstants.regExpIdentifier + "}/metadata")
     @Transactional(readOnly = true)
-    public JAXBElement<CachedRepresentationInfo> getCachedRepresentationInfo(@PathParam("cachedid") String externalId) throws IOException{
+    public JAXBElement<CachedRepresentationInfo> getCachedRepresentationInfo(@PathParam("cachedid") String externalId) throws IOException {
         Number remotePrincipalID = this.getPrincipalID();
         try {
             final Number cachedID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalId), Resource.CACHED_REPRESENTATION);
@@ -78,18 +78,22 @@ public class CachedRepresentationResource extends ResourceResource {
     @Produces({"image/jpeg", "image/png"})
     @Path("{cachedid: " + BackendConstants.regExpIdentifier + "}/content")
     @Transactional(readOnly = true)
-    public BufferedImage getCachedRepresentationContent(@PathParam("cachedid") String externalId) throws IOException{
+    public BufferedImage getCachedRepresentationContent(@PathParam("cachedid") String externalId) throws IOException {
         Number remotePrincipalID = this.getPrincipalID();
         try {
             final Number cachedID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalId), Resource.CACHED_REPRESENTATION);
             InputStream dbRespond = dbIntegrityService.getCachedRepresentationBlob(cachedID);
             if (dbRespond != null) {
                 ImageIO.setUseCache(false);
-                BufferedImage result = ImageIO.read(dbRespond);
-                return result;
+                try {
+                    BufferedImage result = ImageIO.read(dbRespond);
+                    return result;
+                } catch (IOException e1) {
+                    throw new HTTPException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                }
             } else {
                 verboseOutput.CACHED_REPRESENTATION_IS_NULL();
-                return new BufferedImage(20, 20, BufferedImage.TYPE_INT_ARGB);
+                return null;
             }
 
         } catch (NotInDataBaseException e) {
@@ -102,7 +106,7 @@ public class CachedRepresentationResource extends ResourceResource {
     @Produces({"text/plain", "text/html", "text/xml", "application/zip"})
     @Path("{cachedid: " + BackendConstants.regExpIdentifier + "}/stream")
     @Transactional(readOnly = true)
-    public InputStream getCachedRepresentationContentStream(@PathParam("cachedid") String externalId) throws IOException{
+    public InputStream getCachedRepresentationContentStream(@PathParam("cachedid") String externalId) throws IOException {
         Number remotePrincipalID = this.getPrincipalID();
         try {
             final Number cachedID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalId), Resource.CACHED_REPRESENTATION);
@@ -113,7 +117,7 @@ public class CachedRepresentationResource extends ResourceResource {
                 verboseOutput.CACHED_REPRESENTATION_IS_NULL();
                 return null;
             }
-            
+
         } catch (NotInDataBaseException e) {
             verboseOutput.CACHED_REPRESENTATION_NOT_FOUND(externalId);
             throw new HTTPException(HttpServletResponse.SC_NOT_FOUND);
