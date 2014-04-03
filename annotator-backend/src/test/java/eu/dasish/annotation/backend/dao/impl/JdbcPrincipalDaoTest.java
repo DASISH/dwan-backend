@@ -18,6 +18,7 @@
 package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.NotInDataBaseException;
+import eu.dasish.annotation.backend.PrincipalCannotBeDeleted;
 import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.TestInstances;
 import eu.dasish.annotation.schema.Access;
@@ -130,7 +131,7 @@ public class JdbcPrincipalDaoTest extends JdbcResourceDaoTest {
     }
 
     @Test
-    public void testDeletePrincipal() {
+    public void testDeletePrincipal() throws PrincipalCannotBeDeleted{
         System.out.println("test deletePrincipal");
         jdbcPrincipalDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_principals);
 

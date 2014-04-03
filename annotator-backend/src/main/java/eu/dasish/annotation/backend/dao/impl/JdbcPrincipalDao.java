@@ -18,6 +18,7 @@
 package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.NotInDataBaseException;
+import eu.dasish.annotation.backend.PrincipalCannotBeDeleted;
 import eu.dasish.annotation.backend.dao.PrincipalDao;
 import eu.dasish.annotation.schema.Access;
 import eu.dasish.annotation.schema.Principal;
@@ -141,7 +142,7 @@ public class JdbcPrincipalDao extends JdbcResourceDao implements PrincipalDao {
     }
 
     @Override
-    public String getTypeOfPrincipalAccount(Number internalID){
+    public String getTypeOfPrincipalAccount(Number internalID) {
         StringBuilder requestDB = new StringBuilder("SELECT ");
         requestDB.append(account).append(" FROM ").append(principalTableName).append(" WHERE ").append(principal_id).append("= ? LIMIT 1");
         List<String> result = this.loggedQuery(requestDB.toString(), adminRightsRowMapper, internalID);
@@ -231,21 +232,12 @@ public class JdbcPrincipalDao extends JdbcResourceDao implements PrincipalDao {
     }
 
     ////// DELETERS ////////////
+    
     @Override
-    public int deletePrincipal(Number internalID) {
-
-        StringBuilder sql = new StringBuilder("DELETE FROM ");
-        sql.append(principalTableName).append(" where ").append(principal_id).append(" = ?");
-        return this.loggedUpdate(sql.toString(), internalID);
-
-    }
-
-    @Override
-    public int deletePrincipalSafe(Number internalID) {
+    public int deletePrincipal(Number internalID) throws PrincipalCannotBeDeleted{
 
         if (principalIsInUse(internalID)) {
-            loggerPrincipalDao.debug("Principal is in use, and cannot be deleted.");
-            return 0;
+            throw new PrincipalCannotBeDeleted(this.getURIFromInternalID(internalID));
         }
         StringBuilder sql = new StringBuilder("DELETE FROM ");
         sql.append(principalTableName).append(" where ").append(principal_id).append(" = ?");

@@ -18,6 +18,7 @@
 package eu.dasish.annotation.backend.dao;
 
 import eu.dasish.annotation.backend.NotInDataBaseException;
+import eu.dasish.annotation.backend.PrincipalCannotBeDeleted;
 import eu.dasish.annotation.schema.Access;
 import eu.dasish.annotation.schema.Principal;
 import java.util.List;
@@ -57,9 +58,7 @@ public interface PrincipalDao extends ResourceDao{
     
      public Number addPrincipal(Principal principal, String remoteID) throws NotInDataBaseException;
      
-     public int deletePrincipal(Number intenralID);
+     public int deletePrincipal(Number intenralID) throws PrincipalCannotBeDeleted;
      
-     public int deletePrincipalSafe(Number internalID);
-  
      
 }

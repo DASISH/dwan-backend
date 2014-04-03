@@ -60,7 +60,7 @@ public class DebugResource extends ResourceResource {
             return new ObjectFactory().createAnnotationInfoList(annotationInfoList);
         } else {
             verboseOutput.DEVELOPER_RIGHTS_EXPECTED();
-            return new ObjectFactory().createAnnotationInfoList(new AnnotationInfoList());
+            throw new HTTPException(HttpServletResponse.SC_FORBIDDEN);
         }
     }
 
@@ -75,7 +75,7 @@ public class DebugResource extends ResourceResource {
             return logFile("eu.dasish.annotation.backend.logDatabaseLocation", n);
         } else {
             verboseOutput.DEVELOPER_RIGHTS_EXPECTED();
-            return " ";
+            throw new HTTPException(HttpServletResponse.SC_FORBIDDEN);
         }
     }
 
@@ -99,7 +99,7 @@ public class DebugResource extends ResourceResource {
             return logFile("eu.dasish.annotation.backend.logServerLocation", n);
         } else {
             verboseOutput.DEVELOPER_RIGHTS_EXPECTED();
-            return " ";
+           throw new HTTPException(HttpServletResponse.SC_FORBIDDEN);
 
         }
     }
@@ -121,7 +121,7 @@ public class DebugResource extends ResourceResource {
             }
         } else {
             verboseOutput.ADMIN_RIGHTS_EXPECTED(dbIntegrityService.getDataBaseAdmin().getDisplayName(), dbIntegrityService.getDataBaseAdmin().getEMail());
-            return " ";
+            throw new HTTPException(HttpServletResponse.SC_FORBIDDEN);
         }
 
     }

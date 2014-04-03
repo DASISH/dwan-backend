@@ -67,6 +67,7 @@ public class TestInstances {
 
         upL.getPermission().add(up1);
         upL.getPermission().add(up2);
+        upL.setPublic(Access.WRITE);
 
         TargetInfo target1 = new TargetInfo();
         target1.setLink("http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia");

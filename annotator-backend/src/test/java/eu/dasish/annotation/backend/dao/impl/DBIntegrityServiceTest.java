@@ -18,6 +18,7 @@
 package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.NotInDataBaseException;
+import eu.dasish.annotation.backend.PrincipalCannotBeDeleted;
 import eu.dasish.annotation.backend.PrincipalExists;
 import eu.dasish.annotation.backend.Resource;
 import eu.dasish.annotation.backend.TestBackendConstants;
@@ -911,7 +912,7 @@ public class DBIntegrityServiceTest {
 
     //////////////////// DELETERS ////////////////
     @Test
-    public void testDeletePrincipal() {
+    public void testDeletePrincipal() throws PrincipalCannotBeDeleted{
         System.out.println("test deletePrincipal");
 
         mockeryDao.checking(new Expectations() {
