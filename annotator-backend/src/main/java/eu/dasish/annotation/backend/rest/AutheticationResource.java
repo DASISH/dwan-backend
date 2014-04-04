@@ -18,12 +18,10 @@
 package eu.dasish.annotation.backend.rest;
 
 import eu.dasish.annotation.backend.NotInDataBaseException;
-import eu.dasish.annotation.backend.NotLoggedInException;
 import eu.dasish.annotation.schema.ObjectFactory;
 import eu.dasish.annotation.schema.Principal;
 import java.io.IOException;
 import java.sql.SQLException;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -31,7 +29,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.xml.bind.JAXBElement;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.ws.http.HTTPException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,7 +45,7 @@ public class AutheticationResource extends ResourceResource {
     @Produces(MediaType.TEXT_XML)
     @Path("principal")
     @Transactional(readOnly = true)
-    public JAXBElement<Principal> getCurrentPrincipal() throws IOException{
+    public JAXBElement<Principal> getCurrentPrincipal() throws IOException {
         Number principalID = this.getPrincipalID();
         return new ObjectFactory().createPrincipal(dbIntegrityService.getPrincipal(principalID));
     }
@@ -60,20 +57,22 @@ public class AutheticationResource extends ResourceResource {
     @Produces(MediaType.TEXT_XML)
     @Path("login")
     @Transactional(readOnly = true)
-    public JAXBElement<Principal> loginAndGet() throws IOException{
+    public JAXBElement<Principal> loginAndGet() throws IOException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         String remotePrincipal = httpServletRequest.getRemoteUser();
-        verboseOutput = new VerboseOutput(httpServletResponse, loggerServer);
+        verboseOutput = new VerboseOutput(loggerServer);
         if (!remotePrincipal.equals("anonymous")) {
             try {
-            final Number remotePrincipalID = dbIntegrityService.getPrincipalInternalIDFromRemoteID(remotePrincipal);
-            return new ObjectFactory().createPrincipal(dbIntegrityService.getPrincipal(remotePrincipalID));
+                final Number remotePrincipalID = dbIntegrityService.getPrincipalInternalIDFromRemoteID(remotePrincipal);
+                return new ObjectFactory().createPrincipal(dbIntegrityService.getPrincipal(remotePrincipalID));
             } catch (NotInDataBaseException e) {
-                verboseOutput.REMOTE_PRINCIPAL_NOT_FOUND(remotePrincipal);
-                throw new HTTPException(HttpServletResponse.SC_NOT_FOUND);
+                loggerServer.debug(e.toString());
+                httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e.toString());
+                return new ObjectFactory().createPrincipal(new Principal());
             }
         } else {
-            verboseOutput.ANONYMOUS_PRINCIPAL();
+            loggerServer.info("Shibboleth fall-back.  Logged in as 'anonymous' with no rights.");
+            httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED," Shibboleth fall-back.  Logged in as 'anonymous' with no rights.");
             return new ObjectFactory().createPrincipal(new Principal());
         }
     }

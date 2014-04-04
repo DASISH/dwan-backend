@@ -71,7 +71,8 @@ public class NotebookResource extends ResourceResource {
             return new ObjectFactory().createNotebookInfoList(notebookInfos);
         } else {
             verboseOutput.INVALID_ACCESS_MODE(accessMode);
-            throw new HTTPException(HttpServletResponse.SC_BAD_REQUEST);
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "ivalide mode acess " + accessMode);
+            return new ObjectFactory().createNotebookInfoList(new NotebookInfoList());
         }
     }
 
@@ -98,12 +99,14 @@ public class NotebookResource extends ResourceResource {
                 return new ObjectFactory().createReferenceList(principals);
             } else {
                 verboseOutput.FORBIDDEN_NOTEBOOK_READING(externalIdentifier, dbIntegrityService.getAnnotationOwner(notebookID).getDisplayName(), dbIntegrityService.getAnnotationOwner(notebookID).getEMail());
-                throw new HTTPException(HttpServletResponse.SC_FORBIDDEN);
+                httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
+                return new ObjectFactory().createReferenceList(new ReferenceList());
             }
 
         } catch (NotInDataBaseException e) {
-            verboseOutput.NOTEBOOK_NOT_FOUND(externalIdentifier);
-            throw new HTTPException(HttpServletResponse.SC_NOT_FOUND);
+            loggerServer.debug(e.toString());;
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e.toString());
+            return new ObjectFactory().createReferenceList(new ReferenceList());
         }
     }
 // Notebook and NotebookInfo (metadata) schemata may be changed
@@ -125,12 +128,14 @@ public class NotebookResource extends ResourceResource {
                 return new ObjectFactory().createNotebook(notebook);
             } else {
                 verboseOutput.FORBIDDEN_NOTEBOOK_READING(externalIdentifier, dbIntegrityService.getAnnotationOwner(notebookID).getDisplayName(), dbIntegrityService.getAnnotationOwner(notebookID).getEMail());
-                throw new HTTPException(HttpServletResponse.SC_FORBIDDEN);
+                httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
+                return new ObjectFactory().createNotebook(new Notebook());
             }
 
         } catch (NotInDataBaseException e) {
-            verboseOutput.NOTEBOOK_NOT_FOUND(" corrupted identifier (??) ");
-            throw new HTTPException(HttpServletResponse.SC_NOT_FOUND);
+            loggerServer.debug(e.toString());;
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e.toString());
+            return new ObjectFactory().createNotebook(new Notebook());
         }
     }
 
@@ -152,12 +157,14 @@ public class NotebookResource extends ResourceResource {
                 return new ObjectFactory().createReferenceList(annotations);
             } else {
                 verboseOutput.FORBIDDEN_NOTEBOOK_READING(externalIdentifier, dbIntegrityService.getAnnotationOwner(notebookID).getDisplayName(), dbIntegrityService.getAnnotationOwner(notebookID).getEMail());
-                throw new HTTPException(HttpServletResponse.SC_FORBIDDEN);
+                httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
+                return new ObjectFactory().createReferenceList(new ReferenceList());
             }
 
         } catch (NotInDataBaseException e) {
-            verboseOutput.NOTEBOOK_NOT_FOUND(externalIdentifier);
-            throw new HTTPException(HttpServletResponse.SC_NOT_FOUND);
+            loggerServer.debug(e.toString());
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e.toString());
+            return new ObjectFactory().createReferenceList(new ReferenceList());
         }
 
     }
@@ -172,7 +179,8 @@ public class NotebookResource extends ResourceResource {
         String notebookURI = notebookInfo.getRef();
         if (!(path + "notebook/" + externalIdentifier).equals(notebookURI)) {
             verboseOutput.IDENTIFIER_MISMATCH(externalIdentifier);
-            throw new HTTPException(HttpServletResponse.SC_BAD_REQUEST);
+            httpServletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            return new ObjectFactory().createResponseBody(new ResponseBody());
         };
         try {
             final Number notebookID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.NOTEBOOK);
@@ -182,19 +190,24 @@ public class NotebookResource extends ResourceResource {
                     if (success) {
                         return new ObjectFactory().createResponseBody(dbIntegrityService.makeNotebookResponseEnvelope(notebookID));
                     } else {
-                        throw new HTTPException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                        httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                        return new ObjectFactory().createResponseBody(new ResponseBody());
                     }
                 } else {
                     verboseOutput.FORBIDDEN_ACCESS_CHANGING(externalIdentifier, dbIntegrityService.getAnnotationOwner(notebookID).getDisplayName(), dbIntegrityService.getAnnotationOwner(notebookID).getEMail());
                     loggerServer.debug(" Ownership changing is the part of the full update of the notebook metadadata.");
-                    throw new HTTPException(HttpServletResponse.SC_FORBIDDEN);
+                    httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
+                    return new ObjectFactory().createResponseBody(new ResponseBody());
                 }
             } catch (NotInDataBaseException e1) {
-                throw new HTTPException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                loggerServer.debug(e1.toString());
+                httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e1.toString());
+                return new ObjectFactory().createResponseBody(new ResponseBody());
             }
         } catch (NotInDataBaseException e) {
-            verboseOutput.NOTEBOOK_NOT_FOUND(externalIdentifier);
-            throw new HTTPException(HttpServletResponse.SC_NOT_FOUND);
+            loggerServer.debug(e.toString());
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e.toString());
+            return new ObjectFactory().createResponseBody(new ResponseBody());
         }
     }
 }

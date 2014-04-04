@@ -67,7 +67,7 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
     public List<Map<Number, String>> getPermissions(Number notebookID) {
 
         StringBuilder sql = new StringBuilder("SELECT ");
-        sql.append(principal_id).append(",").append(access).append(" FROM ").append(notebookAccesssTableName).append(" WHERE ").append(notebook_id).append("  = ?");
+        sql.append(principal_id).append(",").append(access).append(" FROM ").append(notebookPermissionsTableName).append(" WHERE ").append(notebook_id).append("  = ?");
         return this.loggedQuery(sql.toString(), principalsAccesssRowMapper, notebookID);
     }
 
@@ -78,7 +78,7 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
         params.put("principalID", principalID);
         params.put("accessMode", access.value());
         StringBuilder sql = new StringBuilder("SELECT ");
-        sql.append(notebook_id).append(" FROM ").append(notebookAccesssTableName).append(" WHERE ").
+        sql.append(notebook_id).append(" FROM ").append(notebookPermissionsTableName).append(" WHERE ").
                 append(principal_id).append(" = :principalID AND ").append(this.access).append(" = :accessMode");
         return this.loggedQuery(sql.toString(), internalIDRowMapper, params);
     }
@@ -208,7 +208,7 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
         params.put("access", access.value());
 
         StringBuilder sql = new StringBuilder("UPDATE ");
-        sql.append(notebookAccesssTableName).append(" SET ").
+        sql.append(notebookPermissionsTableName).append(" SET ").
                 append(this.access).append("= :access ").
                 append(" WHERE ").append(notebook_id).append("= :notebookID AND ").
                 append(principal_id).append("= :principalID");
@@ -272,7 +272,7 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
         params.put("access", access.value());
 
         StringBuilder sql = new StringBuilder("INSERT INTO ");
-        sql.append(notebookAccesssTableName).append("(").append(notebook_id).append(",").append(principal_id);
+        sql.append(notebookPermissionsTableName).append("(").append(notebook_id).append(",").append(principal_id);
         sql.append(",").append(this.access).
                 append(" ) VALUES (:notebookID, :principalID, :access)");
         int affectedRows = this.loggedUpdate(sql.toString(), params);
@@ -306,7 +306,7 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
         params.put("notebookID", notebookID);
         params.put("principalID", principalID);
         StringBuilder sqlAccesss = new StringBuilder("DELETE FROM ");
-        sqlAccesss.append(notebookAccesssTableName).append(" WHERE ").append(notebook_id).append(" = :notebookID AND ").
+        sqlAccesss.append(notebookPermissionsTableName).append(" WHERE ").append(notebook_id).append(" = :notebookID AND ").
                 append(principal_id).append(" = :principalID");
         int affectedRows = this.loggedUpdate(sqlAccesss.toString(), params);
         return (affectedRows > 0);
@@ -326,7 +326,7 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
     public boolean deleteAllAccesssForNotebook(Number notebookID) {
 
         StringBuilder sqlAccesss = new StringBuilder("DELETE FROM ");
-        sqlAccesss.append(notebookAccesssTableName).append(" WHERE ").append(notebook_id).append(" = ? ");
+        sqlAccesss.append(notebookPermissionsTableName).append(" WHERE ").append(notebook_id).append(" = ? ");
         int affectedRows = this.loggedUpdate(sqlAccesss.toString(), notebookID);
         return (affectedRows > 0);
 

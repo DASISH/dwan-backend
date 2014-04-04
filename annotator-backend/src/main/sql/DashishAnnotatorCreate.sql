@@ -121,14 +121,14 @@ CREATE TABLE targets_cached_representations (
 
 
 
-CREATE TABLE annotations_principals_accesss (
+CREATE TABLE annotations_principals_accesses (
 annotation_id integer REFERENCES annotation(annotation_id) NOT NULL,
 principal_id integer REFERENCES principal(principal_id) NOT NULL,
 access_  text REFERENCES access(access_mode) NOT NULL,
 unique(annotation_id, principal_id)
 );
 
-CREATE TABLE notebooks_principals_accesss (
+CREATE TABLE notebooks_principals_accesses (
 notebook_id integer REFERENCES notebook(notebook_id) NOT NULL,
 principal_id integer REFERENCES principal(principal_id) NOT NULL,
 access_  text REFERENCES access(access_mode) NOT NULL,

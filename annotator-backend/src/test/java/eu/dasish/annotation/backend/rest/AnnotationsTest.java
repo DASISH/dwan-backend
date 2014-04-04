@@ -25,26 +25,24 @@ import com.sun.jersey.spi.spring.container.servlet.SpringServlet;
 import com.sun.jersey.test.framework.AppDescriptor;
 import com.sun.jersey.test.framework.JerseyTest;
 import com.sun.jersey.test.framework.WebAppDescriptor;
+import eu.dasish.annotation.backend.Helpers;
+import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.TestInstances;
 import eu.dasish.annotation.backend.dao.impl.JdbcResourceDaoTest;
 import eu.dasish.annotation.schema.Access;
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationBody;
 import eu.dasish.annotation.schema.AnnotationBody.TextBody;
+import eu.dasish.annotation.schema.AnnotationBody.XmlBody;
 import eu.dasish.annotation.schema.ObjectFactory;
-import eu.dasish.annotation.schema.PermissionList;
 import eu.dasish.annotation.schema.ResponseBody;
-import eu.dasish.annotation.schema.TargetInfo;
-import eu.dasish.annotation.schema.TargetInfoList;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.URISyntaxException;
-import java.sql.SQLException;
-import java.util.UUID;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.xml.bind.JAXBElement;
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Before;
@@ -56,6 +54,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.request.RequestContextListener;
+import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
 
 /**
  *
@@ -111,7 +111,7 @@ public class AnnotationsTest extends JerseyTest {
      * api/annotations/<aid>
      */
     @Test
-    public void testGetAnnotation() throws SQLException, DatatypeConfigurationException {
+    public void testGetAnnotation() throws NotInDataBaseException, IOException {
         
         // Authentication  
         Builder responseBuilderAu = getAuthenticatedResource(resource().path("authentication/login")).accept(MediaType.TEXT_XML);        
@@ -135,6 +135,7 @@ public class AnnotationsTest extends JerseyTest {
         assertEquals(testAnnotation.getBody().getTextBody().getBody(), entity.getBody().getTextBody().getBody());
         assertEquals(testAnnotation.getHeadline(), entity.getHeadline());
         assertEquals(testAnnotation.getOwnerRef(), entity.getOwnerRef());
+        assertEquals(Access.WRITE, entity.getPermissions().getPublic());
         assertEquals(3, entity.getPermissions().getPermission().size());
         assertEquals("write", entity.getPermissions().getPermission().get(0).getLevel().value());
         assertEquals(resource().getURI()+"principals/"+"00000000-0000-0000-0000-000000000112", entity.getPermissions().getPermission().get(0).getPrincipalRef()); 
@@ -154,7 +155,7 @@ public class AnnotationsTest extends JerseyTest {
      * <nid>. DELETE api/annotations/<aid>
      */
     @Test
-    public void testDeleteAnnotation() throws SQLException {
+    public void testDeleteAnnotation() {
         
           
         // Authentication  
@@ -179,7 +180,7 @@ public class AnnotationsTest extends JerseyTest {
      * api/annotations/
      */
     @Test
-    public void testCreateAnnotation() throws InstantiationException, IllegalAccessException, DatatypeConfigurationException{
+    public void testCreateAnnotation() throws NotInDataBaseException, IOException{
         
           
         // Authentication  
@@ -191,60 +192,116 @@ public class AnnotationsTest extends JerseyTest {
         // Adding annotation
         System.out.println("test createAnnotation");
         System.out.println("POST "+resource().getURI().toString()+"annotations/");
-        final String ownerString = resource().getURI().toString()+"principals/"+"00000000-0000-0000-0000-000000000113";
-        final Annotation annotationToAdd = new Annotation();
+        final Annotation annotationToAdd = (new TestInstances(this.getBaseURI().toString())).getAnnotationToAdd();
         final JAXBElement<Annotation> jaxbElement = (new ObjectFactory()).createAnnotation(annotationToAdd);
-        annotationToAdd.setPermissions(null);
-        annotationToAdd.setOwnerRef(ownerString);
-        annotationToAdd.setURI(resource().getURI().toString()+"annotations/"+ UUID.randomUUID().toString());        
-        annotationToAdd.setLastModified(DatatypeFactory.newInstance().newXMLGregorianCalendar("2013-08-12T09:25:00.383000Z"));        
-        
-        TargetInfoList targetInfoList = new TargetInfoList();
-        annotationToAdd.setTargets(targetInfoList);
-        TargetInfo targetInfo = new TargetInfo();
-        targetInfo.setLink("http://nl.wikipedia.org/wiki/Viktor_Janoekovytsj#Biografie");
-        targetInfo.setRef(resource().getURI().toString()+"targets/"+UUID.randomUUID().toString());
-        targetInfo.setVersion("5 apr 2013 om 18:42");
-        targetInfoList.getTargetInfo().add(targetInfo);       
-        
-        AnnotationBody annotationBody = new AnnotationBody();
-        annotationBody.setXmlBody(null);
-        TextBody textBody = new TextBody();
-        textBody.setMimeType("plain/text");
-        textBody.setBody("yanuk - zek");
-        annotationBody.setTextBody(textBody);
-        annotationToAdd.setBody(annotationBody);
-        
-        PermissionList permissions = new PermissionList();
-        permissions.setPublic(Access.WRITE);
-        annotationToAdd.setPermissions(permissions);
-      
+       
         Builder responseBuilder = getAuthenticatedResource(resource().path("annotations/")).type(MediaType.APPLICATION_XML).accept(MediaType.APPLICATION_XML);        
         ClientResponse response = responseBuilder.post(ClientResponse.class, jaxbElement);
         assertEquals(200, response.getStatus());
         
         ResponseBody entity = response.getEntity(ResponseBody.class);        
         Annotation entityA = entity.getAnnotation();
-        assertEquals(annotationToAdd.getBody().getTextBody().getBody(), entityA.getBody().getTextBody().getBody());
-        assertEquals(annotationToAdd.getBody().getTextBody().getMimeType(), entityA.getBody().getTextBody().getMimeType());
-        assertEquals(annotationToAdd.getHeadline(), entityA.getHeadline());
+        assertEquals("<html><body>some html 3</body></html>", entityA.getBody().getTextBody().getBody());
+        assertEquals("text/plain", entityA.getBody().getTextBody().getMimeType());
+        assertEquals("Annotation to add to test DAO", entityA.getHeadline());
         assertEquals(0, entityA.getPermissions().getPermission().size());
-        assertEquals(annotationToAdd.getOwnerRef(), entityA.getOwnerRef());
-        assertEquals(annotationToAdd.getTargets().getTargetInfo().get(0).getLink(), entityA.getTargets().getTargetInfo().get(0).getLink());
-        // new ref is generated
-        //assertEquals(annotationToAdd.getTargets().getTargetInfo().get(0).getPrincipalRef(), entityA.getTargets().getTargetInfo().get(0).getPrincipalRef());
-        assertEquals(annotationToAdd.getTargets().getTargetInfo().get(0).getVersion(), entityA.getTargets().getTargetInfo().get(0).getVersion());
-        //last modified is updated by the server
-        //assertEquals(annotationToAdd.getLastModified(), entityA.getLastModified());
-        assertEquals(annotationToAdd.getOwnerRef(), entityA.getOwnerRef());
         assertEquals(Access.WRITE, entityA.getPermissions().getPublic());
+        assertEquals(this.getBaseURI() + "principals/00000000-0000-0000-0000-000000000113", entityA.getOwnerRef());
+        assertEquals("http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia#de_Opdracht", entityA.getTargets().getTargetInfo().get(0).getLink());
+        assertEquals(this.getBaseURI()+ "targets/00000000-0000-0000-0000-000000000031", entityA.getTargets().getTargetInfo().get(0).getRef());
+        assertEquals("version 1.0", entityA.getTargets().getTargetInfo().get(0).getVersion());
+        
     }
     
     
    
+    
+    @Test
+    public void testUpdateAnnotation() throws NotInDataBaseException, IOException{
+        
+          
+        // Authentication  
+        Builder responseBuilderAu = getAuthenticatedResource(resource().path("authentication/login")).accept(MediaType.TEXT_XML);        
+        ClientResponse responseAu = responseBuilderAu.get(ClientResponse.class); 
+        assertEquals(200, responseAu.getStatus());
+        
+        
+        // updating annotation
+        System.out.println("test updateAnnotation");
+        System.out.println("PUT "+resource().getURI().toString()+"annotations/00000000-0000-0000-0000-000000000021");
+        Annotation annotation = (new TestInstances(this.getBaseURI().toString())).getAnnotationOne();
+        annotation.getPermissions().setPublic(Access.READ);
+        annotation.setHeadline("updated annotation 1");
+        annotation.getPermissions().getPermission().get(1).setLevel(Access.WRITE);
+        AnnotationBody ab = new AnnotationBody();
+        TextBody tb = new TextBody();
+        ab.setTextBody(tb);
+        tb.setMimeType("text/plain");
+        tb.setBody("some text body l");
+        annotation.setBody(ab);
+        final JAXBElement<Annotation> jaxbElement = (new ObjectFactory()).createAnnotation(annotation);
+       
+        Builder responseBuilder = getAuthenticatedResource(resource().path("annotations/00000000-0000-0000-0000-000000000021")).type(MediaType.APPLICATION_XML).accept(MediaType.APPLICATION_XML);        
+        ClientResponse response = responseBuilder.put(ClientResponse.class, jaxbElement);
+        assertEquals(200, response.getStatus());
+        
+        ResponseBody entity = response.getEntity(ResponseBody.class);        
+        Annotation entityA = entity.getAnnotation();
+        assertEquals("some text body l", entityA.getBody().getTextBody().getBody());
+        assertEquals("text/plain", entityA.getBody().getTextBody().getMimeType());
+        assertEquals("updated annotation 1", entityA.getHeadline());
+        assertEquals(2, entityA.getPermissions().getPermission().size());
+        assertEquals(Access.READ, entityA.getPermissions().getPublic());
+        assertEquals(this.getBaseURI() + "principals/00000000-0000-0000-0000-000000000111", entityA.getOwnerRef());
+        assertEquals("http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia#de_Opdracht", entityA.getTargets().getTargetInfo().get(0).getLink());
+        assertEquals(this.getBaseURI()+ "targets/00000000-0000-0000-0000-000000000031", entityA.getTargets().getTargetInfo().get(0).getRef());
+        
+    }
+    
+    @Test
+    public void testUpdateAnnotationBody() throws NotInDataBaseException, IOException, ParserConfigurationException, SAXException{
+        
+          
+        // Authentication  
+        Builder responseBuilderAu = getAuthenticatedResource(resource().path("authentication/login")).accept(MediaType.TEXT_XML);        
+        ClientResponse responseAu = responseBuilderAu.get(ClientResponse.class); 
+        assertEquals(200, responseAu.getStatus());
+        
+        
+        // updating annotation
+        System.out.println("test updateAnnotation");
+        System.out.println("PUT "+resource().getURI().toString()+"annotations/00000000-0000-0000-0000-000000000021/body");
+        AnnotationBody ab = new AnnotationBody();
+        XmlBody xmlb = new XmlBody();
+        ab.setXmlBody(xmlb);
+        xmlb.setMimeType("text/xml");
+        String testXml = "<span style=\"background-color:rgb(0,0,153);color:rgb(255,255,255);border: thick solid rgb(0, 0, 153);\">test</span>";
+        Element el = Helpers.stringToElement(testXml);
+        xmlb.setAny(el);
+        final JAXBElement<AnnotationBody> jaxbElement = (new ObjectFactory()).createAnnotationBody(ab);
+       
+        
+        Builder responseBuilder = getAuthenticatedResource(resource().path("annotations/00000000-0000-0000-0000-000000000021/body")).type(MediaType.APPLICATION_XML).accept(MediaType.APPLICATION_XML);        
+        ClientResponse response = responseBuilder.put(ClientResponse.class, jaxbElement);
+        assertEquals(200, response.getStatus());
+        
+        ResponseBody entity = response.getEntity(ResponseBody.class);        
+        Annotation entityA = entity.getAnnotation();
+        assertEquals("test", entityA.getBody().getXmlBody().getAny().getTextContent());
+        assertEquals("span", entityA.getBody().getXmlBody().getAny().getNodeName());
+        assertEquals("background-color:rgb(0,0,153);color:rgb(255,255,255);border: thick solid rgb(0, 0, 153);", entityA.getBody().getXmlBody().getAny().getAttribute("style"));
+        
+        assertEquals("text/xml", entityA.getBody().getXmlBody().getMimeType());
+        assertEquals("Sagrada Famiglia", entityA.getHeadline());
+        assertEquals(3, entityA.getPermissions().getPermission().size());
+        assertEquals(Access.WRITE , entityA.getPermissions().getPublic());
+        assertEquals(this.getBaseURI() + "principals/00000000-0000-0000-0000-000000000111", entityA.getOwnerRef());
+        assertEquals("http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia#de_Opdracht", entityA.getTargets().getTargetInfo().get(0).getLink());
+        assertEquals(this.getBaseURI()+ "targets/00000000-0000-0000-0000-000000000031", entityA.getTargets().getTargetInfo().get(0).getRef());
+        
+    }
+   
     protected Builder getAuthenticatedResource(WebResource resource) {
 	return resource.header(HttpHeaders.AUTHORIZATION, "Basic "  + new String(Base64.encode(DummyPrincipal.DUMMY_PRINCIPAL.getName()+":olhapassword")));
     }
-    
-    
 }

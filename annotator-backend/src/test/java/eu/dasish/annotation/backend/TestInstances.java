@@ -89,8 +89,8 @@ public class TestInstances {
         Annotation result = makeAnnotation(baseURI, "<html><body>some html 3</body></html>", "text/plain", "Annotation to add to test DAO", "00000000-0000-0000-0000-000000000113");
 
         TargetInfo TargetInfo = new TargetInfo();
-        TargetInfo.setLink("http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia");
-        TargetInfo.setRef(TestBackendConstants._TEST_SERVLET_URI_targets + "00000000-0000-0000-0000-000000000031");
+        TargetInfo.setLink("http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia#de_Opdracht");
+        TargetInfo.setRef(baseURI+  "targets/00000000-0000-0000-0000-000000000031");
         TargetInfo.setVersion("version 1.0");
 
         TargetInfoList targetInfos = new TargetInfoList();

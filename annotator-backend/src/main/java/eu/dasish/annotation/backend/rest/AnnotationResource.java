@@ -19,7 +19,6 @@ package eu.dasish.annotation.backend.rest;
 
 import eu.dasish.annotation.backend.BackendConstants;
 import eu.dasish.annotation.backend.NotInDataBaseException;
-import eu.dasish.annotation.backend.NotLoggedInException;
 import eu.dasish.annotation.backend.Resource;
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationBody;
@@ -93,12 +92,14 @@ public class AnnotationResource extends ResourceResource {
                 return new ObjectFactory().createAnnotation(annotation);
             } else {
                 verboseOutput.FORBIDDEN_ANNOTATION_READING(externalIdentifier, dbIntegrityService.getAnnotationOwner(annotationID).getDisplayName(), dbIntegrityService.getAnnotationOwner(annotationID).getEMail());
-                throw new HTTPException(HttpServletResponse.SC_FORBIDDEN);
+                httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
+                return new ObjectFactory().createAnnotation(new Annotation());
             }
 
         } catch (NotInDataBaseException e2) {
-            verboseOutput.ANNOTATION_NOT_FOUND(externalIdentifier);
-            throw new HTTPException(HttpServletResponse.SC_NOT_FOUND);
+            loggerServer.debug(e2.toString());
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e2.toString());
+            return new ObjectFactory().createAnnotation(new Annotation());
         }
     }
 
@@ -117,12 +118,14 @@ public class AnnotationResource extends ResourceResource {
                 return new ObjectFactory().createTargetList(TargetList);
             } else {
                 verboseOutput.FORBIDDEN_ANNOTATION_READING(externalIdentifier, dbIntegrityService.getAnnotationOwner(annotationID).getDisplayName(), dbIntegrityService.getAnnotationOwner(annotationID).getEMail());
-                throw new HTTPException(HttpServletResponse.SC_FORBIDDEN);
+                httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
+                return new ObjectFactory().createReferenceList(new ReferenceList());
             }
 
         } catch (NotInDataBaseException e2) {
-            verboseOutput.ANNOTATION_NOT_FOUND(externalIdentifier);
-            throw new HTTPException(HttpServletResponse.SC_NOT_FOUND);
+            loggerServer.debug(e2.toString());
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e2.toString());
+            return new ObjectFactory().createReferenceList(new ReferenceList());
         }
     }
 // TODO Unit test 
@@ -146,13 +149,16 @@ public class AnnotationResource extends ResourceResource {
         }
         if (!Arrays.asList(admissibleAccess).contains(access)) {
             verboseOutput.INVALID_ACCESS_MODE(access);
-            throw new HTTPException(HttpServletResponse.SC_NOT_FOUND);
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "ivalide mode acess " + access);
+            return new ObjectFactory().createAnnotationInfoList(new AnnotationInfoList());
         }
         try {
             final AnnotationInfoList annotationInfoList = dbIntegrityService.getFilteredAnnotationInfos(ownerExternalUUID, link, text, principalID, access, namespace, after, before);
             return new ObjectFactory().createAnnotationInfoList(annotationInfoList);
         } catch (NotInDataBaseException e) {
-            throw new HTTPException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            loggerServer.debug(e.toString());
+            httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.toString());
+            return new ObjectFactory().createAnnotationInfoList(new AnnotationInfoList());
         }
     }
 // TODO Unit test    
@@ -170,12 +176,14 @@ public class AnnotationResource extends ResourceResource {
                 return new ObjectFactory().createPermissionList(permissionList);
             } else {
                 verboseOutput.FORBIDDEN_ANNOTATION_READING(externalIdentifier, dbIntegrityService.getAnnotationOwner(annotationID).getDisplayName(), dbIntegrityService.getAnnotationOwner(annotationID).getEMail());
-                throw new HTTPException(HttpServletResponse.SC_FORBIDDEN);
+                httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
+                return new ObjectFactory().createPermissionList(new PermissionList());
             }
 
         } catch (NotInDataBaseException e2) {
-            verboseOutput.ANNOTATION_NOT_FOUND(externalIdentifier);
-            throw new HTTPException(HttpServletResponse.SC_NOT_FOUND);
+            loggerServer.debug(e2.toString());
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e2.toString());
+            return new ObjectFactory().createPermissionList(new PermissionList());
         }
     }
 ///////////////////////////////////////////////////////
@@ -191,12 +199,14 @@ public class AnnotationResource extends ResourceResource {
                 return result[0] + " annotation(s) deleted.";
             } else {
                 verboseOutput.FORBIDDEN_ANNOTATION_DELETING(externalIdentifier, dbIntegrityService.getAnnotationOwner(annotationID).getDisplayName(), dbIntegrityService.getAnnotationOwner(annotationID).getEMail());
-                throw new HTTPException(HttpServletResponse.SC_FORBIDDEN);
+                httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
+                return "Nothings is deleted.";
             }
 
         } catch (NotInDataBaseException e2) {
-            verboseOutput.ANNOTATION_NOT_FOUND(externalIdentifier);
-            throw new HTTPException(HttpServletResponse.SC_NOT_FOUND);
+            loggerServer.debug(e2.toString());
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e2.toString());
+            return "Nothings is deleted.";
         }
     }
 
@@ -211,7 +221,9 @@ public class AnnotationResource extends ResourceResource {
             Number annotationID = dbIntegrityService.addPrincipalsAnnotation(principalID, annotation);
             return new ObjectFactory().createResponseBody(dbIntegrityService.makeAnnotationResponseEnvelope(annotationID));
         } catch (NotInDataBaseException e2) {
-            throw new HTTPException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            loggerServer.debug(e2.toString());
+            httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e2.toString());
+            return new ObjectFactory().createResponseBody(new ResponseBody());
         }
     }
 ///////////////////////////////////////////////////////
@@ -227,7 +239,8 @@ public class AnnotationResource extends ResourceResource {
         String annotationURI = annotation.getURI();
         if (!(path + "annotations/" + externalIdentifier).equals(annotationURI)) {
             verboseOutput.IDENTIFIER_MISMATCH(externalIdentifier);
-            throw new HTTPException(HttpServletResponse.SC_BAD_REQUEST);
+            httpServletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            return new ObjectFactory().createResponseBody(new ResponseBody());
         }
         try {
             final Number annotationID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.ANNOTATION);
@@ -238,14 +251,18 @@ public class AnnotationResource extends ResourceResource {
                 } else {
                     verboseOutput.FORBIDDEN_ACCESS_CHANGING(externalIdentifier, dbIntegrityService.getAnnotationOwner(annotationID).getDisplayName(), dbIntegrityService.getAnnotationOwner(annotationID).getEMail());
                     loggerServer.debug(" Access changing is the part of the full update of the annotation.");
-                    throw new HTTPException(HttpServletResponse.SC_FORBIDDEN);
+                    httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
+                    return new ObjectFactory().createResponseBody(new ResponseBody());
                 }
             } catch (NotInDataBaseException e) {
-                throw new HTTPException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                loggerServer.debug(e.toString());
+                httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.toString());
+                return new ObjectFactory().createResponseBody(new ResponseBody());
             }
         } catch (NotInDataBaseException e2) {
-            verboseOutput.ANNOTATION_NOT_FOUND(externalIdentifier);
-            throw new HTTPException(HttpServletResponse.SC_NOT_FOUND);
+            loggerServer.debug(e2.toString());
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e2.toString());
+            return new ObjectFactory().createResponseBody(new ResponseBody());
         }
     }
 
@@ -262,11 +279,13 @@ public class AnnotationResource extends ResourceResource {
                 return new ObjectFactory().createResponseBody(dbIntegrityService.makeAnnotationResponseEnvelope(annotationID));
             } else {
                 verboseOutput.FORBIDDEN_ANNOTATION_BODY_WRITING(externalIdentifier, dbIntegrityService.getAnnotationOwner(annotationID).getDisplayName(), dbIntegrityService.getAnnotationOwner(annotationID).getEMail());
-                throw new HTTPException(HttpServletResponse.SC_FORBIDDEN);
+                httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
+                return new ObjectFactory().createResponseBody(new ResponseBody());
             }
         } catch (NotInDataBaseException e2) {
-            verboseOutput.ANNOTATION_NOT_FOUND(externalIdentifier);
-            throw new HTTPException(HttpServletResponse.SC_NOT_FOUND);
+            loggerServer.debug(e2.toString());
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e2.toString());
+            return new ObjectFactory().createResponseBody(new ResponseBody());
         }
     }
 
@@ -286,16 +305,19 @@ public class AnnotationResource extends ResourceResource {
                     return result + " rows are updated/added";
                 } else {
                     verboseOutput.FORBIDDEN_ACCESS_CHANGING(annotationExternalId, dbIntegrityService.getAnnotationOwner(annotationID).getDisplayName(), dbIntegrityService.getAnnotationOwner(annotationID).getEMail());
-                    throw new HTTPException(HttpServletResponse.SC_FORBIDDEN);
+                    httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
+                    return "Nothing is updated.";
                 }
 
             } catch (NotInDataBaseException e1) {
-                verboseOutput.ANNOTATION_NOT_FOUND(annotationExternalId);
-                throw new HTTPException(HttpServletResponse.SC_NOT_FOUND);
+                loggerServer.debug(e1.toString());
+                httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e1.toString());
+                return "Nothing is updated.";
             }
         } catch (NotInDataBaseException e2) {
-            verboseOutput.PRINCIPAL_NOT_FOUND(principalExternalId);
-            throw new HTTPException(HttpServletResponse.SC_NOT_FOUND);
+            loggerServer.debug(e2.toString());
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e2.toString());
+            return "Nothing is updated.";
         }
     }
 
@@ -313,14 +335,18 @@ public class AnnotationResource extends ResourceResource {
                     return new ObjectFactory().createResponseBody(dbIntegrityService.makeAccessResponseEnvelope(annotationID, Resource.ANNOTATION));
                 } else {
                     verboseOutput.FORBIDDEN_ACCESS_CHANGING(annotationExternalId, dbIntegrityService.getAnnotationOwner(annotationID).getDisplayName(), dbIntegrityService.getAnnotationOwner(annotationID).getEMail());
-                    throw new HTTPException(HttpServletResponse.SC_FORBIDDEN);
+                    httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
+                    return new ObjectFactory().createResponseBody(new ResponseBody());
                 }
             } catch (NotInDataBaseException e) {
-                throw new HTTPException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                loggerServer.debug(e.toString());
+                httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.toString());
+                return new ObjectFactory().createResponseBody(new ResponseBody());
             }
         } catch (NotInDataBaseException e2) {
-            verboseOutput.ANNOTATION_NOT_FOUND(annotationExternalId);
-            throw new HTTPException(HttpServletResponse.SC_NOT_FOUND);
+            loggerServer.debug(e2.toString());;
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e2.toString());
+            return new ObjectFactory().createResponseBody(new ResponseBody());
         }
     }
 
@@ -340,14 +366,18 @@ public class AnnotationResource extends ResourceResource {
                     return (deletedRows + " is deleted.");
                 } else {
                     verboseOutput.FORBIDDEN_ACCESS_CHANGING(annotationId, dbIntegrityService.getAnnotationOwner(annotationID).getDisplayName(), dbIntegrityService.getAnnotationOwner(annotationID).getEMail());
-                    throw new HTTPException(HttpServletResponse.SC_FORBIDDEN);
+                    httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
+                    return "Nothing is deleted.";
                 }
             } catch (NotInDataBaseException e) {
-                throw new HTTPException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                loggerServer.debug(e.toString());
+                httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.toString());
+                return "Nothing is deleted.";
             }
         } catch (NotInDataBaseException e2) {
-            verboseOutput.ANNOTATION_NOT_FOUND(annotationId);
-            throw new HTTPException(HttpServletResponse.SC_NOT_FOUND);
+            loggerServer.debug(e2.toString());
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e2.toString());
+            return "Nothing is deleted.";
         }
     }
 }

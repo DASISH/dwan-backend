@@ -28,18 +28,18 @@
          <br> 
         <a href="api/authentication/logout"> logout</a> <br> 
         <br> 
-        <a href="api/"> Bienvenue </a> <br> 
+        <a href="api"> Bienvenue </a> <br> 
         <br>
         
         <b>Test URI-s</b><br>
         <b>All output xml-s are valid w.r.t. the schema</b><br>
-        GET <a href="api/authentication/user">api/authentication/user</a> <br> 
-        GET <a href="api/users/admin">api/users/admin</a><br> 
-        GET <a href="api/users/00000000-0000-0000-0000-0000000000112">api/users/00000000-0000-0000-0000-0000000000112</a> <br> 
-        GET <a href="api/users/00000000-0000-0000-0000-0000000000112/current">api/users/00000000-0000-0000-0000-0000000000112/current</a>  !Problem: how to ask the servlet if the given user is logged in, may be by some other running somewhere client<br> 
-        GET <a href="api/users/info?email=Twan.Goosen@mpi.nl">api/users/info?email=Twan.Goosen@mpi.nl</a>  <br>
-        GET <a href="api/annotations?link=Sagrada">api/annotations/info?link=Sagrada</a>  <br>
-        GET <a href="api/annotations?link=Gaud">api/annotations/info?link=Gaud</a>  <br>
+        GET <a href="api/authentication/principal">api/authentication/principal</a> <br> 
+        GET <a href="api/principals/admin">api/principals/admin</a><br> 
+        GET <a href="api/principals/00000000-0000-0000-0000-0000000000112">api/principals/00000000-0000-0000-0000-0000000000112</a> <br> 
+        GET <a href="api/principals/00000000-0000-0000-0000-0000000000112/current">api/principals/00000000-0000-0000-0000-0000000000112/current</a>  !Problem: how to ask the servlet if the given user is logged in, may be by some other running somewhere client<br> 
+        GET <a href="api/principals/info?email=Twan.Goosen@mpi.nl">api/principals/info?email=Twan.Goosen@mpi.nl</a>  <br>
+        GET <a href="api/annotations?link=Sagrada">api/annotations?link=Sagrada</a>  <br>
+        GET <a href="api/annotations?link=Gaud">api/annotations?link=Gaud</a>  <br>
         GET <a href="api/annotations?after=2014-02-04 15:57:58.046908&before=2014-02-06 10:08:16.213186">api/annotations?after=2014-02-04 15:57:58.046908&before=2014-04-06 10:08:16.213186</a> 
         !Comment: What is "namespace" query parameter? Must be implemented and tested <br>
         GET <a href="api/annotations/00000000-0000-0000-0000-000000000021">api/annotations/00000000-0000-0000-0000-000000000021</a>  </br>
