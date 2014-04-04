@@ -51,8 +51,8 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     final static protected String principalTableName = "principal";
     // joint tablenames
     final static protected String notebooksAnnotationsTableName = "notebooks_annotations";
-    final static protected String permissionsTableName = "annotations_principals_accesss";
-    final static protected String notebookAccesssTableName = "notebooks_principals_accesss";
+    final static protected String permissionsTableName = "annotations_principals_accesses";
+    final static protected String notebookPermissionsTableName = "notebooks_principals_accesses";
     final static protected String annotationsTargetsTableName = "annotations_targets";
     final static protected String targetsCachedRepresentationsTableName = "targets_cached_representations";
     // base string constants: field Names
@@ -165,7 +165,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
         sql.append(internalIdName).append(" FROM ").append(resourceTableName).append(" WHERE ").append(external_id).append("= ? LIMIT 1");
         List<Number> sqlResult = this.loggedQuery(sql.toString(), internalIDRowMapper, externalId.toString());
         if (sqlResult.isEmpty()) {
-            throw new NotInDataBaseException("resource", externalId.toString());
+            throw new NotInDataBaseException(resourceTableName, externalId.toString());
         }
 
         return sqlResult.get(0);
@@ -190,7 +190,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
             return this.getInternalID(externalUUID);
         } catch (IllegalArgumentException e) {
             _logger.debug(externalID + " is not a valid <uuid>.  Therefore, I expect that it is a temporary idendifier of a new resource that is not yet in the database and return null.");
-            throw new NotInDataBaseException("resource", externalID);
+            throw new NotInDataBaseException(resourceTableName, externalID);
         }
     }
 

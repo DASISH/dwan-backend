@@ -171,7 +171,7 @@ public class JdbcPrincipalDao extends JdbcResourceDao implements PrincipalDao {
         params.put("accessMode", access.value());
 
         StringBuilder sql = new StringBuilder("SELECT ");
-        sql.append(principal_id).append(" FROM ").append(notebookAccesssTableName).append(" WHERE ").
+        sql.append(principal_id).append(" FROM ").append(notebookPermissionsTableName).append(" WHERE ").
                 append(notebook_id).append(" = :notebookID AND ").append(this.access).append(" = :accessMode");
 
         return this.loggedQuery(sql.toString(), internalIDRowMapper, params);

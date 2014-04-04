@@ -72,8 +72,9 @@ public class PrincipalResource extends ResourceResource {
             final Principal principal = dbIntegrityService.getPrincipal(principalID);
             return new ObjectFactory().createPrincipal(principal);
         } catch (NotInDataBaseException e) {
-            verboseOutput.PRINCIPAL_NOT_FOUND(externalIdentifier);
-            throw new HTTPException(HttpServletResponse.SC_NOT_FOUND);
+            loggerServer.debug(e.toString());;
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e.toString());
+            return new ObjectFactory().createPrincipal(new Principal());
         }
 
     }
@@ -97,13 +98,13 @@ public class PrincipalResource extends ResourceResource {
             final Principal principal = dbIntegrityService.getPrincipalByInfo(email);
             return new ObjectFactory().createPrincipal(principal);
         } catch (NotInDataBaseException e) {
-            verboseOutput.PRINCIPAL_NOT_FOUND_BY_INFO(email);
-            throw new HTTPException(HttpServletResponse.SC_NOT_FOUND);
+            loggerServer.debug(e.toString());;
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e.toString());
+            return new ObjectFactory().createPrincipal(new Principal());
         }
 
     }
 
-    
     @GET
     @Produces(MediaType.TEXT_XML)
     @Path("{principalid}/current")
@@ -117,8 +118,9 @@ public class PrincipalResource extends ResourceResource {
             principalInfo.setCurrentPrincipal(this.ifLoggedIn(principalID));
             return new ObjectFactory().createCurrentPrincipalInfo(principalInfo);
         } catch (NotInDataBaseException e) {
-            verboseOutput.PRINCIPAL_NOT_FOUND(externalIdentifier);
-            throw new HTTPException(HttpServletResponse.SC_NOT_FOUND);
+            loggerServer.debug(e.toString());;
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e.toString());
+            return new ObjectFactory().createCurrentPrincipalInfo(new CurrentPrincipalInfo());
         }
 
     }
@@ -136,16 +138,19 @@ public class PrincipalResource extends ResourceResource {
                     final Principal addedPrincipal = dbIntegrityService.getPrincipal(principalID);
                     return new ObjectFactory().createPrincipal(addedPrincipal);
                 } catch (NotInDataBaseException e1) {
-                    verboseOutput.PRINCIPAL_IS_NOT_ADDED_TO_DB();
-                    throw new HTTPException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                    loggerServer.debug(e1.toString());
+                    httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e1.toString());
+                    return new ObjectFactory().createPrincipal(new Principal());
                 }
             } catch (PrincipalExists e) {
-                verboseOutput.PRINCIPAL_IS_NOT_ADDED_TO_DB();
-                throw new HTTPException(HttpServletResponse.SC_BAD_REQUEST);
+                loggerServer.debug(e.toString());
+                httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.toString());
+                return new ObjectFactory().createPrincipal(new Principal());
             }
         } else {
             verboseOutput.ADMIN_RIGHTS_EXPECTED();
-            throw new HTTPException(HttpServletResponse.SC_FORBIDDEN);
+            httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
+            return new ObjectFactory().createPrincipal(new Principal());
         }
 
     }
@@ -162,12 +167,14 @@ public class PrincipalResource extends ResourceResource {
                 final Principal addedPrincipal = dbIntegrityService.getPrincipal(principalID);
                 return new ObjectFactory().createPrincipal(addedPrincipal);
             } catch (NotInDataBaseException e) {
-                verboseOutput.PRINCIPAL_NOT_FOUND(principal.getURI());
-                throw new HTTPException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                loggerServer.debug(e.toString());;
+                httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.toString());
+                return new ObjectFactory().createPrincipal(new Principal());
             }
         } else {
             verboseOutput.ADMIN_RIGHTS_EXPECTED();
-            throw new HTTPException(HttpServletResponse.SC_FORBIDDEN);
+            httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
+            return new ObjectFactory().createPrincipal(new Principal());
         }
     }
 
@@ -182,20 +189,22 @@ public class PrincipalResource extends ResourceResource {
                 if (updated) {
                     return "The account was updated to " + dbIntegrityService.getTypeOfPrincipalAccount(dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalId), Resource.PRINCIPAL));
                 } else {
-                    verboseOutput.ACCOUNT_IS_NOT_UPDATED();
-                    throw new HTTPException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                    loggerServer.debug("The account is not updated.");
+                    httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Account is not updated.");
+                    return "Account is not updated.";
                 }
             } catch (NotInDataBaseException e) {
-                throw new HTTPException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                loggerServer.debug(e.toString());;
+                httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.toString());
+                return "Account is updated.";
             }
         } else {
             verboseOutput.ADMIN_RIGHTS_EXPECTED();
-            throw new HTTPException(HttpServletResponse.SC_FORBIDDEN);
+            httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
+            return "Account is not updated.";
         }
 
     }
-
-  
 
     @DELETE
     @Path("{principalId}")
@@ -205,19 +214,22 @@ public class PrincipalResource extends ResourceResource {
             try {
                 final Number principalID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.PRINCIPAL);
                 try {
-                final int result = dbIntegrityService.deletePrincipal(principalID);
-                return "There is " + result + " row deleted";
+                    final int result = dbIntegrityService.deletePrincipal(principalID);
+                    return "There is " + result + " row deleted";
                 } catch (PrincipalCannotBeDeleted e2) {
-                    verboseOutput.PRINCIPAL_CANNOT_BE_DELETED(externalIdentifier);
-                    throw new HTTPException(HttpServletResponse.SC_FORBIDDEN);
+                    loggerServer.debug(e2.toString());;
+                    httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e2.toString());
+                    return "Nothis is deleted.";
                 }
             } catch (NotInDataBaseException e) {
-                verboseOutput.PRINCIPAL_NOT_FOUND(externalIdentifier);
-                throw new HTTPException(HttpServletResponse.SC_NOT_FOUND);
+                loggerServer.debug(e.toString());;
+                httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e.toString());
+                return "Nothing is deleted.";
             }
         } else {
             verboseOutput.ADMIN_RIGHTS_EXPECTED();
-            throw new HTTPException(HttpServletResponse.SC_FORBIDDEN);
+            httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
+            return "Account is not updated.";
         }
 
     }

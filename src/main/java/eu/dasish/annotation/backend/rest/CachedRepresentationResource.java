@@ -69,8 +69,9 @@ public class CachedRepresentationResource extends ResourceResource {
             return new ObjectFactory().createCashedRepresentationInfo(cachedInfo);
 
         } catch (NotInDataBaseException e2) {
-            verboseOutput.CACHED_REPRESENTATION_NOT_FOUND(externalId);
-            throw new HTTPException(HttpServletResponse.SC_NOT_FOUND);
+            loggerServer.debug(e2.toString());
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e2.toString());
+            return new ObjectFactory().createCashedRepresentationInfo(new CachedRepresentationInfo());
         }
     }
 
@@ -89,16 +90,19 @@ public class CachedRepresentationResource extends ResourceResource {
                     BufferedImage result = ImageIO.read(dbRespond);
                     return result;
                 } catch (IOException e1) {
-                    throw new HTTPException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                    loggerServer.debug(e1.toString());
+                    httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e1.toString());
+                    return null;
                 }
             } else {
-                verboseOutput.CACHED_REPRESENTATION_IS_NULL();
+                loggerServer.info(" The cached representation with the id " + externalId + " has null blob.");
                 return null;
             }
 
         } catch (NotInDataBaseException e) {
-            verboseOutput.CACHED_REPRESENTATION_NOT_FOUND(externalId);
-            throw new HTTPException(HttpServletResponse.SC_NOT_FOUND);
+            loggerServer.debug(e.toString());
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e.toString());
+            return null;
         }
     }
 
@@ -114,13 +118,14 @@ public class CachedRepresentationResource extends ResourceResource {
             if (dbRespond != null) {
                 return dbRespond;
             } else {
-                verboseOutput.CACHED_REPRESENTATION_IS_NULL();
+                loggerServer.info("The cached representation with the id " + externalId + " has null blob.");
                 return null;
             }
 
         } catch (NotInDataBaseException e) {
-            verboseOutput.CACHED_REPRESENTATION_NOT_FOUND(externalId);
-            throw new HTTPException(HttpServletResponse.SC_NOT_FOUND);
+            loggerServer.debug(e.toString());;
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e.toString());
+            return null;
         }
     }
 }

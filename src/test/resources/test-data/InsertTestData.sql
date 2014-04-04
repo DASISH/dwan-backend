@@ -107,32 +107,32 @@ INSERT INTO targets_cached_representations (target_id,  cached_representation_id
 
 
 
-INSERT INTO annotations_principals_accesss (annotation_id, principal_id, access_) VALUES (1, 2, 'write');
-INSERT INTO annotations_principals_accesss (annotation_id, principal_id, access_) VALUES (1, 3, 'read');
-INSERT INTO annotations_principals_accesss (annotation_id, principal_id, access_) VALUES (1, 11, 'read');
+INSERT INTO annotations_principals_accesses (annotation_id, principal_id, access_) VALUES (1, 2, 'write');
+INSERT INTO annotations_principals_accesses (annotation_id, principal_id, access_) VALUES (1, 3, 'read');
+INSERT INTO annotations_principals_accesses (annotation_id, principal_id, access_) VALUES (1, 11, 'read');
 
-INSERT INTO annotations_principals_accesss (annotation_id, principal_id, access_) VALUES (2, 1, 'read');
-INSERT INTO annotations_principals_accesss (annotation_id, principal_id, access_) VALUES (2, 3, 'write');
+INSERT INTO annotations_principals_accesses (annotation_id, principal_id, access_) VALUES (2, 1, 'read');
+INSERT INTO annotations_principals_accesses (annotation_id, principal_id, access_) VALUES (2, 3, 'write');
 
-INSERT INTO annotations_principals_accesss (annotation_id, principal_id, access_) VALUES (3, 1, 'read');
-INSERT INTO annotations_principals_accesss (annotation_id, principal_id, access_) VALUES (3, 2, 'read');
+INSERT INTO annotations_principals_accesses (annotation_id, principal_id, access_) VALUES (3, 1, 'read');
+INSERT INTO annotations_principals_accesses (annotation_id, principal_id, access_) VALUES (3, 2, 'read');
 
-INSERT INTO annotations_principals_accesss (annotation_id, principal_id, access_) VALUES (4, 2, 'write');
-INSERT INTO annotations_principals_accesss (annotation_id, principal_id, access_) VALUES (4, 1, 'write');
+INSERT INTO annotations_principals_accesses (annotation_id, principal_id, access_) VALUES (4, 2, 'write');
+INSERT INTO annotations_principals_accesses (annotation_id, principal_id, access_) VALUES (4, 1, 'write');
 -- checking integrity control:
--- INSERT INTO annotations_principals_accesss (annotation_id, principal_id, access_) VALUES (5, 5, 'read');
+-- INSERT INTO annotations_principals_accesses (annotation_id, principal_id, access_) VALUES (5, 5, 'read');
 
- INSERT INTO notebooks_principals_accesss (notebook_id, principal_id, access_) VALUES (1, 2, 'write');
- INSERT INTO notebooks_principals_accesss (notebook_id, principal_id, access_) VALUES (1, 3, 'read');
- INSERT INTO notebooks_principals_accesss (notebook_id, principal_id, access_) VALUES (1, 4, 'write');
- INSERT INTO notebooks_principals_accesss (notebook_id, principal_id, access_) VALUES (1, 5, 'read');
- INSERT INTO notebooks_principals_accesss (notebook_id, principal_id, access_) VALUES (1, 11, 'read');
+ INSERT INTO notebooks_principals_accesses (notebook_id, principal_id, access_) VALUES (1, 2, 'write');
+ INSERT INTO notebooks_principals_accesses (notebook_id, principal_id, access_) VALUES (1, 3, 'read');
+ INSERT INTO notebooks_principals_accesses (notebook_id, principal_id, access_) VALUES (1, 4, 'write');
+ INSERT INTO notebooks_principals_accesses (notebook_id, principal_id, access_) VALUES (1, 5, 'read');
+ INSERT INTO notebooks_principals_accesses (notebook_id, principal_id, access_) VALUES (1, 11, 'read');
 
- INSERT INTO notebooks_principals_accesss (notebook_id, principal_id, access_) VALUES (2, 1, 'read');
- INSERT INTO notebooks_principals_accesss (notebook_id, principal_id, access_) VALUES (2, 3, 'write');
- INSERT INTO notebooks_principals_accesss (notebook_id, principal_id, access_) VALUES (2, 11, 'read');
+ INSERT INTO notebooks_principals_accesses (notebook_id, principal_id, access_) VALUES (2, 1, 'read');
+ INSERT INTO notebooks_principals_accesses (notebook_id, principal_id, access_) VALUES (2, 3, 'write');
+ INSERT INTO notebooks_principals_accesses (notebook_id, principal_id, access_) VALUES (2, 11, 'read');
 
 
- INSERT INTO notebooks_principals_accesss (notebook_id, principal_id, access_) VALUES (4, 2, 'write');
- INSERT INTO notebooks_principals_accesss (notebook_id, principal_id, access_) VALUES (4, 1, 'write');
- INSERT INTO notebooks_principals_accesss (notebook_id, principal_id, access_) VALUES (4, 11, 'read');
+ INSERT INTO notebooks_principals_accesses (notebook_id, principal_id, access_) VALUES (4, 2, 'write');
+ INSERT INTO notebooks_principals_accesses (notebook_id, principal_id, access_) VALUES (4, 1, 'write');
+ INSERT INTO notebooks_principals_accesses (notebook_id, principal_id, access_) VALUES (4, 11, 'read');

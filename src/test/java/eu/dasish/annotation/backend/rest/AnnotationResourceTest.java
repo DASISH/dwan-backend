@@ -44,8 +44,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.lang.InstantiationException;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 import javax.servlet.ServletException;
 import javax.ws.rs.core.UriInfo;
@@ -184,7 +182,7 @@ public class AnnotationResourceTest {
      * Test of createAnnotation method, of class AnnotationResource.
      */
     @Test
-    public void testCreateAnnotation() throws SQLException, InstantiationException, IllegalAccessException, ServletException, DatatypeConfigurationException, Exception {
+    public void testCreateAnnotation() throws IOException, NotInDataBaseException {
         System.out.println("test createAnnotation");
 
         final Annotation annotationToAdd = (new TestInstances(TestBackendConstants._TEST_SERVLET_URI)).getAnnotationToAdd();
@@ -250,7 +248,7 @@ public class AnnotationResourceTest {
     }
 
     @Test
-    public void testUpdateAnnotation() throws IllegalAccessException, NotInDataBaseException, IOException{
+    public void testUpdateAnnotation() throws NotInDataBaseException, IOException{
         System.out.println("test updateAnnotation");
 
         final Annotation annotation = (new TestInstances(TestBackendConstants._TEST_SERVLET_URI)).getAnnotationOne();

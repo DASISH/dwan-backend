@@ -78,8 +78,9 @@ public class TargetResource extends ResourceResource {
             final Target target = dbIntegrityService.getTarget(targetID);
             return new ObjectFactory().createTarget(target);
         } catch (NotInDataBaseException e1) {
-            verboseOutput.TARGET_NOT_FOUND(externalIdentifier);
-            throw new HTTPException(HttpServletResponse.SC_NOT_FOUND);
+            loggerServer.debug(e1.toString());
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e1.toString());
+            return new ObjectFactory().createTarget(new Target());
         }
 
     }
@@ -96,8 +97,9 @@ public class TargetResource extends ResourceResource {
             final ReferenceList siblings = dbIntegrityService.getTargetsForTheSameLinkAs(targetID);
             return new ObjectFactory().createReferenceList(siblings);
         } catch (NotInDataBaseException e2) {
-            verboseOutput.TARGET_NOT_FOUND(externalIdentifier);
-            throw new HTTPException(HttpServletResponse.SC_NOT_FOUND);
+            loggerServer.debug(e2.toString());
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e2.toString());
+            return new ObjectFactory().createReferenceList(new ReferenceList());
         }
 
     }
@@ -116,15 +118,18 @@ public class TargetResource extends ResourceResource {
             BodyPartEntity bpe = (BodyPartEntity) multiPart.getBodyParts().get(1).getEntity();
             InputStream cachedSource = bpe.getInputStream();
             try {
-            final Number[] respondDB = dbIntegrityService.addCachedForTarget(targetID, fragmentDescriptor, metadata, cachedSource);           
+                final Number[] respondDB = dbIntegrityService.addCachedForTarget(targetID, fragmentDescriptor, metadata, cachedSource);
                 final CachedRepresentationInfo cachedInfo = dbIntegrityService.getCachedRepresentationInfo(respondDB[1]);
                 return new ObjectFactory().createCashedRepresentationInfo(cachedInfo);
             } catch (NotInDataBaseException e) {
-                throw new HTTPException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                loggerServer.debug(e.toString());
+                httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.toString());
+                return new ObjectFactory().createCashedRepresentationInfo(new CachedRepresentationInfo());
             }
         } catch (NotInDataBaseException e2) {
-            verboseOutput.TARGET_NOT_FOUND(targetIdentifier);
-            throw new HTTPException(HttpServletResponse.SC_NOT_FOUND);
+            loggerServer.debug(e2.toString());
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e2.toString());
+            return new ObjectFactory().createCashedRepresentationInfo(new CachedRepresentationInfo());
         }
     }
 
@@ -140,13 +145,15 @@ public class TargetResource extends ResourceResource {
                 int[] result = dbIntegrityService.deleteCachedRepresentationOfTarget(targetID, cachedID);
                 return result[0] + " pair(s) target-cached deleted.";
             } catch (NotInDataBaseException e) {
-                verboseOutput.CACHED_REPRESENTATION_NOT_FOUND(cachedExternalIdentifier);
-                throw new HTTPException(HttpServletResponse.SC_NOT_FOUND);
+                loggerServer.debug(e.toString());
+                httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e.toString());
+                return "Nothing is deleted.";
             }
 
         } catch (NotInDataBaseException e2) {
-            verboseOutput.TARGET_NOT_FOUND(targetExternalIdentifier);
-            throw new HTTPException(HttpServletResponse.SC_NOT_FOUND);
+            loggerServer.debug(e2.toString());
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e2.toString());
+            return "Nothing is deleted.";
         }
     }
 }

@@ -52,7 +52,7 @@ public class DebugResource extends ResourceResource {
     @Produces(MediaType.TEXT_XML)
     @Path("annotations")
     @Transactional(readOnly = true)
-    public JAXBElement<AnnotationInfoList> getAllAnnotations() throws IOException{
+    public JAXBElement<AnnotationInfoList> getAllAnnotations() throws IOException {
         Number remotePrincipalID = this.getPrincipalID();
         String typeOfAccount = dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID);
         if (typeOfAccount.equals(admin) || typeOfAccount.equals(developer)) {
@@ -60,7 +60,8 @@ public class DebugResource extends ResourceResource {
             return new ObjectFactory().createAnnotationInfoList(annotationInfoList);
         } else {
             verboseOutput.DEVELOPER_RIGHTS_EXPECTED();
-            throw new HTTPException(HttpServletResponse.SC_FORBIDDEN);
+            httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
+            return new ObjectFactory().createAnnotationInfoList(new AnnotationInfoList());
         }
     }
 
@@ -68,14 +69,15 @@ public class DebugResource extends ResourceResource {
     @Produces(MediaType.TEXT_PLAIN)
     @Path("/logDatabase/{n}")
     @Transactional(readOnly = true)
-    public String getDasishBackendLog(@PathParam("n") int n) throws IOException{
+    public String getDasishBackendLog(@PathParam("n") int n) throws IOException {
         Number remotePrincipalID = this.getPrincipalID();
         String typeOfAccount = dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID);
         if (typeOfAccount.equals(admin) || typeOfAccount.equals(developer)) {
             return logFile("eu.dasish.annotation.backend.logDatabaseLocation", n);
         } else {
             verboseOutput.DEVELOPER_RIGHTS_EXPECTED();
-            throw new HTTPException(HttpServletResponse.SC_FORBIDDEN);
+            httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
+            return "Coucou.";
         }
     }
 
@@ -92,15 +94,15 @@ public class DebugResource extends ResourceResource {
     @Produces(MediaType.TEXT_PLAIN)
     @Path("/logServer/{n}")
     @Transactional(readOnly = true)
-    public String getDasishServerLog(@PathParam("n") int n) throws IOException{
+    public String getDasishServerLog(@PathParam("n") int n) throws IOException {
         Number remotePrincipalID = this.getPrincipalID();
         String typeOfAccount = dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID);
         if (typeOfAccount.equals(admin) || typeOfAccount.equals(developer)) {
             return logFile("eu.dasish.annotation.backend.logServerLocation", n);
         } else {
             verboseOutput.DEVELOPER_RIGHTS_EXPECTED();
-           throw new HTTPException(HttpServletResponse.SC_FORBIDDEN);
-
+            httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
+            return "Coucou.";
         }
     }
 
@@ -109,19 +111,21 @@ public class DebugResource extends ResourceResource {
     @Produces(MediaType.TEXT_XML)
     @Path("account/{principalId}/make/{account}")
     @Transactional(readOnly = true)
-    public String updatePrincipalsAccount(@PathParam("principalId") String principalId, @PathParam("account") String account) throws IOException{
+    public String updatePrincipalsAccount(@PathParam("principalId") String principalId, @PathParam("account") String account) throws IOException {
         Number remotePrincipalID = this.getPrincipalID();
         String typeOfAccount = dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID);
         if (typeOfAccount.equals(admin)) {
-            try{
-            final boolean update = dbIntegrityService.updateAccount(UUID.fromString(principalId), account);
-            return (update ? "The account is updated" : "The account is not updated, see the log.");
-            } catch (NotInDataBaseException e){
-                throw new HTTPException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            try {
+                final boolean update = dbIntegrityService.updateAccount(UUID.fromString(principalId), account);
+                return (update ? "The account is updated" : "The account is not updated, see the log.");
+            } catch (NotInDataBaseException e) {
+                httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.toString());
+                return e.toString();
             }
         } else {
             verboseOutput.ADMIN_RIGHTS_EXPECTED(dbIntegrityService.getDataBaseAdmin().getDisplayName(), dbIntegrityService.getDataBaseAdmin().getEMail());
-            throw new HTTPException(HttpServletResponse.SC_FORBIDDEN);
+            httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
+            return "Coucou.";
         }
 
     }

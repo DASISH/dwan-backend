@@ -20,6 +20,7 @@ package eu.dasish.annotation.backend.rest;
 import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.NotLoggedInException;
 import eu.dasish.annotation.backend.dao.DBIntegrityService;
+import eu.dasish.annotation.schema.ObjectFactory;
 import eu.dasish.annotation.schema.Principal;
 import java.io.IOException;
 import javax.servlet.ServletContext;
@@ -42,9 +43,6 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * @author olhsha
  */
-@Component
-@Path("")
-@Transactional(rollbackFor = {Exception.class})
 public class ResourceResource {
 
     @Autowired
@@ -68,38 +66,26 @@ public class ResourceResource {
 
     public Number getPrincipalID() throws IOException, HTTPException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
-        verboseOutput = new VerboseOutput(httpServletResponse, loggerServer);
+        verboseOutput = new VerboseOutput(loggerServer);
         String remotePrincipal = httpServletRequest.getRemoteUser();
         if (remotePrincipal != null) {
             if (!remotePrincipal.equals(anonym)) {
                 try {
                     return dbIntegrityService.getPrincipalInternalIDFromRemoteID(remotePrincipal);
                 } catch (NotInDataBaseException e) {
-                    Principal adminPrincipal = dbIntegrityService.getDataBaseAdmin();
-                    verboseOutput.REMOTE_PRINCIPAL_NOT_FOUND(remotePrincipal, adminPrincipal.getDisplayName(), adminPrincipal.getEMail());
-                    throw new HTTPException(HttpServletResponse.SC_NOT_FOUND);
+                    loggerServer.debug(e.toString());;
+                    httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e.toString());
+                    return null;
                 }
             } else {
-                verboseOutput.ANONYMOUS_PRINCIPAL();
-                throw new HTTPException(HttpServletResponse.SC_UNAUTHORIZED);
+                loggerServer.info("Shibboleth fall-back.  Logged in as 'anonymous' with no rights.");
+                httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, " Shibboleth fall-back.  Logged in as 'anonymous' with no rights.");
+                return null;
             }
         } else {
-            verboseOutput.NOT_LOGGED_IN();
-            throw new HTTPException(HttpServletResponse.SC_UNAUTHORIZED);
+            loggerServer.info("Not logged in.");
+            httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, " Not logged in.");
+            return null;
         }
-    }
-
-    @GET
-    @Produces({"text/html"})
-    @Path("")
-    @Transactional(readOnly = true)
-    public String welcome() throws IOException, HTTPException {
-        Number remotePrincipalID = this.getPrincipalID();
-        String baseUri = uriInfo.getBaseUri().toString() + "..";
-        String welcome = "<!DOCTYPE html><body>"
-                + "<h3>Welcome to DASISH Webannotator (DWAN)</h3><br>"
-                + "<a href=\"" + baseUri + "\"> to DWAN's test jsp page</a>"
-                + "</body>";
-        return welcome;
     }
 }
