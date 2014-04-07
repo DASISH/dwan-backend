@@ -231,10 +231,17 @@ public class JdbcPrincipalDao extends JdbcResourceDao implements PrincipalDao {
 
     }
 
-    ////// DELETERS ////////////
-    
     @Override
-    public int deletePrincipal(Number internalID) throws PrincipalCannotBeDeleted{
+    public Principal createShibbolizedPrincipal(String remoteID) {
+        Principal result = new Principal();
+        result.setDisplayName(remoteID);
+        result.setEMail(remoteID);
+        return result;
+    }
+
+    ////// DELETERS ////////////
+    @Override
+    public int deletePrincipal(Number internalID) throws PrincipalCannotBeDeleted {
 
         if (principalIsInUse(internalID)) {
             throw new PrincipalCannotBeDeleted(this.getURIFromInternalID(internalID));

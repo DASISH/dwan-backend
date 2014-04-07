@@ -40,7 +40,7 @@
         GET <a href="api/principals/info?email=Twan.Goosen@mpi.nl">api/principals/info?email=Twan.Goosen@mpi.nl</a>  <br>
         GET <a href="api/annotations?link=Sagrada">api/annotations?link=Sagrada</a>  <br>
         GET <a href="api/annotations?link=Gaud">api/annotations?link=Gaud</a>  <br>
-        GET <a href="api/annotations?after=2014-02-04 15:57:58.046908&before=2014-02-06 10:08:16.213186">api/annotations?after=2014-02-04 15:57:58.046908&before=2014-04-06 10:08:16.213186</a> 
+        GET <a href="api/annotations?after=2014-02-04 15:57:58.046908&before=2014-04-06 10:08:16.213186">api/annotations?after=2014-02-04 15:57:58.046908&before=2014-04-06 10:08:16.213186</a> 
         !Comment: What is "namespace" query parameter? Must be implemented and tested <br>
         GET <a href="api/annotations/00000000-0000-0000-0000-000000000021">api/annotations/00000000-0000-0000-0000-000000000021</a>  </br>
         GET <a href="api/annotations/00000000-0000-0000-0000-000000000021/targets">api/annotations/00000000-0000-0000-0000-000000000021/targets</a>  </br>

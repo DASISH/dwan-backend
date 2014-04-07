@@ -313,6 +313,8 @@ public interface DBIntegrityService {
 
     boolean createAnnotationInNotebook(Number notebookID, Annotation annotation, Number ownerID) throws NotInDataBaseException;
 
+    public Principal createShibbolizedPrincipal(String remoteID);
+    
     /**
      * DELETERS
      */
