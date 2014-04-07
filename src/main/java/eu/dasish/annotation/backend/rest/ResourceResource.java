@@ -73,19 +73,19 @@ public class ResourceResource {
                 try {
                     return dbIntegrityService.getPrincipalInternalIDFromRemoteID(remotePrincipal);
                 } catch (NotInDataBaseException e) {
-                    loggerServer.debug(e.toString());;
+                    loggerServer.info(e.toString());;
                     httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e.toString());
-                    return null;
+                    throw new IOException(e);
                 }
             } else {
                 loggerServer.info("Shibboleth fall-back.  Logged in as 'anonymous' with no rights.");
                 httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, " Shibboleth fall-back.  Logged in as 'anonymous' with no rights.");
-                return null;
+                throw new IOException("Shibboleth fall-back.  Logged in as 'anonymous' with no rights.");
             }
         } else {
             loggerServer.info("Not logged in.");
             httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, " Not logged in.");
-            return null;
+            throw new IOException("Not logged in.");
         }
     }
 }

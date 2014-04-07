@@ -60,5 +60,5 @@ public interface PrincipalDao extends ResourceDao{
      
      public int deletePrincipal(Number intenralID) throws PrincipalCannotBeDeleted;
      
-     
+     public Principal createShibbolizedPrincipal(String remoteID);
 }

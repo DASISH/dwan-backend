@@ -169,12 +169,20 @@ public class JdbcPrincipalDaoTest extends JdbcResourceDaoTest {
      */
     @Test
     public void testGetPrincipalIDsWithAccess() {
-        System.out.println("gtest getPrincipalIDsWithAccess");
+        System.out.println("test getPrincipalIDsWithAccess");
         List<Number> expResult = new ArrayList<Number>();
         expResult.add(2);
         expResult.add(4);
         List result = jdbcPrincipalDao.getPrincipalIDsWithAccessForNotebook(1, Access.WRITE);
         assertEquals(expResult, result);
+    }
+    
+    @Test
+    public void testCreateShibbolizedPrincipal(){
+        System.out.println("test createShibbolizedPrincipal");
+        Principal result = jdbcPrincipalDao.createShibbolizedPrincipal("test.user@mail.com");
+        assertEquals("test.user@mail.com", result.getDisplayName());
+        assertEquals("test.user@mail.com", result.getEMail());
     }
 
 }

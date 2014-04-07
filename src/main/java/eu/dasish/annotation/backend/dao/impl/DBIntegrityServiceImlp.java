@@ -830,6 +830,11 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
             return null;
         }
     }
+    
+    @Override
+    public Principal createShibbolizedPrincipal(String remoteID){
+        return principalDao.createShibbolizedPrincipal(remoteID);
+    }
 
     //// priveee ///
     private Target createFreshTarget(TargetInfo targetInfo) {
