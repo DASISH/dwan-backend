@@ -54,6 +54,9 @@ public class DebugResource extends ResourceResource {
     @Transactional(readOnly = true)
     public JAXBElement<AnnotationInfoList> getAllAnnotations() throws IOException {
         Number remotePrincipalID = this.getPrincipalID();
+        if (remotePrincipalID == null) {
+            return new ObjectFactory().createAnnotationInfoList(new AnnotationInfoList());
+        }
         String typeOfAccount = dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID);
         if (typeOfAccount.equals(admin) || typeOfAccount.equals(developer)) {
             final AnnotationInfoList annotationInfoList = dbIntegrityService.getAllAnnotationInfos();
@@ -71,6 +74,9 @@ public class DebugResource extends ResourceResource {
     @Transactional(readOnly = true)
     public String getDasishBackendLog(@PathParam("n") int n) throws IOException {
         Number remotePrincipalID = this.getPrincipalID();
+        if (remotePrincipalID == null) {
+            return " ";
+        }
         String typeOfAccount = dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID);
         if (typeOfAccount.equals(admin) || typeOfAccount.equals(developer)) {
             return logFile("eu.dasish.annotation.backend.logDatabaseLocation", n);
@@ -96,6 +102,9 @@ public class DebugResource extends ResourceResource {
     @Transactional(readOnly = true)
     public String getDasishServerLog(@PathParam("n") int n) throws IOException {
         Number remotePrincipalID = this.getPrincipalID();
+        if (remotePrincipalID == null) {
+            return " ";
+        }
         String typeOfAccount = dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID);
         if (typeOfAccount.equals(admin) || typeOfAccount.equals(developer)) {
             return logFile("eu.dasish.annotation.backend.logServerLocation", n);
@@ -113,6 +122,9 @@ public class DebugResource extends ResourceResource {
     @Transactional(readOnly = true)
     public String updatePrincipalsAccount(@PathParam("principalId") String principalId, @PathParam("account") String account) throws IOException {
         Number remotePrincipalID = this.getPrincipalID();
+        if (remotePrincipalID == null) {
+            return " ";
+        }
         String typeOfAccount = dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID);
         if (typeOfAccount.equals(admin)) {
             try {

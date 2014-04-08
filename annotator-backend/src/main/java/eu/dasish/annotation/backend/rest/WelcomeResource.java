@@ -40,6 +40,9 @@ public class WelcomeResource extends ResourceResource{
     @Transactional(readOnly = true)
     public String welcome() throws IOException, HTTPException {
         Number remotePrincipalID = this.getPrincipalID();
+         if (remotePrincipalID == null) {
+            return "You are not logged in properly.";
+        }
         String baseUri = uriInfo.getBaseUri().toString() + "..";
         String welcome = "<!DOCTYPE html><body>"
                 + "<h3>Welcome to DASISH Webannotator (DWAN)</h3><br>"

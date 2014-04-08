@@ -67,6 +67,9 @@ public class PrincipalResource extends ResourceResource {
     @Transactional(readOnly = true)
     public JAXBElement<Principal> getPrincipal(@PathParam("principalid") String externalIdentifier) throws IOException {
         Number remotePrincipalID = this.getPrincipalID();
+        if (remotePrincipalID == null) {
+            return new ObjectFactory().createPrincipal(new Principal());
+        }
         try {
             final Number principalID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.PRINCIPAL);
             final Principal principal = dbIntegrityService.getPrincipal(principalID);
@@ -85,6 +88,9 @@ public class PrincipalResource extends ResourceResource {
     @Transactional(readOnly = true)
     public String getAdmin() throws IOException {
         Number remotePrincipalID = this.getPrincipalID();
+        if (remotePrincipalID == null) {
+            return " ";
+        }
         return "The admin of the server database " + dbIntegrityService.getDataBaseAdmin().getDisplayName() + " is availiable via e-mail " + dbIntegrityService.getDataBaseAdmin().getEMail();
     }
 
@@ -94,6 +100,9 @@ public class PrincipalResource extends ResourceResource {
     @Transactional(readOnly = true)
     public JAXBElement<Principal> getPrincipalByInfo(@QueryParam("email") String email) throws IOException {
         Number remotePrincipalID = this.getPrincipalID();
+        if (remotePrincipalID == null) {
+            return new ObjectFactory().createPrincipal(new Principal());
+        }
         try {
             final Principal principal = dbIntegrityService.getPrincipalByInfo(email);
             return new ObjectFactory().createPrincipal(principal);
@@ -111,6 +120,9 @@ public class PrincipalResource extends ResourceResource {
     @Transactional(readOnly = true)
     public JAXBElement<CurrentPrincipalInfo> getCurrentPrincipalInfo(@PathParam("principalid") String externalIdentifier) throws IOException {
         Number remotePrincipalID = this.getPrincipalID();
+        if (remotePrincipalID == null) {
+            return new ObjectFactory().createCurrentPrincipalInfo(new CurrentPrincipalInfo());
+        }
         try {
             final Number principalID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.PRINCIPAL);
             final CurrentPrincipalInfo principalInfo = new CurrentPrincipalInfo();
@@ -131,6 +143,9 @@ public class PrincipalResource extends ResourceResource {
     @Path("{remoteId}")
     public JAXBElement<Principal> addPrincipal(@PathParam("remoteId") String remoteId, Principal principal) throws IOException {
         Number remotePrincipalID = this.getPrincipalID();
+        if (remotePrincipalID == null) {
+            return new ObjectFactory().createPrincipal(new Principal());
+        }
         if (dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID).equals(admin)) {
             try {
                 try {
@@ -161,6 +176,9 @@ public class PrincipalResource extends ResourceResource {
     @Path("")
     public JAXBElement<Principal> updatePrincipal(Principal principal) throws IOException {
         Number remotePrincipalID = this.getPrincipalID();
+        if (remotePrincipalID == null) {
+            return new ObjectFactory().createPrincipal(new Principal());
+        }
         if (dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID).equals(admin)) {
             try {
                 final Number principalID = dbIntegrityService.updatePrincipal(principal);
@@ -183,6 +201,9 @@ public class PrincipalResource extends ResourceResource {
     @Path("{externalId}/account/{accountType}")
     public String updatePrincipalAccount(@PathParam("externalId") String externalId, @PathParam("accountType") String accountType) throws IOException {
         Number remotePrincipalID = this.getPrincipalID();
+        if (remotePrincipalID == null) {
+            return "Nothing is updated.";
+        }
         if (dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID).equals(admin)) {
             try {
                 final boolean updated = dbIntegrityService.updateAccount(UUID.fromString(externalId), accountType);
@@ -210,6 +231,9 @@ public class PrincipalResource extends ResourceResource {
     @Path("{principalId}")
     public String deletePrincipal(@PathParam("principalId") String externalIdentifier) throws IOException {
         Number remotePrincipalID = this.getPrincipalID();
+        if (remotePrincipalID == null) {
+            return "Nothings is deleted.";
+        }
         if (dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID).equals(admin)) {
             try {
                 final Number principalID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.PRINCIPAL);

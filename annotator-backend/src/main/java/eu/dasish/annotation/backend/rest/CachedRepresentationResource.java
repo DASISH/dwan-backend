@@ -62,6 +62,9 @@ public class CachedRepresentationResource extends ResourceResource {
     @Transactional(readOnly = true)
     public JAXBElement<CachedRepresentationInfo> getCachedRepresentationInfo(@PathParam("cachedid") String externalId) throws IOException {
         Number remotePrincipalID = this.getPrincipalID();
+        if (remotePrincipalID == null) {
+            return new ObjectFactory().createCashedRepresentationInfo(new CachedRepresentationInfo());
+        }
         try {
             final Number cachedID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalId), Resource.CACHED_REPRESENTATION);
 
@@ -81,6 +84,9 @@ public class CachedRepresentationResource extends ResourceResource {
     @Transactional(readOnly = true)
     public BufferedImage getCachedRepresentationContent(@PathParam("cachedid") String externalId) throws IOException {
         Number remotePrincipalID = this.getPrincipalID();
+         if (remotePrincipalID == null) {
+            return null;
+        }
         try {
             final Number cachedID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalId), Resource.CACHED_REPRESENTATION);
             InputStream dbRespond = dbIntegrityService.getCachedRepresentationBlob(cachedID);
@@ -112,6 +118,9 @@ public class CachedRepresentationResource extends ResourceResource {
     @Transactional(readOnly = true)
     public InputStream getCachedRepresentationContentStream(@PathParam("cachedid") String externalId) throws IOException {
         Number remotePrincipalID = this.getPrincipalID();
+         if (remotePrincipalID == null) {
+            return null;
+        }
         try {
             final Number cachedID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalId), Resource.CACHED_REPRESENTATION);
             InputStream dbRespond = dbIntegrityService.getCachedRepresentationBlob(cachedID);

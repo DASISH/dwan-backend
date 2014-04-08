@@ -73,6 +73,9 @@ public class TargetResource extends ResourceResource {
     @Transactional(readOnly = true)
     public JAXBElement<Target> getTarget(@PathParam("targetid") String externalIdentifier) throws IOException {
         Number remotePrincipalID = this.getPrincipalID();
+        if (remotePrincipalID == null) {
+            return new ObjectFactory().createTarget(new Target());
+        }
         try {
             final Number targetID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.TARGET);
             final Target target = dbIntegrityService.getTarget(targetID);
@@ -92,6 +95,9 @@ public class TargetResource extends ResourceResource {
     @Transactional(readOnly = true)
     public JAXBElement<ReferenceList> getSiblingTargets(@PathParam("targetid") String externalIdentifier) throws HTTPException, IOException {
         Number remotePrincipalID = this.getPrincipalID();
+        if (remotePrincipalID == null) {
+            return new ObjectFactory().createReferenceList(new ReferenceList());
+        }
         try {
             final Number targetID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.TARGET);
             final ReferenceList siblings = dbIntegrityService.getTargetsForTheSameLinkAs(targetID);
@@ -112,6 +118,9 @@ public class TargetResource extends ResourceResource {
             @PathParam("fragmentDescriptor") String fragmentDescriptor,
             MultiPart multiPart) throws HTTPException, IOException {
         Number remotePrincipalID = this.getPrincipalID();
+        if (remotePrincipalID == null) {
+            return new ObjectFactory().createCashedRepresentationInfo(new CachedRepresentationInfo());
+        }
         try {
             final Number targetID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(targetIdentifier), Resource.TARGET);
             CachedRepresentationInfo metadata = multiPart.getBodyParts().get(0).getEntityAs(CachedRepresentationInfo.class);
@@ -138,6 +147,9 @@ public class TargetResource extends ResourceResource {
     public String deleteCachedForTarget(@PathParam("targetid") String targetExternalIdentifier,
             @PathParam("cachedid") String cachedExternalIdentifier) throws HTTPException, IOException {
         Number remotePrincipalID = this.getPrincipalID();
+        if (remotePrincipalID == null) {
+            return "Nothing is deleted";
+        }
         try {
             final Number targetID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(targetExternalIdentifier), Resource.TARGET);
             try {
