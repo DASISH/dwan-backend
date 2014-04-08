@@ -82,6 +82,9 @@ public class NotebookResource extends ResourceResource {
     @Transactional(readOnly = true)
     public JAXBElement<ReferenceList> getOwnedNotebooks() throws IOException {
         Number remotePrincipalID = this.getPrincipalID();
+        if (remotePrincipalID == null) {
+            return new ObjectFactory().createReferenceList(new ReferenceList());
+        }
         ReferenceList references = dbIntegrityService.getNotebooksOwnedBy(remotePrincipalID);
         return new ObjectFactory().createReferenceList(references);
     }
@@ -92,6 +95,9 @@ public class NotebookResource extends ResourceResource {
     @Transactional(readOnly = true)
     public JAXBElement<ReferenceList> getPrincipals(@PathParam("notebookid") String externalIdentifier, @PathParam("access") String accessMode) throws IOException {
         Number remotePrincipalID = this.getPrincipalID();
+        if (remotePrincipalID == null) {
+            return new ObjectFactory().createReferenceList(new ReferenceList());
+        }
         try {
             Number notebookID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.NOTEBOOK);
             if (dbIntegrityService.hasAccess(notebookID, remotePrincipalID, Access.fromValue("read"))) {
@@ -121,6 +127,9 @@ public class NotebookResource extends ResourceResource {
     @Transactional(readOnly = true)
     public JAXBElement<Notebook> getNotebook(@PathParam("notebookid") String externalIdentifier) throws IOException, HTTPException {
         Number remotePrincipalID = this.getPrincipalID();
+        if (remotePrincipalID == null) {
+            return new ObjectFactory().createNotebook(new Notebook());
+        }
         try {
             Number notebookID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.NOTEBOOK);
             if (dbIntegrityService.hasAccess(notebookID, remotePrincipalID, Access.fromValue("read"))) {
@@ -150,6 +159,9 @@ public class NotebookResource extends ResourceResource {
             @QueryParam("descending") boolean desc) throws IOException, HTTPException {
 
         Number remotePrincipalID = this.getPrincipalID();
+        if (remotePrincipalID == null) {
+            return new ObjectFactory().createReferenceList(new ReferenceList());
+        }
         try {
             Number notebookID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.NOTEBOOK);
             if (dbIntegrityService.hasAccess(notebookID, remotePrincipalID, Access.fromValue("read"))) {
@@ -175,6 +187,9 @@ public class NotebookResource extends ResourceResource {
     @Path("{notebookid: " + BackendConstants.regExpIdentifier + "}")
     public JAXBElement<ResponseBody> updateNotebookInfo(@PathParam("notebookid") String externalIdentifier, NotebookInfo notebookInfo) throws IOException, HTTPException {
         Number remotePrincipalID = this.getPrincipalID();
+        if (remotePrincipalID == null) {
+            return new ObjectFactory().createResponseBody(new ResponseBody());
+        }
         String path = uriInfo.getBaseUri().toString();
         String notebookURI = notebookInfo.getRef();
         if (!(path + "notebook/" + externalIdentifier).equals(notebookURI)) {

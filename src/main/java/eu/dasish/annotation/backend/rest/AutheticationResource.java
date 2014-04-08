@@ -48,7 +48,11 @@ public class AutheticationResource extends ResourceResource {
     @Transactional(readOnly = true)
     public JAXBElement<Principal> getCurrentPrincipal() throws IOException {
         Number principalID = this.getPrincipalID();
-        return new ObjectFactory().createPrincipal(dbIntegrityService.getPrincipal(principalID));
+        if (principalID != null) {
+            return new ObjectFactory().createPrincipal(dbIntegrityService.getPrincipal(principalID));
+        } else {
+            return new ObjectFactory().createPrincipal(new Principal());
+        }
     }
 
     /* the only request that redirects to the shibboleth login-page

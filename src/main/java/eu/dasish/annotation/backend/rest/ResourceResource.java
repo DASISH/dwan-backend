@@ -64,7 +64,7 @@ public class ResourceResource {
     protected String defaultAccess = "read";
     protected String[] admissibleAccess = {"read", "write", "owner"};
 
-    public Number getPrincipalID() throws IOException, HTTPException {
+    public Number getPrincipalID() throws IOException{
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         verboseOutput = new VerboseOutput(loggerServer);
         String remotePrincipal = httpServletRequest.getRemoteUser();
@@ -73,19 +73,19 @@ public class ResourceResource {
                 try {
                     return dbIntegrityService.getPrincipalInternalIDFromRemoteID(remotePrincipal);
                 } catch (NotInDataBaseException e) {
-                    loggerServer.info(e.toString());;
+                    loggerServer.info(e.toString());
                     httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e.toString());
-                    throw new IOException(e);
+                    return null;
                 }
             } else {
                 loggerServer.info("Shibboleth fall-back.  Logged in as 'anonymous' with no rights.");
                 httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, " Shibboleth fall-back.  Logged in as 'anonymous' with no rights.");
-                throw new IOException("Shibboleth fall-back.  Logged in as 'anonymous' with no rights.");
+                return null;
             }
         } else {
             loggerServer.info("Not logged in.");
             httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, " Not logged in.");
-            throw new IOException("Not logged in.");
+            return null;
         }
     }
 }
