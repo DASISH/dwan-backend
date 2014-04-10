@@ -20,16 +20,13 @@ package eu.dasish.annotation.backend.dao.impl;
 import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.schema.CachedRepresentationInfo;
-import java.io.UnsupportedEncodingException;
-import java.sql.Blob;
-import java.sql.SQLException;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.UUID;
-import javax.sql.rowset.serial.SerialBlob;
-import javax.sql.rowset.serial.SerialException;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -133,8 +130,7 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest {
         assertEquals("image/png", result.getMimeType());
         assertEquals("screen-shot", result.getTool());
         assertEquals("image", result.getType());
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI_cached +"00000000-0000-0000-0000-000000000051", result.getURI());
-    }
+       }
 
  
     
@@ -163,40 +159,41 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest {
 
     }
 
-    /**
-     * Test of addCachedRepresentationInfo method, of class
-     * JdbcCachedRepresentationDao. public CachedRepresentationInfo
-     * addCachedRepresentationInfo(CachedRepresentationInfo cached);
-     */
-//    @Test
-//    public void testAddCachedRepresentation() throws SerialException, SQLException {
-//        System.out.println("addCachedRepresentation");
-//
-//        CachedRepresentationInfo cachedInfo = new CachedRepresentationInfo();
-//        cachedInfo.setMimeType("text/plain");
-//        cachedInfo.setTool("vi");
-//        cachedInfo.setType("text");
-//        cachedInfo.setURI(null);
-//
-//        String blobString = "111";
-//        byte[] blobBytes = blobString.getBytes();
-//        final Blob cachedBlob = new SerialBlob(blobBytes);
-//
-//        Number result = jdbcCachedRepresentationDao.addCachedRepresentation(cachedInfo, cachedBlob);
-//        // checking
-//        CachedRepresentationInfo addedCachedInfo = jdbcCachedRepresentationDao.getCachedRepresentationInfo(result);
-//        assertEquals(8, result.intValue());
-//        assertEquals("text/plain", addedCachedInfo.getMimeType());
-//        assertEquals("vi", addedCachedInfo.getTool());
-//        assertEquals("text", addedCachedInfo.getType());
-//        assertFalse(addedCachedInfo.getURI() == null); // new non-null external identifier should be assigned
-//
-//        Blob addedBlob = jdbcCachedRepresentationDao.getCachedRepresentationBlob(result);
-//        int lengthBlob = 3;
-//        String addedBlobString = new String(addedBlob.getBytes(1, lengthBlob));
-//        assertEquals(blobString, addedBlobString);
-//
-//    }
-//    
+    @Test
+    public void testUpdateCachedRepresentationMetadata(){
+        System.out.println("test updateCachedRepresentationInfo");
+        jdbcCachedRepresentationDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_cached);
+        CachedRepresentationInfo cachedInfo = new CachedRepresentationInfo();
+        cachedInfo.setMimeType("update mime type  1");
+        cachedInfo.setType("update type  1");
+        cachedInfo.setTool("update tool  1");
+        cachedInfo.setURI(TestBackendConstants._TEST_SERVLET_URI_cached + "00000000-0000-0000-0000-00000000005c");
+        
+        int result = jdbcCachedRepresentationDao.updateCachedRepresentationMetadata(1, cachedInfo);
+        assertEquals(1, result);
+        
+        CachedRepresentationInfo newCached = jdbcCachedRepresentationDao.getCachedRepresentationInfo(1);
+        assertEquals(TestBackendConstants._TEST_SERVLET_URI_cached + "00000000-0000-0000-0000-000000000051", newCached.getURI());
+        assertEquals("update mime type  1", newCached.getMimeType());
+        assertEquals("update tool  1", newCached.getTool());
+        assertEquals("update type  1", newCached.getType());
+        
+    }
+    
+    @Test
+    public void testUpdateCachedRepresentationBlob() throws IOException{
+        System.out.println("test updateCachedRepresentationBlob");
+        jdbcCachedRepresentationDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_cached);
+        String blobString = " test blobbie ";
+        byte[] blobBytes = blobString.getBytes();
+        final ByteArrayInputStream newCachedBlob = new ByteArrayInputStream(blobBytes);
+        int result = jdbcCachedRepresentationDao.updateCachedRepresentationBlob(1, newCachedBlob);
+        assertEquals(1, result);
+        InputStream is = jdbcCachedRepresentationDao.getCachedRepresentationBlob(1);
+        byte[] newBytes = new byte[blobBytes.length];
+        is.read(newBytes);
+        assertEquals(blobString, new String(newBytes));
+        
+    }
    
 }

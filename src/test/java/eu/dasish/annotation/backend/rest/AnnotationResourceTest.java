@@ -32,7 +32,6 @@ import eu.dasish.annotation.schema.AnnotationActionName;
 import eu.dasish.annotation.schema.AnnotationBody;
 import eu.dasish.annotation.schema.AnnotationBody.TextBody;
 import java.io.IOException;
-import java.sql.SQLException;
 import javax.xml.bind.JAXBElement;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
@@ -42,12 +41,9 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import java.lang.InstantiationException;
 import java.net.URI;
 import java.util.UUID;
-import javax.servlet.ServletException;
 import javax.ws.rs.core.UriInfo;
-import javax.xml.datatype.DatatypeConfigurationException;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 /**

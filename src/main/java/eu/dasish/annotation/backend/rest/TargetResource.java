@@ -36,6 +36,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -116,7 +117,7 @@ public class TargetResource extends ResourceResource {
     @Path("{targetid: " + BackendConstants.regExpIdentifier + "}/fragment/{fragmentDescriptor}/cached")
     public JAXBElement<CachedRepresentationInfo> postCached(@PathParam("targetid") String targetIdentifier,
             @PathParam("fragmentDescriptor") String fragmentDescriptor,
-            MultiPart multiPart) throws HTTPException, IOException {
+            MultiPart multiPart) throws IOException {
         Number remotePrincipalID = this.getPrincipalID();
         if (remotePrincipalID == null) {
             return new ObjectFactory().createCashedRepresentationInfo(new CachedRepresentationInfo());
@@ -130,6 +131,7 @@ public class TargetResource extends ResourceResource {
                 final Number[] respondDB = dbIntegrityService.addCachedForTarget(targetID, fragmentDescriptor, metadata, cachedSource);
                 final CachedRepresentationInfo cachedInfo = dbIntegrityService.getCachedRepresentationInfo(respondDB[1]);
                 return new ObjectFactory().createCashedRepresentationInfo(cachedInfo);
+
             } catch (NotInDataBaseException e) {
                 loggerServer.debug(e.toString());
                 httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.toString());
@@ -139,6 +141,33 @@ public class TargetResource extends ResourceResource {
             loggerServer.debug(e2.toString());
             httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e2.toString());
             return new ObjectFactory().createCashedRepresentationInfo(new CachedRepresentationInfo());
+        }
+    }
+
+    @PUT
+    @Produces(MediaType.APPLICATION_XML)
+    @Path("{targetid: " + BackendConstants.regExpIdentifier + "}/{cachedid: " + BackendConstants.regExpIdentifier + "}/fragment/{fragmentDescriptor}")
+    public String updateTargetCachedFragment(@PathParam("targetid") String targetIdentifier, @PathParam("cachedid") String cachedIdentifier,
+            @PathParam("fragmentDescriptor") String fragmentDescriptor) throws IOException {
+        Number remotePrincipalID = this.getPrincipalID();
+        if (remotePrincipalID == null) {
+            return "You are not logged in. Nothing is updated. ";
+        }
+        try {
+            final Number targetID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(targetIdentifier), Resource.TARGET);
+            try {
+                final Number cachedID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(cachedIdentifier), Resource.CACHED_REPRESENTATION);
+                final int updated = dbIntegrityService.updateTargetCachedFragment(targetID, cachedID, fragmentDescriptor);
+                return updated + "rows is/are updated.";
+            } catch (NotInDataBaseException e1) {
+                loggerServer.debug(e1.toString());
+                httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e1.toString());
+                return "Nothing is updated: "+e1;
+            }
+        } catch (NotInDataBaseException e2) {
+            loggerServer.debug(e2.toString());
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e2.toString());
+            return "Nothing is updated: "+e2;
         }
     }
 

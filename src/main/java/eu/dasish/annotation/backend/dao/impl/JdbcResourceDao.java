@@ -189,7 +189,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
             UUID externalUUID = UUID.fromString(externalID);
             return this.getInternalID(externalUUID);
         } catch (IllegalArgumentException e) {
-            _logger.debug(externalID + " is not a valid <uuid>.  Therefore, I expect that it is a temporary idendifier of a new resource that is not yet in the database and return null.");
+            _logger.info(externalID + " is not a valid <uuid>.  Therefore, I expect that it is a temporary idendifier of a new resource that is not yet.");
             throw new NotInDataBaseException(resourceTableName, externalID);
         }
     }

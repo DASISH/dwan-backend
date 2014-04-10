@@ -180,6 +180,21 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
         return this.loggedQuery(sql.toString(), internalIDRowMapper, annotationID);
 
     }
+    
+    //////// UPDATERS //////////
+    @Override
+    public int updateTargetCachedRepresentationFragment(Number targetID, Number cachedID, String fragmentDescription){
+
+    Map<String, Object> params = new HashMap<String, Object>();
+        params.put("targetID", targetID);
+        params.put("cachedID", cachedID);
+        params.put("fragment", fragmentDescription);
+        StringBuilder sql = new StringBuilder("UPDATE ");
+        sql.append(targetsCachedRepresentationsTableName).append(" SET ").
+                append(fragment_descriptor_in_cached).append("= :fragment").
+                append(" WHERE ").append(target_id).append("= :targetID").append(" AND ").append(cached_representation_id).append("= :cachedID");
+        return this.loggedUpdate(sql.toString(), params);
+    }
 
     ///////////////////////// ADDERS /////////////////////////////////
     @Override
