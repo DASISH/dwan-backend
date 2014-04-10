@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.UUID;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -215,5 +214,13 @@ public class JdbcTargetDaoTest extends JdbcResourceDaoTest {
         assertEquals(2, result.size());
         assertEquals(1, result.get(0));
         assertEquals(2, result.get(1));
+    }
+    
+    @Test
+    public void testUpdateTargetCachedRepresentationFragment(){
+        System.out.println("test updateTargetCachedRepresentationFragment");
+        jdbcTargetDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_cached);
+        int result = jdbcTargetDao.updateTargetCachedRepresentationFragment(1, 1, "updated fragment");
+        assertEquals(1, result);
     }
 }

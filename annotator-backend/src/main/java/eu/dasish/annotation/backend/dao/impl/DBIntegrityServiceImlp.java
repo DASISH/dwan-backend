@@ -602,6 +602,23 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     public int updatePrincipal(Principal principal) throws NotInDataBaseException {
         return principalDao.updatePrincipal(principal);
     }
+    
+    @Override
+    public int updateTargetCachedFragment(Number targetID, Number cachedID, String fragmentDescriptor) throws NotInDataBaseException{
+        return targetDao.updateTargetCachedRepresentationFragment(targetID, cachedID, fragmentDescriptor);
+    }
+    
+    @Override
+    public int updateCachedMetada(CachedRepresentationInfo cachedInfo) throws NotInDataBaseException{
+        Number internalID = cachedRepresentationDao.getInternalIDFromURI(cachedInfo.getURI());
+        return cachedRepresentationDao.updateCachedRepresentationMetadata(internalID, cachedInfo);
+    }
+    
+    @Override
+    public int updateCachedBlob(Number internalID, InputStream cachedBlob) throws IOException{
+        return cachedRepresentationDao.updateCachedRepresentationBlob(internalID, cachedBlob);
+    }
+   
     /// notebooks ///
 
     @Override
@@ -619,16 +636,20 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     @Override
     public Number[] addCachedForTarget(Number targetID, String fragmentDescriptor, CachedRepresentationInfo cachedInfo, InputStream cachedBlob) throws NotInDataBaseException, IOException {
         Number[] result = new Number[2];
-        result[1] = cachedRepresentationDao.getInternalIDFromURI(cachedInfo.getURI());
-        if (result[1] == null) {
+        try {
             result[1] = cachedRepresentationDao.addCachedRepresentation(cachedInfo, cachedBlob);
+        } catch (NotInDataBaseException e1) {
+            logger.info("Something wrong went while adding cached.");
+            throw e1;
         }
+
         result[0] = targetDao.addTargetCachedRepresentation(targetID, result[1], fragmentDescriptor);
         return result;
 
     }
 
-    // TODo: mapping uri to external ID
+   
+
     @Override
     public Map<String, String> addTargetsForAnnotation(Number annotationID, List<TargetInfo> targets) throws NotInDataBaseException {
         Map<String, String> result = new HashMap<String, String>();
@@ -665,7 +686,6 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         }
     }
 
-   
     //////////// notebooks //////
     @Override
     public Number createNotebook(Notebook notebook, Number ownerID) throws NotInDataBaseException {
@@ -688,11 +708,9 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
 
     ////////////// DELETERS //////////////////
     @Override
-    public int deletePrincipal(Number principalID) throws PrincipalCannotBeDeleted{
+    public int deletePrincipal(Number principalID) throws PrincipalCannotBeDeleted {
         return principalDao.deletePrincipal(principalID);
     }
-
-   
 
     @Override
     public int deleteCachedRepresentation(Number internalID) {
@@ -830,9 +848,9 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
             return null;
         }
     }
-    
+
     @Override
-    public Principal createShibbolizedPrincipal(String remoteID){
+    public Principal createShibbolizedPrincipal(String remoteID) {
         return principalDao.createShibbolizedPrincipal(remoteID);
     }
 

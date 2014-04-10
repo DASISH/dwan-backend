@@ -68,6 +68,14 @@ public interface CachedRepresentationDao extends ResourceDao {
     public Number addCachedRepresentation(CachedRepresentationInfo cachedInfo, InputStream cachedBlob) throws NotInDataBaseException, IOException;
 
     /**
+     * UPDATERS
+     */
+    
+    public int updateCachedRepresentationMetadata(Number  internlID, CachedRepresentationInfo cachedInfo);
+
+    public int updateCachedRepresentationBlob(Number  internlID, InputStream cachedBlob) throws IOException;
+
+    /**
      * DELETERS
      */
     /**

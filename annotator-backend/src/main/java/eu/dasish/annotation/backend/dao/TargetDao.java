@@ -104,6 +104,9 @@ public interface TargetDao extends ResourceDao {
      * Should be "1" if the pair (TargetID, cachedID) has been added.
      * @throws SQLException
      */
+    public int updateTargetCachedRepresentationFragment(Number TargetID, Number cachedID, String fragmentDescription);
+
+    
     public int addTargetCachedRepresentation(Number TargetID, Number cachedID, String fragmentDescription);
 
     /**

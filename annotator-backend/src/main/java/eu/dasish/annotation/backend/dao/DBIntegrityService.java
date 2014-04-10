@@ -255,6 +255,14 @@ public interface DBIntegrityService {
     
     int updatePrincipal(Principal principal) throws NotInDataBaseException;
 
+    
+    int updateTargetCachedFragment(Number targetID, Number cachedID, String fragmentDescriptor) throws NotInDataBaseException;
+    
+    int updateCachedMetada(CachedRepresentationInfo cachedInfo)  throws NotInDataBaseException;
+    
+    public int updateCachedBlob(Number internalID, InputStream cachedBlob) throws IOException;
+    
+    
     /// notebooks ///
     boolean updateNotebookMetadata(Number notebookID, NotebookInfo upToDateNotebookInfo) throws NotInDataBaseException;
 

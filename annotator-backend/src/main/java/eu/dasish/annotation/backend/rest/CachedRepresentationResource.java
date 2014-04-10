@@ -17,6 +17,8 @@
  */
 package eu.dasish.annotation.backend.rest;
 
+import com.sun.jersey.multipart.BodyPartEntity;
+import com.sun.jersey.multipart.MultiPart;
 import eu.dasish.annotation.backend.BackendConstants;
 import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.Resource;
@@ -30,14 +32,15 @@ import java.util.UUID;
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.xml.bind.JAXBElement;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.ws.http.HTTPException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -84,7 +87,7 @@ public class CachedRepresentationResource extends ResourceResource {
     @Transactional(readOnly = true)
     public BufferedImage getCachedRepresentationContent(@PathParam("cachedid") String externalId) throws IOException {
         Number remotePrincipalID = this.getPrincipalID();
-         if (remotePrincipalID == null) {
+        if (remotePrincipalID == null) {
             return null;
         }
         try {
@@ -118,7 +121,7 @@ public class CachedRepresentationResource extends ResourceResource {
     @Transactional(readOnly = true)
     public InputStream getCachedRepresentationContentStream(@PathParam("cachedid") String externalId) throws IOException {
         Number remotePrincipalID = this.getPrincipalID();
-         if (remotePrincipalID == null) {
+        if (remotePrincipalID == null) {
             return null;
         }
         try {
@@ -135,6 +138,55 @@ public class CachedRepresentationResource extends ResourceResource {
             loggerServer.debug(e.toString());;
             httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e.toString());
             return null;
+        }
+    }
+
+    @PUT
+    @Consumes("multipart/mixed")
+    @Produces(MediaType.APPLICATION_XML)
+    @Path("{cachedid: " + BackendConstants.regExpIdentifier + "}/stream")
+    public String updateCachedBlob(@PathParam("cachedid") String cachedIdentifier,
+            MultiPart multiPart) throws IOException {
+        Number remotePrincipalID = this.getPrincipalID();
+        if (remotePrincipalID == null) {
+            return "Nothing is updated. You are no tlogged in";
+        }
+        try {
+            final Number cachedID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(cachedIdentifier), Resource.CACHED_REPRESENTATION);
+            BodyPartEntity bpe = (BodyPartEntity) multiPart.getBodyParts().get(0).getEntity();
+            InputStream cachedSource = bpe.getInputStream();
+            try {
+                final int result = dbIntegrityService.updateCachedBlob(cachedID, cachedSource);
+                return result + "rows are updated";
+            } catch (IOException e) {
+                loggerServer.debug(e.toString());
+                httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.toString());
+                return "Nothing is updated. ";
+            }
+        } catch (NotInDataBaseException e2) {
+            loggerServer.debug(e2.toString());
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e2.toString());
+            return "Nothing is updated. ";
+        }
+    }
+
+    @PUT
+    @Consumes(MediaType.TEXT_XML)
+    @Produces(MediaType.APPLICATION_XML)
+    @Path("metadata")
+    public String updateCachedMetadata(@PathParam("cachedid") String cachedIdentifier,
+            CachedRepresentationInfo cachedInfo) throws IOException {
+        Number remotePrincipalID = this.getPrincipalID();
+        if (remotePrincipalID == null) {
+            return "Nothing is updated. You are no tlogged in";
+        }
+        try {
+            final int result = dbIntegrityService.updateCachedMetada(cachedInfo);
+            return result + "rows are updated";
+        } catch (NotInDataBaseException e2) {
+            loggerServer.debug(e2.toString());
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e2.toString());
+            return "Nothing is updated. ";
         }
     }
 }
