@@ -24,13 +24,10 @@
         <p><a href="https://trac.clarin.eu/wiki/DASISH/SpecificationDocument#RESTAPI">https://trac.clarin.eu/wiki/DASISH/SpecificationDocument#RESTAPI</a></p>
       
         <br> 
-        <a href="api/authentication/login"> login  (Login/check)</a> <br> 
+        <a href="api/authentication/login"> login  </a> <br> 
          <br> 
         <a href="api/authentication/logout"> logout</a> <br> 
-        <br> 
-        <a href="api"> Bienvenue </a> <br> 
-        <br>
-        
+
         <b>Test URI-s</b><br>
         <b>All output xml-s are valid w.r.t. the schema</b><br>
         GET <a href="api/authentication/principal">api/authentication/principal</a> <br> 

@@ -114,7 +114,7 @@ public class AnnotationsTest extends JerseyTest {
     public void testGetAnnotation() throws NotInDataBaseException, IOException {
         
         // Authentication  
-        Builder responseBuilderAu = getAuthenticatedResource(resource().path("authentication/login")).accept(MediaType.TEXT_XML);        
+        Builder responseBuilderAu = getAuthenticatedResource(resource().path("authentication/login")).accept(MediaType.TEXT_HTML);        
         ClientResponse responseAu = responseBuilderAu.get(ClientResponse.class); 
         assertEquals(200, responseAu.getStatus());
         
@@ -159,7 +159,7 @@ public class AnnotationsTest extends JerseyTest {
         
           
         // Authentication  
-        Builder responseBuilderAu = getAuthenticatedResource(resource().path("authentication/login")).accept(MediaType.TEXT_XML);        
+        Builder responseBuilderAu = getAuthenticatedResource(resource().path("authentication/login")).accept(MediaType.TEXT_HTML);        
         ClientResponse responseAu = responseBuilderAu.get(ClientResponse.class); 
         assertEquals(200, responseAu.getStatus());
         
@@ -184,7 +184,7 @@ public class AnnotationsTest extends JerseyTest {
         
           
         // Authentication  
-        Builder responseBuilderAu = getAuthenticatedResource(resource().path("authentication/login")).accept(MediaType.TEXT_XML);        
+        Builder responseBuilderAu = getAuthenticatedResource(resource().path("authentication/login")).accept(MediaType.TEXT_HTML);        
         ClientResponse responseAu = responseBuilderAu.get(ClientResponse.class); 
         assertEquals(200, responseAu.getStatus());
         
@@ -221,7 +221,7 @@ public class AnnotationsTest extends JerseyTest {
         
           
         // Authentication  
-        Builder responseBuilderAu = getAuthenticatedResource(resource().path("authentication/login")).accept(MediaType.TEXT_XML);        
+        Builder responseBuilderAu = getAuthenticatedResource(resource().path("authentication/login")).accept(MediaType.TEXT_HTML);        
         ClientResponse responseAu = responseBuilderAu.get(ClientResponse.class); 
         assertEquals(200, responseAu.getStatus());
         
@@ -263,7 +263,7 @@ public class AnnotationsTest extends JerseyTest {
         
           
         // Authentication  
-        Builder responseBuilderAu = getAuthenticatedResource(resource().path("authentication/login")).accept(MediaType.TEXT_XML);        
+        Builder responseBuilderAu = getAuthenticatedResource(resource().path("authentication/login")).accept(MediaType.TEXT_HTML);        
         ClientResponse responseAu = responseBuilderAu.get(ClientResponse.class); 
         assertEquals(200, responseAu.getStatus());
         

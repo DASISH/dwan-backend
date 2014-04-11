@@ -174,8 +174,7 @@ public class CachedRepresentationResource extends ResourceResource {
     @Consumes(MediaType.TEXT_XML)
     @Produces(MediaType.APPLICATION_XML)
     @Path("metadata")
-    public String updateCachedMetadata(@PathParam("cachedid") String cachedIdentifier,
-            CachedRepresentationInfo cachedInfo) throws IOException {
+    public String updateCachedMetadata(CachedRepresentationInfo cachedInfo) throws IOException {
         Number remotePrincipalID = this.getPrincipalID();
         if (remotePrincipalID == null) {
             return "Nothing is updated. You are no tlogged in";

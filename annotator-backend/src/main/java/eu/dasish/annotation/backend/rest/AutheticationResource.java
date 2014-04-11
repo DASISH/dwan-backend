@@ -59,42 +59,14 @@ public class AutheticationResource extends ResourceResource {
      * 
      */
     @GET
-    @Produces(MediaType.TEXT_XML)
+    @Produces(MediaType.TEXT_HTML)
     @Path("login")
     @Transactional(readOnly = true)
-    public JAXBElement<Principal> loginAndGet() throws IOException {
-        dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
-        String remotePrincipal = httpServletRequest.getRemoteUser();
-        verboseOutput = new VerboseOutput(loggerServer);
-        if (!remotePrincipal.equals("anonymous")) {
-            try {
-                final Number remotePrincipalID = dbIntegrityService.getPrincipalInternalIDFromRemoteID(remotePrincipal);
-                return new ObjectFactory().createPrincipal(dbIntegrityService.getPrincipal(remotePrincipalID));
-            } catch (NotInDataBaseException e) {
-                loggerServer.info(e.toString());
-                loggerServer.info("The record for the user with the Shibboleth id " + remotePrincipal + " will be generated now automatically.");
-                try {
-                    try {
-                        final Number newPrincipalID = dbIntegrityService.addPrincipal(dbIntegrityService.createShibbolizedPrincipal(remotePrincipal), remotePrincipal);
-                        final Principal addedPrincipal = dbIntegrityService.getPrincipal(newPrincipalID);
-                        return new ObjectFactory().createPrincipal(addedPrincipal);
-                    } catch (PrincipalExists e2) {
-                        loggerServer.info(e2.toString());
-                        httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e2.toString());
-                        return new ObjectFactory().createPrincipal(new Principal());
-                    }
-                } catch (NotInDataBaseException e1) {
-                    loggerServer.info(e1.toString());
-                    httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e1.toString());
-                    return new ObjectFactory().createPrincipal(new Principal());
-                }
-            }
-        } else {
-            loggerServer.info("Shibboleth fall-back.  Logged in as 'anonymous' with no rights.");
-            httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, " Shibboleth fall-back.  Logged in as 'anonymous' with no rights.");
-            return new ObjectFactory().createPrincipal(new Principal());
-        }
+    public String login() {
+        return this.welcomeString();
     }
+
+
 
     @GET
     @Produces(MediaType.TEXT_XML)
@@ -102,5 +74,14 @@ public class AutheticationResource extends ResourceResource {
     @Transactional(readOnly = true)
     public void logout() throws IOException {
         httpServletResponse.sendRedirect(context.getInitParameter("eu.dasish.annotation.backend.logout"));
+    }
+
+    private String welcomeString() {
+        String baseUri = uriInfo.getBaseUri().toString() + "..";
+        String welcome = "<!DOCTYPE html><body>"
+                + "<h3>Welcome to DASISH Webannotator (DWAN)</h3><br>"
+                + "<a href=\"" + baseUri + "\"> to DWAN's test jsp page</a>"
+                + "</body>";
+        return welcome;
     }
 }
