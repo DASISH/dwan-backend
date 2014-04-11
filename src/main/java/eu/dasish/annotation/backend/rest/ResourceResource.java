@@ -18,26 +18,18 @@
 package eu.dasish.annotation.backend.rest;
 
 import eu.dasish.annotation.backend.NotInDataBaseException;
-import eu.dasish.annotation.backend.NotLoggedInException;
+import eu.dasish.annotation.backend.PrincipalExists;
 import eu.dasish.annotation.backend.dao.DBIntegrityService;
-import eu.dasish.annotation.schema.ObjectFactory;
-import eu.dasish.annotation.schema.Principal;
 import java.io.IOException;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Providers;
-import javax.xml.ws.http.HTTPException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
@@ -64,28 +56,58 @@ public class ResourceResource {
     protected String defaultAccess = "read";
     protected String[] admissibleAccess = {"read", "write", "owner"};
 
-    public Number getPrincipalID() throws IOException{
+    public Number getPrincipalID() throws IOException {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
-        verboseOutput = new VerboseOutput(loggerServer);
         String remotePrincipal = httpServletRequest.getRemoteUser();
-        if (remotePrincipal != null) {
-            if (!remotePrincipal.equals(anonym)) {
+        verboseOutput = new VerboseOutput(loggerServer);
+        if (!remotePrincipal.equals("anonymous")) {
+            try {
+                return dbIntegrityService.getPrincipalInternalIDFromRemoteID(remotePrincipal);
+            } catch (NotInDataBaseException e) {
+                loggerServer.info(e.toString());
+                loggerServer.info("The record for the user with the Shibboleth id " + remotePrincipal + " will be generated now automatically.");
                 try {
-                    return dbIntegrityService.getPrincipalInternalIDFromRemoteID(remotePrincipal);
-                } catch (NotInDataBaseException e) {
-                    loggerServer.info(e.toString());
-                    httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e.toString());
+                    try {
+                        return dbIntegrityService.addPrincipal(dbIntegrityService.createShibbolizedPrincipal(remotePrincipal), remotePrincipal);
+                    } catch (PrincipalExists e2) {
+                        loggerServer.info(e2.toString());
+                        httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e2.toString());
+                        return null;
+                    }
+                } catch (NotInDataBaseException e1) {
+                    loggerServer.info(e1.toString());
+                    httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e1.toString());
                     return null;
                 }
-            } else {
-                loggerServer.info("Shibboleth fall-back.  Logged in as 'anonymous' with no rights.");
-                httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, " Shibboleth fall-back.  Logged in as 'anonymous' with no rights.");
-                return null;
             }
         } else {
-            loggerServer.info("Not logged in.");
-            httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, " Not logged in.");
+            loggerServer.info("Shibboleth fall-back.  Logged in as 'anonymous' with no rights.");
+            httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, " Shibboleth fall-back.  Logged in as 'anonymous' with no rights.");
             return null;
         }
+
+
+//        dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
+//        verboseOutput = new VerboseOutput(loggerServer);
+//        String remotePrincipal = httpServletRequest.getRemoteUser();
+//        if (remotePrincipal != null) {
+//            if (!remotePrincipal.equals(anonym)) {
+//                try {
+//                    return dbIntegrityService.getPrincipalInternalIDFromRemoteID(remotePrincipal);
+//                } catch (NotInDataBaseException e) {
+//                    loggerServer.info(e.toString());
+//                    httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e.toString());
+//                    return null;
+//                }
+//            } else {
+//                loggerServer.info("Shibboleth fall-back.  Logged in as 'anonymous' with no rights.");
+//                httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, " Shibboleth fall-back.  Logged in as 'anonymous' with no rights.");
+//                return null;
+//            }
+//        } else {
+//            loggerServer.info("Not logged in.");
+//            httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, " Not logged in.");
+//            return null;
+//        }
     }
 }
