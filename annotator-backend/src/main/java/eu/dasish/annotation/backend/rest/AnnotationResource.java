@@ -46,7 +46,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Providers;
 import javax.xml.bind.JAXBElement;
-import javax.xml.ws.http.HTTPException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 

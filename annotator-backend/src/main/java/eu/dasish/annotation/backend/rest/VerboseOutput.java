@@ -18,7 +18,6 @@
 package eu.dasish.annotation.backend.rest;
 
 import java.io.IOException;
-import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 
 /**

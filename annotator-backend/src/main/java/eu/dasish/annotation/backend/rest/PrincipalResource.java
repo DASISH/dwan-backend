@@ -41,7 +41,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.xml.bind.JAXBElement;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.ws.http.HTTPException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -179,19 +178,27 @@ public class PrincipalResource extends ResourceResource {
         if (remotePrincipalID == null) {
             return new ObjectFactory().createPrincipal(new Principal());
         }
-        if (dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID).equals(admin)) {
-            try {
-                final Number principalID = dbIntegrityService.updatePrincipal(principal);
-                final Principal addedPrincipal = dbIntegrityService.getPrincipal(principalID);
-                return new ObjectFactory().createPrincipal(addedPrincipal);
-            } catch (NotInDataBaseException e) {
-                loggerServer.debug(e.toString());;
-                httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.toString());
+        try {
+            final Number principalID = dbIntegrityService.getResourceInternalIdentifierFromURI(principal.getURI(), Resource.PRINCIPAL);
+            if (dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID).equals(admin)
+                    || remotePrincipalID.equals(principalID)) {
+                try {
+                    final int updatedRows = dbIntegrityService.updatePrincipal(principal);
+                    final Principal addedPrincipal = dbIntegrityService.getPrincipal(principalID);
+                    return new ObjectFactory().createPrincipal(addedPrincipal);
+                } catch (NotInDataBaseException e) {
+                    loggerServer.debug(e.toString());
+                    httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.toString());
+                    return new ObjectFactory().createPrincipal(new Principal());
+                }
+            } else {
+                verboseOutput.ADMIN_RIGHTS_EXPECTED();
+                httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
                 return new ObjectFactory().createPrincipal(new Principal());
             }
-        } else {
-            verboseOutput.ADMIN_RIGHTS_EXPECTED();
-            httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
+        } catch (NotInDataBaseException e1) {
+            loggerServer.debug(e1.toString());
+            httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e1.toString());
             return new ObjectFactory().createPrincipal(new Principal());
         }
     }

@@ -17,13 +17,11 @@
  */
 package eu.dasish.annotation.backend.rest;
 
-import eu.dasish.annotation.backend.NotInDataBaseException;
-import eu.dasish.annotation.backend.PrincipalExists;
+import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.schema.ObjectFactory;
 import eu.dasish.annotation.schema.Principal;
 import java.io.IOException;
 import java.sql.SQLException;
-import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -63,7 +61,7 @@ public class AutheticationResource extends ResourceResource {
     @Path("login")
     @Transactional(readOnly = true)
     public String login() {
-        return this.welcomeString();
+        return Helpers.welcomeString(uriInfo.getBaseUri().toString() + "..");
     }
 
 
@@ -76,12 +74,5 @@ public class AutheticationResource extends ResourceResource {
         httpServletResponse.sendRedirect(context.getInitParameter("eu.dasish.annotation.backend.logout"));
     }
 
-    private String welcomeString() {
-        String baseUri = uriInfo.getBaseUri().toString() + "..";
-        String welcome = "<!DOCTYPE html><body>"
-                + "<h3>Welcome to DASISH Webannotator (DWAN)</h3><br>"
-                + "<a href=\"" + baseUri + "\"> to DWAN's test jsp page</a>"
-                + "</body>";
-        return welcome;
-    }
+    
 }
