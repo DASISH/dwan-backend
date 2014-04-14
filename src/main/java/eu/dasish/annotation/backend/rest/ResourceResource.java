@@ -86,28 +86,5 @@ public class ResourceResource {
             return null;
         }
 
-
-//        dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
-//        verboseOutput = new VerboseOutput(loggerServer);
-//        String remotePrincipal = httpServletRequest.getRemoteUser();
-//        if (remotePrincipal != null) {
-//            if (!remotePrincipal.equals(anonym)) {
-//                try {
-//                    return dbIntegrityService.getPrincipalInternalIDFromRemoteID(remotePrincipal);
-//                } catch (NotInDataBaseException e) {
-//                    loggerServer.info(e.toString());
-//                    httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e.toString());
-//                    return null;
-//                }
-//            } else {
-//                loggerServer.info("Shibboleth fall-back.  Logged in as 'anonymous' with no rights.");
-//                httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, " Shibboleth fall-back.  Logged in as 'anonymous' with no rights.");
-//                return null;
-//            }
-//        } else {
-//            loggerServer.info("Not logged in.");
-//            httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, " Not logged in.");
-//            return null;
-//        }
     }
 }

@@ -64,4 +64,13 @@ public class Helpers {
         String result = serializer.writeToString(element);
         return result;
     }
+    
+    public static String welcomeString(String baseUri) {
+        String welcome = "<!DOCTYPE html><body>"
+                + "You are logged in.<br>"
+                + "<h3>Welcome to DASISH Webannotator (DWAN)</h3><br>"
+                + "<a href=\"" + baseUri + "\"> to DWAN's test jsp page</a>"
+                + "</body>";
+        return welcome;
+    }
 }

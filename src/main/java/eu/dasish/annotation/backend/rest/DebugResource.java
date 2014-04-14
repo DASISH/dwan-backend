@@ -34,7 +34,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.xml.bind.JAXBElement;
-import javax.xml.ws.http.HTTPException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
