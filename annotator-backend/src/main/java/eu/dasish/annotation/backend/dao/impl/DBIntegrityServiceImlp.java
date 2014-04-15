@@ -850,7 +850,7 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     }
 
     @Override
-    public Principal createShibbolizedPrincipal(String remoteID) {
+    public Principal createPrincipalRecord(String remoteID) {
         return principalDao.createShibbolizedPrincipal(remoteID);
     }
 

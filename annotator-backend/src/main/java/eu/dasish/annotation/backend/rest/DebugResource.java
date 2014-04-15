@@ -91,7 +91,7 @@ public class DebugResource extends ResourceResource {
     @Path("/remoteID")
     @Transactional(readOnly = true)
     public String getLoggedInRemoteID() {
-        return httpServletRequest.getRemoteUser();
+        return (httpServletRequest.getRemoteUser() != null) ? httpServletRequest.getRemoteUser() : "Null";
     }
 
     /////

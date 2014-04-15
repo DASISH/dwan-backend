@@ -60,29 +60,35 @@ public class ResourceResource {
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         String remotePrincipal = httpServletRequest.getRemoteUser();
         verboseOutput = new VerboseOutput(loggerServer);
-        if (!remotePrincipal.equals("anonymous")) {
-            try {
-                return dbIntegrityService.getPrincipalInternalIDFromRemoteID(remotePrincipal);
-            } catch (NotInDataBaseException e) {
-                loggerServer.info(e.toString());
-                loggerServer.info("The record for the user with the Shibboleth id " + remotePrincipal + " will be generated now automatically.");
+        if (remotePrincipal != null) {
+            if (!remotePrincipal.equals("anonymous")) {
                 try {
+                    return dbIntegrityService.getPrincipalInternalIDFromRemoteID(remotePrincipal);
+                } catch (NotInDataBaseException e) {
+                    loggerServer.info(e.toString());
+                    loggerServer.info("The record for the user with the Shibboleth id " + remotePrincipal + " will be generated now automatically.");
                     try {
-                        return dbIntegrityService.addPrincipal(dbIntegrityService.createShibbolizedPrincipal(remotePrincipal), remotePrincipal);
-                    } catch (PrincipalExists e2) {
-                        loggerServer.info(e2.toString());
-                        httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e2.toString());
+                        try {
+                            return dbIntegrityService.addPrincipal(dbIntegrityService.createPrincipalRecord(remotePrincipal), remotePrincipal);
+                        } catch (PrincipalExists e2) {
+                            loggerServer.info(e2.toString());
+                            httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e2.toString());
+                            return null;
+                        }
+                    } catch (NotInDataBaseException e1) {
+                        loggerServer.info(e1.toString());
+                        httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e1.toString());
                         return null;
                     }
-                } catch (NotInDataBaseException e1) {
-                    loggerServer.info(e1.toString());
-                    httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e1.toString());
-                    return null;
                 }
+            } else {
+                loggerServer.info("Shibboleth fall-back.  Logged in as 'anonymous' with no rights.");
+                httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, " Shibboleth fall-back.  Logged in as 'anonymous' with no rights.");
+                return null;
             }
         } else {
-            loggerServer.info("Shibboleth fall-back.  Logged in as 'anonymous' with no rights.");
-            httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, " Shibboleth fall-back.  Logged in as 'anonymous' with no rights.");
+            loggerServer.info("Null principal");
+            httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, " Null principal");
             return null;
         }
 

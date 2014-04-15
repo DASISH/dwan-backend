@@ -21,7 +21,7 @@ import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.schema.ObjectFactory;
 import eu.dasish.annotation.schema.Principal;
 import java.io.IOException;
-import java.sql.SQLException;
+import javax.servlet.ServletException;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -37,8 +37,10 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Component
 @Path("/authentication")
-@Transactional(rollbackFor = {Exception.class, SQLException.class, IOException.class, ParserConfigurationException.class})
+@Transactional(rollbackFor = {Exception.class, IOException.class, ParserConfigurationException.class})
 public class AutheticationResource extends ResourceResource {
+
+  
 
     @GET
     @Produces(MediaType.TEXT_XML)
@@ -64,15 +66,12 @@ public class AutheticationResource extends ResourceResource {
         return Helpers.welcomeString(uriInfo.getBaseUri().toString() + "..");
     }
 
-
-
     @GET
     @Produces(MediaType.TEXT_XML)
     @Path("logout")
     @Transactional(readOnly = true)
-    public void logout() throws IOException {
+    public void logout() throws IOException, ServletException {
+        httpServletRequest.getSession().invalidate();
         httpServletResponse.sendRedirect(context.getInitParameter("eu.dasish.annotation.backend.logout"));
     }
-
-    
 }
