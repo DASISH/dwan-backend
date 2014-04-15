@@ -34,7 +34,7 @@ see implementation details http://jersey.java.net/nonav/documentation/latest/jax
     <context-param>
         <param-name>eu.dasish.annotation.backend.schemaLocation</param-name>
         <param-value>http://www.dasish.eu/ns/addit https://svn.clarin.eu/DASISH/t5.6/schema/trunk/annotator-schema/src/main/resources/DASISH-schema.xsd</param-value>
-    <!-- <param-value>http://www.dasish.eu/ns/addit file:/Users/olhsha/repositories/DASISH/t5.6/schema/trunk/annotator-schema/src/main/target/DASISH-schema.xsd</param-value> -->
+        <!-- <param-value>http://www.dasish.eu/ns/addit file:/Users/olhsha/repositories/DASISH/t5.6/schema/trunk/annotator-schema/src/main/target/DASISH-schema.xsd</param-value> -->
     </context-param>
     <context-param>
         <param-name>eu.dasish.annotation.backend.logDatabaseLocation</param-name>
@@ -46,7 +46,9 @@ see implementation details http://jersey.java.net/nonav/documentation/latest/jax
     </context-param>
     <context-param>
         <param-name>eu.dasish.annotation.backend.logout</param-name>
-        <param-value>/ds/webannotator?shhaaDo=lO</param-value>
+        <!-- <param-value>/ds/webannotator?shhaaDo=lO</param-value> -->
+        <!-- <param-value>/ds/webannotator/j_spring_security_logout</param-value> -->
+        <param-value>/annotator-backend/j_spring_security_logout</param-value>
     </context-param>
     
     
@@ -81,7 +83,7 @@ see implementation details http://jersey.java.net/nonav/documentation/latest/jax
         <url-pattern>/webresources/*</url-pattern>
     </servlet-mapping>
     
-<!--   <security-constraint>
+    <!--   <security-constraint>
         <display-name>Protected backend localhost</display-name>
         <web-resource-collection>
             <web-resource-name> Protected backend rest service</web-resource-name>
@@ -104,15 +106,26 @@ see implementation details http://jersey.java.net/nonav/documentation/latest/jax
         </description>
         <role-name>tomcat</role-name>
     </security-role> -->
-    
+   
+ <!-- Spring security -->
     <filter>
+        <filter-name>springSecurityFilterChain</filter-name>
+        <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>springSecurityFilterChain</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+       
+    <!--  Shibboleth filter -->
+<!--    <filter>
         <filter-name>AAIFilter</filter-name>
         <filter-class>de.mpg.aai.shhaa.AuthFilter</filter-class>
     </filter>
     <filter-mapping>
         <filter-name>AAIFilter</filter-name>
         <url-pattern>/*</url-pattern>
-    </filter-mapping> 
+    </filter-mapping> -->
     
    
 </web-app>
