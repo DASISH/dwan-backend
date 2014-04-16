@@ -17,6 +17,7 @@
  */
 package eu.dasish.annotation.backend.dao.impl;
 
+import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.PrincipalCannotBeDeleted;
 import eu.dasish.annotation.backend.TestBackendConstants;
@@ -151,17 +152,9 @@ public class JdbcPrincipalDaoTest extends JdbcResourceDaoTest {
     @Test
     public void tesPrincipalExists() {
         System.out.println("test principalExists");
-        jdbcPrincipalDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_principals);
-
-        Principal freshPrincipal = new Principal();
-        freshPrincipal.setDisplayName("Guilherme");
-        freshPrincipal.setEMail("guisil@mpi.nl");
-        assertEquals(false,jdbcPrincipalDao.principalExists(freshPrincipal));
-
-        Principal principal = new Principal();
-        principal.setDisplayName("Olha");
-        principal.setEMail("Olha.Shakaravska@mpi.nl");
-        assertTrue(jdbcPrincipalDao.principalExists(principal));
+        //jdbcPrincipalDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_principals);        
+        assertEquals(false,jdbcPrincipalDao.principalExists("guisil@mpi.nl"));       
+        assertTrue(jdbcPrincipalDao.principalExists("olhsha@mpi.nl"));
     }
     
       /**
@@ -177,12 +170,14 @@ public class JdbcPrincipalDaoTest extends JdbcResourceDaoTest {
         assertEquals(expResult, result);
     }
     
-    @Test
-    public void testCreateShibbolizedPrincipal(){
-        System.out.println("test createShibbolizedPrincipal");
-        Principal result = jdbcPrincipalDao.createShibbolizedPrincipal("test.user@mail.com");
-        assertEquals("test.user@mail.com", result.getDisplayName());
-        assertEquals("test.user@mail.com", result.getEMail());
+   @Test
+   public void generateHashes() {
+        System.out.println("*****"); 
+        System.out.println("generate hashes");
+        System.out.println(Helpers.hashPswd("1234", 512, "olhsha@mpi.nl"));
+        System.out.println(Helpers.hashPswd("5678", 512, "olasei@mpi.nl"));
+        System.out.println("*****");
+        
     }
 
 }

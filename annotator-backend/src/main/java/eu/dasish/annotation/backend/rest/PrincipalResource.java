@@ -137,6 +137,14 @@ public class PrincipalResource extends ResourceResource {
     }
 
     @POST
+    @Produces(MediaType.TEXT_PLAIN)
+    @Path("create/{remoteId}/{password}")
+    public String createSpringAuthenticationRecord(@PathParam("remoteId") String remoteId, @PathParam("password") String password) throws IOException {
+        int result = dbIntegrityService.addSpringUser(remoteId, password, 512, remoteId);
+        return result+ " record(s) has been added. Must be 2: 1 record for the principal, another for the authorities table.";
+    }
+
+    @POST
     @Consumes(MediaType.APPLICATION_XML)
     @Produces(MediaType.APPLICATION_XML)
     @Path("{remoteId}")
@@ -250,7 +258,7 @@ public class PrincipalResource extends ResourceResource {
                 } catch (PrincipalCannotBeDeleted e2) {
                     loggerServer.debug(e2.toString());;
                     httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e2.toString());
-                    return "Nothis is deleted.";
+                    return "Nothing is deleted.";
                 }
             } catch (NotInDataBaseException e) {
                 loggerServer.debug(e.toString());;

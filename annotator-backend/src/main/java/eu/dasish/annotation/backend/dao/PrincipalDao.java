@@ -41,7 +41,7 @@ public interface PrincipalDao extends ResourceDao{
      public boolean principalIsInUse(Number principalID);
      
      // where is it used??
-     public boolean principalExists(Principal principal);
+     public boolean principalExists(String remoteID);
      
      public String getTypeOfPrincipalAccount(Number internalID);
      
@@ -58,7 +58,11 @@ public interface PrincipalDao extends ResourceDao{
     
      public Number addPrincipal(Principal principal, String remoteID) throws NotInDataBaseException;
      
+     public int addSpringUser(String username, String password, int strength, String salt);
+     
+     public int addSpringAuthorities(String username);
+     
      public int deletePrincipal(Number intenralID) throws PrincipalCannotBeDeleted;
      
-     public Principal createShibbolizedPrincipal(String remoteID);
+     
 }

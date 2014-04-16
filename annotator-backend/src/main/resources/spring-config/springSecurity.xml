@@ -20,24 +20,32 @@
 -->
 
 <beans xmlns="http://www.springframework.org/schema/beans"
-    xmlns:security="http://www.springframework.org/schema/security"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://www.springframework.org/schema/beans
+       xmlns:security="http://www.springframework.org/schema/security"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
     http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
     http://www.springframework.org/schema/security
     http://www.springframework.org/schema/security/spring-security-3.2.xsd">     
-    <security:http auto-config='true'>
+    
+    <bean id="passwordEncoderBean" class="org.springframework.security.authentication.encoding.ShaPasswordEncoder">
+        <constructor-arg value="512" />
+    </bean>
+    
+    <security:http>
         <security:intercept-url pattern="/api/authentication/login" access="ROLE_USER" />
         <security:http-basic />
         <security:logout delete-cookies="JSESSIONID"/>
     </security:http>
+    
     <security:authentication-manager>
         <security:authentication-provider>
-            <security:user-service>
-                <security:user name="olhsha" password="olhapassword" authorities="ROLE_USER, ROLE_ADMIN" />
-            </security:user-service>
+            <security:password-encoder ref="passwordEncoderBean">
+                <security:salt-source user-property="username"/>
+            </security:password-encoder>
+            <security:jdbc-user-service data-source-ref="dataSource"/>
         </security:authentication-provider>
-    </security:authentication-manager>   
+    </security:authentication-manager> 
+      
 </beans>
 
 

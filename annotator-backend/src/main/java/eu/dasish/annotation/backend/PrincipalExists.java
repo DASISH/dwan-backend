@@ -23,8 +23,8 @@ package eu.dasish.annotation.backend;
  */
 public class PrincipalExists extends Exception{
     
-    public PrincipalExists(String email){
-        super("The principal with the e-mail "+email+" already exists in the database and cannot be added now. Note, e-mail are case insensitive in the database. ");
+    public PrincipalExists(String remoteID){
+        super("The principal with the remoteID "+remoteID+" already exists in the database and cannot be added. ");
     }
     
 }
