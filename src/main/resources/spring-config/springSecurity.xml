@@ -33,8 +33,13 @@
     
     <security:http>
         <security:intercept-url pattern="/api/authentication/login" access="ROLE_USER" />
-        <security:http-basic />
-        <security:logout delete-cookies="JSESSIONID"/>
+        <security:form-login 
+            login-page="/loginform.jsp" 
+            default-target-url="/api" 
+            authentication-failure-url="/error.jsp" 
+            username-parameter="username"
+            password-parameter="password" />
+        <security:logout delete-cookies="JSESSIONID"  logout-success-url="/logout.jsp"/>
     </security:http>
     
     <security:authentication-manager>

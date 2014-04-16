@@ -23,11 +23,14 @@
         <p><a href="api/myresource">Jersey resource</a>
         <p><a href="https://trac.clarin.eu/wiki/DASISH/SpecificationDocument#RESTAPI">https://trac.clarin.eu/wiki/DASISH/SpecificationDocument#RESTAPI</a></p>
       
-        <br> 
+<!--        <br> 
+        <a href="createprincipal.jsp"> create principal record</a> <br> 
+        <br> -->
         <a href="api/authentication/login"> login  </a> <br> 
          <br> 
         <a href="api/authentication/logout"> logout</a> <br> 
-
+        <br> 
+        
         <b>Test URI-s</b><br>
         <b>All output xml-s are valid w.r.t. the schema</b><br>
         GET <a href="api/authentication/principal">api/authentication/principal</a> <br> 
@@ -39,9 +42,9 @@
         GET <a href="api/annotations?link=Gaud">api/annotations?link=Gaud</a>  <br>
         GET <a href="api/annotations?after=2014-02-04 15:57:58.046908&before=2014-04-06 10:08:16.213186">api/annotations?after=2014-02-04 15:57:58.046908&before=2014-04-06 10:08:16.213186</a> 
         !Comment: What is "namespace" query parameter? Must be implemented and tested <br>
-        GET <a href="api/annotations/00000000-0000-0000-0000-000000000021">api/annotations/00000000-0000-0000-0000-000000000021</a>  </br>
-        GET <a href="api/annotations/00000000-0000-0000-0000-000000000021/targets">api/annotations/00000000-0000-0000-0000-000000000021/targets</a>  </br>
-        GET <a href="api/annotations/00000000-0000-0000-0000-000000000021/permissions">api/annotations/00000000-0000-0000-0000-000000000021/permissions</a><br>
+        GET <a href="api/annotations/00000000-0000-0000-0000-000000000022">api/annotations/00000000-0000-0000-0000-000000000022</a>  </br>
+        GET <a href="api/annotations/00000000-0000-0000-0000-000000000022/targets">api/annotations/00000000-0000-0000-0000-000000000022/targets</a>  </br>
+        GET <a href="api/annotations/00000000-0000-0000-0000-000000000022/permissions">api/annotations/00000000-0000-0000-0000-000000000022/permissions</a><br>
         GET <a href="api/targets/00000000-0000-0000-0000-000000000032">api/targets/00000000-0000-0000-0000-000000000032</a>  <br>
         GET <a href="api/targets/00000000-0000-0000-0000-000000000032/versions">api/targets/00000000-0000-0000-0000-000000000032/versions</a>   <br>
         GET <a href="api/cached/00000000-0000-0000-0000-000000000051/metadata">api/cached/00000000-0000-0000-0000-000000000051/metadata</a><br>
