@@ -69,7 +69,7 @@ public class Helpers {
         String welcome = "<!DOCTYPE html><body>"
                 + "You are logged in.<br>"
                 + "<h3>Welcome to DASISH Webannotator (DWAN)</h3><br>"
-                + "<a href=\"" + baseUri + "\"> to DWAN's test jsp page</a>"
+                + "<a href=\"" + baseUri + "\"> To DWAN's test jsp page</a>"
                 + "</body>";
         return welcome;
     }
