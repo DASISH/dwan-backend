@@ -74,4 +74,6 @@ public class AutheticationResource extends ResourceResource {
         httpServletRequest.getSession().invalidate();
         httpServletResponse.sendRedirect(context.getInitParameter("eu.dasish.annotation.backend.logout"));
     }
+    
+   
 }

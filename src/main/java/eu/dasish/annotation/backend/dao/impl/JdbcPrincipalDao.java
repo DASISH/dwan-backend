@@ -17,6 +17,7 @@
  */
 package eu.dasish.annotation.backend.dao.impl;
 
+import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.PrincipalCannotBeDeleted;
 import eu.dasish.annotation.backend.dao.PrincipalDao;
@@ -102,12 +103,11 @@ public class JdbcPrincipalDao extends JdbcResourceDao implements PrincipalDao {
     }
 
     @Override
-    public boolean principalExists(Principal principal) {
+    public boolean principalExists(String remoteID) {
 
-        String emailCriterion = principal.getEMail().toLowerCase();
         StringBuilder sqlTargets = new StringBuilder("SELECT ");
-        sqlTargets.append(principal_id).append(" FROM ").append(principalTableName).append(" WHERE ").append("LOWER(").append(e_mail).append(")= ? LIMIT 1");
-        List<Number> result = this.loggedQuery(sqlTargets.toString(), internalIDRowMapper, emailCriterion);
+        sqlTargets.append(principal_id).append(" FROM ").append(principalTableName).append(" WHERE ").append(remote_id).append("= ? LIMIT 1");
+        List<Number> result = this.loggedQuery(sqlTargets.toString(), internalIDRowMapper, remoteID);
         if (result.size() > 0) {
             return true;
         } else {
@@ -197,6 +197,28 @@ public class JdbcPrincipalDao extends JdbcResourceDao implements PrincipalDao {
         final int affectedRows = this.loggedUpdate(sql.toString(), params);
         return getInternalID(externalIdentifier);
     }
+    
+    @Override
+    public int addSpringUser(String username, String password, int strength, String salt){
+       Map<String, Object> params = new HashMap<String, Object>();
+        params.put("username", username);
+        params.put("password", Helpers.hashPswd(password, strength, salt));
+        StringBuilder sql = new StringBuilder("INSERT INTO ");
+        sql.append(springUserTableName).append("(").append(springUsername).append(",").
+                append(springPassword).append(") VALUES (:username, :password)");
+        final int affectedRows = this.loggedUpdate(sql.toString(), params);
+        return affectedRows; 
+    }
+    
+    @Override
+     public int addSpringAuthorities(String username){
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("username", username);
+        StringBuilder sql = new StringBuilder("INSERT INTO ");
+        sql.append(springAuthoritiesTableName).append("(").append(springUsername).append(") VALUES (:username)");
+        final int affectedRows = this.loggedUpdate(sql.toString(), params);
+        return affectedRows;  
+    }
 
     ////////// UPDATERS ///////////////////////
     @Override
@@ -231,13 +253,7 @@ public class JdbcPrincipalDao extends JdbcResourceDao implements PrincipalDao {
 
     }
 
-    @Override
-    public Principal createShibbolizedPrincipal(String remoteID) {
-        Principal result = new Principal();
-        result.setDisplayName(remoteID);
-        result.setEMail(remoteID);
-        return result;
-    }
+   
 
     ////// DELETERS ////////////
     @Override

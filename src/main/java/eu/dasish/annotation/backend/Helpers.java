@@ -17,15 +17,15 @@
  */
 package eu.dasish.annotation.backend;
 
+import eu.dasish.annotation.schema.Principal;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
-import java.util.Set;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import org.slf4j.Logger;
+import org.springframework.security.authentication.encoding.ShaPasswordEncoder;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.ls.DOMImplementationLS;
@@ -72,5 +72,17 @@ public class Helpers {
                 + "<a href=\"" + baseUri + "\"> to DWAN's test jsp page</a>"
                 + "</body>";
         return welcome;
+    }
+    
+    public static Principal createPrincipalElement(String name, String e_mail) {
+        Principal result = new Principal();
+        result.setDisplayName(name);
+        result.setEMail(e_mail);
+        return result;
+    }
+    
+    public static String hashPswd(String pswd, int strength, String salt) {
+    ShaPasswordEncoder encoder = new ShaPasswordEncoder(strength);
+    return encoder.encodePassword(pswd, salt);
     }
 }

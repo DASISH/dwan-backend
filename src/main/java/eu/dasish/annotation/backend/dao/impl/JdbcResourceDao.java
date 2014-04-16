@@ -49,6 +49,8 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     final static protected String cachedRepresentationTableName = "cached_representation";
     final static protected String versionTableName = "version";
     final static protected String principalTableName = "principal";
+    final static protected String springUserTableName = "users";
+    final static protected String springAuthoritiesTableName = "authorities";
     // joint tablenames
     final static protected String notebooksAnnotationsTableName = "notebooks_annotations";
     final static protected String permissionsTableName = "annotations_principals_accesses";
@@ -56,6 +58,8 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     final static protected String annotationsTargetsTableName = "annotations_targets";
     final static protected String targetsCachedRepresentationsTableName = "targets_cached_representations";
     // base string constants: field Names
+    final static protected String springUsername = "username";
+    final static protected String springPassword = "password";
     final static protected String account = "account";
     final static protected String admin = "admin";
     final static protected String developer = "developer";

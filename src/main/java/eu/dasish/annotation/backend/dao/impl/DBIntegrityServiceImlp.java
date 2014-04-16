@@ -679,8 +679,8 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
 
     @Override
     public Number addPrincipal(Principal principal, String remoteID) throws NotInDataBaseException, PrincipalExists {
-        if (principalDao.principalExists(principal)) {
-            throw new PrincipalExists(principal.getEMail());
+        if (principalDao.principalExists(remoteID)) {
+            throw new PrincipalExists(remoteID);
         } else {
             return principalDao.addPrincipal(principal, remoteID);
         }
@@ -704,6 +704,13 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     public boolean createAnnotationInNotebook(Number notebookID, Annotation annotation, Number ownerID) throws NotInDataBaseException {
         Number newAnnotationID = this.addPrincipalsAnnotation(ownerID, annotation);
         return notebookDao.addAnnotationToNotebook(notebookID, newAnnotationID);
+    }
+    
+    @Override
+    public int addSpringUser(String username, String password, int strength, String salt){
+        int users = principalDao.addSpringUser(username, password, strength, salt);
+        int authorities = principalDao.addSpringAuthorities(username);        
+        return users+authorities;
     }
 
     ////////////// DELETERS //////////////////
@@ -849,10 +856,7 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         }
     }
 
-    @Override
-    public Principal createPrincipalRecord(String remoteID) {
-        return principalDao.createShibbolizedPrincipal(remoteID);
-    }
+  
 
     //// priveee ///
     private Target createFreshTarget(TargetInfo targetInfo) {

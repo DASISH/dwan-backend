@@ -878,7 +878,7 @@ public class DBIntegrityServiceTest {
         freshPrincipal.setEMail("Guilherme.Silva@mpi.nl");
         mockeryDao.checking(new Expectations() {
             {
-                oneOf(principalDao).principalExists(freshPrincipal);
+                oneOf(principalDao).principalExists("guisil@mpi.nl");
                 will(returnValue(false));
 
                 oneOf(principalDao).addPrincipal(freshPrincipal, "guisil@mpi.nl");
@@ -895,7 +895,7 @@ public class DBIntegrityServiceTest {
         freshPrincipal.setEMail("Olha.Shakaravska@mpi.nl");
         mockeryDao.checking(new Expectations() {
             {
-                oneOf(principalDao).principalExists(principal);
+                oneOf(principalDao).principalExists("olhsha@mpi.nl");
                 will(returnValue(true));
 
             }

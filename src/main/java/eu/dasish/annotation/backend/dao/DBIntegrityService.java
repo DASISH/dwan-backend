@@ -316,13 +316,14 @@ public interface DBIntegrityService {
      */
     Number addPrincipal(Principal principal, String remoteID) throws NotInDataBaseException, PrincipalExists;
 
+    public int addSpringUser(String username, String password, int strength, String salt);
+    
        /// notebooks ////
     Number createNotebook(Notebook notebook, Number ownerID) throws NotInDataBaseException;
 
     boolean createAnnotationInNotebook(Number notebookID, Annotation annotation, Number ownerID) throws NotInDataBaseException;
 
-    public Principal createPrincipalRecord(String remoteID);
-    
+   
     /**
      * DELETERS
      */

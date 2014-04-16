@@ -17,9 +17,11 @@
  */
 package eu.dasish.annotation.backend.rest;
 
+import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.PrincipalExists;
 import eu.dasish.annotation.backend.dao.DBIntegrityService;
+import eu.dasish.annotation.schema.Principal;
 import java.io.IOException;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -69,7 +71,8 @@ public class ResourceResource {
                     loggerServer.info("The record for the user with the Shibboleth id " + remotePrincipal + " will be generated now automatically.");
                     try {
                         try {
-                            return dbIntegrityService.addPrincipal(dbIntegrityService.createPrincipalRecord(remotePrincipal), remotePrincipal);
+                            Principal newPrincipal = Helpers.createPrincipalElement(remotePrincipal, remotePrincipal);
+                            return dbIntegrityService.addPrincipal(newPrincipal, remotePrincipal);
                         } catch (PrincipalExists e2) {
                             loggerServer.info(e2.toString());
                             httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e2.toString());
