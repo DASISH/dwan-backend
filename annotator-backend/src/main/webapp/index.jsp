@@ -23,15 +23,21 @@
         <p><a href="api/myresource">Jersey resource</a>
         <p><a href="https://trac.clarin.eu/wiki/DASISH/SpecificationDocument#RESTAPI">https://trac.clarin.eu/wiki/DASISH/SpecificationDocument#RESTAPI</a></p>
       
-<!--        <br> 
-        <a href="createprincipal.jsp"> create principal record</a> <br> 
-        <br> -->
+        <br> 
+        <a href="registerNonShibbolethPrincipal.html"> Register a non-shibboleth user</a> <br> 
+        <br> 
+        <a href="registerShibbolethPrincipal.html"> Register a shibboleth user</a> <br> 
+        <br>
+        <a href="registerShibbolethAlsoAsNonShibboleth.html"> Register an existing  shibboleth user as a non-shibboleth as well.</a> <br> 
+        <br>
+        <br>
         <a href="api/authentication/login"> login  </a> <br> 
          <br> 
         <a href="api/authentication/logout"> logout</a> <br> 
         <br> 
         
         <b>Test URI-s</b><br>
+        <br> 
         <b>All output xml-s are valid w.r.t. the schema</b><br>
         GET <a href="api/authentication/principal">api/authentication/principal</a> <br> 
         GET <a href="api/principals/admin">api/principals/admin</a><br> 

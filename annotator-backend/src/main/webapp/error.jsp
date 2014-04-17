@@ -24,7 +24,7 @@
     </head>
     <body>
      Authentication error. Check username and password. <br>
-     <a href="index.jsp"> To DWAN's test jsp page.</a><br>
-     <a href="loginform.jsp"> To DWAN's login jsp page.</a>
+     <a href="api/.."> To DWAN's test jsp page.</a><br>
+     <a href="api/authentication/login"> To DWAN's login.</a>
     </body>
 </html>
