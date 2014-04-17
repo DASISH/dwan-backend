@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -52,6 +53,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Path("/principals")
 @Transactional(rollbackFor = {Exception.class, SQLException.class, IOException.class, ParserConfigurationException.class})
 public class PrincipalResource extends ResourceResource {
+
+    int shaStrength = 512;
 
     public void setHttpRequest(HttpServletRequest request) {
         this.httpServletRequest = request;
@@ -95,7 +98,7 @@ public class PrincipalResource extends ResourceResource {
 
     @GET
     @Produces(MediaType.TEXT_XML)
-    @Path("/info")
+    @Path("info")
     @Transactional(readOnly = true)
     public JAXBElement<Principal> getPrincipalByInfo(@QueryParam("email") String email) throws IOException {
         Number remotePrincipalID = this.getPrincipalID();
@@ -140,8 +143,20 @@ public class PrincipalResource extends ResourceResource {
     @Produces(MediaType.TEXT_PLAIN)
     @Path("create/{remoteId}/{password}")
     public String createSpringAuthenticationRecord(@PathParam("remoteId") String remoteId, @PathParam("password") String password) throws IOException {
-        int result = dbIntegrityService.addSpringUser(remoteId, password, 512, remoteId);
-        return result+ " record(s) has been added. Must be 2: 1 record for the principal, another for the authorities table.";
+        Number remotePrincipalID = this.getPrincipalID();
+        if (remotePrincipalID == null) {
+            return "Logged in principal is null or anonymous.";
+        }
+
+        if (dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID).equals(admin)) {
+            int result = dbIntegrityService.addSpringUser(remoteId, password, shaStrength, remoteId);
+            return result + " record(s) has been added. Must be 2: 1 record for the principal, another for the authorities table.";
+        } else {
+            verboseOutput.ADMIN_RIGHTS_EXPECTED();
+            httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
+            return "Nothing is added.";
+        }
+
     }
 
     @POST
@@ -174,6 +189,75 @@ public class PrincipalResource extends ResourceResource {
             httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
             return new ObjectFactory().createPrincipal(new Principal());
         }
+
+    }
+
+    @POST
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.APPLICATION_XML)
+    @Path("register/nonshibboleth")
+    public JAXBElement<Principal> registerNonShibbolizedPrincipal(@FormParam("name") String name,
+            @FormParam("remoteId") String remoteId, @FormParam("password") String passowrd, @FormParam("email") String email)
+            throws IOException {
+        dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
+        Principal newPrincipal = new Principal();
+        newPrincipal.setDisplayName(name);
+        newPrincipal.setEMail(email);
+        try {
+            try {
+                final int updatedSpringTables = dbIntegrityService.addSpringUser(remoteId, passowrd, shaStrength, remoteId);
+                final Number principalID = dbIntegrityService.addPrincipal(newPrincipal, remoteId);
+                final Principal addedPrincipal = dbIntegrityService.getPrincipal(principalID);
+                return new ObjectFactory().createPrincipal(addedPrincipal);
+            } catch (NotInDataBaseException e1) {
+                loggerServer.debug(e1.toString());
+                httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e1.toString());
+                return new ObjectFactory().createPrincipal(new Principal());
+            }
+        } catch (PrincipalExists e) {
+            loggerServer.debug(e.toString());
+            httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.toString());
+            return new ObjectFactory().createPrincipal(new Principal());
+        }
+
+    }
+
+    @POST
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.APPLICATION_XML)
+    @Path("register/shibboleth")
+    public JAXBElement<Principal> registerShibbolizedPrincipal(@FormParam("name") String name,
+            @FormParam("remoteId") String remoteId, @FormParam("email") String email)
+            throws IOException {
+        dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
+        Principal newPrincipal = new Principal();
+        newPrincipal.setDisplayName(name);
+        newPrincipal.setEMail(email);
+        try {
+            try {
+                final Number principalID = dbIntegrityService.addPrincipal(newPrincipal, remoteId);
+                final Principal addedPrincipal = dbIntegrityService.getPrincipal(principalID);
+                return new ObjectFactory().createPrincipal(addedPrincipal);
+            } catch (NotInDataBaseException e1) {
+                loggerServer.debug(e1.toString());
+                httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e1.toString());
+                return new ObjectFactory().createPrincipal(new Principal());
+            }
+        } catch (PrincipalExists e) {
+            loggerServer.debug(e.toString());
+            httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.toString());
+            return new ObjectFactory().createPrincipal(new Principal());
+        }
+    }
+
+    @POST
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.TEXT_PLAIN)
+    @Path("register/shibbolethasnonshibboleth")
+    public String registerShibbolizedPrincipalAsNonShibb(@FormParam("remoteId") String remoteId, @FormParam("password") String password)
+            throws IOException {
+        int result = dbIntegrityService.addSpringUser(remoteId, password, shaStrength, remoteId);
+        return result + " record(s) has been added. Must be 2: 1 record for the principal, another for the authorities table.";
 
     }
 
