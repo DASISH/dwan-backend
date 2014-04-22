@@ -21,14 +21,18 @@ import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.PrincipalExists;
 import eu.dasish.annotation.backend.dao.DBIntegrityService;
+import eu.dasish.annotation.backend.dao.ILambda;
+import eu.dasish.annotation.schema.ObjectFactory;
 import eu.dasish.annotation.schema.Principal;
 import java.io.IOException;
+import java.util.Map;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Providers;
+import javax.xml.bind.JAXBElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +41,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author olhsha
  */
-public class ResourceResource {
+public class ResourceResource<T> {
 
     @Autowired
     protected DBIntegrityService dbIntegrityService;
@@ -92,6 +96,26 @@ public class ResourceResource {
         } else {
             loggerServer.info("Null principal");
             httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, " Null principal");
+            return null;
+        }
+    }
+    
+    protected T wrapGetResource(Map params, ILambda<Map, T> getter) throws IOException {
+        Number remotePrincipalID = this.getPrincipalID();
+        if (remotePrincipalID == null) {
+            return null;
+        }
+        try {
+            try {
+                return getter.apply(params);
+            } catch (NotInDataBaseException e1) {
+                loggerServer.debug(e1.toString());
+                httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e1.toString());
+                return null;
+            }
+        } catch (PrincipalExists e) {
+            loggerServer.debug(e.toString());
+            httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.toString());
             return null;
         }
 

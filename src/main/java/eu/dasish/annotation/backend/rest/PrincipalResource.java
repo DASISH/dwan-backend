@@ -21,11 +21,14 @@ import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.PrincipalCannotBeDeleted;
 import eu.dasish.annotation.backend.PrincipalExists;
 import eu.dasish.annotation.backend.Resource;
+import eu.dasish.annotation.backend.dao.ILambda;
 import eu.dasish.annotation.schema.CurrentPrincipalInfo;
 import eu.dasish.annotation.schema.ObjectFactory;
 import eu.dasish.annotation.schema.Principal;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -68,20 +71,14 @@ public class PrincipalResource extends ResourceResource {
     @Path("{principalid}")
     @Transactional(readOnly = true)
     public JAXBElement<Principal> getPrincipal(@PathParam("principalid") String externalIdentifier) throws IOException {
-        Number remotePrincipalID = this.getPrincipalID();
-        if (remotePrincipalID == null) {
-            return new ObjectFactory().createPrincipal(new Principal());
-        }
-        try {
-            final Number principalID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.PRINCIPAL);
-            final Principal principal = dbIntegrityService.getPrincipal(principalID);
+        Map params = new HashMap<String, String>();
+        params.put("externalId", externalIdentifier);
+        Principal principal = (Principal) this.wrapGetResource(params, new GetPrincipal());
+        if (principal != null) {
             return new ObjectFactory().createPrincipal(principal);
-        } catch (NotInDataBaseException e) {
-            loggerServer.debug(e.toString());;
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e.toString());
+        } else {
             return new ObjectFactory().createPrincipal(new Principal());
         }
-
     }
 
     @GET
@@ -101,16 +98,12 @@ public class PrincipalResource extends ResourceResource {
     @Path("info")
     @Transactional(readOnly = true)
     public JAXBElement<Principal> getPrincipalByInfo(@QueryParam("email") String email) throws IOException {
-        Number remotePrincipalID = this.getPrincipalID();
-        if (remotePrincipalID == null) {
-            return new ObjectFactory().createPrincipal(new Principal());
-        }
-        try {
-            final Principal principal = dbIntegrityService.getPrincipalByInfo(email);
+        Map params = new HashMap<String, String>();
+        params.put("email", email);
+        Principal principal = (Principal) this.wrapGetResource(params, new GetPrincipalByInfo());
+        if (principal != null) {
             return new ObjectFactory().createPrincipal(principal);
-        } catch (NotInDataBaseException e) {
-            loggerServer.debug(e.toString());;
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e.toString());
+        } else {
             return new ObjectFactory().createPrincipal(new Principal());
         }
 
@@ -121,22 +114,15 @@ public class PrincipalResource extends ResourceResource {
     @Path("{principalid}/current")
     @Transactional(readOnly = true)
     public JAXBElement<CurrentPrincipalInfo> getCurrentPrincipalInfo(@PathParam("principalid") String externalIdentifier) throws IOException {
-        Number remotePrincipalID = this.getPrincipalID();
-        if (remotePrincipalID == null) {
+        Map params = new HashMap<String, String>();
+        params.put("externalId", externalIdentifier);
+        params.put("resource", this);
+        CurrentPrincipalInfo result = (CurrentPrincipalInfo) this.wrapGetResource(params, new GetCurrentPrincipalInfo());
+        if (result != null) {
+            return new ObjectFactory().createCurrentPrincipalInfo(result);
+        } else {
             return new ObjectFactory().createCurrentPrincipalInfo(new CurrentPrincipalInfo());
         }
-        try {
-            final Number principalID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.PRINCIPAL);
-            final CurrentPrincipalInfo principalInfo = new CurrentPrincipalInfo();
-            principalInfo.setRef(dbIntegrityService.getResourceURI(principalID, Resource.PRINCIPAL));
-            principalInfo.setCurrentPrincipal(this.ifLoggedIn(principalID));
-            return new ObjectFactory().createCurrentPrincipalInfo(principalInfo);
-        } catch (NotInDataBaseException e) {
-            loggerServer.debug(e.toString());;
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e.toString());
-            return new ObjectFactory().createCurrentPrincipalInfo(new CurrentPrincipalInfo());
-        }
-
     }
 
     @POST
@@ -164,26 +150,18 @@ public class PrincipalResource extends ResourceResource {
     @Produces(MediaType.APPLICATION_XML)
     @Path("{remoteId}")
     public JAXBElement<Principal> addPrincipal(@PathParam("remoteId") String remoteId, Principal principal) throws IOException {
+
         Number remotePrincipalID = this.getPrincipalID();
         if (remotePrincipalID == null) {
             return new ObjectFactory().createPrincipal(new Principal());
         }
+
+        Map params = new HashMap<String, Object>();
+        params.put("remoteId", remoteId);
+        params.put("newPrincipal", principal);
+
         if (dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID).equals(admin)) {
-            try {
-                try {
-                    final Number principalID = dbIntegrityService.addPrincipal(principal, remoteId);
-                    final Principal addedPrincipal = dbIntegrityService.getPrincipal(principalID);
-                    return new ObjectFactory().createPrincipal(addedPrincipal);
-                } catch (NotInDataBaseException e1) {
-                    loggerServer.debug(e1.toString());
-                    httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e1.toString());
-                    return new ObjectFactory().createPrincipal(new Principal());
-                }
-            } catch (PrincipalExists e) {
-                loggerServer.debug(e.toString());
-                httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.toString());
-                return new ObjectFactory().createPrincipal(new Principal());
-            }
+            return this.wrapAddOrUpdatePrincipal(params, new AddPrincipal());
         } else {
             verboseOutput.ADMIN_RIGHTS_EXPECTED();
             httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
@@ -197,28 +175,21 @@ public class PrincipalResource extends ResourceResource {
     @Produces(MediaType.APPLICATION_XML)
     @Path("register/nonshibboleth")
     public JAXBElement<Principal> registerNonShibbolizedPrincipal(@FormParam("name") String name,
-            @FormParam("remoteId") String remoteId, @FormParam("password") String passowrd, @FormParam("email") String email)
+            @FormParam("remoteId") String remoteId, @FormParam("password") String password, @FormParam("email") String email)
             throws IOException {
-        dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
         Principal newPrincipal = new Principal();
         newPrincipal.setDisplayName(name);
         newPrincipal.setEMail(email);
-        try {
-            try {
-                final int updatedSpringTables = dbIntegrityService.addSpringUser(remoteId, passowrd, shaStrength, remoteId);
-                final Number principalID = dbIntegrityService.addPrincipal(newPrincipal, remoteId);
-                final Principal addedPrincipal = dbIntegrityService.getPrincipal(principalID);
-                return new ObjectFactory().createPrincipal(addedPrincipal);
-            } catch (NotInDataBaseException e1) {
-                loggerServer.debug(e1.toString());
-                httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e1.toString());
-                return new ObjectFactory().createPrincipal(new Principal());
-            }
-        } catch (PrincipalExists e) {
-            loggerServer.debug(e.toString());
-            httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.toString());
-            return new ObjectFactory().createPrincipal(new Principal());
-        }
+
+        Map params = new HashMap<String, Object>();
+        params.put("remoteId", remoteId);
+        params.put("password", password);
+        params.put("shaStrength", shaStrength);
+        params.put("newPrincipal", newPrincipal);
+
+        dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
+
+        return this.wrapAddOrUpdatePrincipal(params, new RegisterNonShibbolizedPrincipal());
 
     }
 
@@ -233,21 +204,11 @@ public class PrincipalResource extends ResourceResource {
         Principal newPrincipal = new Principal();
         newPrincipal.setDisplayName(name);
         newPrincipal.setEMail(email);
-        try {
-            try {
-                final Number principalID = dbIntegrityService.addPrincipal(newPrincipal, remoteId);
-                final Principal addedPrincipal = dbIntegrityService.getPrincipal(principalID);
-                return new ObjectFactory().createPrincipal(addedPrincipal);
-            } catch (NotInDataBaseException e1) {
-                loggerServer.debug(e1.toString());
-                httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e1.toString());
-                return new ObjectFactory().createPrincipal(new Principal());
-            }
-        } catch (PrincipalExists e) {
-            loggerServer.debug(e.toString());
-            httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.toString());
-            return new ObjectFactory().createPrincipal(new Principal());
-        }
+        Map params = new HashMap<String, Object>();
+        params.put("remoteId", remoteId);
+        params.put("newPrincipal", newPrincipal);
+
+        return this.wrapAddOrUpdatePrincipal(params, new AddPrincipal());
     }
 
     @POST
@@ -270,29 +231,39 @@ public class PrincipalResource extends ResourceResource {
         if (remotePrincipalID == null) {
             return new ObjectFactory().createPrincipal(new Principal());
         }
-        try {
-            final Number principalID = dbIntegrityService.getResourceInternalIdentifierFromURI(principal.getURI(), Resource.PRINCIPAL);
-            if (dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID).equals(admin)
-                    || remotePrincipalID.equals(principalID)) {
-                try {
-                    final int updatedRows = dbIntegrityService.updatePrincipal(principal);
-                    final Principal addedPrincipal = dbIntegrityService.getPrincipal(principalID);
-                    return new ObjectFactory().createPrincipal(addedPrincipal);
-                } catch (NotInDataBaseException e) {
-                    loggerServer.debug(e.toString());
-                    httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.toString());
-                    return new ObjectFactory().createPrincipal(new Principal());
-                }
-            } else {
-                verboseOutput.ADMIN_RIGHTS_EXPECTED();
-                httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
-                return new ObjectFactory().createPrincipal(new Principal());
-            }
-        } catch (NotInDataBaseException e1) {
-            loggerServer.debug(e1.toString());
-            httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e1.toString());
+        Map params = new HashMap<String, Object>();
+        params.put("principal", principal);
+
+        if (dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID).equals(admin)) {
+            return this.wrapAddOrUpdatePrincipal(params, new UpdatePrincipal());
+        } else {
+            verboseOutput.ADMIN_RIGHTS_EXPECTED();
+            httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
             return new ObjectFactory().createPrincipal(new Principal());
         }
+    }
+
+    @POST
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.APPLICATION_XML)
+    @Path("updateme")
+    public JAXBElement<Principal> updatePrincipalFromForm(@FormParam("name") String name, @FormParam("email") String email)
+            throws IOException {
+        dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
+        Number remotePrincipalID = this.getPrincipalID();
+        if (remotePrincipalID == null) {
+            return new ObjectFactory().createPrincipal(new Principal());
+        }
+
+        String principalURI = dbIntegrityService.getResourceURI(remotePrincipalID, Resource.PRINCIPAL);
+        Principal newPrincipal = new Principal();
+        newPrincipal.setURI(principalURI);
+        newPrincipal.setDisplayName(name);
+        newPrincipal.setEMail(email);
+        Map params = new HashMap<String, Object>();
+        params.put("newPrincipal", newPrincipal);
+
+        return this.wrapAddOrUpdatePrincipal(params, new UpdatePrincipal());
     }
 
     @PUT
@@ -360,5 +331,88 @@ public class PrincipalResource extends ResourceResource {
     // silly because it is trivial. harvest all logged in users via shibboleth!!
     private boolean ifLoggedIn(Number principalID) {
         return (httpServletRequest.getRemoteUser()).equals(dbIntegrityService.getPrincipalRemoteID(principalID));
+    }
+
+    /////////////// main working methods that call db-services /////
+    private class RegisterNonShibbolizedPrincipal implements ILambda<Map, Principal> {
+
+        @Override
+        public Principal apply(Map params) throws NotInDataBaseException, PrincipalExists {
+            final int updatedSpringTables = dbIntegrityService.addSpringUser((String) params.get("remoteId"), (String) params.get("password"), (Integer) params.get("shaStrength"), (String) params.get("remoteId"));
+            final Number principalID = dbIntegrityService.addPrincipal((Principal) params.get("newPrincipal"), (String) params.get("remoteId"));
+            return dbIntegrityService.getPrincipal(principalID);
+        }
+    }
+
+    private class AddPrincipal implements ILambda<Map, Principal> {
+
+        @Override
+        public Principal apply(Map params) throws NotInDataBaseException, PrincipalExists {
+            final Number principalID = dbIntegrityService.addPrincipal((Principal) params.get("newPrincipal"), (String) params.get("remoteId"));
+            return dbIntegrityService.getPrincipal(principalID);
+        }
+    }
+
+    private class UpdatePrincipal implements ILambda<Map, Principal> {
+
+        @Override
+        public Principal apply(Map params) throws NotInDataBaseException, PrincipalExists {
+            Principal principal = (Principal) params.get("newPrincipal");
+            Number principalID = dbIntegrityService.getResourceInternalIdentifierFromURI(principal.getURI(), Resource.PRINCIPAL);
+            Number principalIDupd = dbIntegrityService.updatePrincipal(principal);
+            return dbIntegrityService.getPrincipal(principalID);
+        }
+    }
+
+   
+    private class GetPrincipal implements ILambda<Map<String, String>, Principal> {
+
+        @Override
+        public Principal apply(Map<String, String> params) throws NotInDataBaseException, PrincipalExists {
+            final Number principalID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(params.get("externalId")), Resource.PRINCIPAL);
+            return dbIntegrityService.getPrincipal(principalID);
+        }
+    }
+
+    private class GetPrincipalByInfo implements ILambda<Map<String, String>, Principal> {
+
+        @Override
+        public Principal apply(Map<String, String> params) throws NotInDataBaseException, PrincipalExists {
+            return dbIntegrityService.getPrincipalByInfo(params.get("email"));
+        }
+    }
+
+    private class GetCurrentPrincipalInfo implements ILambda<Map, CurrentPrincipalInfo> {
+
+        @Override
+        public CurrentPrincipalInfo apply(Map params) throws NotInDataBaseException, PrincipalExists {
+            final Number principalID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString((String) params.get("externalId")), Resource.PRINCIPAL);
+            final CurrentPrincipalInfo principalInfo = new CurrentPrincipalInfo();
+            principalInfo.setRef(dbIntegrityService.getResourceURI(principalID, Resource.PRINCIPAL));
+            principalInfo.setCurrentPrincipal(((PrincipalResource) params.get("resource")).ifLoggedIn(principalID));
+            return principalInfo;
+        }
+    }
+
+    //// wrappers that map main working methods into exception handling ////
+    private JAXBElement<Principal> wrapAddOrUpdatePrincipal(Map params, ILambda<Map, Principal> changer) throws IOException {
+        Number remotePrincipalID = this.getPrincipalID();
+        if (remotePrincipalID == null) {
+            return new ObjectFactory().createPrincipal(new Principal());
+        }
+        try {
+            try {
+                return new ObjectFactory().createPrincipal(changer.apply(params));
+            } catch (NotInDataBaseException e1) {
+                loggerServer.debug(e1.toString());
+                httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e1.toString());
+                return new ObjectFactory().createPrincipal(new Principal());
+            }
+        } catch (PrincipalExists e) {
+            loggerServer.debug(e.toString());
+            httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.toString());
+            return new ObjectFactory().createPrincipal(new Principal());
+        }
+
     }
 }

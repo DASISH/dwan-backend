@@ -22,7 +22,8 @@
         <h2>DASISH REST API</h2>
         <p><a href="api/myresource">Jersey resource</a>
         <p><a href="https://trac.clarin.eu/wiki/DASISH/SpecificationDocument#RESTAPI">https://trac.clarin.eu/wiki/DASISH/SpecificationDocument#RESTAPI</a></p>
-      
+        <br>
+        <h3>You are not necessarily logged in.</h3>
         <br> 
         <a href="registerNonShibbolethPrincipal.html"> Register a non-shibboleth user</a> <br> 
         <br> 
@@ -33,12 +34,17 @@
         <br>
         <a href="api/authentication/login"> login  </a> <br> 
          <br> 
+         
+        <br>
+        <h3>You are logged in. </h3>
+        <br> 
         <a href="api/authentication/logout"> logout</a> <br> 
         <br> 
         
         <b>Test URI-s</b><br>
         <br> 
-        <b>All output xml-s are valid w.r.t. the schema</b><br>
+        <a href="updatePrincipal.html"> Update logged-in user.</a> <br> 
+        <br>
         GET <a href="api/authentication/principal">api/authentication/principal</a> <br> 
         GET <a href="api/principals/admin">api/principals/admin</a><br> 
         GET <a href="api/principals/00000000-0000-0000-0000-0000000000112">api/principals/00000000-0000-0000-0000-0000000000112</a> <br> 
