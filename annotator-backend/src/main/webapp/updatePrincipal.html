@@ -20,25 +20,21 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     </head>
-    <body onload='document.registerShibForm.name.focus();'>
+    <body onload='document.updatePrincipalForm.name.focus();'>
 
-        <h3>User registration</h3>
+        <h3>Update your info</h3>
 
             <div id="create-box">
-                <form name='registerShibForm'
-                      action="api/principals/register/shibboleth" method='POST'>
+                <form name="updatePrincipalForm"
+                      action="api/principals/updateme" method="POST">
 
                     <table>                        
                         <tr>
-                            <td>Full name:</td>
+                            <td>(New) full name:</td>
                             <td><input type="text" name="name" /></td>
-                        </tr>
+                        </tr>                                           
                         <tr>
-                            <td>Your shibboleth remote ID:</td>
-                            <td><input type='text' name='remoteId' value=''></td>
-                        </tr>                       
-                        <tr>
-                            <td>e-mail:</td>
+                            <td>(New) e-mail:</td>
                             <td><input type='text' name='email' /></td>
                         </tr>
                         
