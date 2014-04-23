@@ -44,7 +44,11 @@ public class Helpers {
     public static String replace(String text, Map<String, String> pairs) {
         String result = (new StringBuilder(text)).toString();
         for (String tempTarget : pairs.keySet()) {
-            result = result.replaceAll(tempTarget, pairs.get(tempTarget));
+            if (tempTarget != null) {
+                if (!tempTarget.trim().equals("")) {
+                    result = result.replaceAll(tempTarget, pairs.get(tempTarget));
+                }
+            }
         }
         return result;
     }
@@ -64,7 +68,7 @@ public class Helpers {
         String result = serializer.writeToString(element);
         return result;
     }
-    
+
     public static String welcomeString(String baseUri) {
         String welcome = "<!DOCTYPE html><body>"
                 + "You are logged in.<br>"
@@ -73,16 +77,16 @@ public class Helpers {
                 + "</body>";
         return welcome;
     }
-    
+
     public static Principal createPrincipalElement(String name, String e_mail) {
         Principal result = new Principal();
         result.setDisplayName(name);
         result.setEMail(e_mail);
         return result;
     }
-    
+
     public static String hashPswd(String pswd, int strength, String salt) {
-    ShaPasswordEncoder encoder = new ShaPasswordEncoder(strength);
-    return encoder.encodePassword(pswd, salt);
+        ShaPasswordEncoder encoder = new ShaPasswordEncoder(strength);
+        return encoder.encodePassword(pswd, salt);
     }
 }
