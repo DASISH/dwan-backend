@@ -100,24 +100,5 @@ public class ResourceResource<T> {
         }
     }
     
-    protected T wrapGetResource(Map params, ILambda<Map, T> getter) throws IOException {
-        Number remotePrincipalID = this.getPrincipalID();
-        if (remotePrincipalID == null) {
-            return null;
-        }
-        try {
-            try {
-                return getter.apply(params);
-            } catch (NotInDataBaseException e1) {
-                loggerServer.debug(e1.toString());
-                httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e1.toString());
-                return null;
-            }
-        } catch (PrincipalExists e) {
-            loggerServer.debug(e.toString());
-            httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.toString());
-            return null;
-        }
-
-    }
+    
 }
