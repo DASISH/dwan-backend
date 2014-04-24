@@ -34,7 +34,7 @@ public class VerboseOutput {
 
   
 
-    private String _FORBIDDEN_RESOURCE_ACTION(String identifier, String resource, String action, String ownerName, String ownerEMail) {
+    public String _FORBIDDEN_RESOURCE_ACTION(String identifier, String resource, String action, String ownerName, String ownerEMail) {
         return " The logged-in principal cannot " + action + " the " + resource + " with the identifier " + identifier + ". Contact the resource's owner " + ownerName + " via the e-mail " + ownerEMail;
     }
 

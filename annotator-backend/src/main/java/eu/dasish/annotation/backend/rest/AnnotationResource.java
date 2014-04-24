@@ -19,7 +19,9 @@ package eu.dasish.annotation.backend.rest;
 
 import eu.dasish.annotation.backend.BackendConstants;
 import eu.dasish.annotation.backend.NotInDataBaseException;
+import eu.dasish.annotation.backend.PrincipalExists;
 import eu.dasish.annotation.backend.Resource;
+import eu.dasish.annotation.backend.dao.ILambda;
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationBody;
 import eu.dasish.annotation.schema.AnnotationInfoList;
@@ -30,6 +32,7 @@ import eu.dasish.annotation.schema.ReferenceList;
 import eu.dasish.annotation.schema.ResponseBody;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -413,4 +416,9 @@ public class AnnotationResource extends ResourceResource {
             return "Nothing is deleted.";
         }
     }
+    
+   ////////////////////////////////////////////////
+    
+    
+    
 }
