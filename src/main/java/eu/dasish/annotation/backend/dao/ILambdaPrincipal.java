@@ -18,13 +18,14 @@
 package eu.dasish.annotation.backend.dao;
 
 import eu.dasish.annotation.backend.NotInDataBaseException;
+import eu.dasish.annotation.backend.PrincipalExists;
 
 /**
  *
  * @author olhsha
  */
-public interface ILambda<Map, R> {
+public interface ILambdaPrincipal<Map, R> {
     
-    public R apply(Map params)   throws NotInDataBaseException;
+    public R apply(Map params)   throws NotInDataBaseException, PrincipalExists;
     
 }
