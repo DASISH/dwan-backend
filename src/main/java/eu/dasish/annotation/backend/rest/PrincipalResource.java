@@ -74,9 +74,20 @@ public class PrincipalResource extends ResourceResource {
     public JAXBElement<Principal> getPrincipal(@PathParam("principalid") String externalIdentifier) throws IOException {
         Map params = new HashMap<String, String>();
         params.put("externalId", externalIdentifier);
-        Principal result = (Principal) (new RequestWrappers(loggerServer, httpServletResponse, this, dbIntegrityService)).wrapRequestResource(params, new GetPrincipal());
+        Principal result = (Principal) (new RequestWrappers(this)).wrapRequestResource(params, new GetPrincipal());
         return (result != null) ? (new ObjectFactory().createPrincipal(result)) : (new ObjectFactory().createPrincipal(new Principal()));
     }
+    
+      private class GetPrincipal implements ILambda<Map, Principal> {
+
+        @Override
+        public Principal apply(Map params) throws NotInDataBaseException {
+            final Number principalID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString((String) params.get("externalId")), Resource.PRINCIPAL);
+            return dbIntegrityService.getPrincipal(principalID);
+        }
+    }
+      
+     /////////////////////////////////
 
     @GET
     @Produces(MediaType.TEXT_PLAIN)
@@ -89,7 +100,8 @@ public class PrincipalResource extends ResourceResource {
         }
         return "The admin of the server database " + dbIntegrityService.getDataBaseAdmin().getDisplayName() + " is availiable via e-mail " + dbIntegrityService.getDataBaseAdmin().getEMail();
     }
-
+    
+   /////////////////////////////////////////
     @GET
     @Produces(MediaType.TEXT_XML)
     @Path("info")
@@ -97,10 +109,20 @@ public class PrincipalResource extends ResourceResource {
     public JAXBElement<Principal> getPrincipalByInfo(@QueryParam("email") String email) throws IOException {
         Map params = new HashMap<String, String>();
         params.put("email", email);
-        Principal result = (Principal) (new RequestWrappers(loggerServer, httpServletResponse, this, dbIntegrityService)).wrapRequestResource(params, new GetPrincipalByInfo());
+        Principal result = (Principal) (new RequestWrappers(this)).wrapRequestResource(params, new GetPrincipalByInfo());
         return (result != null) ? (new ObjectFactory().createPrincipal(result)) : (new ObjectFactory().createPrincipal(new Principal()));
     }
 
+
+    private class GetPrincipalByInfo implements ILambda<Map, Principal> {
+
+        @Override
+        public Principal apply(Map params) throws NotInDataBaseException {
+            return dbIntegrityService.getPrincipalByInfo((String) params.get("email"));
+        }
+    }
+
+    ////////////////////////////////////////
     @GET
     @Produces(MediaType.TEXT_XML)
     @Path("{principalid}/current")
@@ -109,9 +131,22 @@ public class PrincipalResource extends ResourceResource {
         Map params = new HashMap<String, String>();
         params.put("externalId", externalIdentifier);
         params.put("resource", this);
-        CurrentPrincipalInfo result = (CurrentPrincipalInfo) (new RequestWrappers(loggerServer, httpServletResponse, this, dbIntegrityService)).wrapRequestResource(params, new GetCurrentPrincipalInfo());
+        CurrentPrincipalInfo result = (CurrentPrincipalInfo) (new RequestWrappers(this)).wrapRequestResource(params, new GetCurrentPrincipalInfo());
         return (result != null) ? (new ObjectFactory().createCurrentPrincipalInfo(result)) : (new ObjectFactory().createCurrentPrincipalInfo(new CurrentPrincipalInfo()));
     }
+    
+     private class GetCurrentPrincipalInfo implements ILambda<Map, CurrentPrincipalInfo> {
+
+        @Override
+        public CurrentPrincipalInfo apply(Map params) throws NotInDataBaseException {
+            final Number principalID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString((String) params.get("externalId")), Resource.PRINCIPAL);
+            final CurrentPrincipalInfo principalInfo = new CurrentPrincipalInfo();
+            principalInfo.setRef(dbIntegrityService.getResourceURI(principalID, Resource.PRINCIPAL));
+            principalInfo.setCurrentPrincipal(((PrincipalResource) params.get("resource")).ifLoggedIn(principalID));
+            return principalInfo;
+        }
+    }
+    ////////////////////////////// 
 
     @POST
     @Produces(MediaType.TEXT_PLAIN)
@@ -132,6 +167,8 @@ public class PrincipalResource extends ResourceResource {
         }
 
     }
+    
+    ///////////////////////////////////////
 
     @POST
     @Consumes(MediaType.APPLICATION_XML)
@@ -149,7 +186,7 @@ public class PrincipalResource extends ResourceResource {
         params.put("newPrincipal", principal);
 
         if (dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID).equals(admin)) {
-            return (new RequestWrappers(loggerServer, httpServletResponse, this, dbIntegrityService)).wrapAddPrincipalRequest(params, new AddPrincipal());
+            return (new RequestWrappers(this)).wrapAddPrincipalRequest(params, new AddPrincipal());
         } else {
             verboseOutput.ADMIN_RIGHTS_EXPECTED();
             httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
@@ -157,6 +194,18 @@ public class PrincipalResource extends ResourceResource {
         }
 
     }
+    
+      private class AddPrincipal implements ILambdaPrincipal<Map, Principal> {
+
+        @Override
+        public Principal apply(Map params) throws NotInDataBaseException, PrincipalExists {
+            final Number principalID = dbIntegrityService.addPrincipal((Principal) params.get("newPrincipal"), (String) params.get("remoteId"));
+            return dbIntegrityService.getPrincipal(principalID);
+        }
+    }
+
+   
+   /////////////////////////////////////
 
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
@@ -176,8 +225,21 @@ public class PrincipalResource extends ResourceResource {
         params.put("newPrincipal", newPrincipal);
 
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
-        return (new RequestWrappers(loggerServer, httpServletResponse, this, dbIntegrityService)).wrapAddPrincipalRequest(params, new RegisterNonShibbolizedPrincipal());
+        return (new RequestWrappers(this)).wrapAddPrincipalRequest(params, new RegisterNonShibbolizedPrincipal());
     }
+    
+    private class RegisterNonShibbolizedPrincipal implements ILambdaPrincipal<Map, Principal> {
+
+        @Override
+        public Principal apply(Map params) throws NotInDataBaseException, PrincipalExists {
+            final int updatedSpringTables = dbIntegrityService.addSpringUser((String) params.get("remoteId"), (String) params.get("password"), (Integer) params.get("shaStrength"), (String) params.get("remoteId"));
+            final Number principalID = dbIntegrityService.addPrincipal((Principal) params.get("newPrincipal"), (String) params.get("remoteId"));
+            return dbIntegrityService.getPrincipal(principalID);
+        }
+    }
+
+  
+   ///////////////////////////////////////////////
 
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
@@ -195,8 +257,10 @@ public class PrincipalResource extends ResourceResource {
         params.put("newPrincipal", newPrincipal);
 
         dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
-        return (new RequestWrappers(loggerServer, httpServletResponse, this, dbIntegrityService)).wrapAddPrincipalRequest(params, new AddPrincipal());
+        return (new RequestWrappers(this)).wrapAddPrincipalRequest(params, new AddPrincipal());
     }
+    
+    ///////////////////////////////////////////////////
 
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
@@ -218,11 +282,10 @@ public class PrincipalResource extends ResourceResource {
         if (remotePrincipalID == null) {
             return new ObjectFactory().createPrincipal(new Principal());
         }
-        Map params = new HashMap<String, Object>();
-        params.put("principal", principal);
-
         if (dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID).equals(admin)) {
-            Principal result = (Principal) (new RequestWrappers(loggerServer, httpServletResponse, this, dbIntegrityService)).wrapRequestResource(params, new UpdatePrincipal());
+            Map params = new HashMap<String, Object>();
+            params.put("principal", principal);
+            Principal result = (Principal) (new RequestWrappers(this)).wrapRequestResource(params, new UpdatePrincipal());
             return (result != null) ? (new ObjectFactory().createPrincipal(result)) : (new ObjectFactory().createPrincipal(new Principal()));
 
         } else {
@@ -231,6 +294,7 @@ public class PrincipalResource extends ResourceResource {
             return new ObjectFactory().createPrincipal(new Principal());
         }
     }
+    ///////////////////////////////////
 
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
@@ -238,22 +302,30 @@ public class PrincipalResource extends ResourceResource {
     @Path("updateme")
     public JAXBElement<Principal> updatePrincipalFromForm(@FormParam("name") String name, @FormParam("email") String email)
             throws IOException {
-        dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
-        Number remotePrincipalID = this.getPrincipalID();
-        if (remotePrincipalID == null) {
-            return new ObjectFactory().createPrincipal(new Principal());
-        }
-
-        String principalURI = dbIntegrityService.getResourceURI(remotePrincipalID, Resource.PRINCIPAL);
+        
         Principal newPrincipal = new Principal();
-        newPrincipal.setURI(principalURI);
         newPrincipal.setDisplayName(name);
         newPrincipal.setEMail(email);
         Map params = new HashMap<String, Object>();
         params.put("newPrincipal", newPrincipal);
-        Principal result = (Principal) (new RequestWrappers(loggerServer, httpServletResponse, this, dbIntegrityService)).wrapRequestResource(params, new UpdatePrincipal());
+        Principal result = (Principal) (new RequestWrappers(this)).wrapRequestResource(params, new UpdatePrincipal());
         return (result != null) ? (new ObjectFactory().createPrincipal(result)) : (new ObjectFactory().createPrincipal(new Principal()));
     }
+    
+    
+     private class UpdatePrincipal implements ILambda<Map, Principal> {
+        @Override
+        public Principal apply(Map params) throws NotInDataBaseException {
+            Principal principal = (Principal) params.get("newPrincipal");
+            Number principalID = (Number) params.get("principalID");            
+            String uri = dbIntegrityService.getResourceURI(principalID, Resource.PRINCIPAL);
+            principal.setURI(uri);
+            Number principalIDupd = dbIntegrityService.updatePrincipal(principal);
+            return dbIntegrityService.getPrincipal(principalID);
+        }
+    }
+     
+     //////////////////////////////////////
 
     @PUT
     @Produces(MediaType.TEXT_PLAIN)
@@ -322,63 +394,4 @@ public class PrincipalResource extends ResourceResource {
         return (httpServletRequest.getRemoteUser()).equals(dbIntegrityService.getPrincipalRemoteID(principalID));
     }
 
-    /////////////// main working methods that call db-services and sent as aparameters to correponding wrappers/////
-    private class RegisterNonShibbolizedPrincipal implements ILambdaPrincipal<Map, Principal> {
-
-        @Override
-        public Principal apply(Map params) throws NotInDataBaseException, PrincipalExists {
-            final int updatedSpringTables = dbIntegrityService.addSpringUser((String) params.get("remoteId"), (String) params.get("password"), (Integer) params.get("shaStrength"), (String) params.get("remoteId"));
-            final Number principalID = dbIntegrityService.addPrincipal((Principal) params.get("newPrincipal"), (String) params.get("remoteId"));
-            return dbIntegrityService.getPrincipal(principalID);
-        }
-    }
-
-    private class AddPrincipal implements ILambdaPrincipal<Map, Principal> {
-
-        @Override
-        public Principal apply(Map params) throws NotInDataBaseException, PrincipalExists {
-            final Number principalID = dbIntegrityService.addPrincipal((Principal) params.get("newPrincipal"), (String) params.get("remoteId"));
-            return dbIntegrityService.getPrincipal(principalID);
-        }
-    }
-
-    private class UpdatePrincipal implements ILambda<Map, Principal> {
-
-        @Override
-        public Principal apply(Map params) throws NotInDataBaseException {
-            Principal principal = (Principal) params.get("newPrincipal");
-            Number principalID = dbIntegrityService.getResourceInternalIdentifierFromURI(principal.getURI(), Resource.PRINCIPAL);
-            Number principalIDupd = dbIntegrityService.updatePrincipal(principal);
-            return dbIntegrityService.getPrincipal(principalID);
-        }
-    }
-
-    private class GetPrincipal implements ILambda<Map, Principal> {
-
-        @Override
-        public Principal apply(Map params) throws NotInDataBaseException {
-            final Number principalID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString((String) params.get("externalId")), Resource.PRINCIPAL);
-            return dbIntegrityService.getPrincipal(principalID);
-        }
-    }
-
-    private class GetPrincipalByInfo implements ILambda<Map, Principal> {
-
-        @Override
-        public Principal apply(Map params) throws NotInDataBaseException {
-            return dbIntegrityService.getPrincipalByInfo((String) params.get("email"));
-        }
-    }
-
-    private class GetCurrentPrincipalInfo implements ILambda<Map, CurrentPrincipalInfo> {
-
-        @Override
-        public CurrentPrincipalInfo apply(Map params) throws NotInDataBaseException {
-            final Number principalID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString((String) params.get("externalId")), Resource.PRINCIPAL);
-            final CurrentPrincipalInfo principalInfo = new CurrentPrincipalInfo();
-            principalInfo.setRef(dbIntegrityService.getResourceURI(principalID, Resource.PRINCIPAL));
-            principalInfo.setCurrentPrincipal(((PrincipalResource) params.get("resource")).ifLoggedIn(principalID));
-            return principalInfo;
-        }
-    }
 }

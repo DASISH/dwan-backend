@@ -386,6 +386,21 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         int affectedRows = this.loggedUpdate(sql.toString(), params);
         return affectedRows;
     }
+    
+     @Override
+    public int updateAnnotationHeadline(Number annotationID, String header) {
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("annotationID", annotationID);
+        params.put("headline", header);
+
+        StringBuilder sql = new StringBuilder("UPDATE ");
+        sql.append(annotationTableName).append(" SET ").
+                append(last_modified).append("=  default,").
+                append(_headline).append("= :headline ").
+                append(" WHERE ").append(annotation_id).append("= :annotationID");
+        int affectedRows = this.loggedUpdate(sql.toString(), params);
+        return affectedRows;
+    }
 
     // TODO Unit test
     @Override

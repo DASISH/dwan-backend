@@ -22,6 +22,8 @@ import com.sun.jersey.multipart.MultiPart;
 import eu.dasish.annotation.backend.BackendConstants;
 import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.Resource;
+import eu.dasish.annotation.backend.ResourceAction;
+import eu.dasish.annotation.backend.dao.ILambda;
 import eu.dasish.annotation.schema.CachedRepresentationInfo;
 import eu.dasish.annotation.schema.ObjectFactory;
 import eu.dasish.annotation.schema.ReferenceList;
@@ -29,6 +31,8 @@ import eu.dasish.annotation.schema.Target;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -73,44 +77,49 @@ public class TargetResource extends ResourceResource {
     @Path("{targetid: " + BackendConstants.regExpIdentifier + "}")
     @Transactional(readOnly = true)
     public JAXBElement<Target> getTarget(@PathParam("targetid") String externalIdentifier) throws IOException {
-        Number remotePrincipalID = this.getPrincipalID();
-        if (remotePrincipalID == null) {
+        Map params = new HashMap();
+        Target result = (Target) (new RequestWrappers(this)).wrapRequestResource(params, new GetTarget(), Resource.TARGET, ResourceAction.READ, externalIdentifier, false);
+        if (result != null) {
+            return new ObjectFactory().createTarget(result);
+        } else {
             return new ObjectFactory().createTarget(new Target());
         }
-        try {
-            final Number targetID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.TARGET);
-            final Target target = dbIntegrityService.getTarget(targetID);
-            return new ObjectFactory().createTarget(target);
-        } catch (NotInDataBaseException e1) {
-            loggerServer.debug(e1.toString());
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e1.toString());
-            return new ObjectFactory().createTarget(new Target());
-        }
-
     }
 
-    // TODOD both unit tests
+    private class GetTarget implements ILambda<Map, Target> {
+
+        @Override
+        public Target apply(Map params) throws NotInDataBaseException {
+            Number targetID = (Number) params.get("internalID");
+            return dbIntegrityService.getTarget(targetID);
+        }
+    }
+
+    /////////////////////////////////////////////////
     @GET
     @Produces(MediaType.TEXT_XML)
     @Path("{targetid: " + BackendConstants.regExpIdentifier + "}/versions")
     @Transactional(readOnly = true)
     public JAXBElement<ReferenceList> getSiblingTargets(@PathParam("targetid") String externalIdentifier) throws HTTPException, IOException {
-        Number remotePrincipalID = this.getPrincipalID();
-        if (remotePrincipalID == null) {
+        Map params = new HashMap();
+        ReferenceList result = (ReferenceList) (new RequestWrappers(this)).wrapRequestResource(params, new GetSiblingTargets(), Resource.TARGET, ResourceAction.READ, externalIdentifier, false);
+        if (result != null) {
+            return new ObjectFactory().createReferenceList(result);
+        } else {
             return new ObjectFactory().createReferenceList(new ReferenceList());
         }
-        try {
-            final Number targetID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.TARGET);
-            final ReferenceList siblings = dbIntegrityService.getTargetsForTheSameLinkAs(targetID);
-            return new ObjectFactory().createReferenceList(siblings);
-        } catch (NotInDataBaseException e2) {
-            loggerServer.debug(e2.toString());
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e2.toString());
-            return new ObjectFactory().createReferenceList(new ReferenceList());
-        }
-
     }
 
+    private class GetSiblingTargets implements ILambda<Map, ReferenceList> {
+
+        @Override
+        public ReferenceList apply(Map params) throws NotInDataBaseException {
+            Number targetID = (Number) params.get("internalID");
+            return dbIntegrityService.getTargetsForTheSameLinkAs(targetID);
+        }
+    }
+
+    ////////////////////////////////////////////////
     @POST
     @Consumes("multipart/mixed")
     @Produces(MediaType.APPLICATION_XML)
@@ -118,32 +127,40 @@ public class TargetResource extends ResourceResource {
     public JAXBElement<CachedRepresentationInfo> postCached(@PathParam("targetid") String targetIdentifier,
             @PathParam("fragmentDescriptor") String fragmentDescriptor,
             MultiPart multiPart) throws IOException {
-        Number remotePrincipalID = this.getPrincipalID();
-        if (remotePrincipalID == null) {
-            return new ObjectFactory().createCashedRepresentationInfo(new CachedRepresentationInfo());
-        }
-        try {
-            final Number targetID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(targetIdentifier), Resource.TARGET);
-            CachedRepresentationInfo metadata = multiPart.getBodyParts().get(0).getEntityAs(CachedRepresentationInfo.class);
-            BodyPartEntity bpe = (BodyPartEntity) multiPart.getBodyParts().get(1).getEntity();
-            InputStream cachedSource = bpe.getInputStream();
-            try {
-                final Number[] respondDB = dbIntegrityService.addCachedForTarget(targetID, fragmentDescriptor, metadata, cachedSource);
-                final CachedRepresentationInfo cachedInfo = dbIntegrityService.getCachedRepresentationInfo(respondDB[1]);
-                return new ObjectFactory().createCashedRepresentationInfo(cachedInfo);
 
-            } catch (NotInDataBaseException e) {
-                loggerServer.debug(e.toString());
-                httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.toString());
-                return new ObjectFactory().createCashedRepresentationInfo(new CachedRepresentationInfo());
-            }
-        } catch (NotInDataBaseException e2) {
-            loggerServer.debug(e2.toString());
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e2.toString());
+        Map params = new HashMap();
+        params.put("cachedInfo", multiPart.getBodyParts().get(0).getEntityAs(CachedRepresentationInfo.class));
+        BodyPartEntity bpe = (BodyPartEntity) multiPart.getBodyParts().get(1).getEntity();
+        params.put("cachedBlob", bpe.getInputStream());
+        params.put("fragmentDescriptor", fragmentDescriptor);
+        
+        CachedRepresentationInfo result = (CachedRepresentationInfo) (new RequestWrappers(this)).wrapRequestResource(params, new PostCached(), Resource.TARGET, ResourceAction.WRITE_W_METAINFO, targetIdentifier, false);
+        if (result != null) {
+            return new ObjectFactory().createCashedRepresentationInfo(result);
+        } else {
             return new ObjectFactory().createCashedRepresentationInfo(new CachedRepresentationInfo());
         }
     }
 
+    private class PostCached implements ILambda<Map, CachedRepresentationInfo> {
+
+        @Override
+        public CachedRepresentationInfo apply(Map params) throws NotInDataBaseException {
+            Number targetID = (Number) params.get("internalID");
+            String fragmentDescriptor = (String) params.get("fragmentDescriptor");
+            CachedRepresentationInfo metadata = (CachedRepresentationInfo) params.get("cachedInfo");
+            InputStream cachedSource = (InputStream) params.get("cachedBlob");
+            try {
+            final Number[] respondDB = dbIntegrityService.addCachedForTarget(targetID, fragmentDescriptor, metadata, cachedSource);
+            return dbIntegrityService.getCachedRepresentationInfo(respondDB[1]);
+            } catch (IOException e) {
+                loggerServer.info(e.toString());
+                return null;
+            }
+        }
+    }
+
+    ////////////////////////////////////////////////
     @PUT
     @Produces(MediaType.APPLICATION_XML)
     @Path("{targetid: " + BackendConstants.regExpIdentifier + "}/{cachedid: " + BackendConstants.regExpIdentifier + "}/fragment/{fragmentDescriptor}")
@@ -162,12 +179,12 @@ public class TargetResource extends ResourceResource {
             } catch (NotInDataBaseException e1) {
                 loggerServer.debug(e1.toString());
                 httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e1.toString());
-                return "Nothing is updated: "+e1;
+                return "Nothing is updated: " + e1;
             }
         } catch (NotInDataBaseException e2) {
             loggerServer.debug(e2.toString());
             httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e2.toString());
-            return "Nothing is updated: "+e2;
+            return "Nothing is updated: " + e2;
         }
     }
 

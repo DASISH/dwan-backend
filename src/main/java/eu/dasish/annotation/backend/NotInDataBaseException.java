@@ -25,11 +25,8 @@ package eu.dasish.annotation.backend;
 public class NotInDataBaseException extends Exception{
     
     
-    public NotInDataBaseException(String typeOfResource, String externalID){
-        super(typeOfResource + " with the external ID "+externalID + " is not found in the database");
+    public NotInDataBaseException(String typeOfResource, String criterium, String value){
+        super("Cannot find a "+typeOfResource + " with the  "+criterium + " equal to "+value);
     }
-    
-     public NotInDataBaseException(String typeOfResource){
-        super(typeOfResource + " with the given info is not found in the database");
-    }
+
 }

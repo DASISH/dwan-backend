@@ -19,6 +19,7 @@ package eu.dasish.annotation.backend.rest;
 
 import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.Resource;
+import eu.dasish.annotation.backend.ResourceAction;
 import eu.dasish.annotation.backend.dao.DBIntegrityService;
 import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.TestInstances;
@@ -114,7 +115,7 @@ public class AnnotationResourceTest {
                 will(returnValue(1));
 
 
-                oneOf(mockDbIntegrityService).canDo(Access.READ, 3, 1);
+                oneOf(mockDbIntegrityService).canDo(ResourceAction.READ, 3, 1, Resource.ANNOTATION);
                 will(returnValue(true));
 
                 oneOf(mockDbIntegrityService).getAnnotation(1);
@@ -163,6 +164,9 @@ public class AnnotationResourceTest {
 
                 oneOf(mockDbIntegrityService).getAnnotationOwnerID(4);
                 will(returnValue(3));
+                
+                oneOf(mockDbIntegrityService).canDo(ResourceAction.DELETE, 3, 4, Resource.ANNOTATION);
+                will(returnValue(true));
 
                 oneOf(mockDbIntegrityService).deleteAnnotation(4);
                 will(returnValue(mockDelete));
@@ -171,7 +175,7 @@ public class AnnotationResourceTest {
 
 
         String result = annotationResource.deleteAnnotation("00000000-0000-0000-0000-000000000024");
-        assertEquals("1 annotation(s) deleted.", result);
+        assertEquals("1 annotation(s) is(are) deleted.", result);
     }
 
     /**
@@ -295,6 +299,9 @@ public class AnnotationResourceTest {
                 oneOf(mockDbIntegrityService).getAnnotationOwnerID(1);
                 will(returnValue(1));
                 
+                oneOf(mockDbIntegrityService).canDo(ResourceAction.WRITE_W_METAINFO, 1, 1, Resource.ANNOTATION);
+                will(returnValue(true));
+                
                 oneOf(mockDbIntegrityService).updateAnnotation(annotation);
                 will(returnValue(1));
                
@@ -362,8 +369,9 @@ public class AnnotationResourceTest {
                 oneOf(mockDbIntegrityService).getResourceInternalIdentifier(externalId, Resource.ANNOTATION);
                 will(returnValue(1));
                 
-                oneOf(mockDbIntegrityService).canDo(Access.WRITE, 1, 1);
-                will(returnValue(true));
+                oneOf(mockDbIntegrityService).canDo(ResourceAction.WRITE, 1, 1, Resource.ANNOTATION);
+                will(returnValue(true));               
+                
                 
                 oneOf(mockDbIntegrityService).updateAnnotationBody(1, ab);
                 will(returnValue(1));
@@ -380,5 +388,61 @@ public class AnnotationResourceTest {
         Annotation newAnnotation = result.getValue().getAnnotation();
         assertEquals("text/plain", newAnnotation.getBody().getTextBody().getMimeType());
         assertEquals("some text body l", newAnnotation.getBody().getTextBody().getBody());
+    }
+    
+    @Test
+    public void testUpdateAnnotationHeadline() throws NotInDataBaseException, IOException{
+        System.out.println("test updateAnnotationHeadline");
+
+        Annotation annotation = (new TestInstances(TestBackendConstants._TEST_SERVLET_URI)).getAnnotationOne();
+        
+        final String newHeadline = "new Headline";        
+        annotation.setHeadline(newHeadline);
+
+        final ResponseBody mockEnvelope = new ResponseBody();
+        final ActionList actionList = new ActionList();
+        mockEnvelope.setAnnotation(annotation);
+        mockEnvelope.setActionList(actionList);
+
+        annotationResource.setHttpServletRequest(mockRequest);
+        annotationResource.setUriInfo(mockUriInfo);
+        mockRequest.setRemoteUser("twagoo@mpi.nl");
+        final URI baseUri = URI.create(TestBackendConstants._TEST_SERVLET_URI);
+
+        final UUID externalId = UUID.fromString("00000000-0000-0000-0000-000000000021");
+
+     
+        mockeryRest.checking(new Expectations() {
+            {
+                oneOf(mockUriInfo).getBaseUri();
+                will(returnValue(baseUri));
+
+                oneOf(mockDbIntegrityService).setServiceURI(baseUri.toString());
+
+                oneOf(mockDbIntegrityService).getPrincipalInternalIDFromRemoteID("twagoo@mpi.nl");
+                will(returnValue(1));
+                
+               
+                oneOf(mockDbIntegrityService).getResourceInternalIdentifier(externalId, Resource.ANNOTATION);
+                will(returnValue(1));
+                
+                oneOf(mockDbIntegrityService).canDo(ResourceAction.WRITE, 1, 1, Resource.ANNOTATION);
+                will(returnValue(true));               
+                
+                
+                oneOf(mockDbIntegrityService).updateAnnotationHeadline(1, newHeadline);
+                will(returnValue(1));
+               
+                oneOf(mockDbIntegrityService).makeAnnotationResponseEnvelope(1);
+                will(returnValue(mockEnvelope));
+
+            }
+        });
+
+
+
+        JAXBElement<ResponseBody> result = annotationResource.updateAnnotationHeadline("00000000-0000-0000-0000-000000000021", newHeadline);
+        Annotation newAnnotation = result.getValue().getAnnotation();
+        assertEquals("new Headline", newAnnotation.getHeadline());
     }
 }

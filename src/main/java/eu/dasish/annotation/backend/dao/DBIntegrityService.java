@@ -21,6 +21,7 @@ import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.PrincipalCannotBeDeleted;
 import eu.dasish.annotation.backend.PrincipalExists;
 import eu.dasish.annotation.backend.Resource;
+import eu.dasish.annotation.backend.ResourceAction;
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationBody;
 import eu.dasish.annotation.schema.AnnotationInfoList;
@@ -193,7 +194,7 @@ public interface DBIntegrityService {
     
     Principal getDataBaseAdmin() ;
 
-    boolean canDo(Access access, Number principalID, Number annotationID);
+    boolean canDo(ResourceAction action, Number principalID, Number resourceID, Resource resource);
 
     
     /// notebooks ///
@@ -230,6 +231,8 @@ public interface DBIntegrityService {
      * @return 1 of the annotation if it is updated
      */
     int updateAnnotationBody(Number internalID, AnnotationBody annotationBody);
+    
+    int updateAnnotationHeadline(Number internalID, String newHeader);
 
     /**
      *

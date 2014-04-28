@@ -796,7 +796,7 @@ public class DBIntegrityServiceTest {
         mockTargetListTwo.add(testTargetTwo);
 
         final UUID mockNewTargetUUID = UUID.randomUUID();
-        final NotInDataBaseException e = new NotInDataBaseException(tempTargetID);
+        final NotInDataBaseException e = new NotInDataBaseException("target", "external ID", tempTargetID);
 
         mockeryDao.checking(new Expectations() {
             {
@@ -1678,7 +1678,7 @@ public class DBIntegrityServiceTest {
         System.out.println("test updateAnnotation");
 
         final Annotation annotation = (new TestInstances(TestBackendConstants._TEST_SERVLET_URI)).getAnnotationOne();
-        final NotInDataBaseException e = new NotInDataBaseException("00000000-0000-0000-0000-000000000031");
+        final NotInDataBaseException e = new NotInDataBaseException("annotation", "external ID", "00000000-0000-0000-0000-000000000031");
         final String mockTempID = "00000000-0000-0000-0000-000000000031";
         final UUID mockNewID = UUID.randomUUID();
         final PermissionList permissions = annotation.getPermissions();
@@ -1757,6 +1757,32 @@ public class DBIntegrityServiceTest {
         assertEquals(1, dbIntegrityService.updateAnnotation(annotation));
     }
 
+    @Test
+    public void testUpdateHeadline() throws NotInDataBaseException {
+
+        System.out.println("test updateAnnotation");
+
+        final Annotation annotation = (new TestInstances(TestBackendConstants._TEST_SERVLET_URI)).getAnnotationOne();
+        
+
+        System.out.println("test updateAnnotation");
+        mockeryDao.checking(new Expectations() {
+            {
+                oneOf(annotationDao).getInternalIDFromURI(annotation.getURI());
+                will(returnValue(1));
+
+                oneOf(principalDao).getInternalIDFromURI(annotation.getOwnerRef());
+                will(returnValue(1));
+
+                oneOf(annotationDao).updateAnnotationHeadline(1, "new Headline");
+                will(returnValue(1));
+
+                
+            }
+        });
+        assertEquals(1, dbIntegrityService.updateAnnotationHeadline(1, "new Headline"));
+    }
+    
 //    public int updateAnnotationPrincipalAccess(Number annotationID, Number principalID, Access access) {
 //        int result;
 //        Access currentAccess = annotationDao.getAccess(annotationID, principalID);

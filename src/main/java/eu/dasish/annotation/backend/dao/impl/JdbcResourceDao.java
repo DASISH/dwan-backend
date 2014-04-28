@@ -90,6 +90,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     final static protected String remote_id = "remote_id";
     final static protected String is_xml = "is_xml";
     final static protected String public_ = "public_";
+    final static protected String _headline = "headline";
     final static protected String fragment_descriptor = "fragment_descriptor";
     final static protected String fragment_descriptor_in_cached = "fragment_descriptor_in_cached";
     final static protected String annotationStar = annotationTableName + ".*";
@@ -169,7 +170,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
         sql.append(internalIdName).append(" FROM ").append(resourceTableName).append(" WHERE ").append(external_id).append("= ? LIMIT 1");
         List<Number> sqlResult = this.loggedQuery(sql.toString(), internalIDRowMapper, externalId.toString());
         if (sqlResult.isEmpty()) {
-            throw new NotInDataBaseException(resourceTableName, externalId.toString());
+            throw new NotInDataBaseException(resourceTableName, "external ID", externalId.toString());
         }
 
         return sqlResult.get(0);
@@ -194,7 +195,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
             return this.getInternalID(externalUUID);
         } catch (IllegalArgumentException e) {
             _logger.info(externalID + " is not a valid <uuid>.  Therefore, I expect that it is a temporary idendifier of a new resource that is not yet.");
-            throw new NotInDataBaseException(resourceTableName, externalID);
+            throw new NotInDataBaseException(resourceTableName, "external  ID", externalID);
         }
     }
 
