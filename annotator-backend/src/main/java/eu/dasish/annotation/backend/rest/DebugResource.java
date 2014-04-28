@@ -56,12 +56,12 @@ public class DebugResource extends ResourceResource {
         if (remotePrincipalID == null) {
             return new ObjectFactory().createAnnotationInfoList(new AnnotationInfoList());
         }
-        String typeOfAccount = dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID);
+        String typeOfAccount = dbDispatcher.getTypeOfPrincipalAccount(remotePrincipalID);
         if (typeOfAccount.equals(admin) || typeOfAccount.equals(developer)) {
-            final AnnotationInfoList annotationInfoList = dbIntegrityService.getAllAnnotationInfos();
+            final AnnotationInfoList annotationInfoList = dbDispatcher.getAllAnnotationInfos();
             return new ObjectFactory().createAnnotationInfoList(annotationInfoList);
         } else {
-            verboseOutput.DEVELOPER_RIGHTS_EXPECTED();
+            this.DEVELOPER_RIGHTS_EXPECTED();
             httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
             return new ObjectFactory().createAnnotationInfoList(new AnnotationInfoList());
         }
@@ -76,11 +76,11 @@ public class DebugResource extends ResourceResource {
         if (remotePrincipalID == null) {
             return " ";
         }
-        String typeOfAccount = dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID);
+        String typeOfAccount = dbDispatcher.getTypeOfPrincipalAccount(remotePrincipalID);
         if (typeOfAccount.equals(admin) || typeOfAccount.equals(developer)) {
             return logFile("eu.dasish.annotation.backend.logDatabaseLocation", n);
         } else {
-            verboseOutput.DEVELOPER_RIGHTS_EXPECTED();
+            this.DEVELOPER_RIGHTS_EXPECTED();
             httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
             return "Coucou.";
         }
@@ -104,11 +104,11 @@ public class DebugResource extends ResourceResource {
         if (remotePrincipalID == null) {
             return " ";
         }
-        String typeOfAccount = dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID);
+        String typeOfAccount = dbDispatcher.getTypeOfPrincipalAccount(remotePrincipalID);
         if (typeOfAccount.equals(admin) || typeOfAccount.equals(developer)) {
             return logFile("eu.dasish.annotation.backend.logServerLocation", n);
         } else {
-            verboseOutput.DEVELOPER_RIGHTS_EXPECTED();
+            this.DEVELOPER_RIGHTS_EXPECTED();
             httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
             return "Coucou.";
         }
@@ -124,17 +124,17 @@ public class DebugResource extends ResourceResource {
         if (remotePrincipalID == null) {
             return " ";
         }
-        String typeOfAccount = dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID);
+        String typeOfAccount = dbDispatcher.getTypeOfPrincipalAccount(remotePrincipalID);
         if (typeOfAccount.equals(admin)) {
             try {
-                final boolean update = dbIntegrityService.updateAccount(UUID.fromString(principalId), account);
+                final boolean update = dbDispatcher.updateAccount(UUID.fromString(principalId), account);
                 return (update ? "The account is updated" : "The account is not updated, see the log.");
             } catch (NotInDataBaseException e) {
                 httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.toString());
                 return e.toString();
             }
         } else {
-            verboseOutput.ADMIN_RIGHTS_EXPECTED(dbIntegrityService.getDataBaseAdmin().getDisplayName(), dbIntegrityService.getDataBaseAdmin().getEMail());
+            this.ADMIN_RIGHTS_EXPECTED();
             httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
             return "Coucou.";
         }
@@ -158,5 +158,9 @@ public class DebugResource extends ResourceResource {
             result.append(lines.get(j)).append("\n");
         }
         return result.toString();
+    }
+    
+    private void DEVELOPER_RIGHTS_EXPECTED() throws IOException {
+        loggerServer.debug("The request can be performed only by the principal with the developer's or admin rights. The logged in principal does not have either developer's or admin rights.");
     }
 }

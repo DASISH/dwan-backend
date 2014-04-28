@@ -48,7 +48,7 @@ import java.util.UUID;
  * @author olhsha
  *
  */
-public interface DBIntegrityService {
+public interface DBDispatcher {
 
     void setServiceURI(String serviceURI);
 

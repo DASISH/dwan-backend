@@ -91,7 +91,7 @@ public class TargetResource extends ResourceResource {
         @Override
         public Target apply(Map params) throws NotInDataBaseException {
             Number targetID = (Number) params.get("internalID");
-            return dbIntegrityService.getTarget(targetID);
+            return dbDispatcher.getTarget(targetID);
         }
     }
 
@@ -115,7 +115,7 @@ public class TargetResource extends ResourceResource {
         @Override
         public ReferenceList apply(Map params) throws NotInDataBaseException {
             Number targetID = (Number) params.get("internalID");
-            return dbIntegrityService.getTargetsForTheSameLinkAs(targetID);
+            return dbDispatcher.getTargetsForTheSameLinkAs(targetID);
         }
     }
 
@@ -151,8 +151,8 @@ public class TargetResource extends ResourceResource {
             CachedRepresentationInfo metadata = (CachedRepresentationInfo) params.get("cachedInfo");
             InputStream cachedSource = (InputStream) params.get("cachedBlob");
             try {
-            final Number[] respondDB = dbIntegrityService.addCachedForTarget(targetID, fragmentDescriptor, metadata, cachedSource);
-            return dbIntegrityService.getCachedRepresentationInfo(respondDB[1]);
+            final Number[] respondDB = dbDispatcher.addCachedForTarget(targetID, fragmentDescriptor, metadata, cachedSource);
+            return dbDispatcher.getCachedRepresentationInfo(respondDB[1]);
             } catch (IOException e) {
                 loggerServer.info(e.toString());
                 return null;
@@ -171,10 +171,10 @@ public class TargetResource extends ResourceResource {
             return "You are not logged in. Nothing is updated. ";
         }
         try {
-            final Number targetID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(targetIdentifier), Resource.TARGET);
+            final Number targetID = dbDispatcher.getResourceInternalIdentifier(UUID.fromString(targetIdentifier), Resource.TARGET);
             try {
-                final Number cachedID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(cachedIdentifier), Resource.CACHED_REPRESENTATION);
-                final int updated = dbIntegrityService.updateTargetCachedFragment(targetID, cachedID, fragmentDescriptor);
+                final Number cachedID = dbDispatcher.getResourceInternalIdentifier(UUID.fromString(cachedIdentifier), Resource.CACHED_REPRESENTATION);
+                final int updated = dbDispatcher.updateTargetCachedFragment(targetID, cachedID, fragmentDescriptor);
                 return updated + "rows is/are updated.";
             } catch (NotInDataBaseException e1) {
                 loggerServer.debug(e1.toString());
@@ -197,10 +197,10 @@ public class TargetResource extends ResourceResource {
             return "Nothing is deleted";
         }
         try {
-            final Number targetID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(targetExternalIdentifier), Resource.TARGET);
+            final Number targetID = dbDispatcher.getResourceInternalIdentifier(UUID.fromString(targetExternalIdentifier), Resource.TARGET);
             try {
-                final Number cachedID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(cachedExternalIdentifier), Resource.CACHED_REPRESENTATION);
-                int[] result = dbIntegrityService.deleteCachedRepresentationOfTarget(targetID, cachedID);
+                final Number cachedID = dbDispatcher.getResourceInternalIdentifier(UUID.fromString(cachedExternalIdentifier), Resource.CACHED_REPRESENTATION);
+                int[] result = dbDispatcher.deleteCachedRepresentationOfTarget(targetID, cachedID);
                 return result[0] + " pair(s) target-cached deleted.";
             } catch (NotInDataBaseException e) {
                 loggerServer.debug(e.toString());

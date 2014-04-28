@@ -49,7 +49,7 @@ public class AutheticationResource extends ResourceResource {
     public JAXBElement<Principal> getCurrentPrincipal() throws IOException {
         Number principalID = this.getPrincipalID();
         if (principalID != null) {
-            return new ObjectFactory().createPrincipal(dbIntegrityService.getPrincipal(principalID));
+            return new ObjectFactory().createPrincipal(dbDispatcher.getPrincipal(principalID));
         } else {
             return new ObjectFactory().createPrincipal(new Principal());
         }

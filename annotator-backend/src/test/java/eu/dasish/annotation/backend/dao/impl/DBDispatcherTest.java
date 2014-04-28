@@ -75,11 +75,11 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @ContextConfiguration({"/spring-test-config/dataSource.xml", "/spring-test-config/mockeryDao.xml", "/spring-test-config/mockAnnotationDao.xml",
     "/spring-test-config/mockPrincipalDao.xml", "/spring-test-config/mockTargetDao.xml", "/spring-test-config/mockCachedRepresentationDao.xml",
     "/spring-test-config/mockNotebookDao.xml",
-    "/spring-config/dbIntegrityService.xml"})
-public class DBIntegrityServiceTest {
+    "/spring-config/dbDispatcher.xml"})
+public class DBDispatcherTest {
 
     @Autowired
-    private DBIntegrityServiceImlp dbIntegrityService;
+    private DBDispatcherImlp dbDispatcher;
     @Autowired
     private Mockery mockeryDao;
     @Autowired
@@ -94,7 +94,7 @@ public class DBIntegrityServiceTest {
     private NotebookDao notebookDao;
     TestInstances testInstances = new TestInstances(TestBackendConstants._TEST_SERVLET_URI);
 
-    public DBIntegrityServiceTest() {
+    public DBDispatcherTest() {
     }
 
     ///////// GETTERS /////////////
@@ -113,7 +113,7 @@ public class DBIntegrityServiceTest {
                 will(returnValue(1));
             }
         });
-        assertEquals(1, dbIntegrityService.getResourceInternalIdentifier(externalID, Resource.ANNOTATION));
+        assertEquals(1, dbDispatcher.getResourceInternalIdentifier(externalID, Resource.ANNOTATION));
     }
 
     /**
@@ -131,7 +131,7 @@ public class DBIntegrityServiceTest {
                 will(returnValue(externalID));
             }
         });
-        assertEquals("00000000-0000-0000-0000-000000000021", dbIntegrityService.getResourceExternalIdentifier(1, Resource.ANNOTATION).toString());
+        assertEquals("00000000-0000-0000-0000-000000000021", dbDispatcher.getResourceExternalIdentifier(1, Resource.ANNOTATION).toString());
     }
 
     /**
@@ -150,7 +150,7 @@ public class DBIntegrityServiceTest {
                 will(returnValue(1));
             }
         });
-        assertEquals(1, dbIntegrityService.getResourceInternalIdentifier(externalID, Resource.PRINCIPAL));
+        assertEquals(1, dbDispatcher.getResourceInternalIdentifier(externalID, Resource.PRINCIPAL));
     }
 
     /**
@@ -168,7 +168,7 @@ public class DBIntegrityServiceTest {
                 will(returnValue(externalID));
             }
         });
-        assertEquals("00000000-0000-0000-0000-000000000111", dbIntegrityService.getResourceExternalIdentifier(1, Resource.PRINCIPAL).toString());
+        assertEquals("00000000-0000-0000-0000-000000000111", dbDispatcher.getResourceExternalIdentifier(1, Resource.PRINCIPAL).toString());
     }
 
     /**
@@ -264,7 +264,7 @@ public class DBIntegrityServiceTest {
             }
         });
 
-        Annotation result = dbIntegrityService.getAnnotation(1);
+        Annotation result = dbDispatcher.getAnnotation(1);
         assertEquals(TestBackendConstants._TEST_SERVLET_URI_annotations + "00000000-0000-0000-0000-000000000021", result.getURI());
         assertEquals("text/plain", result.getBody().getTextBody().getMimeType());
         assertEquals("<html><body>some html 1</body></html>", result.getBody().getTextBody().getBody());
@@ -365,7 +365,7 @@ public class DBIntegrityServiceTest {
         });
 
 
-        List result = dbIntegrityService.getFilteredAnnotationIDs(null, "nl.wikipedia.org", "some html 1", 3, "read", null, after, before);
+        List result = dbDispatcher.getFilteredAnnotationIDs(null, "nl.wikipedia.org", "some html 1", 3, "read", null, after, before);
         assertEquals(1, result.size());
         assertEquals(1, result.get(0));
     }
@@ -439,7 +439,7 @@ public class DBIntegrityServiceTest {
         });
 
 
-        List result = dbIntegrityService.getFilteredAnnotationIDs(null, "nl.wikipedia.org", "some html 1", 3, "write", null, after, before);
+        List result = dbDispatcher.getFilteredAnnotationIDs(null, "nl.wikipedia.org", "some html 1", 3, "write", null, after, before);
         assertEquals(1, result.size());
         assertEquals(1, result.get(0));
     }
@@ -481,7 +481,7 @@ public class DBIntegrityServiceTest {
         });
 
 
-        List result = dbIntegrityService.getFilteredAnnotationIDs(null, "nl.wikipedia.org", "some html 1", 3, "owner", null, after, before);
+        List result = dbDispatcher.getFilteredAnnotationIDs(null, "nl.wikipedia.org", "some html 1", 3, "owner", null, after, before);
         assertEquals(0, result.size());
     }
 
@@ -517,7 +517,7 @@ public class DBIntegrityServiceTest {
         });
 
 
-        List result = dbIntegrityService.getFilteredAnnotationIDs(UUID.fromString("00000000-0000-0000-0000-000000000111"), "nl.wikipedia.org", "some html 1", 3, "owner", null, after, before);
+        List result = dbDispatcher.getFilteredAnnotationIDs(UUID.fromString("00000000-0000-0000-0000-000000000111"), "nl.wikipedia.org", "some html 1", 3, "owner", null, after, before);
         assertEquals(0, result.size());
     }
 
@@ -541,7 +541,7 @@ public class DBIntegrityServiceTest {
             }
         });
 
-        ReferenceList result = dbIntegrityService.getAnnotationTargets(1);
+        ReferenceList result = dbDispatcher.getAnnotationTargets(1);
         assertEquals(2, result.getRef().size());
         assertEquals(TestBackendConstants._TEST_SERVLET_URI_targets + "00000000-0000-0000-0000-000000000031", result.getRef().get(0));
         assertEquals(TestBackendConstants._TEST_SERVLET_URI_targets + "00000000-0000-0000-0000-000000000032", result.getRef().get(1));
@@ -662,7 +662,7 @@ public class DBIntegrityServiceTest {
         });
 
 
-        AnnotationInfoList result = dbIntegrityService.getFilteredAnnotationInfos(ownerUUID, "nl.wikipedia.org", "some html 1", 3, "read", null, after, before);
+        AnnotationInfoList result = dbDispatcher.getFilteredAnnotationInfos(ownerUUID, "nl.wikipedia.org", "some html 1", 3, "read", null, after, before);
         assertEquals(1, result.getAnnotationInfo().size());
         AnnotationInfo resultAnnotInfo = result.getAnnotationInfo().get(0);
         assertEquals(mockAnnotInfo.getHeadline(), resultAnnotInfo.getHeadline());
@@ -704,7 +704,7 @@ public class DBIntegrityServiceTest {
             }
         });
 
-        List<String> result = dbIntegrityService.getTargetsWithNoCachedRepresentation(3);
+        List<String> result = dbDispatcher.getTargetsWithNoCachedRepresentation(3);
         assertEquals(1, result.size());
         assertEquals("00000000-0000-0000-0000-000000000037", result.get(0)); // Target number 7 has no cached
     }
@@ -746,7 +746,7 @@ public class DBIntegrityServiceTest {
         });
 
 
-        Number[] result = dbIntegrityService.addCachedForTarget(1, "#(1,2)", newCachedInfo, newCachedBlob);
+        Number[] result = dbDispatcher.addCachedForTarget(1, "#(1,2)", newCachedInfo, newCachedBlob);
         assertEquals(2, result.length);
         assertEquals(1, result[0]);
         assertEquals(8, result[1]);
@@ -783,7 +783,7 @@ public class DBIntegrityServiceTest {
             }
         });
 
-        Map<String, String> result = dbIntegrityService.addTargetsForAnnotation(4, mockTargetListOne);
+        Map<String, String> result = dbDispatcher.addTargetsForAnnotation(4, mockTargetListOne);
         assertEquals(0, result.size());
 
         // test 2: adding a new Target
@@ -818,7 +818,7 @@ public class DBIntegrityServiceTest {
             }
         });
 
-        Map<String, String> resultTwo = dbIntegrityService.addTargetsForAnnotation(1, mockTargetListTwo);
+        Map<String, String> resultTwo = dbDispatcher.addTargetsForAnnotation(1, mockTargetListTwo);
         assertEquals(1, resultTwo.size());
         assertEquals(mockNewTargetUUID.toString(), resultTwo.get(tempTargetID));
 
@@ -856,7 +856,7 @@ public class DBIntegrityServiceTest {
             }
         });
 
-        Number result = dbIntegrityService.addPrincipalsAnnotation(3, testAnnotation);
+        Number result = dbDispatcher.addPrincipalsAnnotation(3, testAnnotation);
         assertEquals(5, result);
 
 //        Annotation newAnnotation = dbIntegrityService.getAnnotation(5);
@@ -887,7 +887,7 @@ public class DBIntegrityServiceTest {
         });
 
 
-        assertEquals(11, dbIntegrityService.addPrincipal(freshPrincipal, "guisil@mpi.nl").intValue());
+        assertEquals(11, dbDispatcher.addPrincipal(freshPrincipal, "guisil@mpi.nl").intValue());
 
         /// principal already exists
         final Principal principal = new Principal();
@@ -903,7 +903,7 @@ public class DBIntegrityServiceTest {
 
         PrincipalExists ex = null;
         try {
-            dbIntegrityService.addPrincipal(principal, "olhsha@mpi.nl");
+            dbDispatcher.addPrincipal(principal, "olhsha@mpi.nl");
         } catch (PrincipalExists e) {
             ex = e;
         }
@@ -929,9 +929,9 @@ public class DBIntegrityServiceTest {
             }
         });
 
-        assertEquals(0, dbIntegrityService.deletePrincipal(1));
-        assertEquals(0, dbIntegrityService.deletePrincipal(3));
-        assertEquals(1, dbIntegrityService.deletePrincipal(10));
+        assertEquals(0, dbDispatcher.deletePrincipal(1));
+        assertEquals(0, dbDispatcher.deletePrincipal(3));
+        assertEquals(1, dbDispatcher.deletePrincipal(10));
     }
 
     /**
@@ -951,7 +951,7 @@ public class DBIntegrityServiceTest {
             }
         });
 
-        int[] result = dbIntegrityService.deleteCachedRepresentationOfTarget(5, 7);
+        int[] result = dbDispatcher.deleteCachedRepresentationOfTarget(5, 7);
         assertEquals(2, result.length);
         assertEquals(1, result[0]);
         assertEquals(1, result[1]);
@@ -985,7 +985,7 @@ public class DBIntegrityServiceTest {
             }
         });
 
-        int[] result = dbIntegrityService.deleteAllCachedRepresentationsOfTarget(1);
+        int[] result = dbDispatcher.deleteAllCachedRepresentationsOfTarget(1);
         assertEquals(2, result[0]); // # affected rows in Targets_cacheds
         assertEquals(2, result[1]); // # affected rows in cacheds 
     }
@@ -1040,7 +1040,7 @@ public class DBIntegrityServiceTest {
 
             }
         });
-        int[] result = dbIntegrityService.deleteAnnotation(2);// the Target will be deleted because it is not referred by any annotation
+        int[] result = dbDispatcher.deleteAnnotation(2);// the Target will be deleted because it is not referred by any annotation
         assertEquals(5, result.length);
         assertEquals(1, result[0]); // annotation 3 is deleted
         assertEquals(2, result[1]); // 2 rows in "annotation principal accesss are deleted"
@@ -1070,7 +1070,7 @@ public class DBIntegrityServiceTest {
             }
         });
 
-        assertEquals(1, dbIntegrityService.getResourceInternalIdentifier(mockUUID, Resource.NOTEBOOK));
+        assertEquals(1, dbDispatcher.getResourceInternalIdentifier(mockUUID, Resource.NOTEBOOK));
 
     }
 
@@ -1126,7 +1126,7 @@ public class DBIntegrityServiceTest {
             }
         });
 
-        NotebookInfoList result = dbIntegrityService.getNotebooks(3, Access.READ);
+        NotebookInfoList result = dbDispatcher.getNotebooks(3, Access.READ);
         assertEquals("00000000-0000-0000-0000-000000000011", result.getNotebookInfo().get(0).getRef());
         assertEquals("00000000-0000-0000-0000-000000000111", result.getNotebookInfo().get(0).getOwnerRef());
         assertEquals("Notebook 1", result.getNotebookInfo().get(0).getTitle());
@@ -1205,7 +1205,7 @@ public class DBIntegrityServiceTest {
             }
         });
 
-        ReferenceList result = dbIntegrityService.getNotebooksOwnedBy(3);
+        ReferenceList result = dbDispatcher.getNotebooksOwnedBy(3);
         assertEquals(2, result.getRef().size());
         assertEquals(TestBackendConstants._TEST_SERVLET_URI_notebooks + "00000000-0000-0000-0000-000000000013", result.getRef().get(0));
         assertEquals(TestBackendConstants._TEST_SERVLET_URI_notebooks + "00000000-0000-0000-0000-000000000014", result.getRef().get(1));
@@ -1238,8 +1238,8 @@ public class DBIntegrityServiceTest {
             }
         });
 
-        assertTrue(dbIntegrityService.hasAccess(4, 2, write));
-        assertFalse(dbIntegrityService.hasAccess(5, 2, write));
+        assertTrue(dbDispatcher.hasAccess(4, 2, write));
+        assertFalse(dbDispatcher.hasAccess(5, 2, write));
     }
 
     /*
@@ -1274,7 +1274,7 @@ public class DBIntegrityServiceTest {
             }
         });
 
-        ReferenceList result = dbIntegrityService.getPrincipals(1, "write");
+        ReferenceList result = dbDispatcher.getPrincipals(1, "write");
         assertEquals("serviceURI/principals/00000000-0000-0000-0000-000000000112", result.getRef().get(0).toString());
         assertEquals("serviceURI/principals/00000000-0000-0000-0000-000000000114", result.getRef().get(1).toString());
 
@@ -1363,7 +1363,7 @@ public class DBIntegrityServiceTest {
             }
         });
 
-        Notebook result = dbIntegrityService.getNotebook(2);
+        Notebook result = dbDispatcher.getNotebook(2);
         assertEquals("serviceURI/notebooks/00000000-0000-0000-0000-000000000012", result.getURI());
         assertEquals("serviceURI/principals/00000000-0000-0000-0000-000000000112", result.getOwnerRef());
         assertEquals("2014-02-12T09:25:00.383000Z", result.getLastModified().toString());
@@ -1403,7 +1403,7 @@ public class DBIntegrityServiceTest {
             }
         });
 
-        ReferenceList result = dbIntegrityService.getAnnotationsForNotebook(1, -1, 3, "last_modified", true);
+        ReferenceList result = dbDispatcher.getAnnotationsForNotebook(1, -1, 3, "last_modified", true);
         assertEquals(2, result.getRef().size());
         assertEquals("serviceURI/annotations/00000000-0000-0000-0000-000000000021", result.getRef().get(0).toString());
         assertEquals("serviceURI/annotations/00000000-0000-0000-0000-000000000022", result.getRef().get(1).toString());
@@ -1434,7 +1434,7 @@ public class DBIntegrityServiceTest {
             }
         });
 
-        boolean result = dbIntegrityService.updateNotebookMetadata(1, mockNotebookInfo);
+        boolean result = dbDispatcher.updateNotebookMetadata(1, mockNotebookInfo);
         assertTrue(result);
     }
 
@@ -1453,7 +1453,7 @@ public class DBIntegrityServiceTest {
             }
         });
 
-        assertTrue(dbIntegrityService.addAnnotationToNotebook(1, 3));
+        assertTrue(dbDispatcher.addAnnotationToNotebook(1, 3));
     }
 
     /**
@@ -1512,7 +1512,7 @@ public class DBIntegrityServiceTest {
             }
         });
 
-        Number result = dbIntegrityService.createNotebook(notebook, 1);
+        Number result = dbDispatcher.createNotebook(notebook, 1);
         assertEquals(5, result);
 
     }
@@ -1551,7 +1551,7 @@ public class DBIntegrityServiceTest {
             }
         });
 
-        assertTrue(dbIntegrityService.createAnnotationInNotebook(1, testAnnotation, 3));
+        assertTrue(dbDispatcher.createAnnotationInNotebook(1, testAnnotation, 3));
 
     }
 
@@ -1583,7 +1583,7 @@ public class DBIntegrityServiceTest {
             }
         });
 
-        assertTrue(dbIntegrityService.deleteNotebook(1));
+        assertTrue(dbDispatcher.deleteNotebook(1));
     }
 
     @Test
@@ -1602,7 +1602,7 @@ public class DBIntegrityServiceTest {
             }
         });
 
-        assertEquals(Access.WRITE, dbIntegrityService.getAccess(1, 3));
+        assertEquals(Access.WRITE, dbDispatcher.getAccess(1, 3));
 
         //////
 
@@ -1616,7 +1616,7 @@ public class DBIntegrityServiceTest {
 
             }
         });
-        assertEquals(Access.READ, dbIntegrityService.getAccess(2, 3));
+        assertEquals(Access.READ, dbDispatcher.getAccess(2, 3));
 
         //////
 
@@ -1630,7 +1630,7 @@ public class DBIntegrityServiceTest {
 
             }
         });
-        assertEquals(Access.NONE, dbIntegrityService.getAccess(3, 3));
+        assertEquals(Access.NONE, dbDispatcher.getAccess(3, 3));
 
         //////
     }
@@ -1646,7 +1646,7 @@ public class DBIntegrityServiceTest {
 
             }
         });
-        assertEquals(Access.READ, dbIntegrityService.getPublicAttribute(2));
+        assertEquals(Access.READ, dbDispatcher.getPublicAttribute(2));
     }
 
 //      @Override
@@ -1754,7 +1754,7 @@ public class DBIntegrityServiceTest {
 
             }
         });
-        assertEquals(1, dbIntegrityService.updateAnnotation(annotation));
+        assertEquals(1, dbDispatcher.updateAnnotation(annotation));
     }
 
     @Test
@@ -1780,7 +1780,7 @@ public class DBIntegrityServiceTest {
                 
             }
         });
-        assertEquals(1, dbIntegrityService.updateAnnotationHeadline(1, "new Headline"));
+        assertEquals(1, dbDispatcher.updateAnnotationHeadline(1, "new Headline"));
     }
     
 //    public int updateAnnotationPrincipalAccess(Number annotationID, Number principalID, Access access) {
@@ -1821,8 +1821,8 @@ public class DBIntegrityServiceTest {
             }
         });
 
-        assertEquals(1, dbIntegrityService.updateAnnotationPrincipalAccess(1, 2, Access.READ));
-        assertEquals(1, dbIntegrityService.updateAnnotationPrincipalAccess(1, 4, Access.WRITE));
+        assertEquals(1, dbDispatcher.updateAnnotationPrincipalAccess(1, 2, Access.READ));
+        assertEquals(1, dbDispatcher.updateAnnotationPrincipalAccess(1, 4, Access.WRITE));
     }
 
     @Test
@@ -1857,7 +1857,7 @@ public class DBIntegrityServiceTest {
             }
         });
 
-        assertEquals(1, dbIntegrityService.updatePermissions(1, permissions));
+        assertEquals(1, dbDispatcher.updatePermissions(1, permissions));
 
     }
 
@@ -1893,7 +1893,7 @@ public class DBIntegrityServiceTest {
             }
         });
 
-        assertEquals(1, dbIntegrityService.updatePermissions(1, permissions));
+        assertEquals(1, dbDispatcher.updatePermissions(1, permissions));
 
     }
 
@@ -1912,7 +1912,7 @@ public class DBIntegrityServiceTest {
             }
         });
 
-        assertEquals(1, dbIntegrityService.updatePublicAttribute(1, Access.NONE));
+        assertEquals(1, dbDispatcher.updatePublicAttribute(1, Access.NONE));
 
     }
 }

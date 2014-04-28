@@ -64,13 +64,13 @@ public class NotebookResource extends ResourceResource {
     @Path("")
     @Transactional(readOnly = true)
     public JAXBElement<NotebookInfoList> getNotebookInfos(@QueryParam("access") String accessMode) throws IOException {
-        dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
+        dbDispatcher.setServiceURI(uriInfo.getBaseUri().toString());
         Number remotePrincipalID = this.getPrincipalID();
         if (accessMode.equalsIgnoreCase("read") || accessMode.equalsIgnoreCase("write")) {
-            NotebookInfoList notebookInfos = dbIntegrityService.getNotebooks(remotePrincipalID, Access.fromValue(accessMode));
+            NotebookInfoList notebookInfos = dbDispatcher.getNotebooks(remotePrincipalID, Access.fromValue(accessMode));
             return new ObjectFactory().createNotebookInfoList(notebookInfos);
         } else {
-            verboseOutput.INVALID_ACCESS_MODE(accessMode);
+            this.INVALID_ACCESS_MODE(accessMode);
             httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "ivalide mode acess " + accessMode);
             return new ObjectFactory().createNotebookInfoList(new NotebookInfoList());
         }
@@ -85,7 +85,7 @@ public class NotebookResource extends ResourceResource {
         if (remotePrincipalID == null) {
             return new ObjectFactory().createReferenceList(new ReferenceList());
         }
-        ReferenceList references = dbIntegrityService.getNotebooksOwnedBy(remotePrincipalID);
+        ReferenceList references = dbDispatcher.getNotebooksOwnedBy(remotePrincipalID);
         return new ObjectFactory().createReferenceList(references);
     }
 
@@ -99,12 +99,11 @@ public class NotebookResource extends ResourceResource {
             return new ObjectFactory().createReferenceList(new ReferenceList());
         }
         try {
-            Number notebookID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.NOTEBOOK);
-            if (dbIntegrityService.hasAccess(notebookID, remotePrincipalID, Access.fromValue("read"))) {
-                ReferenceList principals = dbIntegrityService.getPrincipals(notebookID, accessMode);
+            Number notebookID = dbDispatcher.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.NOTEBOOK);
+            if (dbDispatcher.hasAccess(notebookID, remotePrincipalID, Access.fromValue("read"))) {
+                ReferenceList principals = dbDispatcher.getPrincipals(notebookID, accessMode);
                 return new ObjectFactory().createReferenceList(principals);
             } else {
-                verboseOutput.FORBIDDEN_NOTEBOOK_READING(externalIdentifier, dbIntegrityService.getAnnotationOwner(notebookID).getDisplayName(), dbIntegrityService.getAnnotationOwner(notebookID).getEMail());
                 httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
                 return new ObjectFactory().createReferenceList(new ReferenceList());
             }
@@ -131,12 +130,11 @@ public class NotebookResource extends ResourceResource {
             return new ObjectFactory().createNotebook(new Notebook());
         }
         try {
-            Number notebookID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.NOTEBOOK);
-            if (dbIntegrityService.hasAccess(notebookID, remotePrincipalID, Access.fromValue("read"))) {
-                Notebook notebook = dbIntegrityService.getNotebook(notebookID);
+            Number notebookID = dbDispatcher.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.NOTEBOOK);
+            if (dbDispatcher.hasAccess(notebookID, remotePrincipalID, Access.fromValue("read"))) {
+                Notebook notebook = dbDispatcher.getNotebook(notebookID);
                 return new ObjectFactory().createNotebook(notebook);
             } else {
-                verboseOutput.FORBIDDEN_NOTEBOOK_READING(externalIdentifier, dbIntegrityService.getAnnotationOwner(notebookID).getDisplayName(), dbIntegrityService.getAnnotationOwner(notebookID).getEMail());
                 httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
                 return new ObjectFactory().createNotebook(new Notebook());
             }
@@ -163,12 +161,11 @@ public class NotebookResource extends ResourceResource {
             return new ObjectFactory().createReferenceList(new ReferenceList());
         }
         try {
-            Number notebookID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.NOTEBOOK);
-            if (dbIntegrityService.hasAccess(notebookID, remotePrincipalID, Access.fromValue("read"))) {
-                ReferenceList annotations = dbIntegrityService.getAnnotationsForNotebook(notebookID, startAnnotations, maximumAnnotations, orderBy, desc);
+            Number notebookID = dbDispatcher.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.NOTEBOOK);
+            if (dbDispatcher.hasAccess(notebookID, remotePrincipalID, Access.fromValue("read"))) {
+                ReferenceList annotations = dbDispatcher.getAnnotationsForNotebook(notebookID, startAnnotations, maximumAnnotations, orderBy, desc);
                 return new ObjectFactory().createReferenceList(annotations);
             } else {
-                verboseOutput.FORBIDDEN_NOTEBOOK_READING(externalIdentifier, dbIntegrityService.getAnnotationOwner(notebookID).getDisplayName(), dbIntegrityService.getAnnotationOwner(notebookID).getEMail());
                 httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
                 return new ObjectFactory().createReferenceList(new ReferenceList());
             }
@@ -193,23 +190,21 @@ public class NotebookResource extends ResourceResource {
         String path = uriInfo.getBaseUri().toString();
         String notebookURI = notebookInfo.getRef();
         if (!(path + "notebook/" + externalIdentifier).equals(notebookURI)) {
-            verboseOutput.IDENTIFIER_MISMATCH(externalIdentifier);
             httpServletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return new ObjectFactory().createResponseBody(new ResponseBody());
         };
         try {
-            final Number notebookID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.NOTEBOOK);
+            final Number notebookID = dbDispatcher.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.NOTEBOOK);
             try {
-                if (remotePrincipalID.equals(dbIntegrityService.getNotebookOwner(notebookID)) || dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID).equals(admin)) {
-                    boolean success = dbIntegrityService.updateNotebookMetadata(notebookID, notebookInfo);
+                if (remotePrincipalID.equals(dbDispatcher.getNotebookOwner(notebookID)) || dbDispatcher.getTypeOfPrincipalAccount(remotePrincipalID).equals(admin)) {
+                    boolean success = dbDispatcher.updateNotebookMetadata(notebookID, notebookInfo);
                     if (success) {
-                        return new ObjectFactory().createResponseBody(dbIntegrityService.makeNotebookResponseEnvelope(notebookID));
+                        return new ObjectFactory().createResponseBody(dbDispatcher.makeNotebookResponseEnvelope(notebookID));
                     } else {
                         httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                         return new ObjectFactory().createResponseBody(new ResponseBody());
                     }
                 } else {
-                    verboseOutput.FORBIDDEN_ACCESS_CHANGING(externalIdentifier, dbIntegrityService.getAnnotationOwner(notebookID).getDisplayName(), dbIntegrityService.getAnnotationOwner(notebookID).getEMail());
                     loggerServer.debug(" Ownership changing is the part of the full update of the notebook metadadata.");
                     httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
                     return new ObjectFactory().createResponseBody(new ResponseBody());

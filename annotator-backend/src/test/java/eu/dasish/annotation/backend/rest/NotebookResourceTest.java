@@ -17,7 +17,7 @@
  */
 package eu.dasish.annotation.backend.rest;
 
-import eu.dasish.annotation.backend.dao.DBIntegrityService;
+import eu.dasish.annotation.backend.dao.DBDispatcher;
 import org.jmock.Mockery;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,14 +30,14 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @author Peter Withers <peter.withers@mpi.nl>
  */
 @RunWith(value = SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = {"/spring-test-config/mockeryRest.xml", "/spring-test-config/mockDBIntegrityService.xml", "/spring-config/jaxbMarshallerFactory.xml",
+@ContextConfiguration(locations = {"/spring-test-config/mockeryRest.xml", "/spring-test-config/mockDBDispatcher.xml", "/spring-config/jaxbMarshallerFactory.xml",
     "/spring-test-config/mockUriInfo.xml"})
 public class NotebookResourceTest {
 
     @Autowired
     private Mockery mockeryRest;
     @Autowired
-    private DBIntegrityService daoDispatcher;
+    private DBDispatcher daoDispatcher;
     @Autowired
     private NotebookResource notebookResource;
 
