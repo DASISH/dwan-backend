@@ -20,7 +20,7 @@ package eu.dasish.annotation.backend.rest;
 import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.Resource;
 import eu.dasish.annotation.backend.ResourceAction;
-import eu.dasish.annotation.backend.dao.DBIntegrityService;
+import eu.dasish.annotation.backend.dao.DBDispatcher;
 import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.TestInstances;
 import eu.dasish.annotation.schema.Access;
@@ -52,7 +52,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
  * @author olhsha
  */
 @RunWith(value = SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = {"/spring-test-config/mockeryRest.xml", "/spring-test-config/mockDBIntegrityService.xml",
+@ContextConfiguration(locations = {"/spring-test-config/mockeryRest.xml", "/spring-test-config/mockDBDispatcher.xml",
     "/spring-test-config/mockUriInfo.xml",
     "/spring-config/jaxbMarshallerFactory.xml"})
 public class AnnotationResourceTest {
@@ -60,7 +60,7 @@ public class AnnotationResourceTest {
     @Autowired
     private Mockery mockeryRest;
     @Autowired
-    private DBIntegrityService mockDbIntegrityService;
+    private DBDispatcher mockDbDispatcher;
     @Autowired
     UriInfo mockUriInfo;
     @Autowired
@@ -106,19 +106,19 @@ public class AnnotationResourceTest {
                 oneOf(mockUriInfo).getBaseUri();
                 will(returnValue(baseUri));
 
-                oneOf(mockDbIntegrityService).setServiceURI(baseUri.toString());
+                oneOf(mockDbDispatcher).setServiceURI(baseUri.toString());
 
-                oneOf(mockDbIntegrityService).getPrincipalInternalIDFromRemoteID("olhsha@mpi.nl");
+                oneOf(mockDbDispatcher).getPrincipalInternalIDFromRemoteID("olhsha@mpi.nl");
                 will(returnValue(3));
 
-                oneOf(mockDbIntegrityService).getResourceInternalIdentifier(with(aNonNull(UUID.class)), with(aNonNull((Resource.class))));
+                oneOf(mockDbDispatcher).getResourceInternalIdentifier(with(aNonNull(UUID.class)), with(aNonNull((Resource.class))));
                 will(returnValue(1));
 
 
-                oneOf(mockDbIntegrityService).canDo(ResourceAction.READ, 3, 1, Resource.ANNOTATION);
+                oneOf(mockDbDispatcher).canDo(ResourceAction.READ, 3, 1, Resource.ANNOTATION);
                 will(returnValue(true));
 
-                oneOf(mockDbIntegrityService).getAnnotation(1);
+                oneOf(mockDbDispatcher).getAnnotation(1);
                 will(returnValue(expectedAnnotation));
             }
         });
@@ -153,22 +153,22 @@ public class AnnotationResourceTest {
                 oneOf(mockUriInfo).getBaseUri();
                 will(returnValue(baseUri));
 
-                oneOf(mockDbIntegrityService).setServiceURI(baseUri.toString());
+                oneOf(mockDbDispatcher).setServiceURI(baseUri.toString());
 
-                oneOf(mockDbIntegrityService).getPrincipalInternalIDFromRemoteID("olhsha@mpi.nl");
+                oneOf(mockDbDispatcher).getPrincipalInternalIDFromRemoteID("olhsha@mpi.nl");
                 will(returnValue(3));
 
-                oneOf(mockDbIntegrityService).getResourceInternalIdentifier(with(aNonNull(UUID.class)), with(aNonNull((Resource.class))));
+                oneOf(mockDbDispatcher).getResourceInternalIdentifier(with(aNonNull(UUID.class)), with(aNonNull((Resource.class))));
                 will(returnValue(4));
 
 
-                oneOf(mockDbIntegrityService).getAnnotationOwnerID(4);
+                oneOf(mockDbDispatcher).getAnnotationOwnerID(4);
                 will(returnValue(3));
                 
-                oneOf(mockDbIntegrityService).canDo(ResourceAction.DELETE, 3, 4, Resource.ANNOTATION);
+                oneOf(mockDbDispatcher).canDo(ResourceAction.DELETE, 3, 4, Resource.ANNOTATION);
                 will(returnValue(true));
 
-                oneOf(mockDbIntegrityService).deleteAnnotation(4);
+                oneOf(mockDbDispatcher).deleteAnnotation(4);
                 will(returnValue(mockDelete));
             }
         });
@@ -215,18 +215,18 @@ public class AnnotationResourceTest {
                 oneOf(mockUriInfo).getBaseUri();
                 will(returnValue(baseUri));
 
-                oneOf(mockDbIntegrityService).setServiceURI(baseUri.toString());
+                oneOf(mockDbDispatcher).setServiceURI(baseUri.toString());
 
-                oneOf(mockDbIntegrityService).getPrincipalInternalIDFromRemoteID("olhsha@mpi.nl");
+                oneOf(mockDbDispatcher).getPrincipalInternalIDFromRemoteID("olhsha@mpi.nl");
                 will(returnValue(3));
 
-                oneOf(mockDbIntegrityService).addPrincipalsAnnotation(3, annotationToAdd);
+                oneOf(mockDbDispatcher).addPrincipalsAnnotation(3, annotationToAdd);
                 will(returnValue(newAnnotationID));
 
-                oneOf(mockDbIntegrityService).getAnnotation(newAnnotationID);
+                oneOf(mockDbDispatcher).getAnnotation(newAnnotationID);
                 will(returnValue(addedAnnotation));
                 
-                oneOf(mockDbIntegrityService).makeAnnotationResponseEnvelope(newAnnotationID);
+                oneOf(mockDbDispatcher).makeAnnotationResponseEnvelope(newAnnotationID);
                 will(returnValue(mockEnvelope));
 
             }
@@ -285,27 +285,27 @@ public class AnnotationResourceTest {
                 oneOf(mockUriInfo).getBaseUri();
                 will(returnValue(baseUri));
 
-                oneOf(mockDbIntegrityService).setServiceURI(baseUri.toString());
+                oneOf(mockDbDispatcher).setServiceURI(baseUri.toString());
 
-                oneOf(mockDbIntegrityService).getPrincipalInternalIDFromRemoteID("twagoo@mpi.nl");
+                oneOf(mockDbDispatcher).getPrincipalInternalIDFromRemoteID("twagoo@mpi.nl");
                 will(returnValue(1));
                 
                 oneOf(mockUriInfo).getBaseUri();
                 will(returnValue(baseUri));
 
-                oneOf(mockDbIntegrityService).getResourceInternalIdentifier(externalId, Resource.ANNOTATION);
+                oneOf(mockDbDispatcher).getResourceInternalIdentifier(externalId, Resource.ANNOTATION);
                 will(returnValue(1));
                 
-                oneOf(mockDbIntegrityService).getAnnotationOwnerID(1);
+                oneOf(mockDbDispatcher).getAnnotationOwnerID(1);
                 will(returnValue(1));
                 
-                oneOf(mockDbIntegrityService).canDo(ResourceAction.WRITE_W_METAINFO, 1, 1, Resource.ANNOTATION);
+                oneOf(mockDbDispatcher).canDo(ResourceAction.WRITE_W_METAINFO, 1, 1, Resource.ANNOTATION);
                 will(returnValue(true));
                 
-                oneOf(mockDbIntegrityService).updateAnnotation(annotation);
+                oneOf(mockDbDispatcher).updateAnnotation(annotation);
                 will(returnValue(1));
                
-                oneOf(mockDbIntegrityService).makeAnnotationResponseEnvelope(1);
+                oneOf(mockDbDispatcher).makeAnnotationResponseEnvelope(1);
                 will(returnValue(mockEnvelope));
 
             }
@@ -360,23 +360,23 @@ public class AnnotationResourceTest {
                 oneOf(mockUriInfo).getBaseUri();
                 will(returnValue(baseUri));
 
-                oneOf(mockDbIntegrityService).setServiceURI(baseUri.toString());
+                oneOf(mockDbDispatcher).setServiceURI(baseUri.toString());
 
-                oneOf(mockDbIntegrityService).getPrincipalInternalIDFromRemoteID("twagoo@mpi.nl");
+                oneOf(mockDbDispatcher).getPrincipalInternalIDFromRemoteID("twagoo@mpi.nl");
                 will(returnValue(1));
                 
                
-                oneOf(mockDbIntegrityService).getResourceInternalIdentifier(externalId, Resource.ANNOTATION);
+                oneOf(mockDbDispatcher).getResourceInternalIdentifier(externalId, Resource.ANNOTATION);
                 will(returnValue(1));
                 
-                oneOf(mockDbIntegrityService).canDo(ResourceAction.WRITE, 1, 1, Resource.ANNOTATION);
+                oneOf(mockDbDispatcher).canDo(ResourceAction.WRITE, 1, 1, Resource.ANNOTATION);
                 will(returnValue(true));               
                 
                 
-                oneOf(mockDbIntegrityService).updateAnnotationBody(1, ab);
+                oneOf(mockDbDispatcher).updateAnnotationBody(1, ab);
                 will(returnValue(1));
                
-                oneOf(mockDbIntegrityService).makeAnnotationResponseEnvelope(1);
+                oneOf(mockDbDispatcher).makeAnnotationResponseEnvelope(1);
                 will(returnValue(mockEnvelope));
 
             }
@@ -417,23 +417,23 @@ public class AnnotationResourceTest {
                 oneOf(mockUriInfo).getBaseUri();
                 will(returnValue(baseUri));
 
-                oneOf(mockDbIntegrityService).setServiceURI(baseUri.toString());
+                oneOf(mockDbDispatcher).setServiceURI(baseUri.toString());
 
-                oneOf(mockDbIntegrityService).getPrincipalInternalIDFromRemoteID("twagoo@mpi.nl");
+                oneOf(mockDbDispatcher).getPrincipalInternalIDFromRemoteID("twagoo@mpi.nl");
                 will(returnValue(1));
                 
                
-                oneOf(mockDbIntegrityService).getResourceInternalIdentifier(externalId, Resource.ANNOTATION);
+                oneOf(mockDbDispatcher).getResourceInternalIdentifier(externalId, Resource.ANNOTATION);
                 will(returnValue(1));
                 
-                oneOf(mockDbIntegrityService).canDo(ResourceAction.WRITE, 1, 1, Resource.ANNOTATION);
+                oneOf(mockDbDispatcher).canDo(ResourceAction.WRITE, 1, 1, Resource.ANNOTATION);
                 will(returnValue(true));               
                 
                 
-                oneOf(mockDbIntegrityService).updateAnnotationHeadline(1, newHeadline);
+                oneOf(mockDbDispatcher).updateAnnotationHeadline(1, newHeadline);
                 will(returnValue(1));
                
-                oneOf(mockDbIntegrityService).makeAnnotationResponseEnvelope(1);
+                oneOf(mockDbDispatcher).makeAnnotationResponseEnvelope(1);
                 will(returnValue(mockEnvelope));
 
             }

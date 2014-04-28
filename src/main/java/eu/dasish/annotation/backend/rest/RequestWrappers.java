@@ -76,13 +76,13 @@ public class RequestWrappers<T> {
         try {
             final Number resourceID;
             if (isUri) {
-                resourceID = resourceResource.dbIntegrityService.getResourceInternalIdentifierFromURI(externalId, resource);
-                params.put(_externalId,  resourceResource.dbIntegrityService.getResourceExternalIdentifier(resourceID, resource).toString());
+                resourceID = resourceResource.dbDispatcher.getResourceInternalIdentifierFromURI(externalId, resource);
+                params.put(_externalId,  resourceResource.dbDispatcher.getResourceExternalIdentifier(resourceID, resource).toString());
             } else {
-                resourceID = resourceResource.dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalId), resource);
+                resourceID = resourceResource.dbDispatcher.getResourceInternalIdentifier(UUID.fromString(externalId), resource);
                 params.put(_externalId, externalId);
             }
-            if (resourceResource.dbIntegrityService.canDo(action, principalID, resourceID, resource)) {
+            if (resourceResource.dbDispatcher.canDo(action, principalID, resourceID, resource)) {
                 params.put(_internalID, resourceID);
                 params.put(_resourceType, resource);
                 return dbRequestor.apply(params);

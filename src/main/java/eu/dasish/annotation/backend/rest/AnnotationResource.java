@@ -61,6 +61,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Path("/annotations")
 @Transactional(rollbackFor = {Exception.class})
 public class AnnotationResource extends ResourceResource {
+    
+    
 
     public void setUriInfo(UriInfo uriInfo) {
         this.uriInfo = uriInfo;
@@ -99,7 +101,7 @@ public class AnnotationResource extends ResourceResource {
 
         @Override
         public Annotation apply(Map params) throws NotInDataBaseException {
-            return dbIntegrityService.getAnnotation((Number) params.get("internalID"));
+            return dbDispatcher.getAnnotation((Number) params.get("internalID"));
         }
     }
 
@@ -122,7 +124,7 @@ public class AnnotationResource extends ResourceResource {
 
         @Override
         public ReferenceList apply(Map params) throws NotInDataBaseException {
-            return dbIntegrityService.getAnnotationTargets((Number) params.get("internalID"));
+            return dbDispatcher.getAnnotationTargets((Number) params.get("internalID"));
         }
     }
 // TODO Unit test 
@@ -149,12 +151,12 @@ public class AnnotationResource extends ResourceResource {
             access = defaultAccess;
         }
         if (!Arrays.asList(admissibleAccess).contains(access)) {
-            verboseOutput.INVALID_ACCESS_MODE(access);
+            this.INVALID_ACCESS_MODE(access);
             httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "ivalide mode acess " + access);
             return new ObjectFactory().createAnnotationInfoList(new AnnotationInfoList());
         }
         try {
-            final AnnotationInfoList annotationInfoList = dbIntegrityService.getFilteredAnnotationInfos(ownerExternalUUID, link, text, principalID, access, namespace, after, before);
+            final AnnotationInfoList annotationInfoList = dbDispatcher.getFilteredAnnotationInfos(ownerExternalUUID, link, text, principalID, access, namespace, after, before);
             return new ObjectFactory().createAnnotationInfoList(annotationInfoList);
         } catch (NotInDataBaseException e) {
             loggerServer.debug(e.toString());
@@ -182,7 +184,7 @@ public class AnnotationResource extends ResourceResource {
 
         @Override
         public PermissionList apply(Map params) throws NotInDataBaseException {
-            return dbIntegrityService.getPermissions((Number) params.get("internalID"), (Resource) params.get("resourceType"));
+            return dbDispatcher.getPermissions((Number) params.get("internalID"), (Resource) params.get("resourceType"));
         }
     }
 ///////////////////////////////////////////////////////
@@ -203,7 +205,7 @@ public class AnnotationResource extends ResourceResource {
 
         @Override
         public int[] apply(Map params) throws NotInDataBaseException {
-            return dbIntegrityService.deleteAnnotation((Number) params.get("internalID"));
+            return dbDispatcher.deleteAnnotation((Number) params.get("internalID"));
         }
     }
 
@@ -229,8 +231,8 @@ public class AnnotationResource extends ResourceResource {
         public ResponseBody apply(Map params) throws NotInDataBaseException {
             Number principalID = (Number) params.get("principalID");
             Annotation annotation = (Annotation) params.get("annotation");
-            Number annotationID = dbIntegrityService.addPrincipalsAnnotation(principalID, annotation);
-            return dbIntegrityService.makeAnnotationResponseEnvelope(annotationID);
+            Number annotationID = dbDispatcher.addPrincipalsAnnotation(principalID, annotation);
+            return dbDispatcher.makeAnnotationResponseEnvelope(annotationID);
         }
     }
 
@@ -268,8 +270,8 @@ public class AnnotationResource extends ResourceResource {
         public ResponseBody apply(Map params) throws NotInDataBaseException {
             Annotation annotation = (Annotation) params.get("annotation");
             Number annotationID = (Number) params.get("internalID");
-            int updatedRows = dbIntegrityService.updateAnnotation(annotation);
-            return dbIntegrityService.makeAnnotationResponseEnvelope(annotationID);
+            int updatedRows = dbDispatcher.updateAnnotation(annotation);
+            return dbDispatcher.makeAnnotationResponseEnvelope(annotationID);
         }
     }
     ///////////////////////////////////////////////////////////////////////////////
@@ -297,8 +299,8 @@ public class AnnotationResource extends ResourceResource {
         public ResponseBody apply(Map params) throws NotInDataBaseException {
             Number resourceID = (Number) params.get("internalID");
             AnnotationBody annotationBody = (AnnotationBody) params.get("annotationBody");
-            int updatedRows = dbIntegrityService.updateAnnotationBody(resourceID, annotationBody);
-            return dbIntegrityService.makeAnnotationResponseEnvelope(resourceID);
+            int updatedRows = dbDispatcher.updateAnnotationBody(resourceID, annotationBody);
+            return dbDispatcher.makeAnnotationResponseEnvelope(resourceID);
         }
     }
     
@@ -325,8 +327,8 @@ public class AnnotationResource extends ResourceResource {
         public ResponseBody apply(Map params) throws NotInDataBaseException {
             Number resourceID = (Number) params.get("internalID");
             String newHeadline = (String) params.get("headline");
-            int updatedRows = dbIntegrityService.updateAnnotationHeadline(resourceID, newHeadline);
-            return dbIntegrityService.makeAnnotationResponseEnvelope(resourceID);
+            int updatedRows = dbDispatcher.updateAnnotationHeadline(resourceID, newHeadline);
+            return dbDispatcher.makeAnnotationResponseEnvelope(resourceID);
         }
     }
     ////////////////////////////////////////////////////
@@ -345,7 +347,7 @@ public class AnnotationResource extends ResourceResource {
         Map params = new HashMap();
         params.put("access", access);
         try {
-            final Number inputPrincipalID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(principalId), Resource.PRINCIPAL);
+            final Number inputPrincipalID = dbDispatcher.getResourceInternalIdentifier(UUID.fromString(principalId), Resource.PRINCIPAL);
             params.put("inputPrincipalID", inputPrincipalID);
             Integer result = (Integer) (new RequestWrappers(this)).wrapRequestResource(params, new UpdatePrincipalAccess(), Resource.ANNOTATION, ResourceAction.WRITE_W_METAINFO, annotationId, false);
             if (result != null) {
@@ -368,7 +370,7 @@ public class AnnotationResource extends ResourceResource {
             Number annotationID = (Number) params.get("internalID");
             Number principalID = (Number) params.get("inputPrincipalID");
             Access access = (Access) params.get("access");
-            return dbIntegrityService.updateAnnotationPrincipalAccess(annotationID, principalID, access);
+            return dbDispatcher.updateAnnotationPrincipalAccess(annotationID, principalID, access);
         }
     }
     ///////////////////////////////////////////
@@ -399,8 +401,8 @@ public class AnnotationResource extends ResourceResource {
         public ResponseBody apply(Map params) throws NotInDataBaseException {
             Number annotationID = (Number) params.get("internalID");
             PermissionList permissions = (PermissionList) params.get("permissions");
-            int updatedRows = dbIntegrityService.updatePermissions(annotationID, permissions);
-            return dbIntegrityService.makeAccessResponseEnvelope(annotationID, Resource.ANNOTATION);
+            int updatedRows = dbDispatcher.updatePermissions(annotationID, permissions);
+            return dbDispatcher.makeAccessResponseEnvelope(annotationID, Resource.ANNOTATION);
         }
     }
 
@@ -412,4 +414,6 @@ public class AnnotationResource extends ResourceResource {
             @PathParam("principalId") String principalId) throws IOException {
         return genericUpdateDeleteAccess(annotationId, principalId, null);
     }
+    
+   
 }

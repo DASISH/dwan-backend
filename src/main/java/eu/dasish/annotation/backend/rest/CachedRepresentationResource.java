@@ -78,7 +78,7 @@ public class CachedRepresentationResource extends ResourceResource {
         @Override
         public CachedRepresentationInfo apply(Map params) throws NotInDataBaseException {
             Number cachedID = (Number) params.get("internalID");
-            return dbIntegrityService.getCachedRepresentationInfo(cachedID);
+            return dbDispatcher.getCachedRepresentationInfo(cachedID);
         }
     }
 
@@ -121,7 +121,7 @@ public class CachedRepresentationResource extends ResourceResource {
         @Override
         public InputStream apply(Map params) throws NotInDataBaseException {
             Number cachedID = (Number) params.get("internalID");
-            return dbIntegrityService.getCachedRepresentationBlob(cachedID);
+            return dbDispatcher.getCachedRepresentationBlob(cachedID);
         }
     }
 
@@ -151,7 +151,7 @@ public class CachedRepresentationResource extends ResourceResource {
             Number cachedID = (Number) params.get("internalID");
             InputStream stream = (InputStream) params.get("stream");
             try {
-                return dbIntegrityService.updateCachedBlob(cachedID, stream);
+                return dbDispatcher.updateCachedBlob(cachedID, stream);
             } catch (IOException e) {
                 loggerServer.info(e.toString());
                 return 0;
@@ -180,7 +180,7 @@ public class CachedRepresentationResource extends ResourceResource {
         @Override
         public Integer apply(Map params) throws NotInDataBaseException {
             CachedRepresentationInfo cachedInfo = (CachedRepresentationInfo) params.get("cachedInfo");
-            return dbIntegrityService.updateCachedMetada(cachedInfo);
+            return dbDispatcher.updateCachedMetada(cachedInfo);
         }
     }
 }

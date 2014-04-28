@@ -25,7 +25,7 @@ import eu.dasish.annotation.backend.PrincipalExists;
 import eu.dasish.annotation.backend.ResourceAction;
 import eu.dasish.annotation.backend.dao.AnnotationDao;
 import eu.dasish.annotation.backend.dao.CachedRepresentationDao;
-import eu.dasish.annotation.backend.dao.DBIntegrityService;
+import eu.dasish.annotation.backend.dao.DBDispatcher;
 import eu.dasish.annotation.backend.dao.NotebookDao;
 import eu.dasish.annotation.backend.dao.ResourceDao;
 import eu.dasish.annotation.backend.dao.TargetDao;
@@ -69,7 +69,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author olhsha
  */
-public class DBIntegrityServiceImlp implements DBIntegrityService {
+public class DBDispatcherImlp implements DBDispatcher {
 
     @Autowired
     PrincipalDao principalDao;
@@ -82,7 +82,7 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
     @Autowired
     NotebookDao notebookDao;
     final static protected String admin = "admin";
-    private static final Logger logger = LoggerFactory.getLogger(DBIntegrityServiceImlp.class);
+    private static final Logger logger = LoggerFactory.getLogger(DBDispatcherImlp.class);
 
     //////////////////////////////////
     private ResourceDao getDao(Resource resource) {

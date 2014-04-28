@@ -82,8 +82,8 @@ public class PrincipalResource extends ResourceResource {
 
         @Override
         public Principal apply(Map params) throws NotInDataBaseException {
-            final Number principalID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString((String) params.get("externalId")), Resource.PRINCIPAL);
-            return dbIntegrityService.getPrincipal(principalID);
+            final Number principalID = dbDispatcher.getResourceInternalIdentifier(UUID.fromString((String) params.get("externalId")), Resource.PRINCIPAL);
+            return dbDispatcher.getPrincipal(principalID);
         }
     }
       
@@ -98,7 +98,7 @@ public class PrincipalResource extends ResourceResource {
         if (remotePrincipalID == null) {
             return " ";
         }
-        return "The admin of the server database " + dbIntegrityService.getDataBaseAdmin().getDisplayName() + " is availiable via e-mail " + dbIntegrityService.getDataBaseAdmin().getEMail();
+        return "The admin of the server database " + dbDispatcher.getDataBaseAdmin().getDisplayName() + " is availiable via e-mail " + dbDispatcher.getDataBaseAdmin().getEMail();
     }
     
    /////////////////////////////////////////
@@ -118,7 +118,7 @@ public class PrincipalResource extends ResourceResource {
 
         @Override
         public Principal apply(Map params) throws NotInDataBaseException {
-            return dbIntegrityService.getPrincipalByInfo((String) params.get("email"));
+            return dbDispatcher.getPrincipalByInfo((String) params.get("email"));
         }
     }
 
@@ -139,9 +139,9 @@ public class PrincipalResource extends ResourceResource {
 
         @Override
         public CurrentPrincipalInfo apply(Map params) throws NotInDataBaseException {
-            final Number principalID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString((String) params.get("externalId")), Resource.PRINCIPAL);
+            final Number principalID = dbDispatcher.getResourceInternalIdentifier(UUID.fromString((String) params.get("externalId")), Resource.PRINCIPAL);
             final CurrentPrincipalInfo principalInfo = new CurrentPrincipalInfo();
-            principalInfo.setRef(dbIntegrityService.getResourceURI(principalID, Resource.PRINCIPAL));
+            principalInfo.setRef(dbDispatcher.getResourceURI(principalID, Resource.PRINCIPAL));
             principalInfo.setCurrentPrincipal(((PrincipalResource) params.get("resource")).ifLoggedIn(principalID));
             return principalInfo;
         }
@@ -157,11 +157,11 @@ public class PrincipalResource extends ResourceResource {
             return "Logged in principal is null or anonymous.";
         }
 
-        if (dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID).equals(admin)) {
-            int result = dbIntegrityService.addSpringUser(remoteId, password, shaStrength, remoteId);
+        if (dbDispatcher.getTypeOfPrincipalAccount(remotePrincipalID).equals(admin)) {
+            int result = dbDispatcher.addSpringUser(remoteId, password, shaStrength, remoteId);
             return result + " record(s) has been added. Must be 2: 1 record for the principal, another for the authorities table.";
         } else {
-            verboseOutput.ADMIN_RIGHTS_EXPECTED();
+            this.ADMIN_RIGHTS_EXPECTED();
             httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
             return "Nothing is added.";
         }
@@ -185,10 +185,10 @@ public class PrincipalResource extends ResourceResource {
         params.put("remoteId", remoteId);
         params.put("newPrincipal", principal);
 
-        if (dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID).equals(admin)) {
+        if (dbDispatcher.getTypeOfPrincipalAccount(remotePrincipalID).equals(admin)) {
             return (new RequestWrappers(this)).wrapAddPrincipalRequest(params, new AddPrincipal());
         } else {
-            verboseOutput.ADMIN_RIGHTS_EXPECTED();
+            this.ADMIN_RIGHTS_EXPECTED();
             httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
             return new ObjectFactory().createPrincipal(new Principal());
         }
@@ -199,8 +199,8 @@ public class PrincipalResource extends ResourceResource {
 
         @Override
         public Principal apply(Map params) throws NotInDataBaseException, PrincipalExists {
-            final Number principalID = dbIntegrityService.addPrincipal((Principal) params.get("newPrincipal"), (String) params.get("remoteId"));
-            return dbIntegrityService.getPrincipal(principalID);
+            final Number principalID = dbDispatcher.addPrincipal((Principal) params.get("newPrincipal"), (String) params.get("remoteId"));
+            return dbDispatcher.getPrincipal(principalID);
         }
     }
 
@@ -224,7 +224,7 @@ public class PrincipalResource extends ResourceResource {
         params.put("shaStrength", shaStrength);
         params.put("newPrincipal", newPrincipal);
 
-        dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
+        dbDispatcher.setServiceURI(uriInfo.getBaseUri().toString());
         return (new RequestWrappers(this)).wrapAddPrincipalRequest(params, new RegisterNonShibbolizedPrincipal());
     }
     
@@ -232,9 +232,9 @@ public class PrincipalResource extends ResourceResource {
 
         @Override
         public Principal apply(Map params) throws NotInDataBaseException, PrincipalExists {
-            final int updatedSpringTables = dbIntegrityService.addSpringUser((String) params.get("remoteId"), (String) params.get("password"), (Integer) params.get("shaStrength"), (String) params.get("remoteId"));
-            final Number principalID = dbIntegrityService.addPrincipal((Principal) params.get("newPrincipal"), (String) params.get("remoteId"));
-            return dbIntegrityService.getPrincipal(principalID);
+            final int updatedSpringTables = dbDispatcher.addSpringUser((String) params.get("remoteId"), (String) params.get("password"), (Integer) params.get("shaStrength"), (String) params.get("remoteId"));
+            final Number principalID = dbDispatcher.addPrincipal((Principal) params.get("newPrincipal"), (String) params.get("remoteId"));
+            return dbDispatcher.getPrincipal(principalID);
         }
     }
 
@@ -248,7 +248,7 @@ public class PrincipalResource extends ResourceResource {
     public JAXBElement<Principal> registerShibbolizedPrincipal(@FormParam("name") String name,
             @FormParam("remoteId") String remoteId, @FormParam("email") String email)
             throws IOException {
-        dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
+        dbDispatcher.setServiceURI(uriInfo.getBaseUri().toString());
         Principal newPrincipal = new Principal();
         newPrincipal.setDisplayName(name);
         newPrincipal.setEMail(email);
@@ -256,7 +256,7 @@ public class PrincipalResource extends ResourceResource {
         params.put("remoteId", remoteId);
         params.put("newPrincipal", newPrincipal);
 
-        dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
+        dbDispatcher.setServiceURI(uriInfo.getBaseUri().toString());
         return (new RequestWrappers(this)).wrapAddPrincipalRequest(params, new AddPrincipal());
     }
     
@@ -268,7 +268,7 @@ public class PrincipalResource extends ResourceResource {
     @Path("register/shibbolethasnonshibboleth")
     public String registerShibbolizedPrincipalAsNonShibb(@FormParam("remoteId") String remoteId, @FormParam("password") String password)
             throws IOException {
-        int result = dbIntegrityService.addSpringUser(remoteId, password, shaStrength, remoteId);
+        int result = dbDispatcher.addSpringUser(remoteId, password, shaStrength, remoteId);
         return result + " record(s) has been added. Must be 2: 1 record for the principal, another for the authorities table.";
 
     }
@@ -282,14 +282,14 @@ public class PrincipalResource extends ResourceResource {
         if (remotePrincipalID == null) {
             return new ObjectFactory().createPrincipal(new Principal());
         }
-        if (dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID).equals(admin)) {
+        if (dbDispatcher.getTypeOfPrincipalAccount(remotePrincipalID).equals(admin)) {
             Map params = new HashMap<String, Object>();
             params.put("principal", principal);
             Principal result = (Principal) (new RequestWrappers(this)).wrapRequestResource(params, new UpdatePrincipal());
             return (result != null) ? (new ObjectFactory().createPrincipal(result)) : (new ObjectFactory().createPrincipal(new Principal()));
 
         } else {
-            verboseOutput.ADMIN_RIGHTS_EXPECTED();
+            this.ADMIN_RIGHTS_EXPECTED();
             httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
             return new ObjectFactory().createPrincipal(new Principal());
         }
@@ -318,10 +318,10 @@ public class PrincipalResource extends ResourceResource {
         public Principal apply(Map params) throws NotInDataBaseException {
             Principal principal = (Principal) params.get("newPrincipal");
             Number principalID = (Number) params.get("principalID");            
-            String uri = dbIntegrityService.getResourceURI(principalID, Resource.PRINCIPAL);
+            String uri = dbDispatcher.getResourceURI(principalID, Resource.PRINCIPAL);
             principal.setURI(uri);
-            Number principalIDupd = dbIntegrityService.updatePrincipal(principal);
-            return dbIntegrityService.getPrincipal(principalID);
+            Number principalIDupd = dbDispatcher.updatePrincipal(principal);
+            return dbDispatcher.getPrincipal(principalID);
         }
     }
      
@@ -335,11 +335,11 @@ public class PrincipalResource extends ResourceResource {
         if (remotePrincipalID == null) {
             return "Nothing is updated.";
         }
-        if (dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID).equals(admin)) {
+        if (dbDispatcher.getTypeOfPrincipalAccount(remotePrincipalID).equals(admin)) {
             try {
-                final boolean updated = dbIntegrityService.updateAccount(UUID.fromString(externalId), accountType);
+                final boolean updated = dbDispatcher.updateAccount(UUID.fromString(externalId), accountType);
                 if (updated) {
-                    return "The account was updated to " + dbIntegrityService.getTypeOfPrincipalAccount(dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalId), Resource.PRINCIPAL));
+                    return "The account was updated to " + dbDispatcher.getTypeOfPrincipalAccount(dbDispatcher.getResourceInternalIdentifier(UUID.fromString(externalId), Resource.PRINCIPAL));
                 } else {
                     loggerServer.debug("The account is not updated.");
                     httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Account is not updated.");
@@ -351,7 +351,7 @@ public class PrincipalResource extends ResourceResource {
                 return "Account is updated.";
             }
         } else {
-            verboseOutput.ADMIN_RIGHTS_EXPECTED();
+            this.ADMIN_RIGHTS_EXPECTED();
             httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
             return "Account is not updated.";
         }
@@ -365,11 +365,11 @@ public class PrincipalResource extends ResourceResource {
         if (remotePrincipalID == null) {
             return "Nothings is deleted.";
         }
-        if (dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID).equals(admin)) {
+        if (dbDispatcher.getTypeOfPrincipalAccount(remotePrincipalID).equals(admin)) {
             try {
-                final Number principalID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.PRINCIPAL);
+                final Number principalID = dbDispatcher.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.PRINCIPAL);
                 try {
-                    final int result = dbIntegrityService.deletePrincipal(principalID);
+                    final int result = dbDispatcher.deletePrincipal(principalID);
                     return "There is " + result + " row deleted";
                 } catch (PrincipalCannotBeDeleted e2) {
                     loggerServer.debug(e2.toString());;
@@ -382,7 +382,7 @@ public class PrincipalResource extends ResourceResource {
                 return "Nothing is deleted.";
             }
         } else {
-            verboseOutput.ADMIN_RIGHTS_EXPECTED();
+            this.ADMIN_RIGHTS_EXPECTED();
             httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
             return "Account is not updated.";
         }
@@ -391,7 +391,7 @@ public class PrincipalResource extends ResourceResource {
 
     // silly because it is trivial. harvest all logged in users via shibboleth!!
     private boolean ifLoggedIn(Number principalID) {
-        return (httpServletRequest.getRemoteUser()).equals(dbIntegrityService.getPrincipalRemoteID(principalID));
+        return (httpServletRequest.getRemoteUser()).equals(dbDispatcher.getPrincipalRemoteID(principalID));
     }
 
 }
