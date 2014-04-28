@@ -60,6 +60,7 @@ public class ResourceResource<T> {
     protected String admin = "admin";
     protected String anonym = "anonymous";
     protected String defaultAccess = "read";
+   
     protected String[] admissibleAccess = {"read", "write", "owner"};
 
     public Number getPrincipalID() throws IOException {

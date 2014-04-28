@@ -21,8 +21,6 @@ package eu.dasish.annotation.backend;
  *
  * @author olhsha
  */
-public class NotLoggedInException extends Exception{
-    public NotLoggedInException(){
-        super("A principal is not logged in.");
-    }
+public enum ResourceAction {
+    READ, WRITE, WRITE_W_METAINFO, DELETE
 }

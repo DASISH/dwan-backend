@@ -22,6 +22,7 @@ import eu.dasish.annotation.backend.Resource;
 import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.PrincipalCannotBeDeleted;
 import eu.dasish.annotation.backend.PrincipalExists;
+import eu.dasish.annotation.backend.ResourceAction;
 import eu.dasish.annotation.backend.dao.AnnotationDao;
 import eu.dasish.annotation.backend.dao.CachedRepresentationDao;
 import eu.dasish.annotation.backend.dao.DBIntegrityService;
@@ -412,16 +413,34 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         return principalDao.getPrincipal(principalDao.getDBAdminID());
     }
 
+    // !!!so far implemented only for annotations!!!
     @Override
-    public boolean canDo(Access access, Number principalID, Number annotationID) {
-        if (principalID.equals(annotationDao.getOwner(annotationID)) || principalDao.getTypeOfPrincipalAccount(principalID).equals(admin)) {
-            return true;
-        }
-        return this.getAccess(annotationID, principalID).equals(access);
-    }
+    public boolean canDo(ResourceAction action, Number principalID, Number resourceID, Resource resource) {
 
-    ////// noetbooks ///////
-    /// TODO update for having attribute public!!! /////
+        switch (resource) {
+            case ANNOTATION: {
+                if (principalID.equals(annotationDao.getOwner(resourceID)) || principalDao.getTypeOfPrincipalAccount(principalID).equals(admin)) {
+                    return true;
+                }
+                return this.getAccess(resourceID, principalID).value().equals(action.name());
+            }
+            case CACHED_REPRESENTATION: {
+                return true;
+            }
+            case TARGET: {
+                return true;
+            }
+            case PRINCIPAL: {
+                return true;
+            }
+            default:
+                return false;
+        }
+
+    }
+////// noetbooks ///////
+/// TODO update for having attribute public!!! /////
+
     @Override
     public NotebookInfoList getNotebooks(Number principalID, Access access) {
         NotebookInfoList result = new NotebookInfoList();
@@ -597,30 +616,34 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         String[] body = annotationDao.retrieveBodyComponents(annotationBody);
         return annotationDao.updateAnnotationBody(internalID, body[0], body[1], annotationBody.getXmlBody() != null);
     }
+    
+    @Override
+    public int updateAnnotationHeadline(Number internalID, String newHeader) {
+        return annotationDao.updateAnnotationHeadline(internalID, newHeader);
+    }
 
     @Override
     public int updatePrincipal(Principal principal) throws NotInDataBaseException {
         return principalDao.updatePrincipal(principal);
     }
-    
+
     @Override
-    public int updateTargetCachedFragment(Number targetID, Number cachedID, String fragmentDescriptor) throws NotInDataBaseException{
+    public int updateTargetCachedFragment(Number targetID, Number cachedID, String fragmentDescriptor) throws NotInDataBaseException {
         return targetDao.updateTargetCachedRepresentationFragment(targetID, cachedID, fragmentDescriptor);
     }
-    
+
     @Override
-    public int updateCachedMetada(CachedRepresentationInfo cachedInfo) throws NotInDataBaseException{
+    public int updateCachedMetada(CachedRepresentationInfo cachedInfo) throws NotInDataBaseException {
         Number internalID = cachedRepresentationDao.getInternalIDFromURI(cachedInfo.getURI());
         return cachedRepresentationDao.updateCachedRepresentationMetadata(internalID, cachedInfo);
     }
-    
+
     @Override
-    public int updateCachedBlob(Number internalID, InputStream cachedBlob) throws IOException{
+    public int updateCachedBlob(Number internalID, InputStream cachedBlob) throws IOException {
         return cachedRepresentationDao.updateCachedRepresentationBlob(internalID, cachedBlob);
     }
-   
-    /// notebooks ///
 
+    /// notebooks ///
     @Override
     public boolean updateNotebookMetadata(Number notebookID, NotebookInfo upToDateNotebookInfo) throws NotInDataBaseException {
         Number ownerID = principalDao.getInternalIDFromURI(upToDateNotebookInfo.getOwnerRef());
@@ -647,8 +670,6 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         return result;
 
     }
-
-   
 
     @Override
     public Map<String, String> addTargetsForAnnotation(Number annotationID, List<TargetInfo> targets) throws NotInDataBaseException {
@@ -705,12 +726,12 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
         Number newAnnotationID = this.addPrincipalsAnnotation(ownerID, annotation);
         return notebookDao.addAnnotationToNotebook(notebookID, newAnnotationID);
     }
-    
+
     @Override
-    public int addSpringUser(String username, String password, int strength, String salt){
+    public int addSpringUser(String username, String password, int strength, String salt) {
         int users = principalDao.addSpringUser(username, password, strength, salt);
-        int authorities = principalDao.addSpringAuthorities(username);        
-        return users+authorities;
+        int authorities = principalDao.addSpringAuthorities(username);
+        return users + authorities;
     }
 
     ////////////// DELETERS //////////////////
@@ -855,8 +876,6 @@ public class DBIntegrityServiceImlp implements DBIntegrityService {
             return null;
         }
     }
-
-  
 
     //// priveee ///
     private Target createFreshTarget(TargetInfo targetInfo) {

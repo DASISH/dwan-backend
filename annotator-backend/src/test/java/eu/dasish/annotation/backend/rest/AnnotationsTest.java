@@ -172,7 +172,7 @@ public class AnnotationsTest extends JerseyTest {
         Builder responseBuilder = getAuthenticatedResource(resource().path(requestUrl)).accept(MediaType.TEXT_XML);        
         ClientResponse response = responseBuilder.delete(ClientResponse.class);   
         assertEquals(200, response.getStatus());
-        assertEquals("1 annotation(s) deleted.", response.getEntity(String.class));
+        assertEquals("1 annotation(s) is(are) deleted.", response.getEntity(String.class));
     }
 
     /**
@@ -299,6 +299,29 @@ public class AnnotationsTest extends JerseyTest {
         assertEquals("http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia#de_Opdracht", entityA.getTargets().getTargetInfo().get(0).getLink());
         assertEquals(this.getBaseURI()+ "targets/00000000-0000-0000-0000-000000000031", entityA.getTargets().getTargetInfo().get(0).getRef());
         
+    }
+    
+    @Test
+    public void testUpdateAnnotationHeadline() throws IOException{
+        
+          
+        // Authentication  
+        Builder responseBuilderAu = getAuthenticatedResource(resource().path("authentication/login")).accept(MediaType.TEXT_HTML);        
+        ClientResponse responseAu = responseBuilderAu.get(ClientResponse.class); 
+        assertEquals(200, responseAu.getStatus());
+        
+        
+        // updating annotation
+        System.out.println("test updateAnnotationHeadline");
+        System.out.println("PUT "+resource().getURI().toString()+"annotations/00000000-0000-0000-0000-000000000021/headline");
+        String newHeadline = "new Headline";
+        Builder responseBuilder = getAuthenticatedResource(resource().path("annotations/00000000-0000-0000-0000-000000000021/headline")).type(MediaType.TEXT_PLAIN).accept(MediaType.APPLICATION_XML);        
+        ClientResponse response = responseBuilder.put(ClientResponse.class, newHeadline);
+        assertEquals(200, response.getStatus());
+        
+        ResponseBody entity = response.getEntity(ResponseBody.class);        
+        Annotation entityA = entity.getAnnotation();
+        assertEquals("new Headline", entityA.getHeadline());
     }
    
     protected Builder getAuthenticatedResource(WebResource resource) {

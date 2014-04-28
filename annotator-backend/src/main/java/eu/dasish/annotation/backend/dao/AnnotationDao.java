@@ -162,6 +162,8 @@ public interface AnnotationDao extends ResourceDao{
    
     public int updateAnnotationBody(Number annotationID, String text, String mimeType, Boolean isXml);
     
+    public int updateAnnotationHeadline(Number annotationID, String text);
+    
    
     
     /**

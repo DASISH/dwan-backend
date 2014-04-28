@@ -19,8 +19,8 @@ package eu.dasish.annotation.backend.rest;
 
 import eu.dasish.annotation.backend.BackendConstants;
 import eu.dasish.annotation.backend.NotInDataBaseException;
-import eu.dasish.annotation.backend.PrincipalExists;
 import eu.dasish.annotation.backend.Resource;
+import eu.dasish.annotation.backend.ResourceAction;
 import eu.dasish.annotation.backend.dao.ILambda;
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationBody;
@@ -32,6 +32,7 @@ import eu.dasish.annotation.schema.ReferenceList;
 import eu.dasish.annotation.schema.ResponseBody;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
@@ -85,55 +86,43 @@ public class AnnotationResource extends ResourceResource {
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}")
     @Transactional(readOnly = true)
     public JAXBElement<Annotation> getAnnotation(@PathParam("annotationid") String externalIdentifier) throws IOException {
-        Number principalID = this.getPrincipalID();
-        if (principalID == null) {
-            return new ObjectFactory().createAnnotation(new Annotation());
-        }
-        try {
-            final Number annotationID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.ANNOTATION);
-
-            if (dbIntegrityService.canDo(Access.READ, principalID, annotationID)) {
-                final Annotation annotation = dbIntegrityService.getAnnotation(annotationID);
-                return new ObjectFactory().createAnnotation(annotation);
-            } else {
-                verboseOutput.FORBIDDEN_ANNOTATION_READING(externalIdentifier, dbIntegrityService.getAnnotationOwner(annotationID).getDisplayName(), dbIntegrityService.getAnnotationOwner(annotationID).getEMail());
-                httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
-                return new ObjectFactory().createAnnotation(new Annotation());
-            }
-
-        } catch (NotInDataBaseException e2) {
-            loggerServer.debug(e2.toString());
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e2.toString());
-            return new ObjectFactory().createAnnotation(new Annotation());
+        Map params = new HashMap();
+        Annotation result = (Annotation) (new RequestWrappers(this)).wrapRequestResource(params, new GetAnnotation(), Resource.ANNOTATION, ResourceAction.READ, externalIdentifier, false);
+        if (result != null) {
+            return (new ObjectFactory()).createAnnotation(result);
+        } else {
+            return (new ObjectFactory()).createAnnotation(new Annotation());
         }
     }
 
-    //TODO: unit test
+    private class GetAnnotation implements ILambda<Map, Annotation> {
+
+        @Override
+        public Annotation apply(Map params) throws NotInDataBaseException {
+            return dbIntegrityService.getAnnotation((Number) params.get("internalID"));
+        }
+    }
+
+    //////////////////////////////////////////////////
     @GET
     @Produces(MediaType.TEXT_XML)
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}/targets")
     @Transactional(readOnly = true)
     public JAXBElement<ReferenceList> getAnnotationTargets(@PathParam("annotationid") String externalIdentifier) throws IOException {
-        Number principalID = this.getPrincipalID();
-        if (principalID == null) {
-            return new ObjectFactory().createReferenceList(new ReferenceList());
+        Map params = new HashMap();
+        ReferenceList result = (ReferenceList) (new RequestWrappers(this)).wrapRequestResource(params, new GetTargetList(), Resource.ANNOTATION, ResourceAction.READ, externalIdentifier, false);
+        if (result != null) {
+            return (new ObjectFactory()).createTargetList(result);
+        } else {
+            return (new ObjectFactory()).createTargetList(new ReferenceList());
         }
-        try {
-            final Number annotationID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.ANNOTATION);
+    }
 
-            if (dbIntegrityService.canDo(Access.READ, principalID, annotationID)) {
-                final ReferenceList TargetList = dbIntegrityService.getAnnotationTargets(annotationID);
-                return new ObjectFactory().createTargetList(TargetList);
-            } else {
-                verboseOutput.FORBIDDEN_ANNOTATION_READING(externalIdentifier, dbIntegrityService.getAnnotationOwner(annotationID).getDisplayName(), dbIntegrityService.getAnnotationOwner(annotationID).getEMail());
-                httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
-                return new ObjectFactory().createReferenceList(new ReferenceList());
-            }
+    private class GetTargetList implements ILambda<Map, ReferenceList> {
 
-        } catch (NotInDataBaseException e2) {
-            loggerServer.debug(e2.toString());
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e2.toString());
-            return new ObjectFactory().createReferenceList(new ReferenceList());
+        @Override
+        public ReferenceList apply(Map params) throws NotInDataBaseException {
+            return dbIntegrityService.getAnnotationTargets((Number) params.get("internalID"));
         }
     }
 // TODO Unit test 
@@ -180,25 +169,20 @@ public class AnnotationResource extends ResourceResource {
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}/permissions")
     @Transactional(readOnly = true)
     public JAXBElement<PermissionList> getAnnotationPermissions(@PathParam("annotationid") String externalIdentifier) throws IOException {
-        Number principalID = this.getPrincipalID();
-        if (principalID == null) {
-            return new ObjectFactory().createPermissionList(new PermissionList());
+        Map params = new HashMap();
+        PermissionList result = (PermissionList) (new RequestWrappers(this)).wrapRequestResource(params, new GetPermissionList(), Resource.ANNOTATION, ResourceAction.READ, externalIdentifier, false);
+        if (result != null) {
+            return (new ObjectFactory()).createPermissionList(result);
+        } else {
+            return (new ObjectFactory()).createPermissionList(new PermissionList());
         }
-        try {
-            final Number annotationID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.ANNOTATION);
-            if (dbIntegrityService.canDo(Access.READ, principalID, annotationID)) {
-                final PermissionList permissionList = dbIntegrityService.getPermissions(annotationID, Resource.ANNOTATION);
-                return new ObjectFactory().createPermissionList(permissionList);
-            } else {
-                verboseOutput.FORBIDDEN_ANNOTATION_READING(externalIdentifier, dbIntegrityService.getAnnotationOwner(annotationID).getDisplayName(), dbIntegrityService.getAnnotationOwner(annotationID).getEMail());
-                httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
-                return new ObjectFactory().createPermissionList(new PermissionList());
-            }
+    }
 
-        } catch (NotInDataBaseException e2) {
-            loggerServer.debug(e2.toString());
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e2.toString());
-            return new ObjectFactory().createPermissionList(new PermissionList());
+    private class GetPermissionList implements ILambda<Map, PermissionList> {
+
+        @Override
+        public PermissionList apply(Map params) throws NotInDataBaseException {
+            return dbIntegrityService.getPermissions((Number) params.get("internalID"), (Resource) params.get("resourceType"));
         }
     }
 ///////////////////////////////////////////////////////
@@ -206,25 +190,20 @@ public class AnnotationResource extends ResourceResource {
     @DELETE
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}")
     public String deleteAnnotation(@PathParam("annotationid") String externalIdentifier) throws IOException {
-        Number principalID = this.getPrincipalID();
-        if (principalID == null) {
-            return "Nothing is deleted";
-        }
-        try {
-            final Number annotationID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.ANNOTATION);
-            if (principalID.equals(dbIntegrityService.getAnnotationOwnerID(annotationID)) || dbIntegrityService.getTypeOfPrincipalAccount(principalID).equals(admin)) {
-                int[] result = dbIntegrityService.deleteAnnotation(annotationID);
-                return result[0] + " annotation(s) deleted.";
-            } else {
-                verboseOutput.FORBIDDEN_ANNOTATION_DELETING(externalIdentifier, dbIntegrityService.getAnnotationOwner(annotationID).getDisplayName(), dbIntegrityService.getAnnotationOwner(annotationID).getEMail());
-                httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
-                return "Nothings is deleted.";
-            }
-
-        } catch (NotInDataBaseException e2) {
-            loggerServer.debug(e2.toString());
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e2.toString());
+        Map params = new HashMap();
+        int[] result = (int[]) (new RequestWrappers(this)).wrapRequestResource(params, new DeleteAnnotation(), Resource.ANNOTATION, ResourceAction.DELETE, externalIdentifier, false);
+        if (result != null) {
+            return result[0] + " annotation(s) is(are) deleted.";
+        } else {
             return "Nothing is deleted.";
+        }
+    }
+
+    private class DeleteAnnotation implements ILambda<Map, int[]> {
+
+        @Override
+        public int[] apply(Map params) throws NotInDataBaseException {
+            return dbIntegrityService.deleteAnnotation((Number) params.get("internalID"));
         }
     }
 
@@ -234,87 +213,123 @@ public class AnnotationResource extends ResourceResource {
     @Produces(MediaType.APPLICATION_XML)
     @Path("")
     public JAXBElement<ResponseBody> createAnnotation(Annotation annotation) throws IOException {
-        Number principalID = this.getPrincipalID();
-        if (principalID == null) {
-            return new ObjectFactory().createResponseBody(new ResponseBody());
-        }
-        try {
-            Number annotationID = dbIntegrityService.addPrincipalsAnnotation(principalID, annotation);
-            return new ObjectFactory().createResponseBody(dbIntegrityService.makeAnnotationResponseEnvelope(annotationID));
-        } catch (NotInDataBaseException e2) {
-            loggerServer.debug(e2.toString());
-            httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e2.toString());
-            return new ObjectFactory().createResponseBody(new ResponseBody());
+        Map params = new HashMap();
+        params.put("annotation", annotation);
+        ResponseBody result = (ResponseBody) (new RequestWrappers(this)).wrapRequestResource(params, new AddAnnotation());
+        if (result != null) {
+            return (new ObjectFactory()).createResponseBody(result);
+        } else {
+            return (new ObjectFactory()).createResponseBody(new ResponseBody());
         }
     }
+
+    private class AddAnnotation implements ILambda<Map, ResponseBody> {
+
+        @Override
+        public ResponseBody apply(Map params) throws NotInDataBaseException {
+            Number principalID = (Number) params.get("principalID");
+            Annotation annotation = (Annotation) params.get("annotation");
+            Number annotationID = dbIntegrityService.addPrincipalsAnnotation(principalID, annotation);
+            return dbIntegrityService.makeAnnotationResponseEnvelope(annotationID);
+        }
+    }
+
 ///////////////////////////////////////////////////////
 // TODO: unit test
-
     @PUT
     @Consumes(MediaType.APPLICATION_XML)
     @Produces(MediaType.APPLICATION_XML)
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}")
-    public JAXBElement<ResponseBody> updateAnnotation(@PathParam("annotationid") String externalIdentifier, Annotation annotation) throws IOException {
-        Number principalID = this.getPrincipalID();
-        if (principalID == null) {
-            return new ObjectFactory().createResponseBody(new ResponseBody());
-        }
-        String path = uriInfo.getBaseUri().toString();
+    public JAXBElement<ResponseBody> updateAnnotation(@PathParam("annotationid") String externalId, Annotation annotation) throws IOException {
+
         String annotationURI = annotation.getURI();
-        if (!(path + "annotations/" + externalIdentifier).equals(annotationURI)) {
-            verboseOutput.IDENTIFIER_MISMATCH(externalIdentifier);
+        String path = uriInfo.getBaseUri().toString();
+        if (!(path + "annotations/" + externalId).equals(annotationURI)) {
+            loggerServer.debug("Wrong request: the annotation (notebook) identifier   " + externalId + " and the annotation (notebook) ID from the request body do not match.");
             httpServletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST);
-            return new ObjectFactory().createResponseBody(new ResponseBody());
+            return null;
         }
-        try {
-            final Number annotationID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.ANNOTATION);
-            try {
-                if (principalID.equals(dbIntegrityService.getAnnotationOwnerID(annotationID)) || dbIntegrityService.getTypeOfPrincipalAccount(principalID).equals(admin)) {
-                    int updatedRows = dbIntegrityService.updateAnnotation(annotation);
-                    return new ObjectFactory().createResponseBody(dbIntegrityService.makeAnnotationResponseEnvelope(annotationID));
-                } else {
-                    verboseOutput.FORBIDDEN_ACCESS_CHANGING(externalIdentifier, dbIntegrityService.getAnnotationOwner(annotationID).getDisplayName(), dbIntegrityService.getAnnotationOwner(annotationID).getEMail());
-                    loggerServer.debug(" Access changing is the part of the full update of the annotation.");
-                    httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
-                    return new ObjectFactory().createResponseBody(new ResponseBody());
-                }
-            } catch (NotInDataBaseException e) {
-                loggerServer.debug(e.toString());
-                httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.toString());
-                return new ObjectFactory().createResponseBody(new ResponseBody());
-            }
-        } catch (NotInDataBaseException e2) {
-            loggerServer.debug(e2.toString());
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e2.toString());
-            return new ObjectFactory().createResponseBody(new ResponseBody());
+        Map params = new HashMap();
+        params.put("annotation", annotation);
+        ResponseBody result = (ResponseBody) (new RequestWrappers(this)).wrapRequestResource(params, new UpdateAnnotation(), Resource.ANNOTATION, ResourceAction.WRITE_W_METAINFO, externalId, false);
+        if (result != null) {
+            return (new ObjectFactory()).createResponseBody(result);
+        } else {
+            return (new ObjectFactory()).createResponseBody(new ResponseBody());
+        }
+
+
+    }
+
+    ///////////////////////////////////////////////////////////
+    private class UpdateAnnotation implements ILambda<Map, ResponseBody> {
+
+        @Override
+        public ResponseBody apply(Map params) throws NotInDataBaseException {
+            Annotation annotation = (Annotation) params.get("annotation");
+            Number annotationID = (Number) params.get("internalID");
+            int updatedRows = dbIntegrityService.updateAnnotation(annotation);
+            return dbIntegrityService.makeAnnotationResponseEnvelope(annotationID);
         }
     }
+    ///////////////////////////////////////////////////////////////////////////////
 
     @PUT
     @Consumes(MediaType.APPLICATION_XML)
     @Produces(MediaType.APPLICATION_XML)
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}/body")
     public JAXBElement<ResponseBody> updateAnnotationBody(@PathParam("annotationid") String externalIdentifier, AnnotationBody annotationBody) throws IOException {
-        Number principalID = this.getPrincipalID();
-        if (principalID == null) {
-            return new ObjectFactory().createResponseBody(new ResponseBody());
+        Map params = new HashMap();
+        params.put("annotationBody", annotationBody);
+        ResponseBody result = (ResponseBody) (new RequestWrappers(this)).wrapRequestResource(params, new UpdateAnnotationBody(), Resource.ANNOTATION, ResourceAction.WRITE, externalIdentifier, false);
+        if (result != null) {
+            return (new ObjectFactory()).createResponseBody(result);
+        } else {
+            return (new ObjectFactory()).createResponseBody(new ResponseBody());
         }
-        try {
-            final Number annotationID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.ANNOTATION);
-            if (dbIntegrityService.canDo(Access.WRITE, principalID, annotationID)) {
-                int updatedRows = dbIntegrityService.updateAnnotationBody(annotationID, annotationBody);
-                return new ObjectFactory().createResponseBody(dbIntegrityService.makeAnnotationResponseEnvelope(annotationID));
-            } else {
-                verboseOutput.FORBIDDEN_ANNOTATION_BODY_WRITING(externalIdentifier, dbIntegrityService.getAnnotationOwner(annotationID).getDisplayName(), dbIntegrityService.getAnnotationOwner(annotationID).getEMail());
-                httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
-                return new ObjectFactory().createResponseBody(new ResponseBody());
-            }
-        } catch (NotInDataBaseException e2) {
-            loggerServer.debug(e2.toString());
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e2.toString());
-            return new ObjectFactory().createResponseBody(new ResponseBody());
+
+    }
+
+    ///////////////////////////////////////////////////////////
+    private class UpdateAnnotationBody implements ILambda<Map, ResponseBody> {
+
+        @Override
+        public ResponseBody apply(Map params) throws NotInDataBaseException {
+            Number resourceID = (Number) params.get("internalID");
+            AnnotationBody annotationBody = (AnnotationBody) params.get("annotationBody");
+            int updatedRows = dbIntegrityService.updateAnnotationBody(resourceID, annotationBody);
+            return dbIntegrityService.makeAnnotationResponseEnvelope(resourceID);
         }
     }
+    
+    @PUT
+    @Consumes(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.APPLICATION_XML)
+    @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}/headline")
+    public JAXBElement<ResponseBody> updateAnnotationHeadline(@PathParam("annotationid") String externalIdentifier, String newHeadline) throws IOException {
+        Map params = new HashMap();
+        params.put("headline", newHeadline);
+        ResponseBody result = (ResponseBody) (new RequestWrappers(this)).wrapRequestResource(params, new UpdateAnnotationHeadline(), Resource.ANNOTATION, ResourceAction.WRITE, externalIdentifier, false);
+        if (result != null) {
+            return (new ObjectFactory()).createResponseBody(result);
+        } else {
+            return (new ObjectFactory()).createResponseBody(new ResponseBody());
+        }
+
+    }
+
+    ///////////////////////////////////////////////////////////
+    private class UpdateAnnotationHeadline implements ILambda<Map, ResponseBody> {
+
+        @Override
+        public ResponseBody apply(Map params) throws NotInDataBaseException {
+            Number resourceID = (Number) params.get("internalID");
+            String newHeadline = (String) params.get("headline");
+            int updatedRows = dbIntegrityService.updateAnnotationHeadline(resourceID, newHeadline);
+            return dbIntegrityService.makeAnnotationResponseEnvelope(resourceID);
+        }
+    }
+    ////////////////////////////////////////////////////
 
     @PUT
     @Consumes(MediaType.APPLICATION_XML)
@@ -322,103 +337,79 @@ public class AnnotationResource extends ResourceResource {
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}/permissions/{principalid: " + BackendConstants.regExpIdentifier + "}")
     public String updateAccess(@PathParam("annotationid") String annotationExternalId,
             @PathParam("principalid") String principalExternalId, Access access) throws IOException {
-        Number remotePrincipalID = this.getPrincipalID();
-        if (remotePrincipalID == null) {
-            return "Nothing is updated";
-        }
-        try {
-            final Number principalID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(principalExternalId), Resource.PRINCIPAL);
-            try {
-                final Number annotationID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(annotationExternalId), Resource.ANNOTATION);
-                if (remotePrincipalID.equals(dbIntegrityService.getAnnotationOwnerID(annotationID)) || dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID).equals(admin)) {
-                    int result = dbIntegrityService.updateAnnotationPrincipalAccess(annotationID, principalID, access);
-                    return result + " rows are updated/added";
-                } else {
-                    verboseOutput.FORBIDDEN_ACCESS_CHANGING(annotationExternalId, dbIntegrityService.getAnnotationOwner(annotationID).getDisplayName(), dbIntegrityService.getAnnotationOwner(annotationID).getEMail());
-                    httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
-                    return "Nothing is updated.";
-                }
+        return genericUpdateDeleteAccess(annotationExternalId, principalExternalId, access);
+    }
+    ////////////////////////////////////////////
 
-            } catch (NotInDataBaseException e1) {
-                loggerServer.debug(e1.toString());
-                httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e1.toString());
+    private String genericUpdateDeleteAccess(String annotationId, String principalId, Access access) throws IOException {
+        Map params = new HashMap();
+        params.put("access", access);
+        try {
+            final Number inputPrincipalID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(principalId), Resource.PRINCIPAL);
+            params.put("inputPrincipalID", inputPrincipalID);
+            Integer result = (Integer) (new RequestWrappers(this)).wrapRequestResource(params, new UpdatePrincipalAccess(), Resource.ANNOTATION, ResourceAction.WRITE_W_METAINFO, annotationId, false);
+            if (result != null) {
+                return result + " row(s) is(are) updated.";
+            } else {
                 return "Nothing is updated.";
             }
+
         } catch (NotInDataBaseException e2) {
             loggerServer.debug(e2.toString());
             httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e2.toString());
-            return "Nothing is updated.";
+            return "Nothing is deleted.";
         }
     }
+
+    private class UpdatePrincipalAccess implements ILambda<Map, Integer> {
+
+        @Override
+        public Integer apply(Map params) throws NotInDataBaseException {
+            Number annotationID = (Number) params.get("internalID");
+            Number principalID = (Number) params.get("inputPrincipalID");
+            Access access = (Access) params.get("access");
+            return dbIntegrityService.updateAnnotationPrincipalAccess(annotationID, principalID, access);
+        }
+    }
+    ///////////////////////////////////////////
 
     @PUT
     @Consumes(MediaType.APPLICATION_XML)
     @Produces(MediaType.APPLICATION_XML)
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}/permissions/")
     public JAXBElement<ResponseBody> updatePermissions(@PathParam("annotationid") String annotationExternalId, PermissionList permissions) throws IOException {
-        Number remotePrincipalID = this.getPrincipalID();
-        if (remotePrincipalID == null) {
+
+        Map params = new HashMap();
+        params.put("permissions", permissions);
+
+        ResponseBody result = (ResponseBody) (new RequestWrappers(this)).wrapRequestResource(params, new UpdatePermissions(), Resource.ANNOTATION, ResourceAction.WRITE_W_METAINFO, annotationExternalId, false);
+        if (result != null) {
+            return new ObjectFactory().createResponseBody(result);
+        } else {
             return new ObjectFactory().createResponseBody(new ResponseBody());
         }
-        try {
-            final Number annotationID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(annotationExternalId), Resource.ANNOTATION);
-            try {
-                if (remotePrincipalID.equals(dbIntegrityService.getAnnotationOwnerID(annotationID)) || dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID).equals(admin)) {
-                    int updatedRows = dbIntegrityService.updatePermissions(annotationID, permissions);
-                    return new ObjectFactory().createResponseBody(dbIntegrityService.makeAccessResponseEnvelope(annotationID, Resource.ANNOTATION));
-                } else {
-                    verboseOutput.FORBIDDEN_ACCESS_CHANGING(annotationExternalId, dbIntegrityService.getAnnotationOwner(annotationID).getDisplayName(), dbIntegrityService.getAnnotationOwner(annotationID).getEMail());
-                    httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
-                    return new ObjectFactory().createResponseBody(new ResponseBody());
-                }
-            } catch (NotInDataBaseException e) {
-                loggerServer.debug(e.toString());
-                httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.toString());
-                return new ObjectFactory().createResponseBody(new ResponseBody());
-            }
-        } catch (NotInDataBaseException e2) {
-            loggerServer.debug(e2.toString());;
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e2.toString());
-            return new ObjectFactory().createResponseBody(new ResponseBody());
+
+
+    }
+
+    ////////////////////////////////////////////
+    private class UpdatePermissions implements ILambda<Map, ResponseBody> {
+
+        @Override
+        public ResponseBody apply(Map params) throws NotInDataBaseException {
+            Number annotationID = (Number) params.get("internalID");
+            PermissionList permissions = (PermissionList) params.get("permissions");
+            int updatedRows = dbIntegrityService.updatePermissions(annotationID, permissions);
+            return dbIntegrityService.makeAccessResponseEnvelope(annotationID, Resource.ANNOTATION);
         }
     }
 
+    ////////////////////////////////////////////////////////////
     @DELETE
     @Produces(MediaType.TEXT_PLAIN)
     @Path("{annotationId: " + BackendConstants.regExpIdentifier + "}/principal/{principalId}/delete")
     public String deletePrincipalsAccess(@PathParam("annotationId") String annotationId,
             @PathParam("principalId") String principalId) throws IOException {
-        Number remotePrincipalID = this.getPrincipalID();
-        if (remotePrincipalID == null) {
-            return "Nothing is deleted.";
-        }
-        int deletedRows = 0;
-        try {
-            final Number annotationID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(annotationId), Resource.ANNOTATION);
-            try {
-                if (remotePrincipalID.equals(dbIntegrityService.getAnnotationOwnerID(annotationID)) || dbIntegrityService.getTypeOfPrincipalAccount(remotePrincipalID).equals(admin)) {
-                    Number principalID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(principalId), Resource.PRINCIPAL);
-                    deletedRows = dbIntegrityService.updateAnnotationPrincipalAccess(annotationID, principalID, null);
-                    return (deletedRows + " is deleted.");
-                } else {
-                    verboseOutput.FORBIDDEN_ACCESS_CHANGING(annotationId, dbIntegrityService.getAnnotationOwner(annotationID).getDisplayName(), dbIntegrityService.getAnnotationOwner(annotationID).getEMail());
-                    httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
-                    return "Nothing is deleted.";
-                }
-            } catch (NotInDataBaseException e) {
-                loggerServer.debug(e.toString());
-                httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.toString());
-                return "Nothing is deleted.";
-            }
-        } catch (NotInDataBaseException e2) {
-            loggerServer.debug(e2.toString());
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e2.toString());
-            return "Nothing is deleted.";
-        }
+        return genericUpdateDeleteAccess(annotationId, principalId, null);
     }
-    
-   ////////////////////////////////////////////////
-    
-    
-    
 }

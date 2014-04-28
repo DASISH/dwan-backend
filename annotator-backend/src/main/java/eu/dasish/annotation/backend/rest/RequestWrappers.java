@@ -20,11 +20,9 @@ package eu.dasish.annotation.backend.rest;
 import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.PrincipalExists;
 import eu.dasish.annotation.backend.Resource;
-import eu.dasish.annotation.backend.dao.DBIntegrityService;
+import eu.dasish.annotation.backend.ResourceAction;
 import eu.dasish.annotation.backend.dao.ILambda;
 import eu.dasish.annotation.backend.dao.ILambdaPrincipal;
-import eu.dasish.annotation.schema.Access;
-import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.ObjectFactory;
 import eu.dasish.annotation.schema.Principal;
 import java.io.IOException;
@@ -32,7 +30,6 @@ import java.util.Map;
 import java.util.UUID;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.bind.JAXBElement;
-import org.slf4j.Logger;
 
 /**
  *
@@ -40,18 +37,17 @@ import org.slf4j.Logger;
  */
 public class RequestWrappers<T> {
 
-    Logger loggerServer;
-    HttpServletResponse httpServletResponse;
-    ResourceResource resourceResource;
-    DBIntegrityService dbIntegrityService;
-
-    public RequestWrappers(Logger loggerServer, HttpServletResponse httpServletResponse, ResourceResource resourceResource, DBIntegrityService dbIntegrityService) {
-        this.loggerServer = loggerServer;
-        this.httpServletResponse = httpServletResponse;
-        this.resourceResource = resourceResource;
-        this.dbIntegrityService = dbIntegrityService;
-    }
     
+    private ResourceResource resourceResource;
+    private String _internalID = "internalID";
+    private String _principalID = "principalID";
+    private String _externalId = "externalID";
+    private String _resourceType = "resourceType";
+
+    public RequestWrappers(ResourceResource resourceResource) {
+        this.resourceResource = resourceResource;
+    }
+
     public String FORBIDDEN_RESOURCE_ACTION(String identifier, String resource, String action) {
         return " The logged-in principal cannot " + action + " the " + resource + " with the identifier " + identifier;
     }
@@ -61,50 +57,60 @@ public class RequestWrappers<T> {
         if (remotePrincipalID == null) {
             return null;
         }
+        params.put(_principalID, remotePrincipalID);
         try {
             return dbRequestor.apply(params);
         } catch (NotInDataBaseException e1) {
-            loggerServer.debug(e1.toString());
-            httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e1.toString());
+            resourceResource.loggerServer.debug(e1.toString());
+            resourceResource.httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e1.toString());
             return null;
         }
     }
 
-    
-    public T wrapRequestResource(Map params, ILambda<Map, T> dbRequestor, Resource resource, Access access,  String externalId, String action) throws IOException {
+    public T wrapRequestResource(Map params, ILambda<Map, T> dbRequestor, Resource resource, ResourceAction action, String externalId, boolean isUri) throws IOException {
         Number principalID = resourceResource.getPrincipalID();
         if (principalID == null) {
             return null;
         }
+        params.put(_principalID, principalID);
         try {
-            final Number resourceID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalId), resource);
-            if (dbIntegrityService.canDo(Access.READ, principalID, resourceID)) {
+            final Number resourceID;
+            if (isUri) {
+                resourceID = resourceResource.dbIntegrityService.getResourceInternalIdentifierFromURI(externalId, resource);
+                params.put(_externalId,  resourceResource.dbIntegrityService.getResourceExternalIdentifier(resourceID, resource).toString());
+            } else {
+                resourceID = resourceResource.dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalId), resource);
+                params.put(_externalId, externalId);
+            }
+            if (resourceResource.dbIntegrityService.canDo(action, principalID, resourceID, resource)) {
+                params.put(_internalID, resourceID);
+                params.put(_resourceType, resource);
                 return dbRequestor.apply(params);
             } else {
-                this.FORBIDDEN_RESOURCE_ACTION(externalId, resource.name(), action);
-                httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
+                this.FORBIDDEN_RESOURCE_ACTION(externalId, resource.name(), action.name());
+                resourceResource.httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
                 return null;
             }
         } catch (NotInDataBaseException e2) {
-            loggerServer.debug(e2.toString());
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e2.toString());
+            resourceResource.loggerServer.debug(e2.toString());
+            resourceResource.httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e2.toString());
             return null;
         }
     }
 
     public JAXBElement<Principal> wrapAddPrincipalRequest(Map params, ILambdaPrincipal<Map, Principal> dbRequestor) throws IOException {
-        
+
         try {
             try {
                 return new ObjectFactory().createPrincipal(dbRequestor.apply(params));
             } catch (NotInDataBaseException e1) {
-                loggerServer.debug(e1.toString());
-                httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e1.toString());
+                resourceResource.loggerServer.debug(e1.toString());
+                resourceResource.httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e1.toString());
                 return new ObjectFactory().createPrincipal(new Principal());
             }
         } catch (PrincipalExists e) {
-            loggerServer.debug(e.toString());
-            httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.toString());
+            resourceResource.loggerServer.debug(e.toString());
+            resourceResource.httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.toString());
             return new ObjectFactory().createPrincipal(new Principal());
         }
 

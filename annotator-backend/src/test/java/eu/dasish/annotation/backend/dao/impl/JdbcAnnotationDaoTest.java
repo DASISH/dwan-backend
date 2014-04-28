@@ -37,7 +37,6 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import static org.junit.Assert.*;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -446,6 +445,15 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         assertTrue(check2.getBody().getXmlBody().getAny().hasAttribute("style"));
         assertEquals("test", check2.getBody().getXmlBody().getAny().getTextContent());
         assertEquals("application/xml", check2.getBody().getXmlBody().getMimeType());
+    }
+    
+    @Test
+    public void testUpdateAnnotationHeader() {
+        System.out.println("test updateAnnotationHeader ");
+        int result = jdbcAnnotationDao.updateAnnotationHeadline(1, "new Header");
+        assertEquals(1, result);
+        Annotation check = jdbcAnnotationDao.getAnnotationWithoutTargetsAndPemissions(1);
+        assertEquals("new Header", check.getHeadline());
     }
 
     @Test

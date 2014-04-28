@@ -22,16 +22,18 @@ import com.sun.jersey.multipart.MultiPart;
 import eu.dasish.annotation.backend.BackendConstants;
 import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.Resource;
+import eu.dasish.annotation.backend.ResourceAction;
+import eu.dasish.annotation.backend.dao.ILambda;
 import eu.dasish.annotation.schema.CachedRepresentationInfo;
 import eu.dasish.annotation.schema.ObjectFactory;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.SQLException;
-import java.util.UUID;
+import java.util.HashMap;
+import java.util.Map;
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
@@ -57,62 +59,52 @@ public class CachedRepresentationResource extends ResourceResource {
         this.httpServletRequest = request;
     }
 
-    // TODOD both unit tests
-    //changed path, /Target/cached part is removed
     @GET
     @Produces(MediaType.TEXT_XML)
     @Path("{cachedid: " + BackendConstants.regExpIdentifier + "}/metadata")
     @Transactional(readOnly = true)
     public JAXBElement<CachedRepresentationInfo> getCachedRepresentationInfo(@PathParam("cachedid") String externalId) throws IOException {
-        Number remotePrincipalID = this.getPrincipalID();
-        if (remotePrincipalID == null) {
-            return new ObjectFactory().createCashedRepresentationInfo(new CachedRepresentationInfo());
-        }
-        try {
-            final Number cachedID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalId), Resource.CACHED_REPRESENTATION);
-
-            final CachedRepresentationInfo cachedInfo = dbIntegrityService.getCachedRepresentationInfo(cachedID);
-            return new ObjectFactory().createCashedRepresentationInfo(cachedInfo);
-
-        } catch (NotInDataBaseException e2) {
-            loggerServer.debug(e2.toString());
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e2.toString());
-            return new ObjectFactory().createCashedRepresentationInfo(new CachedRepresentationInfo());
+        Map params = new HashMap();
+        CachedRepresentationInfo result = (CachedRepresentationInfo) (new RequestWrappers(this)).wrapRequestResource(params, new GetCachedRepresentationInfo(), Resource.CACHED_REPRESENTATION, ResourceAction.READ, externalId, false);
+        if (result != null) {
+            return (new ObjectFactory()).createCashedRepresentationInfo(result);
+        } else {
+            return (new ObjectFactory()).createCashedRepresentationInfo(new CachedRepresentationInfo());
         }
     }
 
+    private class GetCachedRepresentationInfo implements ILambda<Map, CachedRepresentationInfo> {
+
+        @Override
+        public CachedRepresentationInfo apply(Map params) throws NotInDataBaseException {
+            Number cachedID = (Number) params.get("internalID");
+            return dbIntegrityService.getCachedRepresentationInfo(cachedID);
+        }
+    }
+
+    ////////////////////////////////////////////
     @GET
     @Produces({"image/jpeg", "image/png"})
     @Path("{cachedid: " + BackendConstants.regExpIdentifier + "}/content")
     @Transactional(readOnly = true)
     public BufferedImage getCachedRepresentationContent(@PathParam("cachedid") String externalId) throws IOException {
-        Number remotePrincipalID = this.getPrincipalID();
-        if (remotePrincipalID == null) {
-            return null;
-        }
-        try {
-            final Number cachedID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalId), Resource.CACHED_REPRESENTATION);
-            InputStream dbRespond = dbIntegrityService.getCachedRepresentationBlob(cachedID);
-            if (dbRespond != null) {
-                ImageIO.setUseCache(false);
-                try {
-                    BufferedImage result = ImageIO.read(dbRespond);
-                    return result;
-                } catch (IOException e1) {
-                    loggerServer.debug(e1.toString());
-                    httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e1.toString());
-                    return null;
-                }
-            } else {
-                loggerServer.info(" The cached representation with the id " + externalId + " has null blob.");
+        Map params = new HashMap();
+        InputStream result = (InputStream) (new RequestWrappers(this)).wrapRequestResource(params, new GetCachedRepresentationInputStream(), Resource.CACHED_REPRESENTATION, ResourceAction.READ, externalId, false);
+        if (result != null) {
+            ImageIO.setUseCache(false);
+            try {
+                BufferedImage retVal = ImageIO.read(result);
+                return retVal;
+            } catch (IOException e1) {
+                loggerServer.info(e1.toString());
+
                 return null;
             }
-
-        } catch (NotInDataBaseException e) {
-            loggerServer.debug(e.toString());
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e.toString());
+        } else {
+            loggerServer.info(" The cached representation with the id " + externalId + " has null blob.");
             return null;
         }
+
     }
 
     @GET
@@ -120,72 +112,75 @@ public class CachedRepresentationResource extends ResourceResource {
     @Path("{cachedid: " + BackendConstants.regExpIdentifier + "}/stream")
     @Transactional(readOnly = true)
     public InputStream getCachedRepresentationContentStream(@PathParam("cachedid") String externalId) throws IOException {
-        Number remotePrincipalID = this.getPrincipalID();
-        if (remotePrincipalID == null) {
-            return null;
-        }
-        try {
-            final Number cachedID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalId), Resource.CACHED_REPRESENTATION);
-            InputStream dbRespond = dbIntegrityService.getCachedRepresentationBlob(cachedID);
-            if (dbRespond != null) {
-                return dbRespond;
-            } else {
-                loggerServer.info("The cached representation with the id " + externalId + " has null blob.");
-                return null;
-            }
+        Map params = new HashMap();
+        return (InputStream) (new RequestWrappers(this)).wrapRequestResource(params, new GetCachedRepresentationInputStream(), Resource.CACHED_REPRESENTATION, ResourceAction.READ, externalId, false);
+    }
 
-        } catch (NotInDataBaseException e) {
-            loggerServer.debug(e.toString());;
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e.toString());
-            return null;
+    private class GetCachedRepresentationInputStream implements ILambda<Map, InputStream> {
+
+        @Override
+        public InputStream apply(Map params) throws NotInDataBaseException {
+            Number cachedID = (Number) params.get("internalID");
+            return dbIntegrityService.getCachedRepresentationBlob(cachedID);
         }
     }
 
+    ///////////////////////////////////////////////////////////////////
     @PUT
     @Consumes("multipart/mixed")
     @Produces(MediaType.APPLICATION_XML)
     @Path("{cachedid: " + BackendConstants.regExpIdentifier + "}/stream")
     public String updateCachedBlob(@PathParam("cachedid") String cachedIdentifier,
             MultiPart multiPart) throws IOException {
-        Number remotePrincipalID = this.getPrincipalID();
-        if (remotePrincipalID == null) {
-            return "Nothing is updated. You are no tlogged in";
-        }
-        try {
-            final Number cachedID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(cachedIdentifier), Resource.CACHED_REPRESENTATION);
-            BodyPartEntity bpe = (BodyPartEntity) multiPart.getBodyParts().get(0).getEntity();
-            InputStream cachedSource = bpe.getInputStream();
-            try {
-                final int result = dbIntegrityService.updateCachedBlob(cachedID, cachedSource);
-                return result + "rows are updated";
-            } catch (IOException e) {
-                loggerServer.debug(e.toString());
-                httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.toString());
-                return "Nothing is updated. ";
-            }
-        } catch (NotInDataBaseException e2) {
-            loggerServer.debug(e2.toString());
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e2.toString());
+        Map params = new HashMap();
+        BodyPartEntity bpe = (BodyPartEntity) multiPart.getBodyParts().get(0).getEntity();
+        params.put("stream", bpe.getInputStream());
+        Integer result = (Integer) (new RequestWrappers(this)).wrapRequestResource(params, new UpdateCachedBlob(), Resource.CACHED_REPRESENTATION, ResourceAction.WRITE, cachedIdentifier, false);
+        if (result != null) {
+            return result + "rows are updated";
+        } else {
             return "Nothing is updated. ";
+        }
+        
+       
+    }
+
+    private class UpdateCachedBlob implements ILambda<Map, Integer> {
+        @Override
+        public Integer apply(Map params) throws NotInDataBaseException {
+            Number cachedID = (Number) params.get("internalID");
+            InputStream stream = (InputStream) params.get("stream");
+            try {
+                return dbIntegrityService.updateCachedBlob(cachedID, stream);
+            } catch (IOException e) {
+                loggerServer.info(e.toString());
+                return 0;
+            }
         }
     }
 
+    ///////////////////////////////////////////////////////////
     @PUT
     @Consumes(MediaType.TEXT_XML)
     @Produces(MediaType.APPLICATION_XML)
     @Path("metadata")
     public String updateCachedMetadata(CachedRepresentationInfo cachedInfo) throws IOException {
-        Number remotePrincipalID = this.getPrincipalID();
-        if (remotePrincipalID == null) {
-            return "Nothing is updated. You are no tlogged in";
-        }
-        try {
-            final int result = dbIntegrityService.updateCachedMetada(cachedInfo);
+        Map params = new HashMap();
+        params.put("info", cachedInfo);
+        Integer result = (Integer) (new RequestWrappers(this)).wrapRequestResource(params, new UpdateCachedMetadata(), Resource.CACHED_REPRESENTATION, ResourceAction.WRITE_W_METAINFO, cachedInfo.getURI(), true);
+        if (result != null) {
             return result + "rows are updated";
-        } catch (NotInDataBaseException e2) {
-            loggerServer.debug(e2.toString());
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e2.toString());
+        } else {
             return "Nothing is updated. ";
+        }
+        
+    }
+    
+     private class UpdateCachedMetadata implements ILambda<Map, Integer> {
+        @Override
+        public Integer apply(Map params) throws NotInDataBaseException {
+            CachedRepresentationInfo cachedInfo = (CachedRepresentationInfo) params.get("cachedInfo");
+            return dbIntegrityService.updateCachedMetada(cachedInfo);
         }
     }
 }

@@ -78,7 +78,7 @@ public class JdbcPrincipalDao extends JdbcResourceDao implements PrincipalDao {
         sql.append(principalStar).append(" FROM ").append(principalTableName).append(" WHERE ").append("LOWER(").append(e_mail).append(")").append("= ? LIMIT 1");
         List<Principal> result = this.loggedQuery(sql.toString(), principalRowMapper, eMail.toLowerCase());
         if (result.isEmpty()) {
-            throw new NotInDataBaseException("principal");
+            throw new NotInDataBaseException("principal", "e-mail", eMail);
         }
         return result.get(0);
     }
@@ -136,7 +136,7 @@ public class JdbcPrincipalDao extends JdbcResourceDao implements PrincipalDao {
         requestDB.append(principal_id).append(" FROM ").append(principalTableName).append(" WHERE ").append(remote_id).append("= ? LIMIT 1");
         List<Number> result = this.loggedQuery(requestDB.toString(), internalIDRowMapper, remoteID);
         if (result.isEmpty()) {
-            throw new NotInDataBaseException("principal");
+            throw new NotInDataBaseException("principal", "remote ID", remoteID);
         }
         return result.get(0);
     }
