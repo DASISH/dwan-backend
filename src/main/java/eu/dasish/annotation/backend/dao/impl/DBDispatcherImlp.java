@@ -386,7 +386,11 @@ public class DBDispatcherImlp implements DBDispatcher {
             return access;
         } else {
             if (publicAttribute.equals(Access.READ)) {
-                return (access.equals(Access.NONE) ? Access.READ : access);
+                if (access.equals(Access.NONE)) {
+                    return Access.READ;
+                } else {
+                   return access; 
+                }
             } else {
                 return Access.WRITE;
             }
@@ -422,7 +426,9 @@ public class DBDispatcherImlp implements DBDispatcher {
                 if (principalID.equals(annotationDao.getOwner(resourceID)) || principalDao.getTypeOfPrincipalAccount(principalID).equals(admin)) {
                     return true;
                 }
-                return this.getAccess(resourceID, principalID).value().equals(action.name());
+                String access = this.getAccess(resourceID, principalID).name();
+                String actionName = action.name();
+                return access.equals(actionName);
             }
             case CACHED_REPRESENTATION: {
                 return true;
