@@ -88,6 +88,7 @@ public class RequestWrappers<T> {
                 return dbRequestor.apply(params);
             } else {
                 this.FORBIDDEN_RESOURCE_ACTION(externalId, resource.name(), action.name());
+                resourceResource.loggerServer.debug("Principal "+resourceResource.dbDispatcher.getResourceExternalIdentifier(principalID, Resource.PRINCIPAL)+" cannot "+action.name()+" "+resource.name()+" with the id "+externalId);
                 resourceResource.httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
                 return null;
             }
