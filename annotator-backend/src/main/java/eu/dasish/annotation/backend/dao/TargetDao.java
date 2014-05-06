@@ -57,13 +57,7 @@ public interface TargetDao extends ResourceDao {
      */
     public Map<Number, String> getCachedRepresentationFragmentPairs(Number targetID);
 
-    /**
-     *
-     * @param subword
-     * @return the list of Target ID's which link-fields contain "subword" as a
-     * substring.
-     */
-    public List<Number> getTargetsReferringTo(String subword);
+   
 
     /**
      *
@@ -81,7 +75,7 @@ public interface TargetDao extends ResourceDao {
 
     boolean cachedIsInUse(Number cachedID);
 
-    public List<Number> retrieveTargetIDs(Number annotationID);
+    public List<Number> getTargetIDs(Number annotationID);
 
     /**
      * ADDERS

@@ -57,9 +57,7 @@ public interface AnnotationDao extends ResourceDao{
     
     public List<Number> getAnnotationIDsForPublicAccess(Access access);
     
-    
-    public List<Number> getAnnotationIDsForTargets(List<Number> TargetIDs);   
-    
+   
     /*
      * Use inly in the debugging mode to acces all the existing annotations.
      */
@@ -103,6 +101,7 @@ public interface AnnotationDao extends ResourceDao{
      * @return access of the principalID w.r.t. annotationID, or null if the access is not given
      */ 
     public Access  getAccess(Number annotationID, Number principalID);
+    
     
     public Access getPublicAttribute(Number annotationID);
     

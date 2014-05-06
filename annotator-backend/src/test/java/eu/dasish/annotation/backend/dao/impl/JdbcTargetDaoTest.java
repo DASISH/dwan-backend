@@ -190,27 +190,13 @@ public class JdbcTargetDaoTest extends JdbcResourceDaoTest {
 
     }
 
-    /**
-     * test public List<Number> getTargetsForLink(String link)
-     *
-     *
-     */
-    @Test
-    public void tesGetTargetsReferringTo() {
-        System.out.println(" test getTargetsReferringTo");
-
-        String substring = "http://nl.wikipedia.org";
-        List<Number> result = jdbcTargetDao.getTargetsReferringTo(substring);
-        assertEquals(2, result.size());
-        assertEquals(1, result.get(0));
-        assertEquals(2, result.get(1));
-    }
+   
 
     @Test
     public void testRetrieveTargetIDs() {
         System.out.println("retrieveTargetIDs");
         Number annotationID = 1;
-        List<Number> result = jdbcTargetDao.retrieveTargetIDs(annotationID);
+        List<Number> result = jdbcTargetDao.getTargetIDs(annotationID);
         assertEquals(2, result.size());
         assertEquals(1, result.get(0));
         assertEquals(2, result.get(1));

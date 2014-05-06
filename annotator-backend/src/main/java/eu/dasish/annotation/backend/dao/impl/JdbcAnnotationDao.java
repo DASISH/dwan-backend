@@ -98,6 +98,8 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
             return Access.fromValue(rs.getString(access));
         }
     };
+    
+    
 
     /////////////////////////////////////////////////////////////////////
     @Override
@@ -173,19 +175,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         return this.loggedQuery(sql.toString(), internalIDRowMapper);
     }
 
-    //////////////////////////////
-    @Override
-    public List<Number> getAnnotationIDsForTargets(List<Number> targetIDs) {
-
-        if (targetIDs.isEmpty()) {
-            return new ArrayList<Number>();
-        }
-        String values = makeListOfValues(targetIDs);
-        StringBuilder query = new StringBuilder("SELECT DISTINCT ");
-        query.append(annotation_id).append(" FROM ").append(annotationsTargetsTableName).append(" WHERE ").append(target_id).append(" IN ");
-        query.append(values);
-        return this.loggedQuery(query.toString(), internalIDRowMapper);
-    }
+   
 
     /////////////////////////////////////////
     @Override

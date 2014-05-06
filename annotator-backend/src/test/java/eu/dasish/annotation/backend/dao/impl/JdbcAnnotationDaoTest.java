@@ -254,17 +254,7 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         System.out.println("creation time " + addedAnnotation.getLastModified());
     }
 
-    @Test
-    public void testGetAnnotationIDsForTargets() {
-        System.out.println("test getAnnotationIDsForTargets");
-        List<Number> targets = new ArrayList<Number>();
-        targets.add(1);
-        targets.add(2);
-        List<Number> result = jdbcAnnotationDao.getAnnotationIDsForTargets(targets);
-        assertEquals(2, result.size());
-        assertEquals(1, result.get(0));
-        assertEquals(2, result.get(1));
-    }
+    
 
     //////////////////////////////////
     @Test

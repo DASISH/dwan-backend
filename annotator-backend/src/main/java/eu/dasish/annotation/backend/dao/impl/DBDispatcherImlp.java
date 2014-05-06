@@ -55,7 +55,9 @@ import eu.dasish.annotation.schema.Principal;
 import eu.dasish.annotation.schema.Permission;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.lang.Number;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -136,7 +138,7 @@ public class DBDispatcherImlp implements DBDispatcher {
     public Annotation getAnnotation(Number annotationID) {
         Annotation result = annotationDao.getAnnotationWithoutTargetsAndPemissions(annotationID);
         result.setOwnerRef(principalDao.getURIFromInternalID(annotationDao.getOwner(annotationID)));
-        List<Number> targetIDs = targetDao.retrieveTargetIDs(annotationID);
+        List<Number> targetIDs = targetDao.getTargetIDs(annotationID);
         TargetInfoList sis = new TargetInfoList();
         for (Number targetID : targetIDs) {
             TargetInfo targetInfo = getTargetInfoFromTarget(targetDao.getTarget(targetID));
@@ -179,14 +181,14 @@ public class DBDispatcherImlp implements DBDispatcher {
 
 ////////////////////////////////////////////////////////////////////////
     @Override
-    public List<Number> getFilteredAnnotationIDs(UUID ownerId, String link, String text, Number inloggedPrincipalID, String accessMode, String namespace, String after, String before) throws NotInDataBaseException {
+    public List<Number> getFilteredAnnotationIDs(UUID ownerId, String linkSubstring, String text, Number inloggedPrincipalID, String accessMode, String namespace, String after, String before) throws NotInDataBaseException {
 
         Number ownerID;
 
         if (ownerId != null) {
             if (accessMode.equals("owner")) {
                 if (!ownerId.equals(principalDao.getExternalID(inloggedPrincipalID))) {
-                    logger.debug("The inlogged principal is demanded to be the owner of the annotations, however the expected owner is different and has the UUID " + ownerId.toString());
+                    logger.info("The inlogged principal is demanded to be the owner of the annotations, however the expected owner is different and has the UUID " + ownerId.toString());
                     return new ArrayList<Number>();
                 } else {
                     ownerID = inloggedPrincipalID;
@@ -204,36 +206,64 @@ public class DBDispatcherImlp implements DBDispatcher {
         }
 
 
-
+        //Filtering on the columns  of the annotation table 
         List<Number> annotationIDs = annotationDao.getFilteredAnnotationIDs(ownerID, text, namespace, after, before);
 
-        //filtering on tables "target" and "annotations_targets"
-        if (link != null) {
-            List<Number> targetIDs = targetDao.getTargetsReferringTo(link);
-            List<Number> annotationIDsForTargets = annotationDao.getAnnotationIDsForTargets(targetIDs);
-            annotationIDs.retainAll(annotationIDsForTargets);
-        };
 
-        if (!accessMode.equals("owner")) {
-            Access access = Access.fromValue(accessMode);
-            List<Number> annotationIDsAccess = annotationDao.getAnnotationIDsForPermission(inloggedPrincipalID, access);
-            List<Number> annotationIDsPublic = annotationDao.getAnnotationIDsForPublicAccess(access);
-            if (accessMode.equals("read")) {
-                List<Number> writeIDs = annotationDao.getAnnotationIDsForPermission(inloggedPrincipalID, Access.WRITE);
-                annotationIDsAccess.addAll(writeIDs);
-                List<Number> writeIDsPublic = annotationDao.getAnnotationIDsForPublicAccess(Access.WRITE);
-                annotationIDsPublic.addAll(writeIDsPublic);
+        // Filetring on accessMode
+        if (annotationIDs != null) {
+            if (!annotationIDs.isEmpty()) {
+                if (!accessMode.equals("owner")) {
+                    Access access = Access.fromValue(accessMode);
+                    List<Number> annotationIDsAccess = annotationDao.getAnnotationIDsForPermission(inloggedPrincipalID, access);
+                    List<Number> annotationIDsPublic = annotationDao.getAnnotationIDsForPublicAccess(access);
+                    List<Number> annotationIDsOwned = annotationDao.getFilteredAnnotationIDs(inloggedPrincipalID, null, null, null, null);
+                    int check1 = this.addAllNoRepetitions(annotationIDsAccess, annotationIDsPublic);
+                    int check2 = this.addAllNoRepetitions(annotationIDsAccess, annotationIDsOwned);
+                    annotationIDs.retainAll(annotationIDsAccess);
+                }
             }
-            int check = this.addAllNoRepetitions(annotationIDsAccess, annotationIDsPublic);
-            List<Number> ownedAnnotIDs = annotationDao.getFilteredAnnotationIDs(inloggedPrincipalID, null, null, null, null);
-            boolean checkTwo = annotationIDsAccess.addAll(ownedAnnotIDs);
-            annotationIDs.retainAll(annotationIDsAccess);
+
+            // filtering on reference        
+            return this.filterAnnotationIDsOnReference(annotationIDs, linkSubstring);
         }
 
         return annotationIDs;
+
     }
 
-    /// helper ///
+    /// helpers ///
+    private List<Number> filterAnnotationIDsOnReference(List<Number> annotationIDs, String linkSubstring) {
+        if (linkSubstring != null) {
+            if (!linkSubstring.isEmpty()) {
+                if (annotationIDs != null) {
+                    List<Number> result = new ArrayList();
+                    for (Number annotationID : annotationIDs) {
+                        List<Number> targets = targetDao.getTargetIDs(annotationID);
+                        for (Number targetID : targets) {
+                            if (!result.contains(annotationID)) {
+                                String link = targetDao.getLink(targetID);
+                                if (link.contains(linkSubstring)) {
+                                    result.add(annotationID);
+                                } else {
+                                    try {
+                                        String urlEncoded = URLEncoder.encode(linkSubstring, "UTF-8");
+                                        if (link.contains(urlEncoded)) {
+                                            result.add(annotationID);
+                                        }
+                                    } catch (UnsupportedEncodingException e) {
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    return result;
+                }
+            }
+        }
+        return annotationIDs;
+    }
+
     public int addAllNoRepetitions(List<Number> list, List<Number> listToAdd) {
         int result = 0;
         if (list != null) {
@@ -258,7 +288,7 @@ public class DBDispatcherImlp implements DBDispatcher {
     @Override
     public ReferenceList getAnnotationTargets(Number annotationID) {
         ReferenceList result = new ReferenceList();
-        List<Number> targetIDs = targetDao.retrieveTargetIDs(annotationID);
+        List<Number> targetIDs = targetDao.getTargetIDs(annotationID);
         for (Number targetID : targetIDs) {
             result.getRef().add(targetDao.getURIFromInternalID(targetID));
         }
@@ -269,7 +299,7 @@ public class DBDispatcherImlp implements DBDispatcher {
     public List<String> getTargetsWithNoCachedRepresentation(Number annotationID) {
 
         List<String> result = new ArrayList<String>();
-        List<Number> targetIDs = targetDao.retrieveTargetIDs(annotationID);
+        List<Number> targetIDs = targetDao.getTargetIDs(annotationID);
         for (Number targetID : targetIDs) {
             List<Number> versions = cachedRepresentationDao.getCachedRepresentationsForTarget(targetID);
             if (versions.isEmpty()) {
@@ -389,7 +419,7 @@ public class DBDispatcherImlp implements DBDispatcher {
                 if (access.equals(Access.NONE)) {
                     return Access.READ;
                 } else {
-                   return access; 
+                    return access;
                 }
             } else {
                 return Access.WRITE;
@@ -426,9 +456,8 @@ public class DBDispatcherImlp implements DBDispatcher {
                 if (principalID.equals(annotationDao.getOwner(resourceID)) || principalDao.getTypeOfPrincipalAccount(principalID).equals(admin)) {
                     return true;
                 }
-                String access = this.getAccess(resourceID, principalID).name();
-                String actionName = action.name();
-                return access.equals(actionName);
+                Access access = this.getAccess(resourceID, principalID);
+                return this.greaterOrEqual(access, action);
             }
             case CACHED_REPRESENTATION: {
                 return true;
@@ -443,6 +472,16 @@ public class DBDispatcherImlp implements DBDispatcher {
                 return false;
         }
 
+    }
+
+    private boolean greaterOrEqual(Access access, ResourceAction action) {
+        if (access.equals(Access.WRITE) && (action.equals(ResourceAction.READ) || action.equals(ResourceAction.WRITE))) {
+            return true;
+        }
+        if (access.equals(Access.READ) && action.equals(ResourceAction.READ)) {
+            return true;
+        }
+        return false;
     }
 ////// noetbooks ///////
 /// TODO update for having attribute public!!! /////
@@ -622,7 +661,7 @@ public class DBDispatcherImlp implements DBDispatcher {
         String[] body = annotationDao.retrieveBodyComponents(annotationBody);
         return annotationDao.updateAnnotationBody(internalID, body[0], body[1], annotationBody.getXmlBody() != null);
     }
-    
+
     @Override
     public int updateAnnotationHeadline(Number internalID, String newHeader) {
         return annotationDao.updateAnnotationHeadline(internalID, newHeader);
@@ -788,7 +827,7 @@ public class DBDispatcherImlp implements DBDispatcher {
     public int[] deleteAnnotation(Number annotationID) {
         int[] result = new int[5];
         result[1] = annotationDao.deleteAnnotationPermissions(annotationID);
-        List<Number> targetIDs = targetDao.retrieveTargetIDs(annotationID);
+        List<Number> targetIDs = targetDao.getTargetIDs(annotationID);
         result[2] = annotationDao.deleteAllAnnotationTarget(annotationID);
         result[3] = 0;
         if (targetIDs != null) {

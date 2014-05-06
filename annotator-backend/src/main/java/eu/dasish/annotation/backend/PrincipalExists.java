@@ -17,6 +17,8 @@
  */
 package eu.dasish.annotation.backend;
 
+import org.springframework.dao.DuplicateKeyException;
+
 /**
  *
  * @author olhsha
@@ -25,6 +27,10 @@ public class PrincipalExists extends Exception{
     
     public PrincipalExists(String remoteID){
         super("The principal with the remoteID "+remoteID+" already exists in the database and cannot be added. ");
+    }
+    
+     public PrincipalExists(DuplicateKeyException e){
+        super(e);
     }
     
 }

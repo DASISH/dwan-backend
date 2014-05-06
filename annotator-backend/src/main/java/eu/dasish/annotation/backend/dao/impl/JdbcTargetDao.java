@@ -21,6 +21,8 @@ import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.dao.TargetDao;
 import eu.dasish.annotation.schema.Target;
 import eu.dasish.annotation.schema.TargetInfo;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -29,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import javax.sql.DataSource;
-import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.XMLGregorianCalendar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +43,7 @@ import org.springframework.jdbc.core.RowMapper;
 public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
 
     private final Logger loggerTargetDao = LoggerFactory.getLogger(JdbcTargetDao.class);
+    private final String encoding = "ISO-8859-1";
 
     public JdbcTargetDao(DataSource dataTarget) {
         setDataSource(dataTarget);
@@ -73,7 +75,7 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
     };
 
     @Override
-    public String getLink(Number internalID){
+    public String getLink(Number internalID) {
         StringBuilder sql = new StringBuilder("SELECT ");
         sql.append(targetStar).append(" FROM ").append(targetTableName).append(" WHERE ").append(target_id).append("= ? LIMIT 1");
         List<String> result = this.loggedQuery(sql.toString(), linkRowMapper, internalID);
@@ -133,19 +135,7 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
         }
     };
 
-    /////////////////////////////////////////////////////
-    @Override
-    public List<Number> getTargetsReferringTo(String word) {
-        if (word == null) {
-            loggerTargetDao.debug("word: " + nullArgument);
-            return new ArrayList<Number>();
-        }
-        String searchTerm = "%" + word + "%";
-        StringBuilder sql = new StringBuilder("SELECT ");
-        sql.append(target_id).append(" FROM ").append(targetTableName).append(" WHERE ").append(link_uri).append(" LIKE ? ");
-        return this.loggedQuery(sql.toString(), internalIDRowMapper, searchTerm);
-    }
-
+    
     /////////////////////////////////////////////////////
     @Override
     public List<Number> getTargetsForLink(String link) {
@@ -174,18 +164,18 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
     }
 
     @Override
-    public List<Number> retrieveTargetIDs(Number annotationID) {
+    public List<Number> getTargetIDs(Number annotationID) {
         StringBuilder sql = new StringBuilder("SELECT DISTINCT ");
         sql.append(target_id).append(" FROM ").append(annotationsTargetsTableName).append(" WHERE ").append(annotation_id).append("= ?");
         return this.loggedQuery(sql.toString(), internalIDRowMapper, annotationID);
 
     }
-    
+
     //////// UPDATERS //////////
     @Override
-    public int updateTargetCachedRepresentationFragment(Number targetID, Number cachedID, String fragmentDescription){
+    public int updateTargetCachedRepresentationFragment(Number targetID, Number cachedID, String fragmentDescription) {
 
-    Map<String, Object> params = new HashMap<String, Object>();
+        Map<String, Object> params = new HashMap<String, Object>();
         params.put("targetID", targetID);
         params.put("cachedID", cachedID);
         params.put("fragment", fragmentDescription);
@@ -198,7 +188,7 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
 
     ///////////////////////// ADDERS /////////////////////////////////
     @Override
-    public Number addTarget(Target target) throws NotInDataBaseException{
+    public Number addTarget(Target target) throws NotInDataBaseException {
 
         UUID externalID = UUID.randomUUID();
         String[] linkParts = splitLink(target.getLink());
@@ -216,7 +206,7 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
     ///////////////////////////////////////////////////////////////////
     @Override
     public int addTargetCachedRepresentation(Number targetID, Number cachedID, String fragmentDescriptor) {
-      
+
         Map<String, Object> paramsJoint = new HashMap<String, Object>();
         paramsJoint.put("targetId", targetID);
         paramsJoint.put("cachedId", cachedID);
@@ -228,7 +218,7 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
     ///////////////////////////////////
     @Override
     public int deleteTarget(Number internalID) {
-     
+
         StringBuilder sqlTargetsVersions = new StringBuilder("DELETE FROM ");
         sqlTargetsVersions.append(targetTableName).append(" WHERE ").append(target_id).append(" = ? ");
         return this.loggedUpdate(sqlTargetsVersions.toString(), internalID);
