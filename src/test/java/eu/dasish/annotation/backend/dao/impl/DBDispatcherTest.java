@@ -236,7 +236,7 @@ public class DBDispatcherTest {
                 oneOf(principalDao).getURIFromInternalID(1);
                 will(returnValue(uri1));
 
-                oneOf(targetDao).retrieveTargetIDs(1);
+                oneOf(targetDao).getTargetIDs(1);
                 will(returnValue(mockTargetIDs));
 
                 oneOf(targetDao).getTarget(1);
@@ -299,49 +299,38 @@ public class DBDispatcherTest {
     @Test
     public void testGetFilteredAnnotationIDs() throws NotInDataBaseException {
         System.out.println("test getFilteredAnnotationIDs");
-
-        final List<Number> mockTargetIDs = new ArrayList<Number>();
-        mockTargetIDs.add(1);
-        mockTargetIDs.add(2);
-
+       
         final List<Number> mockAnnotationIDs1 = new ArrayList<Number>();
         mockAnnotationIDs1.add(1);
-
-        final List<Number> mockAnnotationIDs2 = new ArrayList<Number>();
-        mockAnnotationIDs2.add(1);
-        mockAnnotationIDs2.add(2);
-
-
+     
         final List<Number> mockAnnotationIDsOwned = new ArrayList<Number>();
         mockAnnotationIDsOwned.add(3);
 
         final List<Number> mockAnnotationIDsRead = new ArrayList<Number>();
         mockAnnotationIDsRead.add(1);
-
-        final List<Number> mockAnnotationIDsWrite = new ArrayList<Number>();
-        mockAnnotationIDsWrite.add(2);
+        mockAnnotationIDsRead.add(2);
+        
 
         final List<Number> mockAnnotationIDsPublicRead = new ArrayList<Number>();
-        mockAnnotationIDsRead.add(2);
-
-        final List<Number> mockAnnotationIDsPublicWrite = new ArrayList<Number>();
-        mockAnnotationIDsWrite.add(1);
+        mockAnnotationIDsPublicRead.add(1);
+        mockAnnotationIDsPublicRead.add(2);
+        
+        final List<Number> mockTargets1 = new ArrayList<Number>();
+        mockTargets1.add(1);
+        mockTargets1.add(2);
+        
+        
+        final String link1 = "http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia";
+        final String link2 = "http://nl.wikipedia.org/wiki/Antoni_Gaud%C3%AD";
 
         final String after = (new Timestamp(0)).toString();
         final String before = (new Timestamp(System.currentTimeMillis())).toString();
-
-//        final List<Number> mockRetval = new ArrayList<Number>();
-//        mockRetval.add(1);
 
         final Number loggedIn = 3;
 
         mockeryDao.checking(new Expectations() {
             {
-                oneOf(targetDao).getTargetsReferringTo("nl.wikipedia.org");
-                will(returnValue(mockTargetIDs));
-
-                oneOf(annotationDao).getAnnotationIDsForTargets(mockTargetIDs);
-                will(returnValue(mockAnnotationIDs2));
+               
 
                 oneOf(annotationDao).getFilteredAnnotationIDs(null, "some html 1", null, after, before);
                 will(returnValue(mockAnnotationIDs1));
@@ -350,22 +339,26 @@ public class DBDispatcherTest {
                 will(returnValue(mockAnnotationIDsRead));
 
                 oneOf(annotationDao).getAnnotationIDsForPublicAccess(Access.READ);
-                will(returnValue(mockAnnotationIDsPublicRead));
-
-                oneOf(annotationDao).getAnnotationIDsForPermission(loggedIn, Access.WRITE);
-                will(returnValue(mockAnnotationIDsWrite));
-
-                oneOf(annotationDao).getAnnotationIDsForPublicAccess(Access.WRITE);
-                will(returnValue(mockAnnotationIDsPublicWrite));
+                will(returnValue(mockAnnotationIDsPublicRead));               
 
                 oneOf(annotationDao).getFilteredAnnotationIDs(loggedIn, null, null, null, null);
                 will(returnValue(mockAnnotationIDsOwned));
+                
+                oneOf(targetDao).getTargetIDs(1);
+                will(returnValue(mockTargets1));
+                
+                oneOf(targetDao).getLink(1);
+                will(returnValue(link1));
+                
+                oneOf(targetDao).getLink(2);
+                will(returnValue(link2));
+              
 
             }
         });
 
 
-        List result = dbDispatcher.getFilteredAnnotationIDs(null, "nl.wikipedia.org", "some html 1", 3, "read", null, after, before);
+        List result = dbDispatcher.getFilteredAnnotationIDs(null, "Sagrada_Fam%C3%ADlia", "some html 1", 3, "read", null, after, before);
         assertEquals(1, result.size());
         assertEquals(1, result.get(0));
     }
@@ -374,114 +367,91 @@ public class DBDispatcherTest {
     public void testGetFilteredAnnotationIDs2() throws NotInDataBaseException {
         System.out.println("test getFilteredAnnotationIDs");
 
-        final List<Number> mockTargetIDs = new ArrayList<Number>();
-        mockTargetIDs.add(1);
-        mockTargetIDs.add(2);
-
+        
         final List<Number> mockAnnotationIDs1 = new ArrayList<Number>();
         mockAnnotationIDs1.add(1);
 
-        final List<Number> mockAnnotationIDs2 = new ArrayList<Number>();
-        mockAnnotationIDs2.add(1);
-        mockAnnotationIDs2.add(2);
-
-
+     
         final List<Number> mockAnnotationIDsOwned = new ArrayList<Number>();
         mockAnnotationIDsOwned.add(3);
 
-        final List<Number> mockAnnotationIDsRead = new ArrayList<Number>();
-        mockAnnotationIDsRead.add(1);
-
         final List<Number> mockAnnotationIDsWrite = new ArrayList<Number>();
         mockAnnotationIDsWrite.add(2);
-
-        final List<Number> mockAnnotationIDsPublicRead = new ArrayList<Number>();
-        mockAnnotationIDsRead.add(2);
+        
 
         final List<Number> mockAnnotationIDsPublicWrite = new ArrayList<Number>();
-        mockAnnotationIDsWrite.add(1);
+        mockAnnotationIDsPublicWrite.add(1);
+        
+        final List<Number> mockTargets1 = new ArrayList<Number>();
+        mockTargets1.add(1);
+        mockTargets1.add(2);
+        
+       
+        final String link1 = "http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia";
+        final String link2 = "http://nl.wikipedia.org/wiki/Antoni_Gaud%C3%AD";
 
         final String after = (new Timestamp(0)).toString();
         final String before = (new Timestamp(System.currentTimeMillis())).toString();
-
-//        final List<Number> mockRetval = new ArrayList<Number>();
-//        mockRetval.add(1);
 
         final Number loggedIn = 3;
 
         mockeryDao.checking(new Expectations() {
             {
-                oneOf(targetDao).getTargetsReferringTo("nl.wikipedia.org");
-                will(returnValue(mockTargetIDs));
-
-                oneOf(annotationDao).getAnnotationIDsForTargets(mockTargetIDs);
-                will(returnValue(mockAnnotationIDs2));
+               
 
                 oneOf(annotationDao).getFilteredAnnotationIDs(null, "some html 1", null, after, before);
                 will(returnValue(mockAnnotationIDs1));
-
-                oneOf(annotationDao).getAnnotationIDsForPermission(loggedIn, Access.READ);
-                will(returnValue(mockAnnotationIDsRead));
-
-                oneOf(annotationDao).getAnnotationIDsForPublicAccess(Access.READ);
-                will(returnValue(mockAnnotationIDsPublicRead));
 
                 oneOf(annotationDao).getAnnotationIDsForPermission(loggedIn, Access.WRITE);
                 will(returnValue(mockAnnotationIDsWrite));
 
                 oneOf(annotationDao).getAnnotationIDsForPublicAccess(Access.WRITE);
-                will(returnValue(mockAnnotationIDsPublicWrite));
+                will(returnValue(mockAnnotationIDsPublicWrite));               
 
                 oneOf(annotationDao).getFilteredAnnotationIDs(loggedIn, null, null, null, null);
                 will(returnValue(mockAnnotationIDsOwned));
-
+                
+                oneOf(targetDao).getTargetIDs(1);
+                will(returnValue(mockTargets1));
+                
+                oneOf(targetDao).getLink(1);
+                will(returnValue(link1));
+                
+                oneOf(targetDao).getLink(2);
+                will(returnValue(link2));
+               
             }
         });
 
 
-        List result = dbDispatcher.getFilteredAnnotationIDs(null, "nl.wikipedia.org", "some html 1", 3, "write", null, after, before);
+        List result = dbDispatcher.getFilteredAnnotationIDs(null, "Sagrada_Fam%C3%ADlia", "some html 1", 3, "write", null, after, before);
         assertEquals(1, result.size());
         assertEquals(1, result.get(0));
+
     }
 
     @Test
     public void testGetFilteredAnnotationIDs3() throws NotInDataBaseException {
         System.out.println("test getFilteredAnnotationIDs");
 
-        final List<Number> mockTargetIDs = new ArrayList<Number>();
-        mockTargetIDs.add(1);
-        mockTargetIDs.add(2);
-
-        final List<Number> mockAnnotationIDs2 = new ArrayList<Number>();
-        mockAnnotationIDs2.add(1);
-        mockAnnotationIDs2.add(2);
-
-
+        
+        final List<Number> mockAnnotationIDs1 = new ArrayList<Number>();
+        
         final String after = (new Timestamp(0)).toString();
         final String before = (new Timestamp(System.currentTimeMillis())).toString();
 
-//        final List<Number> mockRetval = new ArrayList<Number>();
-//        mockRetval.add(1);
-
-        final Number loggedIn = 3;
-
+       
         mockeryDao.checking(new Expectations() {
-            {
-                oneOf(targetDao).getTargetsReferringTo("nl.wikipedia.org");
-                will(returnValue(mockTargetIDs));
+            {               
 
-                oneOf(annotationDao).getAnnotationIDsForTargets(mockTargetIDs);
-                will(returnValue(mockAnnotationIDs2));
-
-                oneOf(annotationDao).getFilteredAnnotationIDs(loggedIn, "some html 1", null, after, before);
-                will(returnValue(new ArrayList<Number>()));
-
+                oneOf(annotationDao).getFilteredAnnotationIDs(3, "some html 1", null, after, before);
+                will(returnValue(mockAnnotationIDs1));
 
             }
         });
 
 
-        List result = dbDispatcher.getFilteredAnnotationIDs(null, "nl.wikipedia.org", "some html 1", 3, "owner", null, after, before);
+        List result = dbDispatcher.getFilteredAnnotationIDs(null, "Sagrada_Fam%C3%ADlia", "some html 1", 3, "owner", null, after, before);
         assertEquals(0, result.size());
     }
 
@@ -489,14 +459,7 @@ public class DBDispatcherTest {
     public void testGetFilteredAnnotationIDs4() throws NotInDataBaseException {
         System.out.println("test getFilteredAnnotationIDs");
 
-        final List<Number> mockTargetIDs = new ArrayList<Number>();
-        mockTargetIDs.add(1);
-        mockTargetIDs.add(2);
-
-        final List<Number> mockAnnotationIDs2 = new ArrayList<Number>();
-        mockAnnotationIDs2.add(1);
-        mockAnnotationIDs2.add(2);
-
+       
 
         final String after = (new Timestamp(0)).toString();
         final String before = (new Timestamp(System.currentTimeMillis())).toString();
@@ -529,7 +492,7 @@ public class DBDispatcherTest {
         TargetIDs.add(2);
         mockeryDao.checking(new Expectations() {
             {
-                oneOf(targetDao).retrieveTargetIDs(1);
+                oneOf(targetDao).getTargetIDs(1);
                 will(returnValue(TargetIDs));
 
                 oneOf(targetDao).getURIFromInternalID(1);
@@ -561,16 +524,11 @@ public class DBDispatcherTest {
     public void testGetFilteredAnnotationInfos() throws NotInDataBaseException {
         System.out.println("test getetFilteredAnnotationInfos");
 
-        final List<Number> mockTargetIDs = new ArrayList<Number>();
-        mockTargetIDs.add(1);
-        mockTargetIDs.add(2);
 
         final List<Number> mockAnnotationIDs1 = new ArrayList<Number>();
         mockAnnotationIDs1.add(1);
 
-        final List<Number> mockAnnotationIDs2 = new ArrayList<Number>();
-        mockAnnotationIDs2.add(1);
-        mockAnnotationIDs2.add(2);
+       
 
         final UUID ownerUUID = UUID.fromString("00000000-0000-0000-0000-000000000111");
         final String after = (new Timestamp(0)).toString();
@@ -583,15 +541,23 @@ public class DBDispatcherTest {
 
         final List<Number> mockAnnotationIDsRead = new ArrayList<Number>();
         mockAnnotationIDsRead.add(1);
-
-        final List<Number> mockAnnotationIDsWrite = new ArrayList<Number>();
-        mockAnnotationIDsWrite.add(2);
-
-        final List<Number> mockAnnotationIDsPublicRead = new ArrayList<Number>();
         mockAnnotationIDsRead.add(2);
+       
+        final List<Number> mockAnnotationIDsPublicRead = new ArrayList<Number>();
+        mockAnnotationIDsPublicRead.add(1);
+        mockAnnotationIDsPublicRead.add(2);
 
-        final List<Number> mockAnnotationIDsPublicWrite = new ArrayList<Number>();
-        mockAnnotationIDsWrite.add(1);
+        
+       
+        
+        final List<Number> mockTargets1 = new ArrayList<Number>();
+        mockTargets1.add(1);
+        mockTargets1.add(2);
+        
+        
+        final String link1 = "http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia";
+        final String link2 = "http://nl.wikipedia.org/wiki/Antoni_Gaud%C3%AD";
+        
 
         final AnnotationInfo mockAnnotInfo = new AnnotationInfo();
 
@@ -610,11 +576,7 @@ public class DBDispatcherTest {
                 oneOf(principalDao).getInternalID(ownerUUID);
                 will(returnValue(1));
 
-                oneOf(targetDao).getTargetsReferringTo("nl.wikipedia.org");
-                will(returnValue(mockTargetIDs));
-
-                oneOf(annotationDao).getAnnotationIDsForTargets(mockTargetIDs);
-                will(returnValue(mockAnnotationIDs2));
+             
 
                 oneOf(annotationDao).getFilteredAnnotationIDs(1, "some html 1", null, after, before);
                 will(returnValue(mockAnnotationIDs1));
@@ -624,16 +586,19 @@ public class DBDispatcherTest {
 
                 oneOf(annotationDao).getAnnotationIDsForPublicAccess(Access.READ);
                 will(returnValue(mockAnnotationIDsPublicRead));
-
-                oneOf(annotationDao).getAnnotationIDsForPermission(loggedIn, Access.WRITE);
-                will(returnValue(mockAnnotationIDsWrite));
-
-                oneOf(annotationDao).getAnnotationIDsForPublicAccess(Access.WRITE);
-                will(returnValue(mockAnnotationIDsPublicWrite));
+              
 
                 oneOf(annotationDao).getFilteredAnnotationIDs(loggedIn, null, null, null, null);
                 will(returnValue(mockAnnotationIDsOwned));
 
+                oneOf(targetDao).getTargetIDs(1);
+                will(returnValue(mockTargets1));
+                
+                oneOf(targetDao).getLink(1);
+                will(returnValue(link1));
+                
+                oneOf(targetDao).getLink(2);
+                will(returnValue(link2));
 
 //                ///////////////////////////////////
 //                
@@ -647,7 +612,7 @@ public class DBDispatcherTest {
                 will(returnValue(TestBackendConstants._TEST_SERVLET_URI_principals + "00000000-0000-0000-0000-000000000111"));
 
                 ////
-                oneOf(targetDao).retrieveTargetIDs(1);
+                oneOf(targetDao).getTargetIDs(1);
                 will(returnValue(targetIDs));
 
                 oneOf(targetDao).getURIFromInternalID(1);
@@ -689,7 +654,7 @@ public class DBDispatcherTest {
 
         mockeryDao.checking(new Expectations() {
             {
-                oneOf(targetDao).retrieveTargetIDs(3);
+                oneOf(targetDao).getTargetIDs(3);
                 will(returnValue(targetIDs));
 
                 oneOf(cachedRepresentationDao).getCachedRepresentationsForTarget(5);
@@ -1010,7 +975,7 @@ public class DBDispatcherTest {
                 oneOf(annotationDao).deleteAnnotationPermissions(2);
                 will(returnValue(2));
 
-                oneOf(targetDao).retrieveTargetIDs(2);
+                oneOf(targetDao).getTargetIDs(2);
                 will(returnValue(mockTargetIDs));
 
                 oneOf(annotationDao).deleteAllAnnotationTarget(2);

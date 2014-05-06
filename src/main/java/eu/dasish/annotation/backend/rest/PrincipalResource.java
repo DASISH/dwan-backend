@@ -46,6 +46,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.xml.bind.JAXBElement;
 import javax.xml.parsers.ParserConfigurationException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -77,8 +78,8 @@ public class PrincipalResource extends ResourceResource {
         Principal result = (Principal) (new RequestWrappers(this)).wrapRequestResource(params, new GetPrincipal());
         return (result != null) ? (new ObjectFactory().createPrincipal(result)) : (new ObjectFactory().createPrincipal(new Principal()));
     }
-    
-      private class GetPrincipal implements ILambda<Map, Principal> {
+
+    private class GetPrincipal implements ILambda<Map, Principal> {
 
         @Override
         public Principal apply(Map params) throws NotInDataBaseException {
@@ -86,9 +87,8 @@ public class PrincipalResource extends ResourceResource {
             return dbDispatcher.getPrincipal(principalID);
         }
     }
-      
-     /////////////////////////////////
 
+    /////////////////////////////////
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     @Path("admin")
@@ -100,8 +100,8 @@ public class PrincipalResource extends ResourceResource {
         }
         return "The admin of the server database " + dbDispatcher.getDataBaseAdmin().getDisplayName() + " is availiable via e-mail " + dbDispatcher.getDataBaseAdmin().getEMail();
     }
-    
-   /////////////////////////////////////////
+
+    /////////////////////////////////////////
     @GET
     @Produces(MediaType.TEXT_XML)
     @Path("info")
@@ -112,7 +112,6 @@ public class PrincipalResource extends ResourceResource {
         Principal result = (Principal) (new RequestWrappers(this)).wrapRequestResource(params, new GetPrincipalByInfo());
         return (result != null) ? (new ObjectFactory().createPrincipal(result)) : (new ObjectFactory().createPrincipal(new Principal()));
     }
-
 
     private class GetPrincipalByInfo implements ILambda<Map, Principal> {
 
@@ -134,8 +133,8 @@ public class PrincipalResource extends ResourceResource {
         CurrentPrincipalInfo result = (CurrentPrincipalInfo) (new RequestWrappers(this)).wrapRequestResource(params, new GetCurrentPrincipalInfo());
         return (result != null) ? (new ObjectFactory().createCurrentPrincipalInfo(result)) : (new ObjectFactory().createCurrentPrincipalInfo(new CurrentPrincipalInfo()));
     }
-    
-     private class GetCurrentPrincipalInfo implements ILambda<Map, CurrentPrincipalInfo> {
+
+    private class GetCurrentPrincipalInfo implements ILambda<Map, CurrentPrincipalInfo> {
 
         @Override
         public CurrentPrincipalInfo apply(Map params) throws NotInDataBaseException {
@@ -158,8 +157,14 @@ public class PrincipalResource extends ResourceResource {
         }
 
         if (dbDispatcher.getTypeOfPrincipalAccount(remotePrincipalID).equals(admin)) {
-            int result = dbDispatcher.addSpringUser(remoteId, password, shaStrength, remoteId);
-            return result + " record(s) has been added. Must be 2: 1 record for the principal, another for the authorities table.";
+            try {
+                int result = dbDispatcher.addSpringUser(remoteId, password, shaStrength, remoteId);
+                return result + " record(s) has been added. Must be 2: 1 record for the principal, another for the authorities table.";
+            } catch (DuplicateKeyException e) {
+                loggerServer.error(e.toString());
+                httpServletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                return e.toString();
+            }
         } else {
             this.ADMIN_RIGHTS_EXPECTED();
             httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
@@ -167,9 +172,8 @@ public class PrincipalResource extends ResourceResource {
         }
 
     }
-    
-    ///////////////////////////////////////
 
+    ///////////////////////////////////////
     @POST
     @Consumes(MediaType.APPLICATION_XML)
     @Produces(MediaType.APPLICATION_XML)
@@ -194,8 +198,8 @@ public class PrincipalResource extends ResourceResource {
         }
 
     }
-    
-      private class AddPrincipal implements ILambdaPrincipal<Map, Principal> {
+
+    private class AddPrincipal implements ILambdaPrincipal<Map, Principal> {
 
         @Override
         public Principal apply(Map params) throws NotInDataBaseException, PrincipalExists {
@@ -204,9 +208,7 @@ public class PrincipalResource extends ResourceResource {
         }
     }
 
-   
-   /////////////////////////////////////
-
+    /////////////////////////////////////
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_XML)
@@ -227,20 +229,22 @@ public class PrincipalResource extends ResourceResource {
         dbDispatcher.setServiceURI(uriInfo.getBaseUri().toString());
         return (new RequestWrappers(this)).wrapAddPrincipalRequest(params, new RegisterNonShibbolizedPrincipal());
     }
-    
+
     private class RegisterNonShibbolizedPrincipal implements ILambdaPrincipal<Map, Principal> {
 
         @Override
         public Principal apply(Map params) throws NotInDataBaseException, PrincipalExists {
-            final int updatedSpringTables = dbDispatcher.addSpringUser((String) params.get("remoteId"), (String) params.get("password"), (Integer) params.get("shaStrength"), (String) params.get("remoteId"));
-            final Number principalID = dbDispatcher.addPrincipal((Principal) params.get("newPrincipal"), (String) params.get("remoteId"));
-            return dbDispatcher.getPrincipal(principalID);
+            try {
+                final int updatedSpringTables = dbDispatcher.addSpringUser((String) params.get("remoteId"), (String) params.get("password"), (Integer) params.get("shaStrength"), (String) params.get("remoteId"));
+                final Number principalID = dbDispatcher.addPrincipal((Principal) params.get("newPrincipal"), (String) params.get("remoteId"));
+                return dbDispatcher.getPrincipal(principalID);
+            } catch (DuplicateKeyException e) {
+                throw new PrincipalExists(e);
+            }
         }
     }
 
-  
-   ///////////////////////////////////////////////
-
+    ///////////////////////////////////////////////
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_XML)
@@ -259,18 +263,22 @@ public class PrincipalResource extends ResourceResource {
         dbDispatcher.setServiceURI(uriInfo.getBaseUri().toString());
         return (new RequestWrappers(this)).wrapAddPrincipalRequest(params, new AddPrincipal());
     }
-    
-    ///////////////////////////////////////////////////
 
+    ///////////////////////////////////////////////////
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.TEXT_PLAIN)
     @Path("register/shibbolethasnonshibboleth")
     public String registerShibbolizedPrincipalAsNonShibb(@FormParam("remoteId") String remoteId, @FormParam("password") String password)
             throws IOException {
-        int result = dbDispatcher.addSpringUser(remoteId, password, shaStrength, remoteId);
-        return result + " record(s) has been added. Must be 2: 1 record for the principal, another for the authorities table.";
-
+        try {
+            int result = dbDispatcher.addSpringUser(remoteId, password, shaStrength, remoteId);
+            return result + " record(s) has been added. Must be 2: 1 record for the principal, another for the authorities table.";
+        } catch (DuplicateKeyException e) {
+            loggerServer.error(e.toString());
+            httpServletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            return e.toString();
+        }
     }
 
     @PUT
@@ -302,7 +310,7 @@ public class PrincipalResource extends ResourceResource {
     @Path("updateme")
     public JAXBElement<Principal> updatePrincipalFromForm(@FormParam("name") String name, @FormParam("email") String email)
             throws IOException {
-        
+
         Principal newPrincipal = new Principal();
         newPrincipal.setDisplayName(name);
         newPrincipal.setEMail(email);
@@ -311,22 +319,21 @@ public class PrincipalResource extends ResourceResource {
         Principal result = (Principal) (new RequestWrappers(this)).wrapRequestResource(params, new UpdatePrincipal());
         return (result != null) ? (new ObjectFactory().createPrincipal(result)) : (new ObjectFactory().createPrincipal(new Principal()));
     }
-    
-    
-     private class UpdatePrincipal implements ILambda<Map, Principal> {
+
+    private class UpdatePrincipal implements ILambda<Map, Principal> {
+
         @Override
         public Principal apply(Map params) throws NotInDataBaseException {
             Principal principal = (Principal) params.get("newPrincipal");
-            Number principalID = (Number) params.get("principalID");            
+            Number principalID = (Number) params.get("principalID");
             String uri = dbDispatcher.getResourceURI(principalID, Resource.PRINCIPAL);
             principal.setURI(uri);
             Number principalIDupd = dbDispatcher.updatePrincipal(principal);
             return dbDispatcher.getPrincipal(principalID);
         }
     }
-     
-     //////////////////////////////////////
 
+    //////////////////////////////////////
     @PUT
     @Produces(MediaType.TEXT_PLAIN)
     @Path("{externalId}/account/{accountType}")
@@ -393,5 +400,4 @@ public class PrincipalResource extends ResourceResource {
     private boolean ifLoggedIn(Number principalID) {
         return (httpServletRequest.getRemoteUser()).equals(dbDispatcher.getPrincipalRemoteID(principalID));
     }
-
 }
