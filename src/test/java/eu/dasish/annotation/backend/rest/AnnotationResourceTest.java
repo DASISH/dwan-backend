@@ -54,7 +54,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 @RunWith(value = SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = {"/spring-test-config/mockeryRest.xml", "/spring-test-config/mockDBDispatcher.xml",
     "/spring-test-config/mockUriInfo.xml",
-    "/spring-config/jaxbMarshallerFactory.xml"})
+    "/spring-config/jaxbMarshallerFactory.xml", "/spring-config/jaxbUnmarshallerFactory.xml"})
 public class AnnotationResourceTest {
 
     @Autowired
