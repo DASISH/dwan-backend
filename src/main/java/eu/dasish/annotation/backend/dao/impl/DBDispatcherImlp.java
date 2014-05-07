@@ -252,6 +252,7 @@ public class DBDispatcherImlp implements DBDispatcher {
                                             result.add(annotationID);
                                         }
                                     } catch (UnsupportedEncodingException e) {
+                                        logger.debug(e.toString());
                                     }
                                 }
                             }
