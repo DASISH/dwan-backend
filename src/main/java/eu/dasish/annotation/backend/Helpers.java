@@ -41,16 +41,44 @@ public class Helpers {
     //exception messages
     final static public String INVALID_BODY_EXCEPTION = "Invalide annotation body: both, text and xml options, are null.";
 
-    public static String replace(String text, Map<String, String> pairs) {
-        String result = (new StringBuilder(text)).toString();
-        for (String tempTarget : pairs.keySet()) {
-            if (tempTarget != null) {
-                if (!tempTarget.trim().equals("")) {
-                    result = result.replaceAll(tempTarget, pairs.get(tempTarget));
+    public static String replace(String text, Map<String, ?> pairs) {
+        StringBuilder result = new StringBuilder(text);
+        for (String old : pairs.keySet()) {
+            if (old != null) {
+                if (!old.equals("")) {
+                    replaceString(result, old, pairs.get(old));
                 }
             }
         }
-        return result;
+        return result.toString();
+    }
+
+    public static StringBuilder replaceString(StringBuilder source, String oldFragment, Object newObject) {
+        if (oldFragment != null) {
+            int lengthOld = oldFragment.length();
+            String newFragment;
+            if (newObject != null) {
+                if (newObject instanceof Integer) {
+                    newFragment = ((Integer) newObject).toString();
+                } else {
+                    if (newObject instanceof String) {
+                        newFragment = (String) newObject;
+                    } else {
+                        newFragment = newObject.toString();
+                    }
+                }
+            } else {
+                newFragment = " ";
+            }
+            int lengthNew = newFragment.length();
+            int indexOf = source.indexOf(oldFragment);
+            while (indexOf > 0) {
+                source.delete(indexOf, indexOf + lengthOld);
+                source.insert(indexOf, newFragment);
+                indexOf = source.indexOf(oldFragment, indexOf + lengthNew);
+            }
+        }
+        return source;
     }
 
     public static Element stringToElement(String string) throws ParserConfigurationException, IOException, SAXException {

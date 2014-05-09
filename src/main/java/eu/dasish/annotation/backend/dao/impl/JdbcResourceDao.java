@@ -17,6 +17,7 @@
  */
 package eu.dasish.annotation.backend.dao.impl;
 
+import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.dao.ResourceDao;
 import eu.dasish.annotation.schema.Access;
@@ -107,7 +108,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
 
     protected <T> List<T> loggedQuery(String sql, RowMapper<T> rm, Map<String, ?> args) {
         List<T> result = getSimpleJdbcTemplate().query(sql, rm, args);
-        String sqlStatement = replaceInString(sql, args);
+        String sqlStatement = Helpers.replace(sql, args);
         logger.debug("\n SQL query: " + sqlStatement + "\n");
         return result;
     }
@@ -125,7 +126,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
 
     protected int loggedUpdate(String sql, Map<String, ?> args) {
         int result = getSimpleJdbcTemplate().update(sql, args);
-        String sqlStatement = replaceInString(sql, args);
+        String sqlStatement = Helpers.replace(sql, args);
         logger.debug("\n SQL query: " + sqlStatement + "\n");
         return result;
     }
@@ -136,19 +137,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
         return result;
     }
 
-    private String replaceInString(String string, Map<String, ?> map) {
-        String result = (new StringBuilder(string)).toString();
-        Set<String> keys = map.keySet();
-        for (String key : keys) {
-            if (map.get(key) != null) {
-                result = result.replaceAll(":" + key, map.get(key).toString());
-            } else {
-                result = result.replaceAll(":" + key, "null!!");
-            }
-        }
-        return result;
-    }
-
+  
     private <T> String replaceQuestionmarkInString(String string, T arg) {
         String result = (new StringBuilder(string)).toString();
         CharSequence questionMark = "?";

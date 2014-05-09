@@ -46,6 +46,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -180,6 +181,7 @@ public class AnnotationsTest extends JerseyTest {
      * api/annotations/
      */
     @Test
+    @Ignore
     public void testCreateAnnotation() throws NotInDataBaseException, IOException{
         
           

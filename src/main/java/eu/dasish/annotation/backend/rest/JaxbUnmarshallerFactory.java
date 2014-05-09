@@ -17,19 +17,15 @@
  */
 package eu.dasish.annotation.backend.rest;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.URL;
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
 import javax.xml.bind.PropertyException;
 import javax.xml.bind.Unmarshaller;
-import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
 
 /**
  *
@@ -41,11 +37,10 @@ public class JaxbUnmarshallerFactory {
     private Unmarshaller unmarshaller;
     // overwritten by the web.xml's 
     // why?? se the bean
-    private static String schemaLocation = "https://svn.clarin.eu/DASISH/t5.6/schema/trunk/annotator-schema/src/main/resources/DASISH-schema.xsd";
+    private static String schemaLocation = null;
     private static final String W3C_XML_SCHEMA_NS_URI = "http://www.w3.org/2001/XMLSchema";
     private static Schema dwanSchema;
-    private final static Logger LOG = LoggerFactory.getLogger(JaxbUnmarshallerFactory.class);
-    private static Source schemaSource = null;
+    private static StreamSource schemaSource = null;
 
     public JaxbUnmarshallerFactory() throws Exception {
     }
@@ -58,34 +53,24 @@ public class JaxbUnmarshallerFactory {
         this.schemaLocation = schemaLocation;
     }
 
-    public Unmarshaller createUnmarshaller(Class<?> type) throws JAXBException {
+    public Unmarshaller createUnmarshaller(Class<?> type) throws Exception {
         context = JAXBContext.newInstance(type);
         unmarshaller = context.createUnmarshaller();
         if (dwanSchema == null) {
-            try {
-                FileInputStream inputStream = new FileInputStream("/Users/olhsha/repositories/DASISH/t5.6/schema/trunk/annotator-schema/src/main/resources/DASISH-schema.xsd");
-                schemaSource = new StreamSource(inputStream);
-                unmarshaller.setSchema(getDwanSchema());
-            } catch (FileNotFoundException e) {
-                LOG.info(e.toString());
-            }
+            unmarshaller.setSchema(getDwanSchema());
         } else {
             unmarshaller.setSchema(dwanSchema);
         }
         return unmarshaller;
     }
 
-    public static synchronized Schema getDwanSchema() {
-        try {
-            try {
-                SchemaFactory schemaFactory = SchemaFactory.newInstance(W3C_XML_SCHEMA_NS_URI);
-                dwanSchema = schemaFactory.newSchema(schemaSource);
-            } catch (SAXException e) {
-                LOG.error("Cannot instantiate schema", e);
-            }
-        } catch (NullPointerException e1) {
-            LOG.error("!!Exception", e1);
-        }
+    public static synchronized Schema getDwanSchema() throws Exception{
+
+        SchemaFactory schemaFactory = SchemaFactory.newInstance(W3C_XML_SCHEMA_NS_URI);
+        URL schemaURL = new URL(schemaLocation);
+        InputStreamReader is = new InputStreamReader(schemaURL.openStream());
+        schemaSource = new StreamSource(is);        
+        dwanSchema = schemaFactory.newSchema(schemaSource);
         return dwanSchema;
     }
 }
