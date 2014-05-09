@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -510,5 +511,27 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         assertEquals("text/plain", check.getBody().getTextBody().getMimeType());
         assertEquals("updated headline 1", check.getHeadline());
 
+    }
+    
+    @Test
+    public void helperReplaceString() {
+       System.out.println("test Helpers.ReplaceString"); 
+       StringBuilder source = new StringBuilder("va%?&b;v_wa%?&b;w");
+       String oldFragment = "a%?&b;";
+       String newFragment = ":;:";
+       Helpers.replaceString(source, oldFragment, (Object) newFragment);
+       assertEquals(source.toString(), "v:;:v_w:;:w");
+    }
+    
+     @Test
+    public void helperReplace() {
+       System.out.println("test Helpers.Replace"); 
+       String source = "va%?&b;v_xy:_wa%?&b;w";
+       Map<String, String> replacements = new HashMap<String,String>();
+       replacements.put("a%?&b;", ":;:");
+       replacements.put("xy:", ":yx");
+       replacements.put("", ":;:");
+       String sourceUPD = Helpers.replace(source, replacements);
+       assertEquals(sourceUPD, "v:;:v_:yx_w:;:w");
     }
 }

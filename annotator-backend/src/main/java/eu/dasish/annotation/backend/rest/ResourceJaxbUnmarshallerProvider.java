@@ -19,8 +19,9 @@ package eu.dasish.annotation.backend.rest;
 
 import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Provider;
-import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -34,6 +35,7 @@ public class ResourceJaxbUnmarshallerProvider implements ContextResolver<Unmarsh
 
     @Autowired
     private JaxbUnmarshallerFactory jaxbUnmarshallerFactory;
+    private Logger logger = LoggerFactory.getLogger(ResourceJaxbUnmarshallerProvider.class);
 
     /*
      * ------------------------
@@ -44,11 +46,13 @@ public class ResourceJaxbUnmarshallerProvider implements ContextResolver<Unmarsh
     public Unmarshaller getContext(Class<?> type) {
         try {
             return jaxbUnmarshallerFactory.createUnmarshaller(type);
-        
-        } catch (JAXBException e) {
-            System.out.println("Cannot create an unmarshaller for type " + type.getCanonicalName());
+        } catch (Exception e) {
+            logger.error(e.toString());
             return null;
         }
+        
     }
+    
+    
 }
 

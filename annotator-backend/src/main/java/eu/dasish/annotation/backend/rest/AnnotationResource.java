@@ -61,8 +61,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Path("/annotations")
 @Transactional(rollbackFor = {Exception.class})
 public class AnnotationResource extends ResourceResource {
-    
-    
 
     public void setUriInfo(UriInfo uriInfo) {
         this.uriInfo = uriInfo;
@@ -215,15 +213,18 @@ public class AnnotationResource extends ResourceResource {
     @Produces(MediaType.APPLICATION_XML)
     @Path("")
     public JAXBElement<ResponseBody> createAnnotation(Annotation annotation) throws IOException {
-        Map params = new HashMap();
-        params.put("annotation", annotation);
-        ResponseBody result = (ResponseBody) (new RequestWrappers(this)).wrapRequestResource(params, new AddAnnotation());
-        if (result != null) {
-            return (new ObjectFactory()).createResponseBody(result);
-        } else {
-            return (new ObjectFactory()).createResponseBody(new ResponseBody());
+
+            Map params = new HashMap();
+            params.put("annotation", annotation);
+            ResponseBody result = (ResponseBody) (new RequestWrappers(this)).wrapRequestResource(params, new AddAnnotation());
+            if (result != null) {
+                return (new ObjectFactory()).createResponseBody(result);
+            } else {
+                return (new ObjectFactory()).createResponseBody(new ResponseBody());
+            }
         }
-    }
+
+    
 
     private class AddAnnotation implements ILambda<Map, ResponseBody> {
 
@@ -303,7 +304,7 @@ public class AnnotationResource extends ResourceResource {
             return dbDispatcher.makeAnnotationResponseEnvelope(resourceID);
         }
     }
-    
+
     @PUT
     @Consumes(MediaType.TEXT_PLAIN)
     @Produces(MediaType.APPLICATION_XML)
@@ -414,6 +415,4 @@ public class AnnotationResource extends ResourceResource {
             @PathParam("principalId") String principalId) throws IOException {
         return genericUpdateDeleteAccess(annotationId, principalId, null);
     }
-    
-   
 }
