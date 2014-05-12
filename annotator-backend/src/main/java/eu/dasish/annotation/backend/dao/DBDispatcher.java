@@ -256,7 +256,7 @@ public interface DBDispatcher {
     
     int updatePublicAttribute(Number annotationID, Access publicAttribute);
     
-    int updatePrincipal(Principal principal) throws NotInDataBaseException;
+    Number updatePrincipal(Principal principal) throws NotInDataBaseException;
 
     
     int updateTargetCachedFragment(Number targetID, Number cachedID, String fragmentDescriptor) throws NotInDataBaseException;

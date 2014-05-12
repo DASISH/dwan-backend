@@ -179,7 +179,7 @@ public class CachedRepresentationResource extends ResourceResource {
      private class UpdateCachedMetadata implements ILambda<Map, Integer> {
         @Override
         public Integer apply(Map params) throws NotInDataBaseException {
-            CachedRepresentationInfo cachedInfo = (CachedRepresentationInfo) params.get("cachedInfo");
+            CachedRepresentationInfo cachedInfo = (CachedRepresentationInfo) params.get("info");
             return dbDispatcher.updateCachedMetada(cachedInfo);
         }
     }

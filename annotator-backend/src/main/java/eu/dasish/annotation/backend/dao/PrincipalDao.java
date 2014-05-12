@@ -54,7 +54,7 @@ public interface PrincipalDao extends ResourceDao{
      
      public boolean updateAccount(UUID externalID, String account) throws NotInDataBaseException;
      
-     public int updatePrincipal(Principal principal) throws NotInDataBaseException;
+     public Number updatePrincipal(Principal principal) throws NotInDataBaseException;
     
      public Number addPrincipal(Principal principal, String remoteID) throws NotInDataBaseException;
      

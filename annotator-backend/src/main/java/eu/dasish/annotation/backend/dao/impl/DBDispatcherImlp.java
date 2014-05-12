@@ -413,18 +413,22 @@ public class DBDispatcherImlp implements DBDispatcher {
     public Access getAccess(Number annotationID, Number principalID) {
         Access publicAttribute = annotationDao.getPublicAttribute(annotationID);
         Access access = annotationDao.getAccess(annotationID, principalID);
-        if (publicAttribute.equals(Access.NONE)) {
-            return access;
-        } else {
-            if (publicAttribute.equals(Access.READ)) {
-                if (access.equals(Access.NONE)) {
-                    return Access.READ;
-                } else {
-                    return access;
-                }
+        if (access != null) {
+            if (publicAttribute.equals(Access.NONE)) {
+                return access;
             } else {
-                return Access.WRITE;
+                if (publicAttribute.equals(Access.READ)) {
+                    if (access.equals(Access.NONE)) {
+                        return Access.READ;
+                    } else {
+                        return access;
+                    }
+                } else {
+                    return Access.WRITE;
+                }
             }
+        } else {
+            return publicAttribute;
         }
     }
 
@@ -601,16 +605,15 @@ public class DBDispatcherImlp implements DBDispatcher {
     @Override
     public int updateAnnotationPrincipalAccess(Number annotationID, Number principalID, Access access) {
         int result;
-        Access currentAccess = annotationDao.getAccess(annotationID, principalID);
-        if (currentAccess != Access.NONE) {
-            result = annotationDao.updateAnnotationPrincipalAccess(annotationID, principalID, access);
-        } else {
-            if (!access.equals(Access.NONE)) {
-                result = annotationDao.deleteAnnotationPrincipalAccess(annotationID, principalID);
-                result = annotationDao.addAnnotationPrincipalAccess(annotationID, principalID, access);
+        if (access != null) {
+            Access currentAccess = annotationDao.getAccess(annotationID, principalID);
+            if (currentAccess != null) {
+                result = annotationDao.updateAnnotationPrincipalAccess(annotationID, principalID, access);
             } else {
-                result = 0;
+                result = annotationDao.addAnnotationPrincipalAccess(annotationID, principalID, access);
             }
+        } else {
+            result = annotationDao.deleteAnnotationPrincipalAccess(annotationID, principalID);
         }
         return result;
     }
@@ -629,21 +632,21 @@ public class DBDispatcherImlp implements DBDispatcher {
             Number principalID = principalDao.getInternalIDFromURI(permission.getPrincipalRef());
             Access access = permission.getLevel();
             Access currentAccess = annotationDao.getAccess(annotationID, principalID);
-            if (!access.equals(currentAccess)) {
-                // then we need to update or psossibly add for none
-                if (!currentAccess.equals(Access.NONE)) {
+            if (currentAccess != null) {
+                if (!access.equals(currentAccess)) {
                     result = result + annotationDao.updateAnnotationPrincipalAccess(annotationID, principalID, access);
                 } else {
-                    annotationDao.deleteAnnotationPrincipalAccess(annotationID, principalID);
-                    result = result + annotationDao.addAnnotationPrincipalAccess(annotationID, principalID, access);
+                    result = 0;
                 }
+            } else {
+                result = result + annotationDao.addAnnotationPrincipalAccess(annotationID, principalID, access);
             }
+
         }
         return result;
     }
 // TODO: optimize (not chnanged targets should not be deleted)
 // TODO: unit test
-
     @Override
     public int updateAnnotation(Annotation annotation) throws NotInDataBaseException {
         Number annotationID = annotationDao.getInternalIDFromURI(annotation.getURI());
@@ -669,7 +672,7 @@ public class DBDispatcherImlp implements DBDispatcher {
     }
 
     @Override
-    public int updatePrincipal(Principal principal) throws NotInDataBaseException {
+    public Number updatePrincipal(Principal principal) throws NotInDataBaseException {
         return principalDao.updatePrincipal(principal);
     }
 

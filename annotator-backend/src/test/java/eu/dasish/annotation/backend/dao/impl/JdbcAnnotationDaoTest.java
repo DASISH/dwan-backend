@@ -363,7 +363,7 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         System.out.println("test getAccess");
         assertEquals(Access.READ, jdbcAnnotationDao.getAccess(1, 3));
         assertEquals(Access.WRITE, jdbcAnnotationDao.getAccess(2, 3));
-        assertEquals(Access.NONE, jdbcAnnotationDao.getAccess(3, 3));
+        assertEquals(null, jdbcAnnotationDao.getAccess(3, 3));
     }
 
     @Test
