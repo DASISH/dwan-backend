@@ -1775,11 +1775,8 @@ public class DBDispatcherTest {
                 will(returnValue(1));
 
                 oneOf(annotationDao).getAccess(1, 4);
-                will(returnValue(Access.NONE));
-
-                oneOf(annotationDao).deleteAnnotationPrincipalAccess(1, 4);
-                will(returnValue(0));
-
+                will(returnValue(null));
+                
                 oneOf(annotationDao).addAnnotationPrincipalAccess(1, 4, Access.WRITE);
                 will(returnValue(1));
 
@@ -1794,9 +1791,24 @@ public class DBDispatcherTest {
     public void testUpdatePermissions() throws NotInDataBaseException {
         System.out.println("test updatePermissions");
 
-        final Annotation annotation = (new TestInstances(TestBackendConstants._TEST_SERVLET_URI)).getAnnotationOne();
-        final PermissionList permissions = annotation.getPermissions();
+        final PermissionList permissions = new PermissionList();
+        
+        Permission permission2 = new Permission();
+        permission2.setPrincipalRef("ref2");
+        permission2.setLevel(Access.WRITE);
 
+        Permission permission3 = new Permission();
+        permission3.setPrincipalRef("ref3");
+        permission3.setLevel(Access.READ);
+              
+        Permission permission4 = new Permission();
+        permission4.setLevel(Access.READ);
+        permission4.setPrincipalRef("ref4");
+        
+        permissions.getPermission().add(permission2);
+        permissions.getPermission().add(permission3);
+        permissions.getPermission().add(permission4);        
+        permissions.setPublic(Access.WRITE);
 
         mockeryDao.checking(new Expectations() {
             {
@@ -1815,52 +1827,27 @@ public class DBDispatcherTest {
 
                 oneOf(annotationDao).getAccess(1, 3);
                 will(returnValue(Access.WRITE));
+                
+                oneOf(principalDao).getInternalIDFromURI(permissions.getPermission().get(2).getPrincipalRef());
+                will(returnValue(4));
+
+                oneOf(annotationDao).getAccess(1, 4);
+                will(returnValue(null));
 
                 oneOf(annotationDao).updateAnnotationPrincipalAccess(1, 3, Access.READ);
                 will(returnValue(1));
-
-            }
-        });
-
-        assertEquals(1, dbDispatcher.updatePermissions(1, permissions));
-
-    }
-
-    @Test
-    public void testUpdatePermissions2() throws NotInDataBaseException {
-        System.out.println("test updatePermissions 2");
-
-        final PermissionList permissions = new PermissionList();
-        permissions.setPublic(Access.READ);
-        Permission permission = new Permission();
-        permissions.getPermission().add(permission);
-        permission.setLevel(Access.WRITE);
-        permission.setPrincipalRef(TestBackendConstants._TEST_SERVLET_URI_principals + "00000000-0000-0000-0000-000000000220");
-
-        mockeryDao.checking(new Expectations() {
-            {
-                /////
-                oneOf(annotationDao).updatePublicAttribute(1, permissions.getPublic());
-                will(returnValue(1));
-
-                oneOf(principalDao).getInternalIDFromURI(permissions.getPermission().get(0).getPrincipalRef());
-                will(returnValue(10));
-
-                oneOf(annotationDao).getAccess(1, 10);
-                will(returnValue(Access.NONE));
-
-                oneOf(annotationDao).deleteAnnotationPrincipalAccess(1, 10);
-                will(returnValue(0));
-
-                oneOf(annotationDao).addAnnotationPrincipalAccess(1, 10, permissions.getPermission().get(0).getLevel());
+                
+                oneOf(annotationDao).addAnnotationPrincipalAccess(1, 4, Access.READ);
                 will(returnValue(1));
 
             }
         });
 
-        assertEquals(1, dbDispatcher.updatePermissions(1, permissions));
+        assertEquals(2, dbDispatcher.updatePermissions(1, permissions));
 
     }
+
+   
 
     @Test
     public void testUpdatePublicAttribute(){

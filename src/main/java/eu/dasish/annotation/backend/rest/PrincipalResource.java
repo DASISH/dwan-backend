@@ -292,7 +292,7 @@ public class PrincipalResource extends ResourceResource {
         }
         if (dbDispatcher.getTypeOfPrincipalAccount(remotePrincipalID).equals(admin)) {
             Map params = new HashMap<String, Object>();
-            params.put("principal", principal);
+            params.put("newPrincipal", principal);
             Principal result = (Principal) (new RequestWrappers(this)).wrapRequestResource(params, new UpdatePrincipal());
             return (result != null) ? (new ObjectFactory().createPrincipal(result)) : (new ObjectFactory().createPrincipal(new Principal()));
 
@@ -325,11 +325,8 @@ public class PrincipalResource extends ResourceResource {
         @Override
         public Principal apply(Map params) throws NotInDataBaseException {
             Principal principal = (Principal) params.get("newPrincipal");
-            Number principalID = (Number) params.get("principalID");
-            String uri = dbDispatcher.getResourceURI(principalID, Resource.PRINCIPAL);
-            principal.setURI(uri);
-            Number principalIDupd = dbDispatcher.updatePrincipal(principal);
-            return dbDispatcher.getPrincipal(principalID);
+            Number principalIDupd = dbDispatcher.updatePrincipal(principal);            
+            return dbDispatcher.getPrincipal(principalIDupd);
         }
     }
 

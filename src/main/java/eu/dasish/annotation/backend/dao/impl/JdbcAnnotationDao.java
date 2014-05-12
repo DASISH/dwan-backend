@@ -87,7 +87,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
                 append(principal_id).append("  = :principalId").append(" LIMIT 1");
         List<Access> result = this.loggedQuery(sql.toString(), accessRowMapper, params);
         if (result.isEmpty()) {
-            return Access.NONE;
+            return null;
         } else {
             return result.get(0);
         }

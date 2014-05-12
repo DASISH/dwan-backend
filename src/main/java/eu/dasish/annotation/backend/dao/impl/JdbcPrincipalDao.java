@@ -242,14 +242,15 @@ public class JdbcPrincipalDao extends JdbcResourceDao implements PrincipalDao {
     }
 
     @Override
-    public int updatePrincipal(Principal principal) throws NotInDataBaseException {
+    public Number updatePrincipal(Principal principal) throws NotInDataBaseException {
         Number principalID = this.getInternalIDFromURI(principal.getURI());
         StringBuilder sql = new StringBuilder("UPDATE ");
         sql.append(principalTableName).append(" SET ").
                 append(e_mail).append("= '").append(principal.getEMail()).append("',").
                 append(principal_name).append("= '").append(principal.getDisplayName()).append("' ").
                 append(" WHERE ").append(principal_id).append("= ?");
-        return this.loggedUpdate(sql.toString(), principalID);
+        int updatedRows = this.loggedUpdate(sql.toString(), principalID);
+        return principalID;
 
     }
 
