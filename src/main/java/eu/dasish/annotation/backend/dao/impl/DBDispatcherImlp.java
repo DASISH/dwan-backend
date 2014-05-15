@@ -210,17 +210,17 @@ public class DBDispatcherImlp implements DBDispatcher {
         List<Number> annotationIDs = annotationDao.getFilteredAnnotationIDs(ownerID, text, namespace, after, before);
 
 
-        // Filetring on accessMode
+        // Filetring on accessMode, the junction table
         if (annotationIDs != null) {
             if (!annotationIDs.isEmpty()) {
                 if (!accessMode.equals("owner")) {
                     Access access = Access.fromValue(accessMode);
                     List<Number> annotationIDsAccess = annotationDao.getAnnotationIDsForPermission(inloggedPrincipalID, access);
                     List<Number> annotationIDsPublic = annotationDao.getAnnotationIDsForPublicAccess(access);
-                    List<Number> annotationIDsOwned = annotationDao.getFilteredAnnotationIDs(inloggedPrincipalID, null, null, null, null);
+                    List<Number> annotationIDsOwned = annotationDao.getFilteredAnnotationIDs(inloggedPrincipalID, text, namespace, after, before);
                     int check1 = this.addAllNoRepetitions(annotationIDsAccess, annotationIDsPublic);
                     int check2 = this.addAllNoRepetitions(annotationIDsAccess, annotationIDsOwned);
-                    annotationIDs.retainAll(annotationIDsAccess);
+                    annotationIDs.retainAll(annotationIDsAccess);// intersection
                 }
             }
 
@@ -237,22 +237,27 @@ public class DBDispatcherImlp implements DBDispatcher {
         if (linkSubstring != null) {
             if (!linkSubstring.isEmpty()) {
                 if (annotationIDs != null) {
+                    String partiallyEncoded = this.encodeURLNoSlashEncoded(linkSubstring);
+                    String urlEncoded = null;
+                    try {
+                        urlEncoded = URLEncoder.encode(linkSubstring, "UTF-8");
+                    } catch (UnsupportedEncodingException e) {
+                        logger.debug(e.toString());
+                    }
+
                     List<Number> result = new ArrayList();
                     for (Number annotationID : annotationIDs) {
                         List<Number> targets = targetDao.getTargetIDs(annotationID);
                         for (Number targetID : targets) {
                             if (!result.contains(annotationID)) {
                                 String link = targetDao.getLink(targetID);
-                                if (link.contains(linkSubstring)) {
+                                if (link.contains(linkSubstring) || link.contains(partiallyEncoded)) {
                                     result.add(annotationID);
                                 } else {
-                                    try {
-                                        String urlEncoded = URLEncoder.encode(linkSubstring, "UTF-8");
+                                    if (urlEncoded != null) {
                                         if (link.contains(urlEncoded)) {
                                             result.add(annotationID);
                                         }
-                                    } catch (UnsupportedEncodingException e) {
-                                        logger.debug(e.toString());
                                     }
                                 }
                             }
@@ -283,6 +288,20 @@ public class DBDispatcherImlp implements DBDispatcher {
             }
         }
         return result;
+    }
+
+    private String encodeURLNoSlashEncoded(String string) {
+        String[] split = string.split("/");
+        StringBuilder result = new StringBuilder(split[0]);
+        for (int i = 1; i < split.length; i++) {
+            try {
+                result.append("/").append(URLEncoder.encode(split[i], "UTF-8"));
+            } catch (UnsupportedEncodingException e) {
+                result.append("/").append(split[i]);
+                logger.debug(e.toString());
+            }
+        }
+        return result.toString();
     }
 
     //////
@@ -647,6 +666,7 @@ public class DBDispatcherImlp implements DBDispatcher {
     }
 // TODO: optimize (not chnanged targets should not be deleted)
 // TODO: unit test
+
     @Override
     public int updateAnnotation(Annotation annotation) throws NotInDataBaseException {
         Number annotationID = annotationDao.getInternalIDFromURI(annotation.getURI());

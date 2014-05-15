@@ -21,8 +21,6 @@ import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.dao.TargetDao;
 import eu.dasish.annotation.schema.Target;
 import eu.dasish.annotation.schema.TargetInfo;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -43,8 +41,7 @@ import org.springframework.jdbc.core.RowMapper;
 public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
 
     private final Logger loggerTargetDao = LoggerFactory.getLogger(JdbcTargetDao.class);
-    private final String encoding = "ISO-8859-1";
-
+    
     public JdbcTargetDao(DataSource dataTarget) {
         setDataSource(dataTarget);
         internalIdName = target_id;

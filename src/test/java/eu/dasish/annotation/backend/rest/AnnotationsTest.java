@@ -181,7 +181,6 @@ public class AnnotationsTest extends JerseyTest {
      * api/annotations/
      */
     @Test
-    @Ignore
     public void testCreateAnnotation() throws NotInDataBaseException, IOException{
         
           
