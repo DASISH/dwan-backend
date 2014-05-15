@@ -24,4 +24,8 @@ March 18, 2014. The "bienvenue" page is created when a principal is successfully
 
 April 7/04. 1) Added automated generation of the default record for a shibollized principal, if his/her record not in DB yet. However, to customise the record, the principal has to ask the database admin.  2) Added attribute “public” to permission lists. The database is changed so that the column “public” is added to the table annotation. 3) Attribute and element banes, and the names of their values are simplified.  The corresponding tables and columns are renamed. 4) Using “null” as the intended value when a resource is not found is replaced with throwing an exception.
 
-April 11 2014. fixed bug: posting cached representations did now work. Added features: updating blob of the cached, updating its metadata, updating fragment connecting a target and its cached.
+April 11 2014. fixed bug: posting cached representations did now work. Added features: updating blob of the cached, updating its metadata, 
+updating fragment connecting a target and its cached.
+
+May 15, 2014. Added validation (via the schem on SCHEMAcat) of the xmls sent by client. Refactoring.
+fixing busg with escape symbols and URL encoding of them.

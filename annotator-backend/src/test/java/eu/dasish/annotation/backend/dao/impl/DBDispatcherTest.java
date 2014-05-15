@@ -304,7 +304,7 @@ public class DBDispatcherTest {
         mockAnnotationIDs1.add(1);
      
         final List<Number> mockAnnotationIDsOwned = new ArrayList<Number>();
-        mockAnnotationIDsOwned.add(3);
+        //mockAnnotationIDsOwned.add(3);
 
         final List<Number> mockAnnotationIDsRead = new ArrayList<Number>();
         mockAnnotationIDsRead.add(1);
@@ -341,7 +341,7 @@ public class DBDispatcherTest {
                 oneOf(annotationDao).getAnnotationIDsForPublicAccess(Access.READ);
                 will(returnValue(mockAnnotationIDsPublicRead));               
 
-                oneOf(annotationDao).getFilteredAnnotationIDs(loggedIn, null, null, null, null);
+                oneOf(annotationDao).getFilteredAnnotationIDs(loggedIn, "some html 1", null, after, before);
                 will(returnValue(mockAnnotationIDsOwned));
                 
                 oneOf(targetDao).getTargetIDs(1);
@@ -373,7 +373,7 @@ public class DBDispatcherTest {
 
      
         final List<Number> mockAnnotationIDsOwned = new ArrayList<Number>();
-        mockAnnotationIDsOwned.add(3);
+        //mockAnnotationIDsOwned.add(3);
 
         final List<Number> mockAnnotationIDsWrite = new ArrayList<Number>();
         mockAnnotationIDsWrite.add(2);
@@ -408,7 +408,7 @@ public class DBDispatcherTest {
                 oneOf(annotationDao).getAnnotationIDsForPublicAccess(Access.WRITE);
                 will(returnValue(mockAnnotationIDsPublicWrite));               
 
-                oneOf(annotationDao).getFilteredAnnotationIDs(loggedIn, null, null, null, null);
+                oneOf(annotationDao).getFilteredAnnotationIDs(loggedIn, "some html 1", null, after, before);
                 will(returnValue(mockAnnotationIDsOwned));
                 
                 oneOf(targetDao).getTargetIDs(1);
@@ -537,7 +537,7 @@ public class DBDispatcherTest {
 
 
         final List<Number> mockAnnotationIDsOwned = new ArrayList<Number>();
-        mockAnnotationIDsOwned.add(3);
+        //mockAnnotationIDsOwned.add(3);
 
         final List<Number> mockAnnotationIDsRead = new ArrayList<Number>();
         mockAnnotationIDsRead.add(1);
@@ -577,7 +577,6 @@ public class DBDispatcherTest {
                 will(returnValue(1));
 
              
-
                 oneOf(annotationDao).getFilteredAnnotationIDs(1, "some html 1", null, after, before);
                 will(returnValue(mockAnnotationIDs1));
 
@@ -588,7 +587,7 @@ public class DBDispatcherTest {
                 will(returnValue(mockAnnotationIDsPublicRead));
               
 
-                oneOf(annotationDao).getFilteredAnnotationIDs(loggedIn, null, null, null, null);
+                oneOf(annotationDao).getFilteredAnnotationIDs(3, "some html 1", null, after, before);
                 will(returnValue(mockAnnotationIDsOwned));
 
                 oneOf(targetDao).getTargetIDs(1);

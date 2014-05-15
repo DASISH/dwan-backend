@@ -46,8 +46,8 @@ see implementation details http://jersey.java.net/nonav/documentation/latest/jax
     <context-param>
         <param-name>eu.dasish.annotation.backend.logout</param-name>
 <!--        <param-value>/ds/webannotator?shhaaDo=lO</param-value>-->
-<!--       <param-value>/ds/webannotator/j_spring_security_logout</param-value>-->
-         <param-value>/annotator-backend/j_spring_security_logout</param-value>
+        <param-value>/ds/webannotator/j_spring_security_logout</param-value>
+ <!--       <param-value>/annotator-backend/j_spring_security_logout</param-value> -->
     </context-param>
     
     
@@ -106,7 +106,7 @@ see implementation details http://jersey.java.net/nonav/documentation/latest/jax
         <role-name>tomcat</role-name>
     </security-role> -->
    
- <!-- Spring security -->
+    <!-- Spring security -->
     <filter>
         <filter-name>springSecurityFilterChain</filter-name>
         <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
