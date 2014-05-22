@@ -310,7 +310,7 @@ public class PrincipalResource extends ResourceResource {
     @Path("updateme")
     public JAXBElement<Principal> updatePrincipalFromForm(@FormParam("name") String name, @FormParam("email") String email)
             throws IOException {
-
+        
         Principal newPrincipal = new Principal();
         newPrincipal.setDisplayName(name);
         newPrincipal.setEMail(email);
@@ -325,6 +325,9 @@ public class PrincipalResource extends ResourceResource {
         @Override
         public Principal apply(Map params) throws NotInDataBaseException {
             Principal principal = (Principal) params.get("newPrincipal");
+            Number principalID = (Number) params.get("principalID");
+            String principalURI = dbDispatcher.getResourceURI(principalID, Resource.PRINCIPAL);
+            principal.setURI(principalURI);
             Number principalIDupd = dbDispatcher.updatePrincipal(principal);            
             return dbDispatcher.getPrincipal(principalIDupd);
         }

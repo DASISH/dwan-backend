@@ -18,6 +18,7 @@
 package eu.dasish.annotation.backend.rest;
 
 import eu.dasish.annotation.backend.Helpers;
+import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.schema.ObjectFactory;
 import eu.dasish.annotation.schema.Principal;
 import java.io.IOException;
@@ -40,8 +41,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(rollbackFor = {Exception.class, IOException.class, ParserConfigurationException.class})
 public class AutheticationResource extends ResourceResource {
 
-  
-
     @GET
     @Produces(MediaType.TEXT_XML)
     @Path("principal")
@@ -63,7 +62,13 @@ public class AutheticationResource extends ResourceResource {
     @Path("login")
     @Transactional(readOnly = true)
     public String login() {
-        return Helpers.welcomeString(uriInfo.getBaseUri().toString() + "..");
+        try {
+            Number principalID = this.getPrincipalID();
+            String remoteID = dbDispatcher.getPrincipalRemoteID(principalID);
+            return Helpers.welcomeString(uriInfo.getBaseUri().toString() + "..", remoteID);
+        } catch (IOException e) {
+            return e.getMessage();
+        }
     }
 
     @GET
@@ -72,8 +77,6 @@ public class AutheticationResource extends ResourceResource {
     @Transactional(readOnly = true)
     public void logout() throws IOException, ServletException {
         httpServletRequest.getSession().invalidate();
-        httpServletResponse.sendRedirect(context.getInitParameter("eu.dasish.annotation.backend.logout"));
+        httpServletResponse.sendRedirect(uriInfo.getBaseUri().toString() + ".."+context.getInitParameter("eu.dasish.annotation.backend.logout"));
     }
-    
-   
 }

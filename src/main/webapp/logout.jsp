@@ -24,6 +24,6 @@
     </head>
     <body>
      You are logged out.<br>
-     <a href="api/.."> To DWAN's main test page.</a>
+     <a href="api/.."> To DWAN's jsp test page.</a>
     </body>
 </html>

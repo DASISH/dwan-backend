@@ -23,20 +23,20 @@
         <p><a href="api/myresource">Jersey resource</a>
         <p><a href="https://trac.clarin.eu/wiki/DASISH/SpecificationDocument#RESTAPI">https://trac.clarin.eu/wiki/DASISH/SpecificationDocument#RESTAPI</a></p>
         <br>
-        <h3>You are not necessarily logged in.</h3>
+        <h3>Services for which you do not need to be logged-in</h3>
         <br> 
         <a href="registerNonShibbolethPrincipal.html"> Register a non-shibboleth user</a> <br> 
         <br> 
         <a href="registerShibbolethPrincipal.html"> Register a shibboleth user</a> <br> 
-        <br>
+<!--        <br>
         <a href="registerShibbolethAlsoAsNonShibboleth.html"> Register an existing  shibboleth user as a non-shibboleth as well.</a> <br> 
-        <br>
+        <br>-->
         <br>
         <a href="api/authentication/login"> login  </a> <br> 
          <br> 
          
         <br>
-        <h3>You are logged in. </h3>
+        <h3>Services for which you need to be logged in</h3>
         <br> 
         <a href="api/authentication/logout"> logout</a> <br> 
         <br> 
@@ -48,20 +48,22 @@
         GET <a href="api/authentication/principal">api/authentication/principal</a> <br> 
         GET <a href="api/principals/admin">api/principals/admin</a><br> 
         GET <a href="api/principals/00000000-0000-0000-0000-0000000000112">api/principals/00000000-0000-0000-0000-0000000000112</a> <br> 
-        GET <a href="api/principals/00000000-0000-0000-0000-0000000000112/current">api/principals/00000000-0000-0000-0000-0000000000112/current</a>  !Problem: how to ask the servlet if the given user is logged in, may be by some other running somewhere client<br> 
+        GET <a href="api/principals/00000000-0000-0000-0000-0000000000112/current">api/principals/00000000-0000-0000-0000-0000000000112/current</a><br>  
+<!--        !Problem: how to ask the servlet if the given user is logged in, may be by some other running somewhere client<br> -->
         GET <a href="api/principals/info?email=Twan.Goosen@mpi.nl">api/principals/info?email=Twan.Goosen@mpi.nl</a>  <br>
         GET <a href="api/annotations?link=Sagrada_Fam%C3%ADlia">api/annotations?link=Sagrada_Fam%C3%ADlia</a>  <br>
         GET <a href="api/annotations?link=Antoni_Gaud%C3%AD">api/annotations?link=Antoni_Gaud%C3%AD</a>  <br>
-        GET <a href="api/annotations?after=2014-02-04 15:57:58.046908&before=2014-04-06 10:08:16.213186">api/annotations?after=2014-02-04 15:57:58.046908&before=2014-04-06 10:08:16.213186</a> 
-        !Comment: What is "namespace" query parameter? Must be implemented and tested <br>
+        GET <a href="api/annotations?after=2014-02-04 15:57:58.046908&before=2014-04-06 10:08:16.213186">api/annotations?after=2014-02-04 15:57:58.046908&before=2014-04-06 10:08:16.213186</a><br> 
+<!--        !Comment: What is "namespace" query parameter? Must be implemented and tested <br>-->
         GET <a href="api/annotations/00000000-0000-0000-0000-000000000022">api/annotations/00000000-0000-0000-0000-000000000022</a>  </br>
         GET <a href="api/annotations/00000000-0000-0000-0000-000000000022/targets">api/annotations/00000000-0000-0000-0000-000000000022/targets</a>  </br>
         GET <a href="api/annotations/00000000-0000-0000-0000-000000000022/permissions">api/annotations/00000000-0000-0000-0000-000000000022/permissions</a><br>
         GET <a href="api/targets/00000000-0000-0000-0000-000000000032">api/targets/00000000-0000-0000-0000-000000000032</a>  <br>
         GET <a href="api/targets/00000000-0000-0000-0000-000000000032/versions">api/targets/00000000-0000-0000-0000-000000000032/versions</a>   <br>
-        GET <a href="api/cached/00000000-0000-0000-0000-000000000051/metadata">api/cached/00000000-0000-0000-0000-000000000051/metadata</a><br>
+        GET <a href="api/cached/654809f6-1202-4073-86b8-a1f6fe0f2409/metadata">api/cached/654809f6-1202-4073-86b8-a1f6fe0f2409/metadata</a><br>
+        GET <a href="api/cached/654809f6-1202-4073-86b8-a1f6fe0f2409/stream">api/cached/654809f6-1202-4073-86b8-a1f6fe0f2409/stream</a><br> 
         GET <a href="api/cached/00000000-0000-0000-0000-000000000051/content">api/cached/00000000-0000-0000-0000-000000000051/content</a><br> 
-        GET <a href="api/cached/00000000-0000-0000-0000-000000000511/stream">api/cached/00000000-0000-0000-0000-000000000511/stream</a> 
+        
         
         <br> 
         <br>
