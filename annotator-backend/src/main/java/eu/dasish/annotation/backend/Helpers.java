@@ -97,9 +97,10 @@ public class Helpers {
         return result;
     }
 
-    public static String welcomeString(String baseUri) {
+    public static String welcomeString(String baseUri, String remoteID) {
         String welcome = "<!DOCTYPE html><body>"
-                + "You are logged in.<br>"
+                + "You are logged in as "
+                + remoteID + ".<br>"
                 + "<h3>Welcome to DASISH Webannotator (DWAN)</h3><br>"
                 + "<a href=\"" + baseUri + "\"> To DWAN's test jsp page</a>"
                 + "</body>";

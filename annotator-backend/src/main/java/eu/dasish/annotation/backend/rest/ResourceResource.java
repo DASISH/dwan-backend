@@ -61,12 +61,12 @@ public class ResourceResource<T> {
         dbDispatcher.setServiceURI(uriInfo.getBaseUri().toString());
         String remotePrincipal = httpServletRequest.getRemoteUser();
         if (remotePrincipal != null) {
-            if (!remotePrincipal.equals("anonymous")) {
+            if (!remotePrincipal.equals(anonym)) {
                 try {
                     return dbDispatcher.getPrincipalInternalIDFromRemoteID(remotePrincipal);
                 } catch (NotInDataBaseException e) {
                     loggerServer.info(e.toString());
-                    loggerServer.info("The record for the user with the Shibboleth id " + remotePrincipal + " will be generated now automatically.");
+                    loggerServer.info("The record for the user with the id " + remotePrincipal + " will be generated now automatically.");
                     try {
                         try {
                             Principal newPrincipal = Helpers.createPrincipalElement(remotePrincipal, remotePrincipal);

@@ -35,7 +35,13 @@ public class WelcomeResource extends ResourceResource{
     @GET
     @Produces(MediaType.TEXT_HTML)
     @Path("")
-    public String login() {
-        return Helpers.welcomeString(uriInfo.getBaseUri().toString() + "..");
+    public String status() {
+        String remotePrincipal= httpServletRequest.getRemoteUser();
+        if (remotePrincipal != null) {
+        return Helpers.welcomeString(uriInfo.getBaseUri().toString() + "..",remotePrincipal);
+        }
+        else {
+           return Helpers.welcomeString(uriInfo.getBaseUri().toString() + "..", "null-principal"); 
+        }
     } 
 }
