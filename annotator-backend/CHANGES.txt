@@ -29,3 +29,7 @@ updating fragment connecting a target and its cached.
 
 May 15, 2014. Added validation (via the schem on SCHEMAcat) of the xmls sent by client. Refactoring.
 fixing busg with escape symbols and URL encoding of them.
+
+May 22, 2014. Resored automated prinicpal record generation for a fresh shibbolized user, update
+principal is fixed (both issues have appeared after eralier refactoring). Jsp pages are updated,
+dynamical logout adress is generated.

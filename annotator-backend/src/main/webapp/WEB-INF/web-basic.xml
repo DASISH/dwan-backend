@@ -117,6 +117,6 @@ see implementation details http://jersey.java.net/nonav/documentation/latest/jax
         <filter-name>springSecurityFilterChain</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
-    
-  </web-app>  
        
+</web-app>
+

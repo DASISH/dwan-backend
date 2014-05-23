@@ -45,11 +45,11 @@ see implementation details http://jersey.java.net/nonav/documentation/latest/jax
     </context-param>
     <context-param>
         <param-name>eu.dasish.annotation.backend.isShibbolethSession</param-name>
-        <param-value>false</param-value>
+        <param-value>true</param-value>
     </context-param>
     <context-param>
         <param-name>eu.dasish.annotation.backend.logout</param-name>
-        <param-value>/j_spring_security_logout</param-value> 
+        <param-value>?shhaaDo=lO</param-value>
     </context-param>
     
     
@@ -84,39 +84,19 @@ see implementation details http://jersey.java.net/nonav/documentation/latest/jax
         <url-pattern>/webresources/*</url-pattern>
     </servlet-mapping>
     
-    <!--   <security-constraint>
-        <display-name>Protected backend localhost</display-name>
-        <web-resource-collection>
-            <web-resource-name> Protected backend rest service</web-resource-name>
-            <description />
-            <url-pattern>/*</url-pattern> 
-            <http-method>GET</http-method>
-            <http-method>DELETE</http-method>
-            <http-method>PUT</http-method>
-            <http-method>POST</http-method>
-        </web-resource-collection>
-        <auth-constraint>
-            <role-name>tomcat</role-name>
-        </auth-constraint>
-    </security-constraint>
-    <login-config>
-        <auth-method>BASIC</auth-method>
-    </login-config>
-    <security-role>
-        <description> The role that is required to log in to the Application
-        </description>
-        <role-name>tomcat</role-name>
-    </security-role> -->
-   
-    <!-- Spring security -->
-    <filter>
-        <filter-name>springSecurityFilterChain</filter-name>
-        <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+    
+    
+       
+    <!--  Shibboleth filter -->
+   <filter>
+        <filter-name>AAIFilter</filter-name>
+        <filter-class>de.mpg.aai.shhaa.AuthFilter</filter-class>
     </filter>
     <filter-mapping>
-        <filter-name>springSecurityFilterChain</filter-name>
+        <filter-name>AAIFilter</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
     
-  </web-app>  
-       
+   
+</web-app>
+

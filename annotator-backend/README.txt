@@ -21,7 +21,7 @@ https://trac.clarin.eu/wiki/DASISH/XSD%20and%20XML
 
 === Logging in ===
 
-Shibbolized authentication is implemented for lux16 and lux17, and basic tomcat works for localhost.
+Authentication is possible for lux16 and lux17 for 2 settings: vi ashibboleth and as spring basic.
 
 
 === License ===
