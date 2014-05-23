@@ -77,6 +77,9 @@ public class AutheticationResource extends ResourceResource {
     @Transactional(readOnly = true)
     public void logout() throws IOException, ServletException {
         httpServletRequest.getSession().invalidate();
-        httpServletResponse.sendRedirect(uriInfo.getBaseUri().toString() + ".."+context.getInitParameter("eu.dasish.annotation.backend.logout"));
+        boolean isShibboleth = Boolean.parseBoolean(context.getInitParameter("eu.dasish.annotation.backend.isShibbolethSession"));
+        String redirect = isShibboleth ? context.getInitParameter("eu.dasish.annotation.backend.logout") : 
+                uriInfo.getBaseUri().toString() + ".."+context.getInitParameter("eu.dasish.annotation.backend.logout");        
+        httpServletResponse.sendRedirect(redirect);
     }
 }
