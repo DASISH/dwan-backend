@@ -21,7 +21,6 @@ import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.Resource;
 import eu.dasish.annotation.backend.ResourceAction;
 import eu.dasish.annotation.backend.dao.DBDispatcher;
-import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.TestInstances;
 import eu.dasish.annotation.schema.Access;
 import eu.dasish.annotation.schema.Action;
@@ -44,7 +43,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.net.URI;
 import java.util.UUID;
-import javax.ws.rs.core.UriInfo;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 /**
@@ -53,16 +51,13 @@ import org.springframework.mock.web.MockHttpServletRequest;
  */
 @RunWith(value = SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = {"/spring-test-config/mockeryRest.xml", "/spring-test-config/mockDBDispatcher.xml",
-    "/spring-test-config/mockUriInfo.xml",
     "/spring-config/jaxbMarshallerFactory.xml", "/spring-config/jaxbUnmarshallerFactory.xml"})
 public class AnnotationResourceTest {
 
     @Autowired
     private Mockery mockeryRest;
     @Autowired
-    private DBDispatcher mockDbDispatcher;
-    @Autowired
-    UriInfo mockUriInfo;
+    private DBDispatcher mockDbDispatcher;    
     @Autowired
     private AnnotationResource annotationResource;
     private MockHttpServletRequest mockRequest;
@@ -72,7 +67,7 @@ public class AnnotationResourceTest {
     }
 
 //    public Number getPrincipalID() throws IOException {
-//        dbIntegrityService.setServiceURI(uriInfo.getBaseUri().toString());
+//        dbIntegrityService.setServiceURI(this.getRelativeServiceURI());
 //        verboseOutput = new VerboseOutput(httpServletResponse, loggerServer);
 //        String remotePrincipal = httpServletRequest.getRemotePrincipal();
 //        if (remotePrincipal != null) {
@@ -94,19 +89,15 @@ public class AnnotationResourceTest {
     public void testGetAnnotation() throws NotInDataBaseException, IOException {
         System.out.println("getAnnotation");
         final String externalIDstring = "00000000-0000-0000-0000-000000000021";
-        final Annotation expectedAnnotation = (new TestInstances(null)).getAnnotationOne();
+        final Annotation expectedAnnotation = (new TestInstances("/api")).getAnnotationOne();
         annotationResource.setHttpServletRequest(mockRequest);
-        annotationResource.setUriInfo(mockUriInfo);
         mockRequest.setRemoteUser("olhsha@mpi.nl");
-
-        final URI baseUri = URI.create(TestBackendConstants._TEST_SERVLET_URI);
-
+        mockRequest.setContextPath("/backend");
+        mockRequest.setServletPath("/api");
         mockeryRest.checking(new Expectations() {
             {
-                oneOf(mockUriInfo).getBaseUri();
-                will(returnValue(baseUri));
-
-                oneOf(mockDbDispatcher).setServiceURI(baseUri.toString());
+                
+                oneOf(mockDbDispatcher).setResourcesPaths("/backend/api");
 
                 oneOf(mockDbDispatcher).getPrincipalInternalIDFromRemoteID("olhsha@mpi.nl");
                 will(returnValue(3));
@@ -142,18 +133,13 @@ public class AnnotationResourceTest {
         mockDelete[3] = 1; // # deletd Targets, 4
 
         annotationResource.setHttpServletRequest(mockRequest);
-        annotationResource.setUriInfo(mockUriInfo);
         mockRequest.setRemoteUser("olhsha@mpi.nl");
-
-        final URI baseUri = URI.create(TestBackendConstants._TEST_SERVLET_URI);
-
-
+        mockRequest.setContextPath("/backend");
+        mockRequest.setServletPath("/api");
+        
         mockeryRest.checking(new Expectations() {
             {
-                oneOf(mockUriInfo).getBaseUri();
-                will(returnValue(baseUri));
-
-                oneOf(mockDbDispatcher).setServiceURI(baseUri.toString());
+                oneOf(mockDbDispatcher).setResourcesPaths("/backend/api");
 
                 oneOf(mockDbDispatcher).getPrincipalInternalIDFromRemoteID("olhsha@mpi.nl");
                 will(returnValue(3));
@@ -185,13 +171,15 @@ public class AnnotationResourceTest {
     public void testCreateAnnotation() throws IOException, NotInDataBaseException {
         System.out.println("test createAnnotation");
 
-        final Annotation annotationToAdd = (new TestInstances(TestBackendConstants._TEST_SERVLET_URI)).getAnnotationToAdd();
+        final Annotation annotationToAdd = (new TestInstances("/api")).getAnnotationToAdd();
         final Number newAnnotationID = 5;
 
 
         final Annotation addedAnnotation = (new ObjectFactory()).createAnnotation(annotationToAdd).getValue();
-        addedAnnotation.setURI("http://localhost:8080/annotator-backend/api/annotations/" + UUID.randomUUID().toString());
-        addedAnnotation.setOwnerRef("http://localhost:8080/annotator-backend/api/principals/" + "00000000-0000-0000-0000-000000000113");
+        String externalId = UUID.randomUUID().toString();
+        addedAnnotation.setId(externalId);
+        addedAnnotation.setHref("/backend/api/annotations/" + externalId);
+        addedAnnotation.setOwnerHref("/backend/api/principals/00000000-0000-0000-0000-000000000113");
 
         final ResponseBody mockEnvelope = new ResponseBody();
         final Action action = new Action();
@@ -200,22 +188,16 @@ public class AnnotationResourceTest {
         mockEnvelope.setActionList(actionList);
         actionList.getAction().add(action);
         action.setMessage(AnnotationActionName.CREATE_CACHED_REPRESENTATION.value());
-        action.setObject("http://localhost:8080/annotator-backend/api/targets/00000000-0000-0000-0000-000000000036");
+        action.setObject("/backend/api/targets/00000000-0000-0000-0000-000000000036");
 
         annotationResource.setHttpServletRequest(mockRequest);
-        annotationResource.setUriInfo(mockUriInfo);
         mockRequest.setRemoteUser("olhsha@mpi.nl");
-        final URI baseUri = URI.create(TestBackendConstants._TEST_SERVLET_URI);
-
-//        final List<String> targets = new ArrayList<String>();
-//        targets.add("http://localhost:8080/annotator-backend/api/targets/00000000-0000-0000-0000-000000000036");
-
+         mockRequest.setContextPath("/backend");
+        mockRequest.setServletPath("/api");
         mockeryRest.checking(new Expectations() {
             {
-                oneOf(mockUriInfo).getBaseUri();
-                will(returnValue(baseUri));
-
-                oneOf(mockDbDispatcher).setServiceURI(baseUri.toString());
+               
+                oneOf(mockDbDispatcher).setResourcesPaths("/backend/api");
 
                 oneOf(mockDbDispatcher).getPrincipalInternalIDFromRemoteID("olhsha@mpi.nl");
                 will(returnValue(3));
@@ -237,8 +219,9 @@ public class AnnotationResourceTest {
         JAXBElement<ResponseBody> result = annotationResource.createAnnotation(annotationToAdd);
         Annotation newAnnotation = result.getValue().getAnnotation();
         String actionName = result.getValue().getActionList().getAction().get(0).getMessage();
-        assertEquals(addedAnnotation.getOwnerRef(), newAnnotation.getOwnerRef());
-        assertEquals(addedAnnotation.getURI(), newAnnotation.getURI());
+        assertEquals(addedAnnotation.getOwnerHref(), newAnnotation.getOwnerHref());
+        assertEquals(addedAnnotation.getId(), newAnnotation.getId());
+        assertEquals(addedAnnotation.getHref(), newAnnotation.getHref());
         assertEquals(addedAnnotation.getHeadline(), newAnnotation.getHeadline());
         assertEquals(addedAnnotation.getTargets(), newAnnotation.getTargets());
         assertEquals(addedAnnotation.getLastModified(), newAnnotation.getLastModified());
@@ -251,7 +234,7 @@ public class AnnotationResourceTest {
     public void testUpdateAnnotation() throws NotInDataBaseException, IOException{
         System.out.println("test updateAnnotation");
 
-        final Annotation annotation = (new TestInstances(TestBackendConstants._TEST_SERVLET_URI)).getAnnotationOne();
+        final Annotation annotation = (new TestInstances("/backend/api")).getAnnotationOne();
         annotation.getPermissions().setPublic(Access.READ);
         annotation.setHeadline("updated annotation 1");
         annotation.getPermissions().getPermission().get(1).setLevel(Access.WRITE);
@@ -268,10 +251,9 @@ public class AnnotationResourceTest {
         mockEnvelope.setActionList(actionList);
 
         annotationResource.setHttpServletRequest(mockRequest);
-        annotationResource.setUriInfo(mockUriInfo);
         mockRequest.setRemoteUser("twagoo@mpi.nl");
-        final URI baseUri = URI.create(TestBackendConstants._TEST_SERVLET_URI);
-
+        mockRequest.setContextPath("/backend");
+        mockRequest.setServletPath("/api");
         final UUID externalId = UUID.fromString("00000000-0000-0000-0000-000000000021");
 
         //  Number annotationID = dbIntegrityService.getResourceInternalIdentifier(UUID.fromString(externalIdentifier), Resource.ANNOTATION);
@@ -282,17 +264,11 @@ public class AnnotationResourceTest {
 
         mockeryRest.checking(new Expectations() {
             {
-                oneOf(mockUriInfo).getBaseUri();
-                will(returnValue(baseUri));
-
-                oneOf(mockDbDispatcher).setServiceURI(baseUri.toString());
+                oneOf(mockDbDispatcher).setResourcesPaths("/backend/api");
 
                 oneOf(mockDbDispatcher).getPrincipalInternalIDFromRemoteID("twagoo@mpi.nl");
-                will(returnValue(1));
-                
-                oneOf(mockUriInfo).getBaseUri();
-                will(returnValue(baseUri));
-
+                will(returnValue(1));                
+               
                 oneOf(mockDbDispatcher).getResourceInternalIdentifier(externalId, Resource.ANNOTATION);
                 will(returnValue(1));
                 
@@ -315,8 +291,9 @@ public class AnnotationResourceTest {
 
         JAXBElement<ResponseBody> result = annotationResource.updateAnnotation("00000000-0000-0000-0000-000000000021", annotation);
         Annotation newAnnotation = result.getValue().getAnnotation();
-        assertEquals(annotation.getOwnerRef(), newAnnotation.getOwnerRef());
-        assertEquals(annotation.getURI(), newAnnotation.getURI());
+        assertEquals(annotation.getOwnerHref(), newAnnotation.getOwnerHref());
+        assertEquals(annotation.getId(), newAnnotation.getId());
+        assertEquals(annotation.getHref(), newAnnotation.getHref());
         assertEquals("updated annotation 1", newAnnotation.getHeadline());
         assertEquals("text/plain", newAnnotation.getBody().getTextBody().getMimeType());
         assertEquals("some text body l", newAnnotation.getBody().getTextBody().getBody());
@@ -328,7 +305,7 @@ public class AnnotationResourceTest {
     public void testUpdateAnnotationBody() throws NotInDataBaseException, IOException{
         System.out.println("test updateAnnotationBody");
 
-        Annotation annotation = (new TestInstances(TestBackendConstants._TEST_SERVLET_URI)).getAnnotationOne();
+        Annotation annotation = (new TestInstances("/backend/api")).getAnnotationOne();
         
         final AnnotationBody ab = new AnnotationBody();
         TextBody tb = new TextBody();
@@ -343,10 +320,9 @@ public class AnnotationResourceTest {
         mockEnvelope.setActionList(actionList);
 
         annotationResource.setHttpServletRequest(mockRequest);
-        annotationResource.setUriInfo(mockUriInfo);
         mockRequest.setRemoteUser("twagoo@mpi.nl");
-        final URI baseUri = URI.create(TestBackendConstants._TEST_SERVLET_URI);
-
+        mockRequest.setContextPath("/backend");
+        mockRequest.setServletPath("/api");
         final UUID externalId = UUID.fromString("00000000-0000-0000-0000-000000000021");
 
       
@@ -357,10 +333,8 @@ public class AnnotationResourceTest {
        
         mockeryRest.checking(new Expectations() {
             {
-                oneOf(mockUriInfo).getBaseUri();
-                will(returnValue(baseUri));
-
-                oneOf(mockDbDispatcher).setServiceURI(baseUri.toString());
+               
+                oneOf(mockDbDispatcher).setResourcesPaths("/backend/api");
 
                 oneOf(mockDbDispatcher).getPrincipalInternalIDFromRemoteID("twagoo@mpi.nl");
                 will(returnValue(1));
@@ -394,7 +368,7 @@ public class AnnotationResourceTest {
     public void testUpdateAnnotationHeadline() throws NotInDataBaseException, IOException{
         System.out.println("test updateAnnotationHeadline");
 
-        Annotation annotation = (new TestInstances(TestBackendConstants._TEST_SERVLET_URI)).getAnnotationOne();
+        Annotation annotation = (new TestInstances("/api")).getAnnotationOne();
         
         final String newHeadline = "new Headline";        
         annotation.setHeadline(newHeadline);
@@ -405,19 +379,15 @@ public class AnnotationResourceTest {
         mockEnvelope.setActionList(actionList);
 
         annotationResource.setHttpServletRequest(mockRequest);
-        annotationResource.setUriInfo(mockUriInfo);
         mockRequest.setRemoteUser("twagoo@mpi.nl");
-        final URI baseUri = URI.create(TestBackendConstants._TEST_SERVLET_URI);
-
+        mockRequest.setContextPath("/backend");
+        mockRequest.setServletPath("/api");
         final UUID externalId = UUID.fromString("00000000-0000-0000-0000-000000000021");
 
      
         mockeryRest.checking(new Expectations() {
             {
-                oneOf(mockUriInfo).getBaseUri();
-                will(returnValue(baseUri));
-
-                oneOf(mockDbDispatcher).setServiceURI(baseUri.toString());
+                 oneOf(mockDbDispatcher).setResourcesPaths("/backend/api");
 
                 oneOf(mockDbDispatcher).getPrincipalInternalIDFromRemoteID("twagoo@mpi.nl");
                 will(returnValue(1));

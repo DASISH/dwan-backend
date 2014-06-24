@@ -37,7 +37,6 @@ import javax.xml.bind.JAXBElement;
  */
 public class RequestWrappers<T> {
 
-    
     private ResourceResource resourceResource;
     private String _internalID = "internalID";
     private String _principalID = "principalID";
@@ -67,28 +66,22 @@ public class RequestWrappers<T> {
         }
     }
 
-    public T wrapRequestResource(Map params, ILambda<Map, T> dbRequestor, Resource resource, ResourceAction action, String externalId, boolean isUri) throws IOException {
+    public T wrapRequestResource(Map params, ILambda<Map, T> dbRequestor, Resource resource, ResourceAction action, String externalId) throws IOException {
         Number principalID = resourceResource.getPrincipalID();
         if (principalID == null) {
             return null;
         }
         params.put(_principalID, principalID);
         try {
-            final Number resourceID;
-            if (isUri) {
-                resourceID = resourceResource.dbDispatcher.getResourceInternalIdentifierFromURI(externalId, resource);
-                params.put(_externalId,  resourceResource.dbDispatcher.getResourceExternalIdentifier(resourceID, resource).toString());
-            } else {
-                resourceID = resourceResource.dbDispatcher.getResourceInternalIdentifier(UUID.fromString(externalId), resource);
-                params.put(_externalId, externalId);
-            }
+            final Number resourceID = resourceResource.dbDispatcher.getResourceInternalIdentifier(UUID.fromString(externalId), resource);
             if (resourceResource.dbDispatcher.canDo(action, principalID, resourceID, resource)) {
+                params.put(_externalId, externalId);            
                 params.put(_internalID, resourceID);
                 params.put(_resourceType, resource);
                 return dbRequestor.apply(params);
             } else {
                 this.FORBIDDEN_RESOURCE_ACTION(externalId, resource.name(), action.name());
-                resourceResource.loggerServer.debug("Principal "+resourceResource.dbDispatcher.getResourceExternalIdentifier(principalID, Resource.PRINCIPAL)+" cannot "+action.name()+" "+resource.name()+" with the id "+externalId);
+                resourceResource.loggerServer.debug("Principal " + resourceResource.dbDispatcher.getResourceExternalIdentifier(principalID, Resource.PRINCIPAL) + " cannot " + action.name() + " " + resource.name() + " with the id " + externalId);
                 resourceResource.httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
                 return null;
             }

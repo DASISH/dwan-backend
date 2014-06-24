@@ -64,7 +64,7 @@ public class NotebookResource extends ResourceResource {
     @Path("")
     @Transactional(readOnly = true)
     public JAXBElement<NotebookInfoList> getNotebookInfos(@QueryParam("access") String accessMode) throws IOException {
-        dbDispatcher.setServiceURI(uriInfo.getBaseUri().toString());
+        dbDispatcher.setResourcesPaths(this.getRelativeServiceURI());
         Number remotePrincipalID = this.getPrincipalID();
         if (accessMode.equalsIgnoreCase("read") || accessMode.equalsIgnoreCase("write")) {
             NotebookInfoList notebookInfos = dbDispatcher.getNotebooks(remotePrincipalID, Access.fromValue(accessMode));
@@ -187,9 +187,9 @@ public class NotebookResource extends ResourceResource {
         if (remotePrincipalID == null) {
             return new ObjectFactory().createResponseBody(new ResponseBody());
         }
-        String path = uriInfo.getBaseUri().toString();
-        String notebookURI = notebookInfo.getRef();
-        if (!(path + "notebook/" + externalIdentifier).equals(notebookURI)) {
+        String path = this.getRelativeServiceURI();
+        String notebookURI = notebookInfo.getHref();
+        if (!(path + "/notebooks/" + externalIdentifier).equals(notebookURI)) {
             httpServletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return new ObjectFactory().createResponseBody(new ResponseBody());
         };

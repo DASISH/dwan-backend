@@ -78,7 +78,7 @@ public class TargetResource extends ResourceResource {
     @Transactional(readOnly = true)
     public JAXBElement<Target> getTarget(@PathParam("targetid") String externalIdentifier) throws IOException {
         Map params = new HashMap();
-        Target result = (Target) (new RequestWrappers(this)).wrapRequestResource(params, new GetTarget(), Resource.TARGET, ResourceAction.READ, externalIdentifier, false);
+        Target result = (Target) (new RequestWrappers(this)).wrapRequestResource(params, new GetTarget(), Resource.TARGET, ResourceAction.READ, externalIdentifier);
         if (result != null) {
             return new ObjectFactory().createTarget(result);
         } else {
@@ -102,7 +102,7 @@ public class TargetResource extends ResourceResource {
     @Transactional(readOnly = true)
     public JAXBElement<ReferenceList> getSiblingTargets(@PathParam("targetid") String externalIdentifier) throws HTTPException, IOException {
         Map params = new HashMap();
-        ReferenceList result = (ReferenceList) (new RequestWrappers(this)).wrapRequestResource(params, new GetSiblingTargets(), Resource.TARGET, ResourceAction.READ, externalIdentifier, false);
+        ReferenceList result = (ReferenceList) (new RequestWrappers(this)).wrapRequestResource(params, new GetSiblingTargets(), Resource.TARGET, ResourceAction.READ, externalIdentifier);
         if (result != null) {
             return new ObjectFactory().createReferenceList(result);
         } else {
@@ -134,7 +134,7 @@ public class TargetResource extends ResourceResource {
         params.put("cachedBlob", bpe.getInputStream());
         params.put("fragmentDescriptor", fragmentDescriptor);
         
-        CachedRepresentationInfo result = (CachedRepresentationInfo) (new RequestWrappers(this)).wrapRequestResource(params, new PostCached(), Resource.TARGET, ResourceAction.WRITE_W_METAINFO, targetIdentifier, false);
+        CachedRepresentationInfo result = (CachedRepresentationInfo) (new RequestWrappers(this)).wrapRequestResource(params, new PostCached(), Resource.TARGET, ResourceAction.WRITE_W_METAINFO, targetIdentifier);
         if (result != null) {
             return new ObjectFactory().createCashedRepresentationInfo(result);
         } else {

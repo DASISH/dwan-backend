@@ -19,7 +19,6 @@ package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.NotInDataBaseException;
-import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.TestInstances;
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.Access;
@@ -56,20 +55,20 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
 
     @Autowired
     JdbcAnnotationDao jdbcAnnotationDao;
-    TestInstances testInstances = new TestInstances(TestBackendConstants._TEST_SERVLET_URI);
+    TestInstances testInstances = new TestInstances("/api");
 
     /**
      * Test of stringURItoExternalID method public String
      * stringURItoExternalID(String uri);
      */
     @Test
-    public void testStringURItoExternalID() {
+    public void testHrefToExternalID() {
         System.out.println("test stringURItoExternalID");
-        jdbcAnnotationDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_annotations);
+        jdbcAnnotationDao.setResourcePath("/api/annotations/");
         String randomUUID = UUID.randomUUID().toString();
-        String uri = TestBackendConstants._TEST_SERVLET_URI_annotations + randomUUID;
-        String externalID = jdbcAnnotationDao.stringURItoExternalID(uri);
-        assertEquals(randomUUID, externalID);
+        String uri = "/api/annotations/" + randomUUID;
+        String uuid = jdbcAnnotationDao.hrefToExternalID(uri);
+        assertEquals(randomUUID, uuid);
     }
 
     /**
@@ -77,12 +76,12 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
      * externalID);
      */
     @Test
-    public void testExternalIDtoURI() {
-        System.out.println("test stringURItoExternalID");
-        jdbcAnnotationDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_annotations);
+    public void testExternalIDtoHref() {
+        System.out.println("test externalIDtoHref");
+        jdbcAnnotationDao.setResourcePath("/api/annotations/");
         String randomUUID = UUID.randomUUID().toString();
-        String uri = TestBackendConstants._TEST_SERVLET_URI_annotations + randomUUID;
-        String uriResult = jdbcAnnotationDao.externalIDtoURI(randomUUID);
+        String uri = "/api/annotations/" + randomUUID;
+        String uriResult = jdbcAnnotationDao.externalIDtoHref(randomUUID);
         assertEquals(uri, uriResult);
     }
 
@@ -146,12 +145,12 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         annotIds.add(2);
         annotIds.add(3);
 
-        jdbcAnnotationDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_annotations);
+        jdbcAnnotationDao.setResourcePath("/api/annotations/");
         final List<String> testList = jdbcAnnotationDao.getAnnotationREFs(annotIds);
         assertEquals(3, testList.size());
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI_annotations + "00000000-0000-0000-0000-000000000021", testList.get(0));
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI_annotations + "00000000-0000-0000-0000-000000000022", testList.get(1));
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI_annotations + "00000000-0000-0000-0000-000000000023", testList.get(2));
+        assertEquals("/api/annotations/00000000-0000-0000-0000-000000000021", testList.get(0));
+        assertEquals("/api/annotations/00000000-0000-0000-0000-000000000022", testList.get(1));
+        assertEquals("/api/annotations/00000000-0000-0000-0000-000000000023", testList.get(2));
 
         final List<String> testListTwo = jdbcAnnotationDao.getAnnotationREFs(new ArrayList<Number>());
         assertEquals(0, testListTwo.size());
@@ -184,12 +183,13 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
      * getInternalIDFromURI(UUID externalID);
      */
     @Test
-    public void testGetInternalIDFRomURI() throws NotInDataBaseException {
-        System.out.println("test getInternalIDFromURI");
-        jdbcAnnotationDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_annotations);
-        String uri = TestBackendConstants._TEST_SERVLET_URI_annotations + "00000000-0000-0000-0000-000000000021";
-        Number result = jdbcAnnotationDao.getInternalIDFromURI(uri);
+    public void testGetInternalIDFRomHref() throws NotInDataBaseException {
+        System.out.println("test getInternalIDFromHref");
+        jdbcAnnotationDao.setResourcePath("/api/annotations/");
+        String uri = "/api/annotations/00000000-0000-0000-0000-000000000021";
+        Number result = jdbcAnnotationDao.getInternalIDFromHref(uri);
         assertEquals(1, result.intValue());
+        assertEquals(1, result);
     }
 
     /**
@@ -200,14 +200,14 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
     @Test
     public void getAnnotationWithoutTargetsAndPermisions() throws DatatypeConfigurationException {
         System.out.println("test getAnnotationWithoutTargetsAndPermissions");
-        jdbcAnnotationDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_annotations);
+        jdbcAnnotationDao.setResourcePath("/api/annotations/");
         final Annotation result = jdbcAnnotationDao.getAnnotationWithoutTargetsAndPemissions(1);
 
         assertEquals("Sagrada Famiglia", result.getHeadline());
         assertEquals("<html><body>some html 1</body></html>", result.getBody().getTextBody().getBody());
         assertEquals("text/html", result.getBody().getTextBody().getMimeType());
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI_annotations
-                + "00000000-0000-0000-0000-000000000021", result.getURI());
+        assertEquals("00000000-0000-0000-0000-000000000021", result.getId());
+        assertEquals("/api/annotations/00000000-0000-0000-0000-000000000021", result.getHref());
         assertEquals(DatatypeFactory.newInstance().newXMLGregorianCalendar("2013-08-12T09:25:00.383000Z"), result.getLastModified());
     }
 
@@ -237,17 +237,15 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
     @Test
     public void testAddAnnotation() throws SQLException, Exception {
         System.out.println("test_addAnnotation ");
-
+        jdbcAnnotationDao.setResourcePath("/api/annotations/");
         final Annotation annotationToAdd = testInstances.getAnnotationToAdd();// existing Targets
-        assertEquals(null, annotationToAdd.getURI());
-        assertEquals(null, annotationToAdd.getLastModified());
-
+        
         Number newAnnotationID = jdbcAnnotationDao.addAnnotation(annotationToAdd, 3);
         assertEquals(5, newAnnotationID);
 
         // checking
         Annotation addedAnnotation = jdbcAnnotationDao.getAnnotationWithoutTargetsAndPemissions(5);
-        assertFalse(null == addedAnnotation.getURI());
+        assertEquals(addedAnnotation.getHref(), "/api/annotations/"+addedAnnotation.getId());
         assertFalse(null == addedAnnotation.getLastModified());
         assertEquals(annotationToAdd.getBody().getTextBody().getMimeType(), addedAnnotation.getBody().getTextBody().getMimeType());
         assertEquals(annotationToAdd.getBody().getTextBody().getBody(), addedAnnotation.getBody().getTextBody().getBody());
@@ -392,12 +390,11 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
     @Test
     public void testGetAnnotationInfoWithoutTargetsAndOwner() throws DatatypeConfigurationException {
         System.out.println("test getAnnotationInfoWithoutTargets");
-        jdbcAnnotationDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_annotations);
+        jdbcAnnotationDao.setResourcePath("/api/annotations/");
         final AnnotationInfo result = jdbcAnnotationDao.getAnnotationInfoWithoutTargetsAndOwner(1);
 
         assertEquals("Sagrada Famiglia", result.getHeadline());
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI_annotations
-                + "00000000-0000-0000-0000-000000000021", result.getRef());
+        assertEquals("/api/annotations/00000000-0000-0000-0000-000000000021", result.getHref());
         assertEquals(DatatypeFactory.newInstance().newXMLGregorianCalendar("2013-08-12T09:25:00.383000Z"), result.getLastModified());
     }
 
@@ -495,14 +492,14 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
     @Test
     public void testUpdateAnnotation() {
         System.out.println("test UpdateAnnotation");
-        jdbcAnnotationDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_annotations);
+        jdbcAnnotationDao.setResourcePath("/api/annotations/");
         
         Annotation annotation = testInstances.getAnnotationOne();
         annotation.setHeadline("updated headline 1");
         annotation.getBody().getTextBody().setBody("updated some html 1");
         annotation.getBody().getTextBody().setMimeType("text/plain");
 
-        System.out.println(annotation.getURI());
+        
         int result = jdbcAnnotationDao.updateAnnotation(annotation,1, 1);
         assertEquals(1, result);
         System.out.println(" annotation updated");
@@ -510,7 +507,8 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         assertEquals("updated some html 1", check.getBody().getTextBody().getBody());
         assertEquals("text/plain", check.getBody().getTextBody().getMimeType());
         assertEquals("updated headline 1", check.getHeadline());
-
+        assertEquals("/api/annotations/00000000-0000-0000-0000-000000000021", check.getHref());
+        assertEquals("00000000-0000-0000-0000-000000000021", check.getId());
     }
     
     @Test

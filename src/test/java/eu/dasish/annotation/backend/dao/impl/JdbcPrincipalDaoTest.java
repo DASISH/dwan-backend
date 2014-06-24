@@ -17,10 +17,9 @@
  */
 package eu.dasish.annotation.backend.dao.impl;
 
-import eu.dasish.annotation.backend.Helpers;
+
 import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.PrincipalCannotBeDeleted;
-import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.TestInstances;
 import eu.dasish.annotation.schema.Access;
 import eu.dasish.annotation.schema.Principal;
@@ -44,19 +43,18 @@ public class JdbcPrincipalDaoTest extends JdbcResourceDaoTest {
 
     @Autowired
     JdbcPrincipalDao jdbcPrincipalDao;
-    TestInstances testInstances = new TestInstances(TestBackendConstants._TEST_SERVLET_URI);
     
      /**
      * Test of stringURItoExternalID method
      * public String stringURItoExternalID(String uri);
      */
     @Test
-    public void testStringURItoExternalID() {
-        System.out.println("test stringURItoExternalID");
-        jdbcPrincipalDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_principals);
+    public void testHrefToExternalID() {
+        System.out.println("test hrefToExternalID");
+        jdbcPrincipalDao.setResourcePath("/api/principals/");
         String randomUUID = UUID.randomUUID().toString();
-        String uri = TestBackendConstants._TEST_SERVLET_URI_principals + randomUUID;
-        String externalID = jdbcPrincipalDao.stringURItoExternalID(uri);
+        String uri = "/api/principals/" + randomUUID;
+        String externalID = jdbcPrincipalDao.hrefToExternalID(uri).toString();
         assertEquals(randomUUID, externalID);
     }
     
@@ -67,10 +65,10 @@ public class JdbcPrincipalDaoTest extends JdbcResourceDaoTest {
     @Test
     public void testExternalIDtoURI() {
         System.out.println("test stringURItoExternalID");
-        jdbcPrincipalDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_principals);
+        jdbcPrincipalDao.setResourcePath("/api/principals/");
         String randomUUID = UUID.randomUUID().toString();
-        String uri = TestBackendConstants._TEST_SERVLET_URI_principals+randomUUID;
-        String uriResult = jdbcPrincipalDao.externalIDtoURI(randomUUID);
+        String uri = "/api/principals/"+randomUUID;
+        String uriResult = jdbcPrincipalDao.externalIDtoHref(randomUUID);
         assertEquals(uri, uriResult);
     }
 
@@ -97,25 +95,25 @@ public class JdbcPrincipalDaoTest extends JdbcResourceDaoTest {
      */
     @Test
     public void testGetExternalID() {
-        UUID testOne = jdbcPrincipalDao.getExternalID(3);
-        assertEquals("00000000-0000-0000-0000-000000000113", testOne.toString());
+        assertEquals("00000000-0000-0000-0000-000000000113", jdbcPrincipalDao.getExternalID(3).toString());
 
     }
 
     @Test
     public void testGetPrincipal() {
         System.out.println("test getPrincipal");
-        jdbcPrincipalDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_principals);
+        jdbcPrincipalDao.setResourcePath("/api/principals/");
         Principal result = jdbcPrincipalDao.getPrincipal(1);
         assertEquals("Twan", result.getDisplayName());
         assertEquals("Twan.Goosen@mpi.nl", result.getEMail());
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI_principals+"00000000-0000-0000-0000-000000000111", result.getURI());
+        assertEquals("/api/principals/00000000-0000-0000-0000-000000000111", result.getHref());
+        assertEquals("00000000-0000-0000-0000-000000000111", result.getId());
     }
 
     @Test
     public void testAddPrincipal() throws NotInDataBaseException{
         System.out.println("test addPrincipal");
-        jdbcPrincipalDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_principals);
+        jdbcPrincipalDao.setResourcePath("/api/principals/");
         String freshPrincipalName = "Guilherme";
         String freshPrincipalEmail = "guisil@mpi.nl";
 
@@ -128,13 +126,14 @@ public class JdbcPrincipalDaoTest extends JdbcResourceDaoTest {
         Principal addedPrincipal = jdbcPrincipalDao.getPrincipal(result);
         assertEquals(freshPrincipalName, addedPrincipal.getDisplayName());
         assertEquals(freshPrincipalEmail, addedPrincipal.getEMail());
-        assertFalse(null == jdbcPrincipalDao.stringURItoExternalID(addedPrincipal.getURI()));
+        assertEquals(addedPrincipal.getHref(), "/api/principals/"+addedPrincipal.getId());
+        
     }
 
     @Test
     public void testDeletePrincipal() throws PrincipalCannotBeDeleted{
         System.out.println("test deletePrincipal");
-        jdbcPrincipalDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_principals);
+        jdbcPrincipalDao.setResourcePath("/api/principals/");
 
         int result = jdbcPrincipalDao.deletePrincipal(10);
         assertEquals(1, result);
@@ -151,8 +150,7 @@ public class JdbcPrincipalDaoTest extends JdbcResourceDaoTest {
 
     @Test
     public void tesPrincipalExists() {
-        System.out.println("test principalExists");
-        //jdbcPrincipalDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_principals);        
+        System.out.println("test principalExists");      
         assertEquals(false,jdbcPrincipalDao.principalExists("guisil@mpi.nl"));       
         assertTrue(jdbcPrincipalDao.principalExists("olhsha@mpi.nl"));
     }
@@ -169,15 +167,15 @@ public class JdbcPrincipalDaoTest extends JdbcResourceDaoTest {
         List result = jdbcPrincipalDao.getPrincipalIDsWithAccessForNotebook(1, Access.WRITE);
         assertEquals(expResult, result);
     }
-    
-   @Test
-   public void generateHashes() {
-        System.out.println("*****"); 
-        System.out.println("generate hashes");
-        System.out.println(Helpers.hashPswd("1234", 512, "olhsha@mpi.nl"));
-        System.out.println(Helpers.hashPswd("5678", 512, "olasei@mpi.nl"));
-        System.out.println("*****");
-        
-    }
+//    
+//   @Test
+//   public void generateHashes() {
+//        System.out.println("*****"); 
+//        System.out.println("generate hashes");
+//        System.out.println(Helpers.hashPswd("1234", 512, "olhsha@mpi.nl"));
+//        System.out.println(Helpers.hashPswd("5678", 512, "olasei@mpi.nl"));
+//        System.out.println("*****");
+//        
+//    }
 
 }

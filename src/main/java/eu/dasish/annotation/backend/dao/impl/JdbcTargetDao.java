@@ -49,8 +49,8 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
     }
 
     @Override
-    public void setServiceURI(String serviceURI) {
-        _serviceURI = serviceURI;
+    public void setResourcePath(String relResourcePath) {
+        _relResourcePath = relResourcePath;
     }
 
     //////////////////////// GETTERS ///////////////////////////////////
@@ -239,7 +239,7 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
     /////////// HELPERS  ////////////////
     private TargetInfo constructTargetInfo(String externalID, String link, String version, String fragment) {
         TargetInfo targetInfo = new TargetInfo();
-        targetInfo.setRef(externalIDtoURI(externalID));
+        targetInfo.setHref(externalIDtoHref(externalID));
         targetInfo.setLink(((new StringBuilder(link)).append("#").append(fragment)).toString());
         targetInfo.setVersion(version);
         return targetInfo;
@@ -247,7 +247,8 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
 
     private Target constructTarget(String externalID, String link, String version, XMLGregorianCalendar xmlTimeStamp, String fragment) {
         Target target = new Target();
-        target.setURI(externalIDtoURI(externalID));
+        target.setId(externalID);
+        target.setHref(externalIDtoHref(externalID));
         target.setLastModified(xmlTimeStamp);
         if (fragment != null) {
             target.setLink(((new StringBuilder(link)).append("#").append(fragment)).toString());

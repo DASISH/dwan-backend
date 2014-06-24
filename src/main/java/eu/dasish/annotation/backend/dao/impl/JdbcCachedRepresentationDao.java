@@ -50,8 +50,8 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
     }
 
     @Override
-    public void setServiceURI(String serviceURI) {
-        _serviceURI = serviceURI;
+    public void setResourcePath(String relResourcePath) {
+        _relResourcePath = relResourcePath;
     }
 
     /////////////////////////// GETTERS  ////////////////////////////////////////
@@ -67,7 +67,9 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
         public CachedRepresentationInfo mapRow(ResultSet rs, int rowNumber) throws SQLException {
             CachedRepresentationInfo result = new CachedRepresentationInfo();
             result.setMimeType(rs.getString(mime_type));
-            result.setURI(externalIDtoURI(rs.getString(external_id)));
+            String externalId = rs.getString(external_id);
+            result.setId(externalId);
+            result.setHref(externalIDtoHref(externalId));
             result.setTool(rs.getString(tool));
             result.setType(rs.getString(type_));
             return result;

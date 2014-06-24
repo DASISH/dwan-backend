@@ -69,7 +69,7 @@ public class AnnotationsTest extends JerseyTest {
     @Autowired
     private JdbcTemplate jdbcTemplate;
     
-    
+    String _relativePath = "/backend/api";
     
     
     @Override
@@ -80,6 +80,7 @@ public class AnnotationsTest extends JerseyTest {
                 .addFilter(DummySecurityFilter.class, "DummySecurityFilter")
                 .requestListenerClass(RequestContextListener.class)
                 .contextListenerClass(ContextLoaderListener.class)
+                .contextPath("/backend").servletPath("/api")
                 .build();
         
     }
@@ -100,6 +101,7 @@ public class AnnotationsTest extends JerseyTest {
         // consume the DashishAnnotatorCreate sql script to create the database
         jdbcTemplate.execute(JdbcResourceDaoTest.getNormalisedSql());
         jdbcTemplate.execute(JdbcResourceDaoTest.getTestDataInsertSql());
+        
     }
 
     
@@ -121,13 +123,9 @@ public class AnnotationsTest extends JerseyTest {
         
         // Getting annotation
         System.out.println("testGetAnnotation");
-        final String externalIDstring = "00000000-0000-0000-0000-000000000021";
-        final Annotation testAnnotation = (new TestInstances(resource().getURI().toString())).getAnnotationOne();        
+        final Annotation testAnnotation = (new TestInstances(_relativePath)).getAnnotationOne();        
         
-        final String requestUrl = "annotations/" + externalIDstring;
-        System.out.println("requestUrl: " + requestUrl);
-        
-        Builder responseBuilder = getAuthenticatedResource(resource().path(requestUrl)).accept(MediaType.TEXT_XML);        
+        Builder responseBuilder = getAuthenticatedResource(resource().path("annotations/00000000-0000-0000-0000-000000000021")).accept(MediaType.TEXT_XML);        
         ClientResponse response = responseBuilder.get(ClientResponse.class);        
         
         
@@ -135,20 +133,20 @@ public class AnnotationsTest extends JerseyTest {
         Annotation entity = response.getEntity(Annotation.class);
         assertEquals(testAnnotation.getBody().getTextBody().getBody(), entity.getBody().getTextBody().getBody());
         assertEquals(testAnnotation.getHeadline(), entity.getHeadline());
-        assertEquals(testAnnotation.getOwnerRef(), entity.getOwnerRef());
+        assertEquals(testAnnotation.getOwnerHref(), entity.getOwnerHref());
         assertEquals(Access.WRITE, entity.getPermissions().getPublic());
         assertEquals(3, entity.getPermissions().getPermission().size());
         assertEquals("write", entity.getPermissions().getPermission().get(0).getLevel().value());
-        assertEquals(resource().getURI()+"principals/"+"00000000-0000-0000-0000-000000000112", entity.getPermissions().getPermission().get(0).getPrincipalRef()); 
+        assertEquals(_relativePath+"/principals/00000000-0000-0000-0000-000000000112", entity.getPermissions().getPermission().get(0).getPrincipalHref()); 
         assertEquals("read", entity.getPermissions().getPermission().get(1).getLevel().value()); 
-        assertEquals(resource().getURI()+"principals/"+"00000000-0000-0000-0000-000000000113", entity.getPermissions().getPermission().get(1).getPrincipalRef()); 
+        assertEquals(_relativePath+"/principals/00000000-0000-0000-0000-000000000113", entity.getPermissions().getPermission().get(1).getPrincipalHref()); 
         assertEquals("read", entity.getPermissions().getPermission().get(1).getLevel().value()); 
-        assertEquals(resource().getURI()+"principals/"+"00000000-0000-0000-0000-000000000221", entity.getPermissions().getPermission().get(2).getPrincipalRef()); 
+        assertEquals(_relativePath+"/principals/00000000-0000-0000-0000-000000000221", entity.getPermissions().getPermission().get(2).getPrincipalHref()); 
         assertEquals(2, entity.getTargets().getTargetInfo().size());
-        assertEquals(resource().getURI().toString()+"targets/"+"00000000-0000-0000-0000-000000000031", entity.getTargets().getTargetInfo().get(0).getRef());
-        assertEquals(resource().getURI().toString()+"targets/"+"00000000-0000-0000-0000-000000000032", entity.getTargets().getTargetInfo().get(1).getRef());
+        assertEquals(_relativePath+"/targets/00000000-0000-0000-0000-000000000031", entity.getTargets().getTargetInfo().get(0).getHref());
+        assertEquals(_relativePath+"/targets/00000000-0000-0000-0000-000000000032", entity.getTargets().getTargetInfo().get(1).getHref());
         assertEquals(testAnnotation.getLastModified(), entity.getLastModified());
-        assertEquals(resource().getURI()+requestUrl, entity.getURI());
+        assertEquals(_relativePath+"/annotations/00000000-0000-0000-0000-000000000021", entity.getHref());
     }
 
     /**
@@ -193,7 +191,8 @@ public class AnnotationsTest extends JerseyTest {
         // Adding annotation
         System.out.println("test createAnnotation");
         System.out.println("POST "+resource().getURI().toString()+"annotations/");
-        final Annotation annotationToAdd = (new TestInstances(this.getBaseURI().toString())).getAnnotationToAdd();
+        
+        final Annotation annotationToAdd = (new TestInstances(_relativePath)).getAnnotationToAdd();
         final JAXBElement<Annotation> jaxbElement = (new ObjectFactory()).createAnnotation(annotationToAdd);
        
         Builder responseBuilder = getAuthenticatedResource(resource().path("annotations/")).type(MediaType.APPLICATION_XML).accept(MediaType.APPLICATION_XML);        
@@ -207,9 +206,9 @@ public class AnnotationsTest extends JerseyTest {
         assertEquals("Annotation to add to test DAO", entityA.getHeadline());
         assertEquals(0, entityA.getPermissions().getPermission().size());
         assertEquals(Access.WRITE, entityA.getPermissions().getPublic());
-        assertEquals(this.getBaseURI() + "principals/00000000-0000-0000-0000-000000000113", entityA.getOwnerRef());
+        assertEquals(_relativePath + "/principals/00000000-0000-0000-0000-000000000113", entityA.getOwnerHref());
         assertEquals("http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia#de_Opdracht", entityA.getTargets().getTargetInfo().get(0).getLink());
-        assertEquals(this.getBaseURI()+ "targets/00000000-0000-0000-0000-000000000031", entityA.getTargets().getTargetInfo().get(0).getRef());
+        assertEquals(_relativePath+ "/targets/00000000-0000-0000-0000-000000000031", entityA.getTargets().getTargetInfo().get(0).getHref());
         assertEquals("version 1.0", entityA.getTargets().getTargetInfo().get(0).getVersion());
         
     }
@@ -230,7 +229,8 @@ public class AnnotationsTest extends JerseyTest {
         // updating annotation
         System.out.println("test updateAnnotation");
         System.out.println("PUT "+resource().getURI().toString()+"annotations/00000000-0000-0000-0000-000000000021");
-        Annotation annotation = (new TestInstances(this.getBaseURI().toString())).getAnnotationOne();
+                
+        Annotation annotation = (new TestInstances(_relativePath)).getAnnotationOne();
         annotation.getPermissions().setPublic(Access.READ);
         annotation.setHeadline("updated annotation 1");
         annotation.getPermissions().getPermission().get(1).setLevel(Access.WRITE);
@@ -253,9 +253,9 @@ public class AnnotationsTest extends JerseyTest {
         assertEquals("updated annotation 1", entityA.getHeadline());
         assertEquals(2, entityA.getPermissions().getPermission().size());
         assertEquals(Access.READ, entityA.getPermissions().getPublic());
-        assertEquals(this.getBaseURI() + "principals/00000000-0000-0000-0000-000000000111", entityA.getOwnerRef());
+        assertEquals(_relativePath + "/principals/00000000-0000-0000-0000-000000000111", entityA.getOwnerHref());
         assertEquals("http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia#de_Opdracht", entityA.getTargets().getTargetInfo().get(0).getLink());
-        assertEquals(this.getBaseURI()+ "targets/00000000-0000-0000-0000-000000000031", entityA.getTargets().getTargetInfo().get(0).getRef());
+        assertEquals(_relativePath+ "/targets/00000000-0000-0000-0000-000000000031", entityA.getTargets().getTargetInfo().get(0).getHref());
         
     }
     
@@ -296,9 +296,11 @@ public class AnnotationsTest extends JerseyTest {
         assertEquals("Sagrada Famiglia", entityA.getHeadline());
         assertEquals(3, entityA.getPermissions().getPermission().size());
         assertEquals(Access.WRITE , entityA.getPermissions().getPublic());
-        assertEquals(this.getBaseURI() + "principals/00000000-0000-0000-0000-000000000111", entityA.getOwnerRef());
+        
+     
+        assertEquals(_relativePath + "/principals/00000000-0000-0000-0000-000000000111", entityA.getOwnerHref());
         assertEquals("http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia#de_Opdracht", entityA.getTargets().getTargetInfo().get(0).getLink());
-        assertEquals(this.getBaseURI()+ "targets/00000000-0000-0000-0000-000000000031", entityA.getTargets().getTargetInfo().get(0).getRef());
+        assertEquals(_relativePath+ "/targets/00000000-0000-0000-0000-000000000031", entityA.getTargets().getTargetInfo().get(0).getHref());
         
     }
     

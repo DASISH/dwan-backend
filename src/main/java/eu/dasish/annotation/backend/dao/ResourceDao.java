@@ -29,30 +29,23 @@ import java.util.UUID;
  */
 public interface ResourceDao {
 
-    void setServiceURI(String serviceURI);
+    void setResourcePath(String relResourcePath);
 
     Number getInternalID(UUID externalId) throws NotInDataBaseException;
 
-    Number getInternalIDFromURI(String uri) throws NotInDataBaseException;
-
     UUID getExternalID(Number internalId);
 
-    String externalIDtoURI(String externalID);
-
-    /**
-     *
-     * @param stringURI
-     * @return returns the extranlID which is a suffix of stringURI
-     */
-    String stringURItoExternalID(String stringURI);
-
+  
+  
     /**
      *
      * @param internalID
      * @return URI string of the resource )of the type set in resourceTableName)
      * with internalID
      */
-    String getURIFromInternalID(Number internalID);
+    String getHrefFromInternalID(Number internalID);
+    
+    Number getInternalIDFromHref(String href)  throws NotInDataBaseException;
 
     List<Map<Number, String>> getPermissions(Number resourceID);
 

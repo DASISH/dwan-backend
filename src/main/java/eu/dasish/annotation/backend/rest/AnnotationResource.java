@@ -47,7 +47,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Providers;
 import javax.xml.bind.JAXBElement;
 import org.springframework.stereotype.Component;
@@ -61,11 +60,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Path("/annotations")
 @Transactional(rollbackFor = {Exception.class})
 public class AnnotationResource extends ResourceResource {
-
-    public void setUriInfo(UriInfo uriInfo) {
-        this.uriInfo = uriInfo;
-    }
-
+   
     public void setHttpServletResponse(HttpServletResponse httpServletResponse) {
         this.httpServletResponse = httpServletResponse;
     }
@@ -87,7 +82,7 @@ public class AnnotationResource extends ResourceResource {
     @Transactional(readOnly = true)
     public JAXBElement<Annotation> getAnnotation(@PathParam("annotationid") String externalIdentifier) throws IOException {
         Map params = new HashMap();
-        Annotation result = (Annotation) (new RequestWrappers(this)).wrapRequestResource(params, new GetAnnotation(), Resource.ANNOTATION, ResourceAction.READ, externalIdentifier, false);
+        Annotation result = (Annotation) (new RequestWrappers(this)).wrapRequestResource(params, new GetAnnotation(), Resource.ANNOTATION, ResourceAction.READ, externalIdentifier);
         if (result != null) {
             return (new ObjectFactory()).createAnnotation(result);
         } else {
@@ -110,7 +105,7 @@ public class AnnotationResource extends ResourceResource {
     @Transactional(readOnly = true)
     public JAXBElement<ReferenceList> getAnnotationTargets(@PathParam("annotationid") String externalIdentifier) throws IOException {
         Map params = new HashMap();
-        ReferenceList result = (ReferenceList) (new RequestWrappers(this)).wrapRequestResource(params, new GetTargetList(), Resource.ANNOTATION, ResourceAction.READ, externalIdentifier, false);
+        ReferenceList result = (ReferenceList) (new RequestWrappers(this)).wrapRequestResource(params, new GetTargetList(), Resource.ANNOTATION, ResourceAction.READ, externalIdentifier);
         if (result != null) {
             return (new ObjectFactory()).createTargetList(result);
         } else {
@@ -170,7 +165,7 @@ public class AnnotationResource extends ResourceResource {
     @Transactional(readOnly = true)
     public JAXBElement<PermissionList> getAnnotationPermissions(@PathParam("annotationid") String externalIdentifier) throws IOException {
         Map params = new HashMap();
-        PermissionList result = (PermissionList) (new RequestWrappers(this)).wrapRequestResource(params, new GetPermissionList(), Resource.ANNOTATION, ResourceAction.READ, externalIdentifier, false);
+        PermissionList result = (PermissionList) (new RequestWrappers(this)).wrapRequestResource(params, new GetPermissionList(), Resource.ANNOTATION, ResourceAction.READ, externalIdentifier);
         if (result != null) {
             return (new ObjectFactory()).createPermissionList(result);
         } else {
@@ -191,7 +186,7 @@ public class AnnotationResource extends ResourceResource {
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}")
     public String deleteAnnotation(@PathParam("annotationid") String externalIdentifier) throws IOException {
         Map params = new HashMap();
-        int[] result = (int[]) (new RequestWrappers(this)).wrapRequestResource(params, new DeleteAnnotation(), Resource.ANNOTATION, ResourceAction.DELETE, externalIdentifier, false);
+        int[] result = (int[]) (new RequestWrappers(this)).wrapRequestResource(params, new DeleteAnnotation(), Resource.ANNOTATION, ResourceAction.DELETE, externalIdentifier);
         if (result != null) {
             return result[0] + " annotation(s) is(are) deleted.";
         } else {
@@ -245,16 +240,15 @@ public class AnnotationResource extends ResourceResource {
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}")
     public JAXBElement<ResponseBody> updateAnnotation(@PathParam("annotationid") String externalId, Annotation annotation) throws IOException {
 
-        String annotationURI = annotation.getURI();
-        String path = uriInfo.getBaseUri().toString();
-        if (!(path + "annotations/" + externalId).equals(annotationURI)) {
-            loggerServer.debug("Wrong request: the annotation (notebook) identifier   " + externalId + " and the annotation (notebook) ID from the request body do not match.");
+        String annotationExtId = annotation.getId();
+        if (!(externalId).equals(annotationExtId)) {
+            loggerServer.debug("Wrong request: the annotation identifier   " + externalId + " and the annotation (notebook) ID from the request body do not match.");
             httpServletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return null;
         }
         Map params = new HashMap();
         params.put("annotation", annotation);
-        ResponseBody result = (ResponseBody) (new RequestWrappers(this)).wrapRequestResource(params, new UpdateAnnotation(), Resource.ANNOTATION, ResourceAction.WRITE_W_METAINFO, externalId, false);
+        ResponseBody result = (ResponseBody) (new RequestWrappers(this)).wrapRequestResource(params, new UpdateAnnotation(), Resource.ANNOTATION, ResourceAction.WRITE_W_METAINFO, externalId);
         if (result != null) {
             return (new ObjectFactory()).createResponseBody(result);
         } else {
@@ -284,7 +278,7 @@ public class AnnotationResource extends ResourceResource {
     public JAXBElement<ResponseBody> updateAnnotationBody(@PathParam("annotationid") String externalIdentifier, AnnotationBody annotationBody) throws IOException {
         Map params = new HashMap();
         params.put("annotationBody", annotationBody);
-        ResponseBody result = (ResponseBody) (new RequestWrappers(this)).wrapRequestResource(params, new UpdateAnnotationBody(), Resource.ANNOTATION, ResourceAction.WRITE, externalIdentifier, false);
+        ResponseBody result = (ResponseBody) (new RequestWrappers(this)).wrapRequestResource(params, new UpdateAnnotationBody(), Resource.ANNOTATION, ResourceAction.WRITE, externalIdentifier);
         if (result != null) {
             return (new ObjectFactory()).createResponseBody(result);
         } else {
@@ -312,7 +306,7 @@ public class AnnotationResource extends ResourceResource {
     public JAXBElement<ResponseBody> updateAnnotationHeadline(@PathParam("annotationid") String externalIdentifier, String newHeadline) throws IOException {
         Map params = new HashMap();
         params.put("headline", newHeadline);
-        ResponseBody result = (ResponseBody) (new RequestWrappers(this)).wrapRequestResource(params, new UpdateAnnotationHeadline(), Resource.ANNOTATION, ResourceAction.WRITE, externalIdentifier, false);
+        ResponseBody result = (ResponseBody) (new RequestWrappers(this)).wrapRequestResource(params, new UpdateAnnotationHeadline(), Resource.ANNOTATION, ResourceAction.WRITE, externalIdentifier);
         if (result != null) {
             return (new ObjectFactory()).createResponseBody(result);
         } else {
@@ -340,7 +334,7 @@ public class AnnotationResource extends ResourceResource {
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}/permissions/{principalid: " + BackendConstants.regExpIdentifier + "}")
     public String updateAccess(@PathParam("annotationid") String annotationExternalId,
             @PathParam("principalid") String principalExternalId, Access access) throws IOException {
-        return genericUpdateDeleteAccess(annotationExternalId, principalExternalId, access);
+        return this.genericUpdateDeleteAccess(annotationExternalId, principalExternalId, access);
     }
     ////////////////////////////////////////////
 
@@ -350,7 +344,7 @@ public class AnnotationResource extends ResourceResource {
         try {
             final Number inputPrincipalID = dbDispatcher.getResourceInternalIdentifier(UUID.fromString(principalId), Resource.PRINCIPAL);
             params.put("inputPrincipalID", inputPrincipalID);
-            Integer result = (Integer) (new RequestWrappers(this)).wrapRequestResource(params, new UpdatePrincipalAccess(), Resource.ANNOTATION, ResourceAction.WRITE_W_METAINFO, annotationId, false);
+            Integer result = (Integer) (new RequestWrappers(this)).wrapRequestResource(params, new UpdatePrincipalAccess(), Resource.ANNOTATION, ResourceAction.WRITE_W_METAINFO, annotationId);
             if (result != null) {
                 return result + " row(s) is(are) updated.";
             } else {
@@ -385,7 +379,7 @@ public class AnnotationResource extends ResourceResource {
         Map params = new HashMap();
         params.put("permissions", permissions);
 
-        ResponseBody result = (ResponseBody) (new RequestWrappers(this)).wrapRequestResource(params, new UpdatePermissions(), Resource.ANNOTATION, ResourceAction.WRITE_W_METAINFO, annotationExternalId, false);
+        ResponseBody result = (ResponseBody) (new RequestWrappers(this)).wrapRequestResource(params, new UpdatePermissions(), Resource.ANNOTATION, ResourceAction.WRITE_W_METAINFO, annotationExternalId);
         if (result != null) {
             return new ObjectFactory().createResponseBody(result);
         } else {
@@ -413,6 +407,6 @@ public class AnnotationResource extends ResourceResource {
     @Path("{annotationId: " + BackendConstants.regExpIdentifier + "}/principal/{principalId}/delete")
     public String deletePrincipalsAccess(@PathParam("annotationId") String annotationId,
             @PathParam("principalId") String principalId) throws IOException {
-        return genericUpdateDeleteAccess(annotationId, principalId, null);
+        return this.genericUpdateDeleteAccess(annotationId, principalId, null);
     }
 }

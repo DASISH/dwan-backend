@@ -129,7 +129,6 @@ public class PrincipalResource extends ResourceResource {
     public JAXBElement<CurrentPrincipalInfo> getCurrentPrincipalInfo(@PathParam("principalid") String externalIdentifier) throws IOException {
         Map params = new HashMap<String, String>();
         params.put("externalId", externalIdentifier);
-        params.put("resource", this);
         CurrentPrincipalInfo result = (CurrentPrincipalInfo) (new RequestWrappers(this)).wrapRequestResource(params, new GetCurrentPrincipalInfo());
         return (result != null) ? (new ObjectFactory().createCurrentPrincipalInfo(result)) : (new ObjectFactory().createCurrentPrincipalInfo(new CurrentPrincipalInfo()));
     }
@@ -138,76 +137,66 @@ public class PrincipalResource extends ResourceResource {
 
         @Override
         public CurrentPrincipalInfo apply(Map params) throws NotInDataBaseException {
-            final Number principalID = dbDispatcher.getResourceInternalIdentifier(UUID.fromString((String) params.get("externalId")), Resource.PRINCIPAL);
+            String externalId = (String) params.get("externalId");
+            String loggedInExternalId = (dbDispatcher.getPrincipalExternalIDFromRemoteID(httpServletRequest.getRemoteUser())).toString();
             final CurrentPrincipalInfo principalInfo = new CurrentPrincipalInfo();
-            principalInfo.setRef(dbDispatcher.getResourceURI(principalID, Resource.PRINCIPAL));
-            principalInfo.setCurrentPrincipal(((PrincipalResource) params.get("resource")).ifLoggedIn(principalID));
+            principalInfo.setHref(getRelativeServiceURI() + "/principals/" + externalId);
+            principalInfo.setCurrentPrincipal(externalId.equals(loggedInExternalId));
             return principalInfo;
         }
     }
     ////////////////////////////// 
 
-    @POST
-    @Produces(MediaType.TEXT_PLAIN)
-    @Path("create/{remoteId}/{password}")
-    public String createSpringAuthenticationRecord(@PathParam("remoteId") String remoteId, @PathParam("password") String password) throws IOException {
-        Number remotePrincipalID = this.getPrincipalID();
-        if (remotePrincipalID == null) {
-            return "Logged in principal is null or anonymous.";
-        }
-
-        if (dbDispatcher.getTypeOfPrincipalAccount(remotePrincipalID).equals(admin)) {
-            try {
-                int result = dbDispatcher.addSpringUser(remoteId, password, shaStrength, remoteId);
-                return result + " record(s) has been added. Must be 2: 1 record for the principal, another for the authorities table.";
-            } catch (DuplicateKeyException e) {
-                loggerServer.error(e.toString());
-                httpServletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST);
-                return e.toString();
-            }
-        } else {
-            this.ADMIN_RIGHTS_EXPECTED();
-            httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
-            return "Nothing is added.";
-        }
-
-    }
-
+//    @POST
+//    @Produces(MediaType.TEXT_PLAIN)
+//    @Path("create/{remoteId}/{password}")
+//    public String createSpringAuthenticationRecord(@PathParam("remoteId") String remoteId, @PathParam("password") String password) throws IOException {
+//        Number remotePrincipalID = this.getPrincipalID();
+//        if (remotePrincipalID == null) {
+//            return "Logged in principal is null or anonymous.";
+//        }
+//
+//        if (dbDispatcher.getTypeOfPrincipalAccount(remotePrincipalID).equals(admin)) {
+//            try {
+//                int result = dbDispatcher.addSpringUser(remoteId, password, shaStrength, remoteId);
+//                return result + " record(s) has been added. Must be 2: 1 record for the principal, another for the authorities table.";
+//            } catch (DuplicateKeyException e) {
+//                loggerServer.error(e.toString());
+//                httpServletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST);
+//                return e.toString();
+//            }
+//        } else {
+//            this.ADMIN_RIGHTS_EXPECTED();
+//            httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
+//            return "Nothing is added.";
+//        }
+//
+//    }
     ///////////////////////////////////////
-    @POST
-    @Consumes(MediaType.APPLICATION_XML)
-    @Produces(MediaType.APPLICATION_XML)
-    @Path("{remoteId}")
-    public JAXBElement<Principal> addPrincipal(@PathParam("remoteId") String remoteId, Principal principal) throws IOException {
-
-        Number remotePrincipalID = this.getPrincipalID();
-        if (remotePrincipalID == null) {
-            return new ObjectFactory().createPrincipal(new Principal());
-        }
-
-        Map params = new HashMap<String, Object>();
-        params.put("remoteId", remoteId);
-        params.put("newPrincipal", principal);
-
-        if (dbDispatcher.getTypeOfPrincipalAccount(remotePrincipalID).equals(admin)) {
-            return (new RequestWrappers(this)).wrapAddPrincipalRequest(params, new AddPrincipal());
-        } else {
-            this.ADMIN_RIGHTS_EXPECTED();
-            httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
-            return new ObjectFactory().createPrincipal(new Principal());
-        }
-
-    }
-
-    private class AddPrincipal implements ILambdaPrincipal<Map, Principal> {
-
-        @Override
-        public Principal apply(Map params) throws NotInDataBaseException, PrincipalExists {
-            final Number principalID = dbDispatcher.addPrincipal((Principal) params.get("newPrincipal"), (String) params.get("remoteId"));
-            return dbDispatcher.getPrincipal(principalID);
-        }
-    }
-
+//    @POST
+//    @Consumes(MediaType.APPLICATION_XML)
+//    @Produces(MediaType.APPLICATION_XML)
+//    @Path("{remoteId}")
+//    public JAXBElement<Principal> addPrincipal(@PathParam("remoteId") String remoteId, Principal principal) throws IOException {
+//
+//        Number remotePrincipalID = this.getPrincipalID();
+//        if (remotePrincipalID == null) {
+//            return new ObjectFactory().createPrincipal(new Principal());
+//        }
+//
+//        Map params = new HashMap<String, Object>();
+//        params.put("remoteId", remoteId);
+//        params.put("newPrincipal", principal);
+//
+//        if (dbDispatcher.getTypeOfPrincipalAccount(remotePrincipalID).equals(admin)) {
+//            return (new RequestWrappers(this)).wrapAddPrincipalRequest(params, new AddPrincipal());
+//        } else {
+//            this.ADMIN_RIGHTS_EXPECTED();
+//            httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
+//            return new ObjectFactory().createPrincipal(new Principal());
+//        }
+//
+//    }
     /////////////////////////////////////
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
@@ -226,7 +215,7 @@ public class PrincipalResource extends ResourceResource {
         params.put("shaStrength", shaStrength);
         params.put("newPrincipal", newPrincipal);
 
-        dbDispatcher.setServiceURI(uriInfo.getBaseUri().toString());
+        dbDispatcher.setResourcesPaths(this.getRelativeServiceURI());
         return (new RequestWrappers(this)).wrapAddPrincipalRequest(params, new RegisterNonShibbolizedPrincipal());
     }
 
@@ -252,7 +241,7 @@ public class PrincipalResource extends ResourceResource {
     public JAXBElement<Principal> registerShibbolizedPrincipal(@FormParam("name") String name,
             @FormParam("remoteId") String remoteId, @FormParam("email") String email)
             throws IOException {
-        dbDispatcher.setServiceURI(uriInfo.getBaseUri().toString());
+        dbDispatcher.setResourcesPaths(this.getRelativeServiceURI());
         Principal newPrincipal = new Principal();
         newPrincipal.setDisplayName(name);
         newPrincipal.setEMail(email);
@@ -260,8 +249,17 @@ public class PrincipalResource extends ResourceResource {
         params.put("remoteId", remoteId);
         params.put("newPrincipal", newPrincipal);
 
-        dbDispatcher.setServiceURI(uriInfo.getBaseUri().toString());
-        return (new RequestWrappers(this)).wrapAddPrincipalRequest(params, new AddPrincipal());
+        dbDispatcher.setResourcesPaths(this.getRelativeServiceURI());
+        return (new RequestWrappers(this)).wrapAddPrincipalRequest(params, new RegisterShibbolizedPrincipal());
+    }
+
+    private class RegisterShibbolizedPrincipal implements ILambdaPrincipal<Map, Principal> {
+
+        @Override
+        public Principal apply(Map params) throws NotInDataBaseException, PrincipalExists {
+            final Number principalID = dbDispatcher.addPrincipal((Principal) params.get("newPrincipal"), (String) params.get("remoteId"));
+            return dbDispatcher.getPrincipal(principalID);
+        }
     }
 
     ///////////////////////////////////////////////////
@@ -302,18 +300,25 @@ public class PrincipalResource extends ResourceResource {
             return new ObjectFactory().createPrincipal(new Principal());
         }
     }
-    ///////////////////////////////////
+    /////////////////////////////////
 
+    // logged in user can update his/her account
+    // or account can be updated by the admin in a separate request, see above
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_XML)
     @Path("updateme")
     public JAXBElement<Principal> updatePrincipalFromForm(@FormParam("name") String name, @FormParam("email") String email)
-            throws IOException {
-        
+            throws IOException, NotInDataBaseException {
+
         Principal newPrincipal = new Principal();
         newPrincipal.setDisplayName(name);
         newPrincipal.setEMail(email);
+        String remoteId = httpServletRequest.getRemoteUser();
+        String externalId = (dbDispatcher.getPrincipalExternalIDFromRemoteID(remoteId)).toString();
+        String href = this.getRelativeServiceURI() + "/principals/" + externalId;
+        newPrincipal.setId(externalId);
+        newPrincipal.setHref(href);
         Map params = new HashMap<String, Object>();
         params.put("newPrincipal", newPrincipal);
         Principal result = (Principal) (new RequestWrappers(this)).wrapRequestResource(params, new UpdatePrincipal());
@@ -325,10 +330,7 @@ public class PrincipalResource extends ResourceResource {
         @Override
         public Principal apply(Map params) throws NotInDataBaseException {
             Principal principal = (Principal) params.get("newPrincipal");
-            Number principalID = (Number) params.get("principalID");
-            String principalURI = dbDispatcher.getResourceURI(principalID, Resource.PRINCIPAL);
-            principal.setURI(principalURI);
-            Number principalIDupd = dbDispatcher.updatePrincipal(principal);            
+            Number principalIDupd = dbDispatcher.updatePrincipal(principal);
             return dbDispatcher.getPrincipal(principalIDupd);
         }
     }
@@ -353,7 +355,7 @@ public class PrincipalResource extends ResourceResource {
                     return "Account is not updated.";
                 }
             } catch (NotInDataBaseException e) {
-                loggerServer.debug(e.toString());;
+                loggerServer.debug(e.toString());
                 httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.toString());
                 return "Account is updated.";
             }
@@ -384,20 +386,15 @@ public class PrincipalResource extends ResourceResource {
                     return "Nothing is deleted.";
                 }
             } catch (NotInDataBaseException e) {
-                loggerServer.debug(e.toString());;
+                loggerServer.debug(e.toString());
                 httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e.toString());
                 return "Nothing is deleted.";
             }
         } else {
             this.ADMIN_RIGHTS_EXPECTED();
             httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
-            return "Account is not updated.";
+            return "Principal is not deleted.";
         }
 
-    }
-
-    // silly because it is trivial. harvest all logged in users via shibboleth!!
-    private boolean ifLoggedIn(Number principalID) {
-        return (httpServletRequest.getRemoteUser()).equals(dbDispatcher.getPrincipalRemoteID(principalID));
     }
 }
