@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
@@ -102,7 +101,7 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     ///////////////////////////////////////////////////
     protected String internalIdName = null;
     protected String resourceTableName = null;
-    protected String _serviceURI;
+    protected String _relResourcePath;
     private final Logger _logger = LoggerFactory.getLogger(JdbcResourceDao.class);
     protected String nullArgument = "Null argument is given to the method.";
 
@@ -148,8 +147,8 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
 
     /////////////////// Class field SETTERS /////////////
     @Override
-    public void setServiceURI(String serviceURI) {
-        _serviceURI = serviceURI;
+    public void setResourcePath(String relResourcePath) {
+        _relResourcePath = relResourcePath;
     }
 
     //////////////////////////////////////////////////////////////////////////////////
@@ -175,23 +174,22 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
         return sqlResult.get(0);
     }
 
-    //////////////////////////////////////////////
-    @Override
-    public Number getInternalIDFromURI(String uri) throws NotInDataBaseException {
-        String externalID = this.stringURItoExternalID(uri);
-        try {
-            UUID externalUUID = UUID.fromString(externalID);
-            return this.getInternalID(externalUUID);
-        } catch (IllegalArgumentException e) {
-            _logger.info(externalID + " is not a valid <uuid>.  Therefore, I expect that it is a temporary idendifier of a new resource that is not yet.");
-            throw new NotInDataBaseException(resourceTableName, "external  ID", externalID);
-        }
-    }
+    
 
     //////////////////////////////////////////////
     @Override
-    public String getURIFromInternalID(Number internalID) {
-        return externalIDtoURI(getExternalID(internalID).toString());
+    public String getHrefFromInternalID(Number internalID) {
+        return this.externalIDtoHref(getExternalID(internalID).toString());
+    }
+    
+     //////////////////////////////////////////////
+    @Override
+    public Number getInternalIDFromHref(String href) throws NotInDataBaseException{
+        try{
+        return this.getInternalID(UUID.fromString(this.hrefToExternalID(href)));
+        } catch (IllegalArgumentException e){
+           throw new NotInDataBaseException("resource", "identifier", href);  
+        }
     }
 
     // override for notebooks and annotations
@@ -256,21 +254,21 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
     };
 
     ////// END ROW MAPPERS /////
-    @Override
-    public String externalIDtoURI(String externalID) {
-        if (_serviceURI != null) {
-            return _serviceURI + externalID;
+    
+    protected String externalIDtoHref(String externalID) {
+        if (_relResourcePath != null) {
+            return _relResourcePath + externalID;
         } else {
             return externalID;
         }
     }
 
-    @Override
-    public String stringURItoExternalID(String stringURI) {        
-        if (stringURI.length() > _serviceURI.length()) {
-            return stringURI.substring(_serviceURI.length());
+    
+    protected String hrefToExternalID(String stringURI) {        
+        if (stringURI.length() > _relResourcePath.length()) {
+            return stringURI.substring(_relResourcePath.length());
         } else {
-            logger.debug(stringURI + " does not have the form <service url>/<isentifier>, therefore I return the input value.");
+            logger.debug(stringURI + " does not have the form <rel url>/<isentifier>, therefore I return the input value.");
             return stringURI;
         }
     }

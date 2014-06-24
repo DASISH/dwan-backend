@@ -18,7 +18,6 @@
 package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.NotInDataBaseException;
-import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.schema.CachedRepresentationInfo;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -48,13 +47,13 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest {
      * public String stringURItoExternalID(String uri);
      */
     @Test
-    public void testStringURItoExternalID() {
-        System.out.println("test stringURItoExternalID");
-        jdbcCachedRepresentationDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_cached);
+    public void testHrefToExternalID() {
+        System.out.println("test hrefToExternalID");
+        jdbcCachedRepresentationDao.setResourcePath("/api/cached/");
         String randomUUID = UUID.randomUUID().toString();
-        String uri = TestBackendConstants._TEST_SERVLET_URI_cached + randomUUID;
-        String externalID = jdbcCachedRepresentationDao.stringURItoExternalID(uri);
-        assertEquals(randomUUID, externalID);
+        String uri = "/api/cached/" + randomUUID;
+        String check = jdbcCachedRepresentationDao.hrefToExternalID(uri);
+        assertEquals(randomUUID, check);
     }
     
     /**
@@ -62,12 +61,12 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest {
      * public String externalIDtoURI(String externalID);
      */
     @Test
-    public void testExternalIDtoURI() {
+    public void testExternalIdToHref() {
         System.out.println("test stringURItoExternalID");
-        jdbcCachedRepresentationDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_cached);
+        jdbcCachedRepresentationDao.setResourcePath("/api/cached/");
         String randomUUID = UUID.randomUUID().toString();
-        String uri = TestBackendConstants._TEST_SERVLET_URI_cached+randomUUID;
-        String uriResult = jdbcCachedRepresentationDao.externalIDtoURI(randomUUID);
+        String uri = "/api/cached/"+randomUUID;
+        String uriResult = jdbcCachedRepresentationDao.externalIDtoHref(randomUUID);
         assertEquals(uri, uriResult);
     }
     
@@ -83,9 +82,8 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest {
     @Test
     public void testGetExternalId() {
         System.out.println("getExternalId");
-        Number internalID = 1;
         UUID expResult = UUID.fromString("00000000-0000-0000-0000-000000000051");
-        UUID result = jdbcCachedRepresentationDao.getExternalID(internalID);
+        UUID result = jdbcCachedRepresentationDao.getExternalID(1);
         assertEquals(expResult, result);
     }
 
@@ -109,9 +107,9 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest {
     @Test
     public void testGetInternalIDFRomURI() throws NotInDataBaseException{
         System.out.println("test getInternalIDFromURI");
-        jdbcCachedRepresentationDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_cached);
-        String uri = TestBackendConstants._TEST_SERVLET_URI_cached +"00000000-0000-0000-0000-000000000051";
-        Number result = jdbcCachedRepresentationDao.getInternalIDFromURI(uri);
+        jdbcCachedRepresentationDao.setResourcePath("/api/cached/");
+        String uri = "/api/cached/00000000-0000-0000-0000-000000000051";
+        Number result = jdbcCachedRepresentationDao.getInternalIDFromHref(uri);
         assertEquals(1, result.intValue());
     }
    
@@ -124,9 +122,10 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest {
     public void testGetCachedRepresentationInfo() {
         System.out.println("getCachedRepresentationInfo");
 
-        jdbcCachedRepresentationDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_cached);
+        jdbcCachedRepresentationDao.setResourcePath("/api/cached/");
         CachedRepresentationInfo result = jdbcCachedRepresentationDao.getCachedRepresentationInfo(1);
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI_cached + "00000000-0000-0000-0000-000000000051", result.getURI());
+        assertEquals("/api/cached/00000000-0000-0000-0000-000000000051", result.getHref());
+        assertEquals("00000000-0000-0000-0000-000000000051", result.getId());
         assertEquals("image/png", result.getMimeType());
         assertEquals("screen-shot", result.getTool());
         assertEquals("image", result.getType());
@@ -139,8 +138,7 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest {
     @Test
     public void testGetCachedRepresentations() {
         System.out.println("test getCachedRepresentationsForTarget");
-        Number TargetID = 1;
-        List<Number> result = jdbcCachedRepresentationDao.getCachedRepresentationsForTarget(TargetID);
+        List<Number> result = jdbcCachedRepresentationDao.getCachedRepresentationsForTarget(1);
         assertEquals(1, result.get(0));
         assertEquals(2, result.get(1));
     }
@@ -153,8 +151,8 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest {
     @Test
     public void testDeleteCachedRepresentation() {
         System.out.println("deleteCachedRepresentationInfo");
-        Number internalID = 6; /// deleted because no version refers to it
-        int result = jdbcCachedRepresentationDao.deleteCachedRepresentation(internalID);
+        /// deleted because no version refers to it
+        int result = jdbcCachedRepresentationDao.deleteCachedRepresentation(6);
         assertEquals(1, result);
 
     }
@@ -162,18 +160,18 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest {
     @Test
     public void testUpdateCachedRepresentationMetadata(){
         System.out.println("test updateCachedRepresentationInfo");
-        jdbcCachedRepresentationDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_cached);
+        jdbcCachedRepresentationDao.setResourcePath("/api/cached/");
         CachedRepresentationInfo cachedInfo = new CachedRepresentationInfo();
         cachedInfo.setMimeType("update mime type  1");
         cachedInfo.setType("update type  1");
         cachedInfo.setTool("update tool  1");
-        cachedInfo.setURI(TestBackendConstants._TEST_SERVLET_URI_cached + "00000000-0000-0000-0000-00000000005c");
         
         int result = jdbcCachedRepresentationDao.updateCachedRepresentationMetadata(1, cachedInfo);
         assertEquals(1, result);
         
         CachedRepresentationInfo newCached = jdbcCachedRepresentationDao.getCachedRepresentationInfo(1);
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI_cached + "00000000-0000-0000-0000-000000000051", newCached.getURI());
+        assertEquals("/api/cached/00000000-0000-0000-0000-000000000051", newCached.getHref());
+        assertEquals("00000000-0000-0000-0000-000000000051", newCached.getId());
         assertEquals("update mime type  1", newCached.getMimeType());
         assertEquals("update tool  1", newCached.getTool());
         assertEquals("update type  1", newCached.getType());
@@ -183,7 +181,7 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest {
     @Test
     public void testUpdateCachedRepresentationBlob() throws IOException{
         System.out.println("test updateCachedRepresentationBlob");
-        jdbcCachedRepresentationDao.setServiceURI(TestBackendConstants._TEST_SERVLET_URI_cached);
+        jdbcCachedRepresentationDao.setResourcePath("/api/cached/");
         String blobString = " test blobbie ";
         byte[] blobBytes = blobString.getBytes();
         final ByteArrayInputStream newCachedBlob = new ByteArrayInputStream(blobBytes);

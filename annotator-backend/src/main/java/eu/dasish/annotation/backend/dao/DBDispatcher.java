@@ -50,7 +50,7 @@ import java.util.UUID;
  */
 public interface DBDispatcher {
 
-    void setServiceURI(String serviceURI);
+    void setResourcesPaths(String relServiceURI);
 
     /**
      * GETTERS
@@ -58,11 +58,7 @@ public interface DBDispatcher {
       
     Number getResourceInternalIdentifier(UUID externalID, Resource resource) throws NotInDataBaseException;
 
-    Number getResourceInternalIdentifierFromURI(String uri, Resource resource) throws NotInDataBaseException;
-
     UUID getResourceExternalIdentifier(Number resourceID, Resource resource);
-
-    String getResourceURI(Number resourceID, Resource resource);
 
     PermissionList getPermissions(Number resourceID, Resource resource);
 
@@ -178,6 +174,8 @@ public interface DBDispatcher {
     String getPrincipalRemoteID(Number internalID);
 
     Number getPrincipalInternalIDFromRemoteID(String remoteID) throws NotInDataBaseException;
+    
+    UUID getPrincipalExternalIDFromRemoteID(String remoteID) throws NotInDataBaseException;
 
     /**
      *

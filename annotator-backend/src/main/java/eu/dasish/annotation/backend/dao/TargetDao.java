@@ -117,7 +117,7 @@ public interface TargetDao extends ResourceDao {
 
     /**
      *
-     * @param TargetID
+     * @param targetID
      * @return # deleted rows in the table "Targets_cached_representation" when
      * deleting the pair (TargetID, chachedID)
      * @throws SQLException

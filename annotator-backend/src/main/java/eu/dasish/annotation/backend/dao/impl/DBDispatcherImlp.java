@@ -105,12 +105,12 @@ public class DBDispatcherImlp implements DBDispatcher {
     }
 
     @Override
-    public void setServiceURI(String serviceURI) {
-        principalDao.setServiceURI(serviceURI + "principals/");
-        cachedRepresentationDao.setServiceURI(serviceURI + "cached/");
-        targetDao.setServiceURI(serviceURI + "targets/");
-        annotationDao.setServiceURI(serviceURI + "annotations/");
-        notebookDao.setServiceURI(serviceURI + "notebooks/");
+    public void setResourcesPaths(String relServiceURI) {
+        principalDao.setResourcePath(relServiceURI + "/principals/");
+        cachedRepresentationDao.setResourcePath(relServiceURI + "/cached/");
+        targetDao.setResourcePath(relServiceURI + "/targets/");
+        annotationDao.setResourcePath(relServiceURI + "/annotations/");
+        notebookDao.setResourcePath(relServiceURI + "/notebooks/");
     }
 
     ///////////// GETTERS //////////////////////////
@@ -119,29 +119,21 @@ public class DBDispatcherImlp implements DBDispatcher {
         return this.getDao(resource).getInternalID(externalID);
     }
 
-    @Override
-    public Number getResourceInternalIdentifierFromURI(String uri, Resource resource) throws NotInDataBaseException {
-        return this.getDao(resource).getInternalIDFromURI(uri);
-    }
-
+  
     @Override
     public UUID getResourceExternalIdentifier(Number resourceID, Resource resource) {
         return this.getDao(resource).getExternalID(resourceID);
     }
 
-    @Override
-    public String getResourceURI(Number resourceID, Resource resource) {
-        return this.getDao(resource).getURIFromInternalID(resourceID);
-    }
-
+   
     @Override
     public Annotation getAnnotation(Number annotationID) {
         Annotation result = annotationDao.getAnnotationWithoutTargetsAndPemissions(annotationID);
-        result.setOwnerRef(principalDao.getURIFromInternalID(annotationDao.getOwner(annotationID)));
+        result.setOwnerHref(principalDao.getHrefFromInternalID(annotationDao.getOwner(annotationID)));
         List<Number> targetIDs = targetDao.getTargetIDs(annotationID);
         TargetInfoList sis = new TargetInfoList();
         for (Number targetID : targetIDs) {
-            TargetInfo targetInfo = getTargetInfoFromTarget(targetDao.getTarget(targetID));
+            TargetInfo targetInfo = this.getTargetInfoFromTarget(targetDao.getTarget(targetID));
             sis.getTargetInfo().add(targetInfo);
         }
         result.setTargets(sis);
@@ -172,7 +164,7 @@ public class DBDispatcherImlp implements DBDispatcher {
             Number[] principal = new Number[1];
             principalAccess.keySet().toArray(principal);
             Permission permission = new Permission();
-            permission.setPrincipalRef(principalDao.getURIFromInternalID(principal[0]));
+            permission.setPrincipalHref(principalDao.getHrefFromInternalID(principal[0]));
             permission.setLevel(Access.fromValue(principalAccess.get(principal[0])));
             list.add(permission);
         }
@@ -310,7 +302,7 @@ public class DBDispatcherImlp implements DBDispatcher {
         ReferenceList result = new ReferenceList();
         List<Number> targetIDs = targetDao.getTargetIDs(annotationID);
         for (Number targetID : targetIDs) {
-            result.getRef().add(targetDao.getURIFromInternalID(targetID));
+            result.getHref().add(targetDao.getHrefFromInternalID(targetID));
         }
         return result;
     }
@@ -323,7 +315,7 @@ public class DBDispatcherImlp implements DBDispatcher {
         for (Number targetID : targetIDs) {
             List<Number> versions = cachedRepresentationDao.getCachedRepresentationsForTarget(targetID);
             if (versions.isEmpty()) {
-                result.add(targetDao.getURIFromInternalID(targetID));
+                result.add(targetDao.getHrefFromInternalID(targetID));
             }
         }
         return result;
@@ -338,7 +330,7 @@ public class DBDispatcherImlp implements DBDispatcher {
             permission.keySet().toArray(principalID);
             Principal principal = principalDao.getPrincipal(principalID[0]);
             if (principal.getDisplayName() == null || principal.getDisplayName().trim().isEmpty() || principal.getEMail() == null || principal.getEMail().trim().isEmpty()) {
-                result.add(principalDao.getURIFromInternalID(principalID[0]));
+                result.add(principalDao.getHrefFromInternalID(principalID[0]));
 
             }
         }
@@ -352,7 +344,7 @@ public class DBDispatcherImlp implements DBDispatcher {
         for (Number annotationID : annotationIDs) {
             AnnotationInfo annotationInfo = annotationDao.getAnnotationInfoWithoutTargetsAndOwner(annotationID);
             annotationInfo.setTargets(this.getAnnotationTargets(annotationID));
-            annotationInfo.setOwnerRef(principalDao.getURIFromInternalID(annotationDao.getOwner(annotationID)));
+            annotationInfo.setOwnerHref(principalDao.getHrefFromInternalID(annotationDao.getOwner(annotationID)));
             result.getAnnotationInfo().add(annotationInfo);
         }
         return result;
@@ -364,10 +356,10 @@ public class DBDispatcherImlp implements DBDispatcher {
         AnnotationInfoList result = new AnnotationInfoList();
         for (Number annotationID : annotationIDs) {
             Number ownerID = annotationDao.getOwner(annotationID);
-            ReferenceList targets = getAnnotationTargets(annotationID);
+            ReferenceList targets = this.getAnnotationTargets(annotationID);
             AnnotationInfo annotationInfo = annotationDao.getAnnotationInfoWithoutTargetsAndOwner(annotationID);
             annotationInfo.setTargets(targets);
-            annotationInfo.setOwnerRef(principalDao.getURIFromInternalID(ownerID));
+            annotationInfo.setOwnerHref(principalDao.getHrefFromInternalID(ownerID));
             result.getAnnotationInfo().add(annotationInfo);
         }
         return result;
@@ -383,7 +375,7 @@ public class DBDispatcherImlp implements DBDispatcher {
         CachedRepresentationFragmentList cachedRepresentationFragmentList = new CachedRepresentationFragmentList();
         for (Number key : cachedIDsFragments.keySet()) {
             CachedRepresentationFragment cachedRepresentationFragment = new CachedRepresentationFragment();
-            cachedRepresentationFragment.setRef(cachedRepresentationDao.getURIFromInternalID(key));
+            cachedRepresentationFragment.setHref(cachedRepresentationDao.getHrefFromInternalID(key));
             cachedRepresentationFragment.setFragmentString(cachedIDsFragments.get(key));
             cachedRepresentationFragmentList.getCached().add(cachedRepresentationFragment);
         }
@@ -408,7 +400,7 @@ public class DBDispatcherImlp implements DBDispatcher {
         List<Number> targetIDs = targetDao.getTargetsForLink(targetDao.getLink(targetID));
         ReferenceList referenceList = new ReferenceList();
         for (Number siblingID : targetIDs) {
-            referenceList.getRef().add(targetDao.externalIDtoURI(targetDao.getExternalID(siblingID).toString()));
+            referenceList.getHref().add(targetDao.getHrefFromInternalID(siblingID));
         }
         return referenceList;
     }
@@ -459,6 +451,11 @@ public class DBDispatcherImlp implements DBDispatcher {
     @Override
     public Number getPrincipalInternalIDFromRemoteID(String remoteID) throws NotInDataBaseException {
         return principalDao.getPrincipalInternalIDFromRemoteID(remoteID);
+    }
+    
+    @Override
+    public UUID getPrincipalExternalIDFromRemoteID(String remoteID) throws NotInDataBaseException {
+        return principalDao.getPrincipalExternalIDFromRemoteID(remoteID);
     }
 
     @Override
@@ -518,7 +515,7 @@ public class DBDispatcherImlp implements DBDispatcher {
             for (Number notebookID : notebookIDs) {
                 NotebookInfo notebookInfo = notebookDao.getNotebookInfoWithoutOwner(notebookID);
                 Number ownerID = notebookDao.getOwner(notebookID);
-                notebookInfo.setOwnerRef(principalDao.getURIFromInternalID(ownerID));
+                notebookInfo.setOwnerHref(principalDao.getHrefFromInternalID(ownerID));
                 result.getNotebookInfo().add(notebookInfo);
             }
         }
@@ -536,8 +533,8 @@ public class DBDispatcherImlp implements DBDispatcher {
         ReferenceList result = new ReferenceList();
         List<Number> notebookIDs = notebookDao.getNotebookIDsOwnedBy(principalID);
         for (Number notebookID : notebookIDs) {
-            String reference = notebookDao.getURIFromInternalID(notebookID);
-            result.getRef().add(reference);
+            String reference = notebookDao.getHrefFromInternalID(notebookID);
+            result.getHref().add(reference);
         }
         return result;
     }
@@ -547,8 +544,8 @@ public class DBDispatcherImlp implements DBDispatcher {
         ReferenceList result = new ReferenceList();
         List<Number> principalIDs = principalDao.getPrincipalIDsWithAccessForNotebook(notebookID, Access.fromValue(access));
         for (Number principalID : principalIDs) {
-            String reference = principalDao.getURIFromInternalID(principalID);
-            result.getRef().add(reference);
+            String reference = principalDao.getHrefFromInternalID(principalID);
+            result.getHref().add(reference);
         }
         return result;
     }
@@ -557,12 +554,12 @@ public class DBDispatcherImlp implements DBDispatcher {
     public Notebook getNotebook(Number notebookID) {
         Notebook result = notebookDao.getNotebookWithoutAnnotationsAndAccesssAndOwner(notebookID);
 
-        result.setOwnerRef(principalDao.getURIFromInternalID(notebookDao.getOwner(notebookID)));
+        result.setOwnerRef(principalDao.getHrefFromInternalID(notebookDao.getOwner(notebookID)));
 
         ReferenceList annotations = new ReferenceList();
         List<Number> annotationIDs = annotationDao.getAnnotations(notebookID);
         for (Number annotationID : annotationIDs) {
-            annotations.getRef().add(annotationDao.getURIFromInternalID(annotationID));
+            annotations.getHref().add(annotationDao.getHrefFromInternalID(annotationID));
         }
         result.setAnnotations(annotations);
 
@@ -575,7 +572,7 @@ public class DBDispatcherImlp implements DBDispatcher {
             if (principals != null) {
                 for (Number principal : principals) {
                     Permission up = new Permission();
-                    up.setPrincipalRef(principalDao.getURIFromInternalID(principal));
+                    up.setPrincipalHref(principalDao.getHrefFromInternalID(principal));
                     up.setLevel(access);
                     ups.getPermission().add(up);
                 }
@@ -610,7 +607,7 @@ public class DBDispatcherImlp implements DBDispatcher {
         List<Number> selectedAnnotIDs = annotationDao.sublistOrderedAnnotationIDs(annotationIDs, offset, maximumAnnotations, orderedBy, direction);
         ReferenceList references = new ReferenceList();
         for (Number annotationID : selectedAnnotIDs) {
-            references.getRef().add(annotationDao.getURIFromInternalID(annotationID));
+            references.getHref().add(annotationDao.getHrefFromInternalID(annotationID));
         }
         return references;
     }
@@ -648,7 +645,7 @@ public class DBDispatcherImlp implements DBDispatcher {
         List<Permission> permissions = permissionList.getPermission();
         int result = 0;
         for (Permission permission : permissions) {
-            Number principalID = principalDao.getInternalIDFromURI(permission.getPrincipalRef());
+            Number principalID = principalDao.getInternalIDFromHref(permission.getPrincipalHref());
             Access access = permission.getLevel();
             Access currentAccess = annotationDao.getAccess(annotationID, principalID);
             if (currentAccess != null) {
@@ -669,8 +666,8 @@ public class DBDispatcherImlp implements DBDispatcher {
 
     @Override
     public int updateAnnotation(Annotation annotation) throws NotInDataBaseException {
-        Number annotationID = annotationDao.getInternalIDFromURI(annotation.getURI());
-        int updatedAnnotations = annotationDao.updateAnnotation(annotation, annotationID, principalDao.getInternalIDFromURI(annotation.getOwnerRef()));
+        Number annotationID = annotationDao.getInternalID(UUID.fromString(annotation.getId()));
+        int updatedAnnotations = annotationDao.updateAnnotation(annotation, annotationID, principalDao.getInternalIDFromHref(annotation.getOwnerHref()));
         int deletedTargets = annotationDao.deleteAllAnnotationTarget(annotationID);
         int deletedPrinsipalsAccesss = annotationDao.deleteAnnotationPermissions(annotationID);
         int addedTargets = this.addTargets(annotation, annotationID);
@@ -687,7 +684,7 @@ public class DBDispatcherImlp implements DBDispatcher {
     }
 
     @Override
-    public int updateAnnotationHeadline(Number internalID, String newHeader) {
+    public int updateAnnotationHeadline(Number internalID, String newHeader){
         return annotationDao.updateAnnotationHeadline(internalID, newHeader);
     }
 
@@ -703,7 +700,7 @@ public class DBDispatcherImlp implements DBDispatcher {
 
     @Override
     public int updateCachedMetada(CachedRepresentationInfo cachedInfo) throws NotInDataBaseException {
-        Number internalID = cachedRepresentationDao.getInternalIDFromURI(cachedInfo.getURI());
+        Number internalID = cachedRepresentationDao.getInternalID(UUID.fromString(cachedInfo.getId()));
         return cachedRepresentationDao.updateCachedRepresentationMetadata(internalID, cachedInfo);
     }
 
@@ -715,7 +712,7 @@ public class DBDispatcherImlp implements DBDispatcher {
     /// notebooks ///
     @Override
     public boolean updateNotebookMetadata(Number notebookID, NotebookInfo upToDateNotebookInfo) throws NotInDataBaseException {
-        Number ownerID = principalDao.getInternalIDFromURI(upToDateNotebookInfo.getOwnerRef());
+        Number ownerID = principalDao.getInternalIDFromHref(upToDateNotebookInfo.getOwnerHref());
         return notebookDao.updateNotebookMetadata(notebookID, upToDateNotebookInfo.getTitle(), ownerID);
     }
 
@@ -740,18 +737,19 @@ public class DBDispatcherImlp implements DBDispatcher {
 
     }
 
+    
     @Override
     public Map<String, String> addTargetsForAnnotation(Number annotationID, List<TargetInfo> targets) throws NotInDataBaseException {
         Map<String, String> result = new HashMap<String, String>();
         for (TargetInfo targetInfo : targets) {
             try {
-                Number targetIDRunner = targetDao.getInternalIDFromURI(targetInfo.getRef());
+                Number targetIDRunner = targetDao.getInternalIDFromHref(targetInfo.getHref());
                 int affectedRows = annotationDao.addAnnotationTarget(annotationID, targetIDRunner);
             } catch (NotInDataBaseException e) {
                 Target newTarget = this.createFreshTarget(targetInfo);
                 Number targetID = targetDao.addTarget(newTarget);
-                String targetTemporaryID = targetDao.stringURItoExternalID(targetInfo.getRef());
-                result.put(targetTemporaryID, targetDao.getExternalID(targetID).toString());
+                String targetTemporaryId = targetInfo.getHref();
+                result.put(targetTemporaryId, targetDao.getHrefFromInternalID(targetID));
                 int affectedRows = annotationDao.addAnnotationTarget(annotationID, targetID);
             }
         }
@@ -783,7 +781,7 @@ public class DBDispatcherImlp implements DBDispatcher {
         boolean updateOwner = notebookDao.setOwner(notebookID, ownerID);
         List<Permission> permissions = notebook.getPermissions().getPermission();
         for (Permission permission : permissions) {
-            Number principalID = principalDao.getInternalIDFromURI(permission.getPrincipalRef());
+            Number principalID = principalDao.getInternalIDFromHref(permission.getPrincipalHref());
             Access access = permission.getLevel();
             boolean updateAccesss = notebookDao.addAccessToNotebook(notebookID, principalID, access);
         }
@@ -946,7 +944,7 @@ public class DBDispatcherImlp implements DBDispatcher {
         }
     }
 
-    //// priveee ///
+    //// privee ///
     private Target createFreshTarget(TargetInfo targetInfo) {
         Target target = new Target();
         target.setLink(targetInfo.getLink());
@@ -981,7 +979,7 @@ public class DBDispatcherImlp implements DBDispatcher {
         if (permissions != null) {
             int addedPermissions = 0;
             for (Permission permission : permissions) {
-                addedPermissions = addedPermissions + annotationDao.addAnnotationPrincipalAccess(annotationID, principalDao.getInternalIDFromURI(permission.getPrincipalRef()), permission.getLevel());
+                addedPermissions = addedPermissions + annotationDao.addAnnotationPrincipalAccess(annotationID, principalDao.getInternalIDFromHref(permission.getPrincipalHref()), permission.getLevel());
             }
             return addedPermissions;
         } else {
@@ -991,7 +989,7 @@ public class DBDispatcherImlp implements DBDispatcher {
 
     private TargetInfo getTargetInfoFromTarget(Target target) {
         TargetInfo targetInfo = new TargetInfo();
-        targetInfo.setRef(target.getURI());
+        targetInfo.setHref(target.getHref());
         targetInfo.setLink(target.getLink());
         targetInfo.setVersion(target.getVersion());
         return targetInfo;

@@ -20,7 +20,6 @@ package eu.dasish.annotation.backend;
 import eu.dasish.annotation.backend.dao.DBDispatcher;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Providers;
 import org.jmock.Mockery;
 
@@ -37,26 +36,19 @@ public class MockObjectsFactoryRest {
         this.context = context;
     }
 
-    
     public DBDispatcher newDBDispatcher() {
         return context.mock(DBDispatcher.class);
     }
-    
-    public UriInfo newUriInfo() {
-        return context.mock(UriInfo.class);
-    }
-   
-    
-     public Providers newProviders() {
+
+    public Providers newProviders() {
         return context.mock(Providers.class);
     }
-   
+
     public HttpServletRequest newHttpServletRequest() {
         return context.mock(HttpServletRequest.class);
     }
-    
+
     public HttpServletResponse newHttpServletResponce() {
         return context.mock(HttpServletResponse.class);
     }
-   
 }

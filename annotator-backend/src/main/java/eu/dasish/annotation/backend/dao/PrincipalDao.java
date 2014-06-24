@@ -50,6 +50,9 @@ public interface PrincipalDao extends ResourceDao{
      
      public Number getPrincipalInternalIDFromRemoteID(String remoteID) throws NotInDataBaseException;
      
+     public UUID getPrincipalExternalIDFromRemoteID(String remoteID) throws NotInDataBaseException;
+     
+     
      public List<Number> getPrincipalIDsWithAccessForNotebook(Number notebookID, Access access);
      
      public boolean updateAccount(UUID externalID, String account) throws NotInDataBaseException;

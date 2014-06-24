@@ -27,7 +27,6 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Providers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,9 +43,7 @@ public class ResourceResource<T> {
     @Context
     protected HttpServletRequest httpServletRequest;
     @Context
-    protected HttpServletResponse httpServletResponse;
-    @Context
-    protected UriInfo uriInfo;
+    protected HttpServletResponse httpServletResponse;    
     @Context
     protected Providers providers;
     @Context
@@ -58,7 +55,8 @@ public class ResourceResource<T> {
     protected String[] admissibleAccess = {"read", "write", "owner"};
 
     public Number getPrincipalID() throws IOException {
-        dbDispatcher.setServiceURI(uriInfo.getBaseUri().toString());
+        
+        dbDispatcher.setResourcesPaths(this.getRelativeServiceURI());
         String remotePrincipal = httpServletRequest.getRemoteUser();
         if (remotePrincipal != null) {
             if (!remotePrincipal.equals(anonym)) {
@@ -100,5 +98,9 @@ public class ResourceResource<T> {
 
     protected void INVALID_ACCESS_MODE(String accessMode) throws IOException {
         loggerServer.debug(accessMode + " is an invalid access value, which must be either owner, or read, or write.");
+    }
+    
+    protected String getRelativeServiceURI(){
+        return httpServletRequest.getContextPath()+httpServletRequest.getServletPath();
     }
 }

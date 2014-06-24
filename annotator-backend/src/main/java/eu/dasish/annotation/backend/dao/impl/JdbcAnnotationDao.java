@@ -60,8 +60,8 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
     }
 
     @Override
-    public void setServiceURI(String serviceURI) {
-        _serviceURI = serviceURI;
+    public void setResourcePath(String relResourcePath) {
+        _relResourcePath = relResourcePath;
     }
 
     ///////////// GETTERS /////////////
@@ -217,7 +217,8 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         @Override
         public AnnotationInfo mapRow(ResultSet rs, int rowNumber) throws SQLException {
             AnnotationInfo annotationInfo = new AnnotationInfo();
-            annotationInfo.setRef(externalIDtoURI(rs.getString(external_id)));
+            String externalId = rs.getString(external_id);
+            annotationInfo.setHref(externalIDtoHref(externalId));
             annotationInfo.setHeadline(rs.getString(headline));
             annotationInfo.setLastModified(timeStampToXMLGregorianCalendar(rs.getString(last_modified)));
             return annotationInfo;
@@ -248,7 +249,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
     private final RowMapper<String> annotationREFRowMapper = new RowMapper<String>() {
         @Override
         public String mapRow(ResultSet rs, int rowNumber) throws SQLException {
-            return externalIDtoURI(rs.getString(external_id));
+            return externalIDtoHref(rs.getString(external_id));
         }
     };
 
@@ -299,7 +300,9 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
             annotation.setBody(body);
 
             annotation.setTargets(null);
-            annotation.setURI(externalIDtoURI(rs.getString(external_id)));
+            String externalId = rs.getString(external_id);
+            annotation.setId(externalId);            
+            annotation.setHref(externalIDtoHref(externalId));
             annotation.setLastModified(timeStampToXMLGregorianCalendar(rs.getString(last_modified)));
             return annotation;
         }
@@ -397,15 +400,14 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
     public int updateAnnotation(Annotation annotation, Number annotationID, Number newOwnerID) {
 
         String[] body = retrieveBodyComponents(annotation.getBody());
-        
-        String externalID = this.stringURItoExternalID(annotation.getURI());
+                
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("owner", newOwnerID);
         params.put("bodyText", body[0]);
         params.put("bodyMimeType", body[1]);
         params.put("headline", annotation.getHeadline());
         params.put("isXml", annotation.getBody().getXmlBody() != null);
-        params.put("externalId", externalID);
+        params.put("externalId", annotation.getId());
         params.put("annotationId", annotationID);
 
         StringBuilder sql = new StringBuilder("UPDATE ");

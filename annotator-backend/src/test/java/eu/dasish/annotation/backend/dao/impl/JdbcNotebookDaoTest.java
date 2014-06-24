@@ -84,10 +84,11 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest {
     @Test
     public void testGetNotebookInfoWithoutOwner() {
         System.out.println("test getNotebookInfoWithoutOwner");
+        jdbcNotebookDao.setResourcePath("/api/notebooks/");
         NotebookInfo result = jdbcNotebookDao.getNotebookInfoWithoutOwner(1);
-        assertEquals("00000000-0000-0000-0000-000000000011", result.getRef());
+        assertEquals("/api/notebooks/00000000-0000-0000-0000-000000000011", result.getHref());
         assertEquals("Notebook 1", result.getTitle());
-        assertEquals(null, result.getOwnerRef());
+        assertEquals(null, result.getOwnerHref());
     }
 
     /**
@@ -97,8 +98,10 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest {
     @Test
     public void testGetNotebookWithoutAnnotationsAndAccesssAndOwner() {
         System.out.println("test getNotebookWithoutAnnotationsAndAccesssAndOwner");
+        jdbcNotebookDao.setResourcePath("/api/notebooks/");
         Notebook result = jdbcNotebookDao.getNotebookWithoutAnnotationsAndAccesssAndOwner(1);
-        assertEquals("00000000-0000-0000-0000-000000000011", result.getURI());
+        assertEquals("/api/notebooks/00000000-0000-0000-0000-000000000011", result.getHref());
+        assertEquals("00000000-0000-0000-0000-000000000011", result.getId());
         assertEquals("Notebook 1", result.getTitle());
         assertEquals("2013-08-12T09:25:00.383000Z", result.getLastModified().toString());
     }
@@ -148,6 +151,7 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest {
     @Test
     public void testCreateNotebookWithoutAccesssAndAnnotations() throws NotInDataBaseException, DatatypeConfigurationException {
         System.out.println("test createNotebookWithoutAccesssAndAnnotations");
+        jdbcNotebookDao.setResourcePath("/api/notebooks/");
         Notebook notebook = new Notebook();
         notebook.setTitle("New test notebook");
         notebook.setLastModified(DatatypeFactory.newInstance().newXMLGregorianCalendar("2014-02-12T09:25:00.383000Z"));

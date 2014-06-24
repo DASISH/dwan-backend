@@ -25,6 +25,7 @@ import eu.dasish.annotation.schema.TargetInfo;
 import eu.dasish.annotation.schema.TargetInfoList;
 import eu.dasish.annotation.schema.Permission;
 import eu.dasish.annotation.schema.PermissionList;
+import java.util.UUID;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 
@@ -37,15 +38,14 @@ public class TestInstances {
     final private Annotation _annotationOne;
     final private Annotation _annotationToAdd;
 
-    public TestInstances(String baseURI) {
-        _annotationOne = makeAnnotationOne(baseURI);
-        _annotationToAdd = makeAnnotationToAdd(baseURI);
+    public TestInstances(String relativePath) {
+        _annotationOne = makeAnnotationOne(relativePath);
+        _annotationToAdd = makeAnnotationToAdd(relativePath);
     }
 
-    private Annotation makeAnnotationOne(String baseURI) {
-        Annotation result = makeAnnotation(baseURI, "<html><body>some html 1</body></html>", "text/html", "Sagrada Famiglia", "00000000-0000-0000-0000-000000000111");
-        result.setURI(baseURI+"annotations/00000000-0000-0000-0000-000000000021");
-        
+    private Annotation makeAnnotationOne(String relativePath) {
+        Annotation result = makeAnnotation(relativePath, "<html><body>some html 1</body></html>", "text/html", "Sagrada Famiglia", "00000000-0000-0000-0000-000000000111", "00000000-0000-0000-0000-000000000021");
+
         try {
             result.setLastModified(DatatypeFactory.newInstance().newXMLGregorianCalendar("2013-08-12T09:25:00.383000Z"));
         } catch (DatatypeConfigurationException dce) {
@@ -58,11 +58,11 @@ public class TestInstances {
         result.setTargets(targets);
 
         Permission up1 = new Permission();
-        up1.setPrincipalRef(baseURI + "principals/00000000-0000-0000-0000-000000000112");
+        up1.setPrincipalHref(relativePath + "/principals/00000000-0000-0000-0000-000000000112");
         up1.setLevel(Access.WRITE);
 
         Permission up2 = new Permission();
-        up2.setPrincipalRef(baseURI + "principals/00000000-0000-0000-0000-000000000113");
+        up2.setPrincipalHref(relativePath + "/principals/00000000-0000-0000-0000-000000000113");
         up2.setLevel(Access.READ);
 
         upL.getPermission().add(up1);
@@ -71,12 +71,12 @@ public class TestInstances {
 
         TargetInfo target1 = new TargetInfo();
         target1.setLink("http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia");
-        target1.setRef(baseURI + "targets/00000000-0000-0000-0000-000000000031");
+        target1.setHref(relativePath + "/targets/00000000-0000-0000-0000-000000000031");
         target1.setVersion("version 1.0");
 
         TargetInfo target2 = new TargetInfo();
         target2.setLink("http://nl.wikipedia.org/wiki/Antoni_Gaud%C3%AD");
-        target2.setRef(baseURI + "targets/00000000-0000-0000-0000-000000000032");
+        target2.setHref(relativePath + "/targets/00000000-0000-0000-0000-000000000032");
         target2.setVersion("version 1.1");
 
         targets.getTargetInfo().add(target1);
@@ -85,47 +85,41 @@ public class TestInstances {
         return result;
     }
 
-    private Annotation makeAnnotationToAdd(String baseURI) {
-        Annotation result = makeAnnotation(baseURI, "<html><body>some html 3</body></html>", "text/plain", "Annotation to add to test DAO", "00000000-0000-0000-0000-000000000113");
+    private Annotation makeAnnotationToAdd(String relativePath) {
+        Annotation result = makeAnnotation(relativePath, "<html><body>some html 3</body></html>", "text/plain", "Annotation to add to test DAO", "00000000-0000-0000-0000-000000000113",  UUID.randomUUID().toString());
 
         TargetInfo TargetInfo = new TargetInfo();
         TargetInfo.setLink("http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia#de_Opdracht");
-        TargetInfo.setRef(baseURI+  "targets/00000000-0000-0000-0000-000000000031");
+        TargetInfo.setHref(relativePath + "/targets/00000000-0000-0000-0000-000000000031");
         TargetInfo.setVersion("version 1.0");
 
         TargetInfoList targetInfos = new TargetInfoList();
         targetInfos.getTargetInfo().add(TargetInfo);
         result.setTargets(targetInfos);
-        
+
         PermissionList permissions = new PermissionList();
         permissions.setPublic(Access.WRITE);
         result.setPermissions(permissions);
-        
+
         return result;
     }
 
-    private Annotation makeAnnotation(String baseURI, String bodyTxt, String bodyMimeType, String headline, String ownerExternalId) {
+    private Annotation makeAnnotation(String relativePath, String bodyTxt, String bodyMimeType, String headline, String ownerExternalId, String externalId) {
         Annotation result = new Annotation();
+        
         AnnotationBody body = new AnnotationBody();
         result.setBody(body);
         TextBody textBody = new TextBody();
         body.setTextBody(textBody);
         textBody.setMimeType(bodyMimeType);
         textBody.setBody(bodyTxt);
-
+        
         result.setHeadline(headline);
-
-        if (baseURI != null) {
-            result.setOwnerRef(baseURI + "principals/" + ownerExternalId);
-        } else {
-            result.setOwnerRef("principals/" + ownerExternalId);
-        }
-
+        result.setOwnerHref(relativePath + "/principals/" + ownerExternalId);
         result.setLastModified(null);
-        result.setURI(null);
+        result.setId(externalId);
+        result.setHref(relativePath + "/annotations/"+externalId);
         result.setTargets(null);
-        result.setURI(null);
-
         return result;
     }
 

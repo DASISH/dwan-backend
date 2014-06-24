@@ -65,7 +65,7 @@ public class CachedRepresentationResource extends ResourceResource {
     @Transactional(readOnly = true)
     public JAXBElement<CachedRepresentationInfo> getCachedRepresentationInfo(@PathParam("cachedid") String externalId) throws IOException {
         Map params = new HashMap();
-        CachedRepresentationInfo result = (CachedRepresentationInfo) (new RequestWrappers(this)).wrapRequestResource(params, new GetCachedRepresentationInfo(), Resource.CACHED_REPRESENTATION, ResourceAction.READ, externalId, false);
+        CachedRepresentationInfo result = (CachedRepresentationInfo) (new RequestWrappers(this)).wrapRequestResource(params, new GetCachedRepresentationInfo(), Resource.CACHED_REPRESENTATION, ResourceAction.READ, externalId);
         if (result != null) {
             return (new ObjectFactory()).createCashedRepresentationInfo(result);
         } else {
@@ -89,7 +89,7 @@ public class CachedRepresentationResource extends ResourceResource {
     @Transactional(readOnly = true)
     public BufferedImage getCachedRepresentationContent(@PathParam("cachedid") String externalId) throws IOException {
         Map params = new HashMap();
-        InputStream result = (InputStream) (new RequestWrappers(this)).wrapRequestResource(params, new GetCachedRepresentationInputStream(), Resource.CACHED_REPRESENTATION, ResourceAction.READ, externalId, false);
+        InputStream result = (InputStream) (new RequestWrappers(this)).wrapRequestResource(params, new GetCachedRepresentationInputStream(), Resource.CACHED_REPRESENTATION, ResourceAction.READ, externalId);
         if (result != null) {
             ImageIO.setUseCache(false);
             try {
@@ -113,7 +113,7 @@ public class CachedRepresentationResource extends ResourceResource {
     @Transactional(readOnly = true)
     public InputStream getCachedRepresentationContentStream(@PathParam("cachedid") String externalId) throws IOException {
         Map params = new HashMap();
-        return (InputStream) (new RequestWrappers(this)).wrapRequestResource(params, new GetCachedRepresentationInputStream(), Resource.CACHED_REPRESENTATION, ResourceAction.READ, externalId, false);
+        return (InputStream) (new RequestWrappers(this)).wrapRequestResource(params, new GetCachedRepresentationInputStream(), Resource.CACHED_REPRESENTATION, ResourceAction.READ, externalId);
     }
 
     private class GetCachedRepresentationInputStream implements ILambda<Map, InputStream> {
@@ -135,7 +135,7 @@ public class CachedRepresentationResource extends ResourceResource {
         Map params = new HashMap();
         BodyPartEntity bpe = (BodyPartEntity) multiPart.getBodyParts().get(0).getEntity();
         params.put("stream", bpe.getInputStream());
-        Integer result = (Integer) (new RequestWrappers(this)).wrapRequestResource(params, new UpdateCachedBlob(), Resource.CACHED_REPRESENTATION, ResourceAction.WRITE, cachedIdentifier, false);
+        Integer result = (Integer) (new RequestWrappers(this)).wrapRequestResource(params, new UpdateCachedBlob(), Resource.CACHED_REPRESENTATION, ResourceAction.WRITE, cachedIdentifier);
         if (result != null) {
             return result + "rows are updated";
         } else {
@@ -167,7 +167,7 @@ public class CachedRepresentationResource extends ResourceResource {
     public String updateCachedMetadata(CachedRepresentationInfo cachedInfo) throws IOException {
         Map params = new HashMap();
         params.put("info", cachedInfo);
-        Integer result = (Integer) (new RequestWrappers(this)).wrapRequestResource(params, new UpdateCachedMetadata(), Resource.CACHED_REPRESENTATION, ResourceAction.WRITE_W_METAINFO, cachedInfo.getURI(), true);
+        Integer result = (Integer) (new RequestWrappers(this)).wrapRequestResource(params, new UpdateCachedMetadata(), Resource.CACHED_REPRESENTATION, ResourceAction.WRITE_W_METAINFO, cachedInfo.getId());
         if (result != null) {
             return result + "rows are updated";
         } else {

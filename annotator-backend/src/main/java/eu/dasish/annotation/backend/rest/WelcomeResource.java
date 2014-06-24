@@ -21,7 +21,9 @@ import eu.dasish.annotation.backend.Helpers;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.UriInfo;
 import org.springframework.stereotype.Component;
 
 /**
@@ -38,10 +40,10 @@ public class WelcomeResource extends ResourceResource{
     public String status() {
         String remotePrincipal= httpServletRequest.getRemoteUser();
         if (remotePrincipal != null) {
-        return Helpers.welcomeString(uriInfo.getBaseUri().toString() + "..",remotePrincipal);
+        return Helpers.welcomeString(httpServletRequest.getContextPath(),remotePrincipal);
         }
         else {
-           return Helpers.welcomeString(uriInfo.getBaseUri().toString() + "..", "null-principal"); 
+           return Helpers.welcomeString(httpServletRequest.getContextPath(), "null-principal"); 
         }
     } 
 }

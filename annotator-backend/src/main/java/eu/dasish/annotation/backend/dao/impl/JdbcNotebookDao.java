@@ -106,7 +106,8 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
         @Override
         public NotebookInfo mapRow(ResultSet rs, int rowNumber) throws SQLException {
             NotebookInfo notebookInfo = new NotebookInfo();
-            notebookInfo.setRef(externalIDtoURI(rs.getString(external_id)));
+            String externalId = rs.getString(external_id);
+            notebookInfo.setHref(externalIDtoHref(externalId));
             notebookInfo.setTitle(rs.getString(title));
             return notebookInfo;
         }
@@ -127,7 +128,9 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
             Notebook notebook = new Notebook();
             notebook.setTitle(rs.getString(title));
             notebook.setLastModified(timeStampToXMLGregorianCalendar(rs.getString(last_modified)));
-            notebook.setURI(externalIDtoURI(rs.getString(external_id)));
+            String externalId = rs.getString(external_id);
+            notebook.setId(externalId);
+            notebook.setHref(externalIDtoHref(externalId));
             return notebook;
         }
     };
@@ -246,7 +249,7 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
         sql.append(",").append(title).
                 append(" ) VALUES (:externalId, :owner, :title)");
         int affectedRows = this.loggedUpdate(sql.toString(), params);
-        return getInternalID(externalID);
+        return this.getInternalID(externalID);
     }
 
     @Override

@@ -49,8 +49,8 @@ public class JdbcPrincipalDao extends JdbcResourceDao implements PrincipalDao {
     }
 
     @Override
-    public void setServiceURI(String serviceURI) {
-        _serviceURI = serviceURI;
+    public void setResourcePath(String relResourcePath) {
+        _relResourcePath = relResourcePath;
     }
 
     /////////// GETTERS //////////////////////
@@ -65,7 +65,9 @@ public class JdbcPrincipalDao extends JdbcResourceDao implements PrincipalDao {
         @Override
         public Principal mapRow(ResultSet rs, int rowNumber) throws SQLException {
             Principal result = new Principal();
-            result.setURI(externalIDtoURI(rs.getString(external_id)));
+            String externalId = rs.getString(external_id);
+            result.setId(externalId);
+            result.setHref(externalIDtoHref(externalId));
             result.setDisplayName(rs.getString(principal_name));
             result.setEMail(rs.getString(e_mail));
             return result;
@@ -141,6 +143,18 @@ public class JdbcPrincipalDao extends JdbcResourceDao implements PrincipalDao {
         return result.get(0);
     }
 
+    @Override
+    public UUID getPrincipalExternalIDFromRemoteID(String remoteID) throws NotInDataBaseException {
+
+        StringBuilder requestDB = new StringBuilder("SELECT ");
+        requestDB.append(external_id).append(" FROM ").append(principalTableName).append(" WHERE ").append(remote_id).append("= ? LIMIT 1");
+        List<UUID> result = this.loggedQuery(requestDB.toString(), externalIDRowMapper, remoteID);
+        if (result.isEmpty()) {
+            throw new NotInDataBaseException("principal", "remote ID", remoteID);
+        }
+        return result.get(0);
+    }
+    
     @Override
     public String getTypeOfPrincipalAccount(Number internalID) {
         StringBuilder requestDB = new StringBuilder("SELECT ");
@@ -243,7 +257,7 @@ public class JdbcPrincipalDao extends JdbcResourceDao implements PrincipalDao {
 
     @Override
     public Number updatePrincipal(Principal principal) throws NotInDataBaseException {
-        Number principalID = this.getInternalIDFromURI(principal.getURI());
+        Number principalID = this.getInternalID(UUID.fromString(principal.getId()));
         StringBuilder sql = new StringBuilder("UPDATE ");
         sql.append(principalTableName).append(" SET ").
                 append(e_mail).append("= '").append(principal.getEMail()).append("',").
@@ -261,7 +275,7 @@ public class JdbcPrincipalDao extends JdbcResourceDao implements PrincipalDao {
     public int deletePrincipal(Number internalID) throws PrincipalCannotBeDeleted {
 
         if (principalIsInUse(internalID)) {
-            throw new PrincipalCannotBeDeleted(this.getURIFromInternalID(internalID));
+            throw new PrincipalCannotBeDeleted(this.getHrefFromInternalID(internalID));
         }
         StringBuilder sql = new StringBuilder("DELETE FROM ");
         sql.append(principalTableName).append(" where ").append(principal_id).append(" = ?");

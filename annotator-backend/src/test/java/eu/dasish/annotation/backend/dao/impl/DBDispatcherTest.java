@@ -21,7 +21,6 @@ import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.PrincipalCannotBeDeleted;
 import eu.dasish.annotation.backend.PrincipalExists;
 import eu.dasish.annotation.backend.Resource;
-import eu.dasish.annotation.backend.TestBackendConstants;
 import eu.dasish.annotation.backend.TestInstances;
 import eu.dasish.annotation.backend.dao.AnnotationDao;
 import eu.dasish.annotation.backend.dao.CachedRepresentationDao;
@@ -92,21 +91,24 @@ public class DBDispatcherTest {
     private AnnotationDao annotationDao;
     @Autowired
     private NotebookDao notebookDao;
-    TestInstances testInstances = new TestInstances(TestBackendConstants._TEST_SERVLET_URI);
+    TestInstances testInstances = new TestInstances("/api");
 
-    public DBDispatcherTest() {
+    public DBDispatcherTest() {        
     }
+    
+   
 
     ///////// GETTERS /////////////
     /**
      * Test of getAnnotationInternalIdentifier method, of class
      * DBIntegrityServiceImlp.
      */
+    
     @Test
     public void testGetAnnotationInternalIdentifier() throws NotInDataBaseException {
         System.out.println("getAnnotationInternalIdentifier");
+        
         final UUID externalID = UUID.fromString("00000000-0000-0000-0000-000000000021");
-        //dbIntegrityService.setResourceList();
         mockeryDao.checking(new Expectations() {
             {
                 oneOf(annotationDao).getInternalID(externalID);
@@ -124,7 +126,7 @@ public class DBDispatcherTest {
     public void testGetAnnotationExternalIdentifier() {
         System.out.println("getAnnotationExternalIdentifier");
         final UUID externalID = UUID.fromString("00000000-0000-0000-0000-000000000021");
-
+        
         mockeryDao.checking(new Expectations() {
             {
                 oneOf(annotationDao).getExternalID(1);
@@ -141,7 +143,7 @@ public class DBDispatcherTest {
     @Test
     public void testGetPrincipalInternalIdentifier() throws NotInDataBaseException {
         System.out.println("getPrincipalInternalIdentifier");
-
+        
         final UUID externalID = UUID.fromString("00000000-0000-0000-0000-000000000111");
 
         mockeryDao.checking(new Expectations() {
@@ -161,7 +163,7 @@ public class DBDispatcherTest {
     public void testGetPrincipalExternalIdentifier() {
         System.out.println("getPrincipalExternalIdentifier");
         final UUID externalID = UUID.fromString("00000000-0000-0000-0000-000000000111");
-
+        
         mockeryDao.checking(new Expectations() {
             {
                 oneOf(principalDao).getExternalID(1);
@@ -177,13 +179,14 @@ public class DBDispatcherTest {
     @Test
     public void testGetAnnotation() throws Exception {
         System.out.println("test getAnnotation");
-
+        
         final Annotation mockAnnotation = new Annotation();// corresponds to the annotation # 1
-        mockAnnotation.setURI(TestBackendConstants._TEST_SERVLET_URI_annotations + "00000000-0000-0000-0000-000000000021");
+        mockAnnotation.setHref("/api/annotations/00000000-0000-0000-0000-000000000021");
+        mockAnnotation.setId("00000000-0000-0000-0000-000000000021");
         mockAnnotation.setHeadline("Sagrada Famiglia");
         XMLGregorianCalendar mockTimeStamp = DatatypeFactory.newInstance().newXMLGregorianCalendar("2013-08-12T09:25:00.383000Z");
         mockAnnotation.setLastModified(mockTimeStamp);
-        mockAnnotation.setOwnerRef(TestBackendConstants._TEST_SERVLET_URI_annotations + "00000000-0000-0000-0000-000000000111");
+        mockAnnotation.setOwnerHref("/api/principals/00000000-0000-0000-0000-000000000111");
 
         AnnotationBody mockBody = new AnnotationBody();
         TextBody textBody = new AnnotationBody.TextBody();
@@ -200,12 +203,14 @@ public class DBDispatcherTest {
 
         final Target mockTargetOne = new Target();
         mockTargetOne.setLink("http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia");
-        mockTargetOne.setURI(TestBackendConstants._TEST_SERVLET_URI_targets + "00000000-0000-0000-0000-000000000031");
+        mockTargetOne.setId("00000000-0000-0000-0000-000000000031");
+        mockTargetOne.setHref("/api/targets/00000000-0000-0000-0000-000000000031");
         mockTargetOne.setVersion("version 1.0");
 
         final Target mockTargetTwo = new Target();
         mockTargetTwo.setLink("http://nl.wikipedia.org/wiki/Antoni_Gaud%C3%AD");
-        mockTargetTwo.setURI(TestBackendConstants._TEST_SERVLET_URI_targets + "00000000-0000-0000-0000-000000000032");
+        mockTargetTwo.setId("00000000-0000-0000-0000-000000000032");
+        mockTargetTwo.setHref("/api/targets/00000000-0000-0000-0000-000000000032");
         mockTargetTwo.setVersion("version 1.1");
 
         final List<Map<Number, String>> listMap = new ArrayList<Map<Number, String>>();
@@ -219,10 +224,10 @@ public class DBDispatcherTest {
         map4.put(11, "read");
         listMap.add(map4);
 
-        final String uri1 = TestBackendConstants._TEST_SERVLET_URI_principals + "00000000-0000-0000-0000-000000000111";
-        final String uri2 = TestBackendConstants._TEST_SERVLET_URI_principals + "00000000-0000-0000-0000-000000000112";
-        final String uri3 = TestBackendConstants._TEST_SERVLET_URI_principals + "00000000-0000-0000-0000-000000000113";
-        final String uri4 = TestBackendConstants._TEST_SERVLET_URI_principals + "00000000-0000-0000-0000-000000000221";
+        final String uri1 = "/api/principals/00000000-0000-0000-0000-000000000111";
+        final String uri2 = "/api/principals/00000000-0000-0000-0000-000000000112";
+        final String uri3 = "/api/principals/00000000-0000-0000-0000-000000000113";
+        final String uri4 = "/api/principals/00000000-0000-0000-0000-000000000221";
 
 
         mockeryDao.checking(new Expectations() {
@@ -233,7 +238,7 @@ public class DBDispatcherTest {
                 oneOf(annotationDao).getOwner(1);
                 will(returnValue(1));
 
-                oneOf(principalDao).getURIFromInternalID(1);
+                oneOf(principalDao).getHrefFromInternalID(1);
                 will(returnValue(uri1));
 
                 oneOf(targetDao).getTargetIDs(1);
@@ -253,42 +258,43 @@ public class DBDispatcherTest {
                 oneOf(annotationDao).getPublicAttribute(1);
                 will(returnValue(Access.WRITE));
 
-                oneOf(principalDao).getURIFromInternalID(2);
+                oneOf(principalDao).getHrefFromInternalID(2);
                 will(returnValue(uri2));
 
-                oneOf(principalDao).getURIFromInternalID(3);
+                oneOf(principalDao).getHrefFromInternalID(3);
                 will(returnValue(uri3));
 
-                oneOf(principalDao).getURIFromInternalID(11);
+                oneOf(principalDao).getHrefFromInternalID(11);
                 will(returnValue(uri4));
             }
         });
 
         Annotation result = dbDispatcher.getAnnotation(1);
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI_annotations + "00000000-0000-0000-0000-000000000021", result.getURI());
+        assertEquals("00000000-0000-0000-0000-000000000021", result.getId());
+        assertEquals("/api/annotations/00000000-0000-0000-0000-000000000021", result.getHref());
         assertEquals("text/plain", result.getBody().getTextBody().getMimeType());
         assertEquals("<html><body>some html 1</body></html>", result.getBody().getTextBody().getBody());
         assertEquals("Sagrada Famiglia", result.getHeadline());
         assertEquals("2013-08-12T09:25:00.383000Z", result.getLastModified().toString());
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI_principals + "00000000-0000-0000-0000-000000000111", result.getOwnerRef());
+        assertEquals("/api/principals/00000000-0000-0000-0000-000000000111", result.getOwnerHref());
 
         assertEquals(mockTargetOne.getLink(), result.getTargets().getTargetInfo().get(0).getLink());
-        assertEquals(mockTargetOne.getURI(), result.getTargets().getTargetInfo().get(0).getRef());
+        assertEquals(mockTargetOne.getHref(), result.getTargets().getTargetInfo().get(0).getHref());
         assertEquals(mockTargetOne.getVersion(), result.getTargets().getTargetInfo().get(0).getVersion());
         assertEquals(mockTargetTwo.getLink(), result.getTargets().getTargetInfo().get(1).getLink());
-        assertEquals(mockTargetTwo.getURI(), result.getTargets().getTargetInfo().get(1).getRef());
+        assertEquals(mockTargetTwo.getHref(), result.getTargets().getTargetInfo().get(1).getHref());
         assertEquals(mockTargetTwo.getVersion(), result.getTargets().getTargetInfo().get(1).getVersion());
 
         assertEquals(3, result.getPermissions().getPermission().size());
 
         assertEquals(Access.WRITE, result.getPermissions().getPermission().get(0).getLevel());
-        assertEquals(uri2, result.getPermissions().getPermission().get(0).getPrincipalRef());
+        assertEquals(uri2, result.getPermissions().getPermission().get(0).getPrincipalHref());
 
         assertEquals(Access.READ, result.getPermissions().getPermission().get(1).getLevel());
-        assertEquals(uri3, result.getPermissions().getPermission().get(1).getPrincipalRef());
+        assertEquals(uri3, result.getPermissions().getPermission().get(1).getPrincipalHref());
 
         assertEquals(Access.READ, result.getPermissions().getPermission().get(2).getLevel());
-        assertEquals(uri4, result.getPermissions().getPermission().get(2).getPrincipalRef());
+        assertEquals(uri4, result.getPermissions().getPermission().get(2).getPrincipalHref());
 
         assertEquals(Access.WRITE, result.getPermissions().getPublic());
     }
@@ -299,7 +305,7 @@ public class DBDispatcherTest {
     @Test
     public void testGetFilteredAnnotationIDs() throws NotInDataBaseException {
         System.out.println("test getFilteredAnnotationIDs");
-       
+        
         final List<Number> mockAnnotationIDs1 = new ArrayList<Number>();
         mockAnnotationIDs1.add(1);
      
@@ -366,8 +372,7 @@ public class DBDispatcherTest {
     @Test
     public void testGetFilteredAnnotationIDs2() throws NotInDataBaseException {
         System.out.println("test getFilteredAnnotationIDs");
-
-        
+       
         final List<Number> mockAnnotationIDs1 = new ArrayList<Number>();
         mockAnnotationIDs1.add(1);
 
@@ -433,7 +438,6 @@ public class DBDispatcherTest {
     @Test
     public void testGetFilteredAnnotationIDs3() throws NotInDataBaseException {
         System.out.println("test getFilteredAnnotationIDs");
-
         
         final List<Number> mockAnnotationIDs1 = new ArrayList<Number>();
         
@@ -458,9 +462,7 @@ public class DBDispatcherTest {
     @Test
     public void testGetFilteredAnnotationIDs4() throws NotInDataBaseException {
         System.out.println("test getFilteredAnnotationIDs");
-
-       
-
+        
         final String after = (new Timestamp(0)).toString();
         final String before = (new Timestamp(System.currentTimeMillis())).toString();
 
@@ -487,27 +489,28 @@ public class DBDispatcherTest {
     @Test
     public void testGetAnnotationTargets() throws SQLException {
         System.out.println("test getAnnotationTargets");
-        final List<Number> TargetIDs = new ArrayList<Number>();
-        TargetIDs.add(1);
-        TargetIDs.add(2);
+        
+        final List<Number> targetIDs = new ArrayList<Number>();
+        targetIDs.add(1);
+        targetIDs.add(2);
         mockeryDao.checking(new Expectations() {
             {
                 oneOf(targetDao).getTargetIDs(1);
-                will(returnValue(TargetIDs));
+                will(returnValue(targetIDs));
 
-                oneOf(targetDao).getURIFromInternalID(1);
-                will(returnValue(TestBackendConstants._TEST_SERVLET_URI_targets + "00000000-0000-0000-0000-000000000031"));
+                oneOf(targetDao).getHrefFromInternalID(1);
+                will(returnValue("/api/targets/00000000-0000-0000-0000-000000000031"));
 
-                oneOf(targetDao).getURIFromInternalID(2);
-                will(returnValue(TestBackendConstants._TEST_SERVLET_URI_targets + "00000000-0000-0000-0000-000000000032"));
+                oneOf(targetDao).getHrefFromInternalID(2);
+                will(returnValue("/api/targets/00000000-0000-0000-0000-000000000032"));
 
             }
         });
 
         ReferenceList result = dbDispatcher.getAnnotationTargets(1);
-        assertEquals(2, result.getRef().size());
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI_targets + "00000000-0000-0000-0000-000000000031", result.getRef().get(0));
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI_targets + "00000000-0000-0000-0000-000000000032", result.getRef().get(1));
+        assertEquals(2, result.getHref().size());
+        assertEquals("/api/targets/00000000-0000-0000-0000-000000000031", result.getHref().get(0));
+        assertEquals("/api/targets/00000000-0000-0000-0000-000000000032", result.getHref().get(1));
 
     }
 
@@ -523,8 +526,7 @@ public class DBDispatcherTest {
     @Test
     public void testGetFilteredAnnotationInfos() throws NotInDataBaseException {
         System.out.println("test getetFilteredAnnotationInfos");
-
-
+        
         final List<Number> mockAnnotationIDs1 = new ArrayList<Number>();
         mockAnnotationIDs1.add(1);
 
@@ -562,8 +564,8 @@ public class DBDispatcherTest {
         final AnnotationInfo mockAnnotInfo = new AnnotationInfo();
 
         mockAnnotInfo.setHeadline("Sagrada Famiglia");
-        mockAnnotInfo.setRef(TestBackendConstants._TEST_SERVLET_URI_annotations + "00000000-0000-0000-0000-000000000021");
-        mockAnnotInfo.setOwnerRef(TestBackendConstants._TEST_SERVLET_URI_principals + "00000000-0000-0000-0000-000000000111");
+        mockAnnotInfo.setHref("/api/annotations/00000000-0000-0000-0000-000000000021");
+        mockAnnotInfo.setOwnerHref("/api/principals/00000000-0000-0000-0000-000000000111");
 
         final List<Number> targetIDs = new ArrayList<Number>();
         targetIDs.add(1);
@@ -607,19 +609,19 @@ public class DBDispatcherTest {
                 oneOf(annotationDao).getOwner(1);
                 will(returnValue(1));
 
-                oneOf(principalDao).getURIFromInternalID(1);
-                will(returnValue(TestBackendConstants._TEST_SERVLET_URI_principals + "00000000-0000-0000-0000-000000000111"));
+                oneOf(principalDao).getHrefFromInternalID(1);
+                will(returnValue("/api/principals/00000000-0000-0000-0000-000000000111"));
 
                 ////
                 oneOf(targetDao).getTargetIDs(1);
                 will(returnValue(targetIDs));
 
-                oneOf(targetDao).getURIFromInternalID(1);
-                will(returnValue(TestBackendConstants._TEST_SERVLET_URI_targets + "00000000-0000-0000-0000-000000000031"));
+                oneOf(targetDao).getHrefFromInternalID(1);
+                will(returnValue("/api/targets/00000000-0000-0000-0000-000000000031"));
 
 
-                oneOf(targetDao).getURIFromInternalID(2);
-                will(returnValue(TestBackendConstants._TEST_SERVLET_URI_targets + "00000000-0000-0000-0000-000000000032"));
+                oneOf(targetDao).getHrefFromInternalID(2);
+                will(returnValue("/api/targets/00000000-0000-0000-0000-000000000032"));
 
 
             }
@@ -629,18 +631,18 @@ public class DBDispatcherTest {
         AnnotationInfoList result = dbDispatcher.getFilteredAnnotationInfos(ownerUUID, "nl.wikipedia.org", "some html 1", 3, "read", null, after, before);
         assertEquals(1, result.getAnnotationInfo().size());
         AnnotationInfo resultAnnotInfo = result.getAnnotationInfo().get(0);
-        assertEquals(mockAnnotInfo.getHeadline(), resultAnnotInfo.getHeadline());
-        assertEquals(mockAnnotInfo.getRef(), resultAnnotInfo.getRef());
-        assertEquals(mockAnnotInfo.getOwnerRef(), resultAnnotInfo.getOwnerRef());
-        assertEquals(mockAnnotInfo.getRef(), result.getAnnotationInfo().get(0).getRef());
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI_targets + "00000000-0000-0000-0000-000000000031", resultAnnotInfo.getTargets().getRef().get(0));
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI_targets + "00000000-0000-0000-0000-000000000032", resultAnnotInfo.getTargets().getRef().get(1));
+        assertEquals("Sagrada Famiglia", resultAnnotInfo.getHeadline());
+        assertEquals("/api/principals/00000000-0000-0000-0000-000000000111", resultAnnotInfo.getOwnerHref());
+        assertEquals("/api/annotations/00000000-0000-0000-0000-000000000021", result.getAnnotationInfo().get(0).getHref());
+        assertEquals("/api/targets/00000000-0000-0000-0000-000000000031", resultAnnotInfo.getTargets().getHref().get(0));
+        assertEquals("/api/targets/00000000-0000-0000-0000-000000000032", resultAnnotInfo.getTargets().getHref().get(1));
 
     }
 
     @Test
     public void testGetTargetsWithNoCachedRepresentation() {
         System.out.println("test getTargetsWithNoCachedRepresentation");
+      
         final List<Number> targetIDs = new ArrayList<Number>();
         targetIDs.add(5);
         targetIDs.add(7);
@@ -662,15 +664,15 @@ public class DBDispatcherTest {
                 oneOf(cachedRepresentationDao).getCachedRepresentationsForTarget(7);
                 will(returnValue(cachedIDs7));
 
-                oneOf(targetDao).getURIFromInternalID(7);
-                will(returnValue("00000000-0000-0000-0000-000000000037"));
+                oneOf(targetDao).getHrefFromInternalID(7);
+                will(returnValue("/api/targets/00000000-0000-0000-0000-000000000037"));
 
             }
         });
 
         List<String> result = dbDispatcher.getTargetsWithNoCachedRepresentation(3);
         assertEquals(1, result.size());
-        assertEquals("00000000-0000-0000-0000-000000000037", result.get(0)); // Target number 7 has no cached
+        assertEquals("/api/targets/00000000-0000-0000-0000-000000000037", result.get(0)); // Target number 7 has no cached
     }
 
     ////////////// ADDERS /////////////////////////
@@ -679,7 +681,8 @@ public class DBDispatcherTest {
      */
     @Test
     public void testAddCached() throws SerialException, IOException, NotInDataBaseException {
-        System.out.println("addCached");
+        System.out.println("test addCached");
+        
         String mime = "text/html";
         String type = "text";
         String tool = "latex";
@@ -688,17 +691,15 @@ public class DBDispatcherTest {
         newCachedInfo.setMimeType(mime);
         newCachedInfo.setType(type);
         newCachedInfo.setTool(tool);
-        newCachedInfo.setURI(TestBackendConstants._TEST_SERVLET_URI_cached + externalID);
-
+        newCachedInfo.setHref("/api/cached/" + externalID);
+        newCachedInfo.setId(externalID);
+        
         String blobString = "aaa";
         byte[] blobBytes = blobString.getBytes();
         final ByteArrayInputStream newCachedBlob = new ByteArrayInputStream(blobBytes);
 
         mockeryDao.checking(new Expectations() {
             {
-
-                oneOf(cachedRepresentationDao).getInternalIDFromURI(newCachedInfo.getURI());
-                will(returnValue(null));
 
                 oneOf(cachedRepresentationDao).addCachedRepresentation(newCachedInfo, newCachedBlob);
                 will(returnValue(8));
@@ -728,18 +729,18 @@ public class DBDispatcherTest {
     @Test
     public void testAddTargetsForAnnotation() throws Exception {
         System.out.println("test addTargetsForAnnotation");
-
+        
         // test 1: adding an existing target
         TargetInfo testTargetOne = new TargetInfo();
         testTargetOne.setLink("http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia");
-        testTargetOne.setRef(TestBackendConstants._TEST_SERVLET_URI_targets + "00000000-0000-0000-0000-000000000031");
+        testTargetOne.setHref("/api/targets/00000000-0000-0000-0000-000000000031");
         testTargetOne.setVersion("version 1.0");
         final List<TargetInfo> mockTargetListOne = new ArrayList<TargetInfo>();
         mockTargetListOne.add(testTargetOne);
 
         mockeryDao.checking(new Expectations() {
             {
-                oneOf(targetDao).getInternalIDFromURI(mockTargetListOne.get(0).getRef());
+                oneOf(targetDao).getInternalIDFromHref(mockTargetListOne.get(0).getHref());
                 will(returnValue(1));
 
                 oneOf(annotationDao).addAnnotationTarget(4, 1);
@@ -752,8 +753,8 @@ public class DBDispatcherTest {
 
         // test 2: adding a new Target
         TargetInfo testTargetTwo = new TargetInfo();
-        final String tempTargetID = UUID.randomUUID().toString();
-        testTargetTwo.setRef(TestBackendConstants._TEST_SERVLET_URI_targets + tempTargetID);
+        final String tempTargetID = "/api/targets/"+UUID.randomUUID().toString();
+        testTargetTwo.setHref(tempTargetID);
         testTargetTwo.setLink("http://www.sagradafamilia.cat/docs_instit/historia.php");
         testTargetTwo.setVersion("version 1.0");
         final List<TargetInfo> mockTargetListTwo = new ArrayList<TargetInfo>();
@@ -762,19 +763,22 @@ public class DBDispatcherTest {
         final UUID mockNewTargetUUID = UUID.randomUUID();
         final NotInDataBaseException e = new NotInDataBaseException("target", "external ID", tempTargetID);
 
+//        Target newTarget = this.createFreshTarget(targetInfo);
+//                Number targetID = targetDao.addTarget(newTarget);
+//                String targetTemporaryId = targetInfo.getHref();
+//                result.put(targetTemporaryId, targetDao.getExternalID(targetID).toString());
+//                int affectedRows = annotationDao.addAnnotationTarget(annotationID, targetID);
+//        
         mockeryDao.checking(new Expectations() {
             {
-                oneOf(targetDao).getInternalIDFromURI(mockTargetListTwo.get(0).getRef());
+                oneOf(targetDao).getInternalIDFromHref(mockTargetListTwo.get(0).getHref());
                 will(throwException(e));
 
                 oneOf(targetDao).addTarget(with(aNonNull(Target.class)));
                 will(returnValue(8)); //# the next new number is 8, we have already 7 Targets
 
-                oneOf(targetDao).stringURItoExternalID(mockTargetListTwo.get(0).getRef());
-                will(returnValue(tempTargetID));
-
-                oneOf(targetDao).getExternalID(8);
-                will(returnValue(mockNewTargetUUID));
+                oneOf(targetDao).getHrefFromInternalID(8);
+                will(returnValue("/api/targets/"+mockNewTargetUUID.toString()));
 
                 oneOf(annotationDao).addAnnotationTarget(1, 8);
                 will(returnValue(1));
@@ -784,7 +788,7 @@ public class DBDispatcherTest {
 
         Map<String, String> resultTwo = dbDispatcher.addTargetsForAnnotation(1, mockTargetListTwo);
         assertEquals(1, resultTwo.size());
-        assertEquals(mockNewTargetUUID.toString(), resultTwo.get(tempTargetID));
+        assertEquals("/api/targets/"+mockNewTargetUUID.toString(), resultTwo.get(tempTargetID));
 
     }
 
@@ -804,7 +808,7 @@ public class DBDispatcherTest {
                 will(returnValue(5)); // the next free number is 5
 
                 //  expectations for addTargetsForannotation
-                oneOf(targetDao).getInternalIDFromURI(TestBackendConstants._TEST_SERVLET_URI_targets + "00000000-0000-0000-0000-000000000031");
+                oneOf(targetDao).getInternalIDFromHref("/api/targets/00000000-0000-0000-0000-000000000031");
                 will(returnValue(1));
 
                 oneOf(annotationDao).addAnnotationTarget(5, 1);
@@ -823,8 +827,8 @@ public class DBDispatcherTest {
         Number result = dbDispatcher.addPrincipalsAnnotation(3, testAnnotation);
         assertEquals(5, result);
 
-//        Annotation newAnnotation = dbIntegrityService.getAnnotation(5);
-//        assertEquals(TestBackendConstants._TEST_SERVLET_URI_principals + "00000000-0000-0000-0000-000000000113", newAnnotation.getOwnerRef());
+//        Annotation newAnnotation = dbDispatcher.getAnnotation(5);
+//        assertEquals("/api/principals/00000000-0000-0000-0000-000000000113", newAnnotation.getOwnerHref());
 //        assertEquals(testAnnotation.getHeadline(), newAnnotation.getHeadline());
 //        assertEquals(testAnnotation.getBody().getTextBody().getBody(), newAnnotation.getBody().getTextBody().getBody());
 //        assertEquals(testAnnotation.getBody().getTextBody().getMimeType(), newAnnotation.getBody().getTextBody().getMimeType());
@@ -1070,7 +1074,7 @@ public class DBDispatcherTest {
         mockNotebookIDs.add(1);
 
         final NotebookInfo mockNotebookInfo = new NotebookInfo();
-        mockNotebookInfo.setRef("00000000-0000-0000-0000-000000000011");
+        mockNotebookInfo.setHref("/api/notebooks/00000000-0000-0000-0000-000000000011");
         mockNotebookInfo.setTitle("Notebook 1");
 
         mockeryDao.checking(new Expectations() {
@@ -1084,15 +1088,15 @@ public class DBDispatcherTest {
                 oneOf(notebookDao).getOwner(1);
                 will(returnValue(1));
 
-                oneOf(principalDao).getURIFromInternalID(1);
-                will(returnValue("00000000-0000-0000-0000-000000000111"));
+                oneOf(principalDao).getHrefFromInternalID(1);
+                will(returnValue("/api/principals/00000000-0000-0000-0000-000000000111"));
 
             }
         });
 
         NotebookInfoList result = dbDispatcher.getNotebooks(3, Access.READ);
-        assertEquals("00000000-0000-0000-0000-000000000011", result.getNotebookInfo().get(0).getRef());
-        assertEquals("00000000-0000-0000-0000-000000000111", result.getNotebookInfo().get(0).getOwnerRef());
+        assertEquals("/api/notebooks/00000000-0000-0000-0000-000000000011", result.getNotebookInfo().get(0).getHref());
+        assertEquals("/api/principals/00000000-0000-0000-0000-000000000111", result.getNotebookInfo().get(0).getOwnerHref());
         assertEquals("Notebook 1", result.getNotebookInfo().get(0).getTitle());
 
     }
@@ -1106,11 +1110,11 @@ public class DBDispatcherTest {
         mockNotebookIDs.add(4);
 
         final NotebookInfo mockNotebookInfo1 = new NotebookInfo();
-        mockNotebookInfo1.setRef("00000000-0000-0000-0000-000000000013");
+        mockNotebookInfo1.setHref("/api/notebooks/00000000-0000-0000-0000-000000000013");
         mockNotebookInfo1.setTitle("Notebook 3");
 
         final NotebookInfo mockNotebookInfo2 = new NotebookInfo();
-        mockNotebookInfo2.setRef("00000000-0000-0000-0000-000000000014");
+        mockNotebookInfo2.setHref("/api/notebooks/00000000-0000-0000-0000-000000000014");
         mockNotebookInfo2.setTitle("Notebook 4");
 
         mockeryDao.checking(new Expectations() {
@@ -1118,8 +1122,8 @@ public class DBDispatcherTest {
                 oneOf(notebookDao).getNotebookIDsOwnedBy(3);
                 will(returnValue(mockNotebookIDs));
 
-                oneOf(principalDao).getURIFromInternalID(3);
-                will(returnValue("00000000-0000-0000-0000-000000000113"));
+                oneOf(principalDao).getHrefFromInternalID(3);
+                will(returnValue("/api/principals/00000000-0000-0000-0000-000000000113"));
 
                 oneOf(notebookDao).getNotebookInfoWithoutOwner(3);
                 will(returnValue(mockNotebookInfo1));
@@ -1130,8 +1134,9 @@ public class DBDispatcherTest {
             }
         });
 
-//       NotebookInfoList result = dbIntegrityService.getNotebooks(3, "owner");        
-//       assertEquals("00000000-0000-0000-0000-000000000013", result.getNotebookInfo().get(0).getRef());//        assertEquals("00000000-0000-0000-0000-000000000113", result.getNotebookInfo().get(0).getOwnerRef());
+        //??
+//        NotebookInfoList result = dbDispatcher.getNotebooks(3, "owner");
+//        assertEquals("00000000-0000-0000-0000-000000000013", result.getNotebookInfo().get(0).getRef());//        assertEquals("00000000-0000-0000-0000-000000000113", result.getNotebookInfo().get(0).getOwnerRef());
 //        assertEquals("Notebook 3", result.getNotebookInfo().get(0).getTitle());
 //        assertEquals("00000000-0000-0000-0000-000000000014", result.getNotebookInfo().get(1).getRef());
 //        assertEquals("00000000-0000-0000-0000-000000000113", result.getNotebookInfo().get(1).getOwnerRef());
@@ -1160,19 +1165,19 @@ public class DBDispatcherTest {
                 oneOf(notebookDao).getNotebookIDsOwnedBy(3);
                 will(returnValue(mockNotebookIDs));
 
-                oneOf(notebookDao).getURIFromInternalID(3);
-                will(returnValue(TestBackendConstants._TEST_SERVLET_URI_notebooks + "00000000-0000-0000-0000-000000000013"));
+                oneOf(notebookDao).getHrefFromInternalID(3);
+                will(returnValue("/api/notebooks/00000000-0000-0000-0000-000000000013"));
 
-                oneOf(notebookDao).getURIFromInternalID(4);
-                will(returnValue(TestBackendConstants._TEST_SERVLET_URI_notebooks + "00000000-0000-0000-0000-000000000014"));
+                oneOf(notebookDao).getHrefFromInternalID(4);
+                will(returnValue("/api/notebooks/00000000-0000-0000-0000-000000000014"));
 
             }
         });
 
         ReferenceList result = dbDispatcher.getNotebooksOwnedBy(3);
-        assertEquals(2, result.getRef().size());
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI_notebooks + "00000000-0000-0000-0000-000000000013", result.getRef().get(0));
-        assertEquals(TestBackendConstants._TEST_SERVLET_URI_notebooks + "00000000-0000-0000-0000-000000000014", result.getRef().get(1));
+        assertEquals(2, result.getHref().size());
+        assertEquals("/api/notebooks/00000000-0000-0000-0000-000000000013", result.getHref().get(0));
+        assertEquals("/api/notebooks/00000000-0000-0000-0000-000000000014", result.getHref().get(1));
     }
 
     /*      public boolean hasAccess(Number notebookID, Number principalID, Access access){
@@ -1228,19 +1233,19 @@ public class DBDispatcherTest {
                 oneOf(principalDao).getPrincipalIDsWithAccessForNotebook(1, Access.WRITE);
                 will(returnValue(mockPrincipalIDs));
 
-                oneOf(principalDao).getURIFromInternalID(2);
-                will(returnValue("serviceURI/principals/00000000-0000-0000-0000-000000000112"));
+                oneOf(principalDao).getHrefFromInternalID(2);
+                will(returnValue("/api/principals/00000000-0000-0000-0000-000000000112"));
 
-                oneOf(principalDao).getURIFromInternalID(4);
-                will(returnValue("serviceURI/principals/00000000-0000-0000-0000-000000000114"));
+                oneOf(principalDao).getHrefFromInternalID(4);
+                will(returnValue("/api/principals/00000000-0000-0000-0000-000000000114"));
 
 
             }
         });
 
         ReferenceList result = dbDispatcher.getPrincipals(1, "write");
-        assertEquals("serviceURI/principals/00000000-0000-0000-0000-000000000112", result.getRef().get(0).toString());
-        assertEquals("serviceURI/principals/00000000-0000-0000-0000-000000000114", result.getRef().get(1).toString());
+        assertEquals("/api/principals/00000000-0000-0000-0000-000000000112", result.getHref().get(0).toString());
+        assertEquals("/api/principals/00000000-0000-0000-0000-000000000114", result.getHref().get(1).toString());
 
     }
 
@@ -1280,7 +1285,8 @@ public class DBDispatcherTest {
     public void testGetNotebook() throws DatatypeConfigurationException {
 
         final Notebook mockNotebook = new Notebook();
-        mockNotebook.setURI("serviceURI/notebooks/00000000-0000-0000-0000-000000000012");
+        mockNotebook.setHref("/api/notebooks/00000000-0000-0000-0000-000000000012");
+        mockNotebook.setId("00000000-0000-0000-0000-000000000012");
         mockNotebook.setTitle("Notebook 2");
         mockNotebook.setLastModified(DatatypeFactory.newInstance().newXMLGregorianCalendar("2014-02-12T09:25:00.383000Z"));
 
@@ -1301,26 +1307,26 @@ public class DBDispatcherTest {
                 oneOf(notebookDao).getOwner(2);
                 will(returnValue(2));
 
-                oneOf(principalDao).getURIFromInternalID(2);
-                will(returnValue("serviceURI/principals/00000000-0000-0000-0000-000000000112"));
+                oneOf(principalDao).getHrefFromInternalID(2);
+                will(returnValue("/api/principals/00000000-0000-0000-0000-000000000112"));
 
                 oneOf(annotationDao).getAnnotations(2);
                 will(returnValue(mockAnnotations));
 
-                oneOf(annotationDao).getURIFromInternalID(3);
-                will(returnValue("serviceURI/annotations/00000000-0000-0000-0000-000000000023"));
+                oneOf(annotationDao).getHrefFromInternalID(3);
+                will(returnValue("/api/annotations/00000000-0000-0000-0000-000000000023"));
 
                 oneOf(principalDao).getPrincipalIDsWithAccessForNotebook(2, Access.READ);
                 will(returnValue(mockREADs));
 
-                oneOf(principalDao).getURIFromInternalID(1);
-                will(returnValue("serviceURI/principals/00000000-0000-0000-0000-000000000111"));
+                oneOf(principalDao).getHrefFromInternalID(1);
+                will(returnValue("/api/principals/00000000-0000-0000-0000-000000000111"));
 
                 oneOf(principalDao).getPrincipalIDsWithAccessForNotebook(2, Access.WRITE);
                 will(returnValue(mockWRITEs));
 
-                oneOf(principalDao).getURIFromInternalID(3);
-                will(returnValue("serviceURI/principals/00000000-0000-0000-0000-000000000113"));
+                oneOf(principalDao).getHrefFromInternalID(3);
+                will(returnValue("/api/principals/00000000-0000-0000-0000-000000000113"));
 
 
 
@@ -1328,16 +1334,17 @@ public class DBDispatcherTest {
         });
 
         Notebook result = dbDispatcher.getNotebook(2);
-        assertEquals("serviceURI/notebooks/00000000-0000-0000-0000-000000000012", result.getURI());
-        assertEquals("serviceURI/principals/00000000-0000-0000-0000-000000000112", result.getOwnerRef());
+        assertEquals("/api/notebooks/00000000-0000-0000-0000-000000000012", result.getHref());
+        assertEquals("00000000-0000-0000-0000-000000000012", result.getId());
+        assertEquals("/api/principals/00000000-0000-0000-0000-000000000112", result.getOwnerRef());
         assertEquals("2014-02-12T09:25:00.383000Z", result.getLastModified().toString());
         assertEquals("Notebook 2", result.getTitle());
-        assertEquals(1, result.getAnnotations().getRef().size());
-        assertEquals("serviceURI/annotations/00000000-0000-0000-0000-000000000023", result.getAnnotations().getRef().get(0));
+        assertEquals(1, result.getAnnotations().getHref().size());
+        assertEquals("/api/annotations/00000000-0000-0000-0000-000000000023", result.getAnnotations().getHref().get(0));
         assertEquals(2, result.getPermissions().getPermission().size());
-        assertEquals("serviceURI/principals/00000000-0000-0000-0000-000000000111", result.getPermissions().getPermission().get(0).getPrincipalRef());
+        assertEquals("/api/principals/00000000-0000-0000-0000-000000000111", result.getPermissions().getPermission().get(0).getPrincipalHref());
         assertEquals("read", result.getPermissions().getPermission().get(0).getLevel().value());
-        assertEquals("serviceURI/principals/00000000-0000-0000-0000-000000000113", result.getPermissions().getPermission().get(1).getPrincipalRef());
+        assertEquals("/api/principals/00000000-0000-0000-0000-000000000113", result.getPermissions().getPermission().get(1).getPrincipalHref());
         assertEquals("write", result.getPermissions().getPermission().get(1).getLevel().value());
 
     }
@@ -1356,11 +1363,11 @@ public class DBDispatcherTest {
                 oneOf(annotationDao).sublistOrderedAnnotationIDs(mockAnnotationIDs, 0, 3, "last_modified", "DESC");
                 will(returnValue(mockAnnotationIDs));
 
-                oneOf(annotationDao).getURIFromInternalID(1);
-                will(returnValue("serviceURI/annotations/00000000-0000-0000-0000-000000000021"));
+                oneOf(annotationDao).getHrefFromInternalID(1);
+                will(returnValue("/api/annotations/00000000-0000-0000-0000-000000000021"));
 
-                oneOf(annotationDao).getURIFromInternalID(2);
-                will(returnValue("serviceURI/annotations/00000000-0000-0000-0000-000000000022"));
+                oneOf(annotationDao).getHrefFromInternalID(2);
+                will(returnValue("/api/annotations/00000000-0000-0000-0000-000000000022"));
 
 
 
@@ -1368,9 +1375,9 @@ public class DBDispatcherTest {
         });
 
         ReferenceList result = dbDispatcher.getAnnotationsForNotebook(1, -1, 3, "last_modified", true);
-        assertEquals(2, result.getRef().size());
-        assertEquals("serviceURI/annotations/00000000-0000-0000-0000-000000000021", result.getRef().get(0).toString());
-        assertEquals("serviceURI/annotations/00000000-0000-0000-0000-000000000022", result.getRef().get(1).toString());
+        assertEquals(2, result.getHref().size());
+        assertEquals("/api/annotations/00000000-0000-0000-0000-000000000021", result.getHref().get(0).toString());
+        assertEquals("/api/annotations/00000000-0000-0000-0000-000000000022", result.getHref().get(1).toString());
 
     }
 
@@ -1385,12 +1392,12 @@ public class DBDispatcherTest {
     public void testUpdateNotebookMetadata() throws NotInDataBaseException {
 
         final NotebookInfo mockNotebookInfo = new NotebookInfo();
-        mockNotebookInfo.setOwnerRef(TestBackendConstants._TEST_SERVLET_URI_principals + "00000000-0000-0000-0000-000000000113");
+        mockNotebookInfo.setOwnerHref("/api/principals/00000000-0000-0000-0000-000000000113");
         mockNotebookInfo.setTitle("New Title");
 
         mockeryDao.checking(new Expectations() {
             {
-                oneOf(principalDao).getInternalIDFromURI(TestBackendConstants._TEST_SERVLET_URI_principals + "00000000-0000-0000-0000-000000000113");
+                oneOf(principalDao).getInternalIDFromHref("/api/principals/00000000-0000-0000-0000-000000000113");
                 will(returnValue(3));
 
                 oneOf(notebookDao).updateNotebookMetadata(1, "New Title", 3);
@@ -1440,16 +1447,17 @@ public class DBDispatcherTest {
         final Notebook notebook = new Notebook();
         notebook.setOwnerRef("tmpXXX");
         notebook.setTitle("(Almost) Copy of Notebook 1");
-        notebook.setURI("tmpYYY");
+        notebook.setId("tmpYYY");
+        notebook.setHref("whatever");
 
         PermissionList accesss = new PermissionList();
         Permission p1 = new Permission();
         p1.setLevel(Access.WRITE);
-        p1.setPrincipalRef(TestBackendConstants._TEST_SERVLET_URI_principals + "00000000-0000-0000-0000-000000000112");
+        p1.setPrincipalHref("/api/principals/00000000-0000-0000-0000-000000000112");
         accesss.getPermission().add(p1);
         Permission p2 = new Permission();
         p2.setLevel(Access.READ);
-        p2.setPrincipalRef(TestBackendConstants._TEST_SERVLET_URI_principals + "00000000-0000-0000-0000-000000000113");
+        p2.setPrincipalHref("/api/principals/00000000-0000-0000-0000-000000000113");
         accesss.getPermission().add(p2);
         notebook.setPermissions(accesss);
 
@@ -1461,10 +1469,10 @@ public class DBDispatcherTest {
                 oneOf(notebookDao).setOwner(5, 1);
                 will(returnValue(true));
 
-                oneOf(principalDao).getInternalIDFromURI(TestBackendConstants._TEST_SERVLET_URI_principals + "00000000-0000-0000-0000-000000000112");
+                oneOf(principalDao).getInternalIDFromHref("/api/principals/00000000-0000-0000-0000-000000000112");
                 will(returnValue(2));
 
-                oneOf(principalDao).getInternalIDFromURI(TestBackendConstants._TEST_SERVLET_URI_principals + "00000000-0000-0000-0000-000000000113");
+                oneOf(principalDao).getInternalIDFromHref("/api/principals/00000000-0000-0000-0000-000000000113");
                 will(returnValue(3));
 
                 oneOf(notebookDao).addAccessToNotebook(5, 2, Access.WRITE);
@@ -1496,7 +1504,7 @@ public class DBDispatcherTest {
                 will(returnValue(5)); // the next free number is 5
 
                 //  expectations for addTargetsForannotation
-                oneOf(targetDao).getInternalIDFromURI(TestBackendConstants._TEST_SERVLET_URI_targets + "00000000-0000-0000-0000-000000000031");
+                oneOf(targetDao).getInternalIDFromHref("/api/targets/00000000-0000-0000-0000-000000000031");
                 will(returnValue(1));
 
                 oneOf(annotationDao).addAnnotationTarget(5, 1);
@@ -1641,7 +1649,7 @@ public class DBDispatcherTest {
 
         System.out.println("test updateAnnotation");
 
-        final Annotation annotation = (new TestInstances(TestBackendConstants._TEST_SERVLET_URI)).getAnnotationOne();
+        final Annotation annotation = (new TestInstances("/api")).getAnnotationOne();
         final NotInDataBaseException e = new NotInDataBaseException("annotation", "external ID", "00000000-0000-0000-0000-000000000031");
         final String mockTempID = "00000000-0000-0000-0000-000000000031";
         final UUID mockNewID = UUID.randomUUID();
@@ -1651,10 +1659,10 @@ public class DBDispatcherTest {
         System.out.println("test updateAnnotation");
         mockeryDao.checking(new Expectations() {
             {
-                oneOf(annotationDao).getInternalIDFromURI(annotation.getURI());
+                oneOf(annotationDao).getInternalID(UUID.fromString(annotation.getId()));
                 will(returnValue(1));
 
-                oneOf(principalDao).getInternalIDFromURI(annotation.getOwnerRef());
+                oneOf(principalDao).getInternalIDFromHref(annotation.getOwnerHref());
                 will(returnValue(1));
 
                 oneOf(annotationDao).updateAnnotation(annotation, 1, 1);
@@ -1669,36 +1677,33 @@ public class DBDispatcherTest {
 
                 /// adding the first target, nt foind in the DB
 
-                oneOf(targetDao).getInternalIDFromURI(annotation.getTargets().getTargetInfo().get(0).getRef());
+                oneOf(targetDao).getInternalIDFromHref(annotation.getTargets().getTargetInfo().get(0).getHref());
                 will(throwException(e));
 
                 oneOf(targetDao).addTarget(with(aNonNull(Target.class)));
                 will(returnValue(8));
 
-                oneOf(targetDao).stringURItoExternalID(annotation.getTargets().getTargetInfo().get(0).getRef());
-                will(returnValue(mockTempID));
-
-                oneOf(targetDao).getExternalID(8);
-                will(returnValue(mockNewID));
+                oneOf(targetDao).getHrefFromInternalID(8);
+                will(returnValue("/api/targets/"+mockNewID.toString()));
 
                 oneOf(annotationDao).addAnnotationTarget(1, 8);
                 will(returnValue(1));
 
                 /////////
-                oneOf(targetDao).getInternalIDFromURI(annotation.getTargets().getTargetInfo().get(1).getRef());
+                oneOf(targetDao).getInternalIDFromHref(annotation.getTargets().getTargetInfo().get(1).getHref());
                 will(returnValue(2));
 
                 oneOf(annotationDao).addAnnotationTarget(1, 2);
                 will(returnValue(1));
 
                 /////
-                oneOf(principalDao).getInternalIDFromURI(permissions.getPermission().get(0).getPrincipalRef());
+                oneOf(principalDao).getInternalIDFromHref(permissions.getPermission().get(0).getPrincipalHref());
                 will(returnValue(2));
 
                 oneOf(annotationDao).addAnnotationPrincipalAccess(1, 2, Access.WRITE);
                 will(returnValue(1));
 
-                oneOf(principalDao).getInternalIDFromURI(permissions.getPermission().get(1).getPrincipalRef());
+                oneOf(principalDao).getInternalIDFromHref(permissions.getPermission().get(1).getPrincipalHref());
                 will(returnValue(3));
 
                 oneOf(annotationDao).addAnnotationPrincipalAccess(1, 3, Access.READ);
@@ -1724,21 +1729,9 @@ public class DBDispatcherTest {
     @Test
     public void testUpdateHeadline() throws NotInDataBaseException {
 
-        System.out.println("test updateAnnotation");
-
-        final Annotation annotation = (new TestInstances(TestBackendConstants._TEST_SERVLET_URI)).getAnnotationOne();
-        
-
-        System.out.println("test updateAnnotation");
+        System.out.println("test updateAnnotationHeadline  ");
         mockeryDao.checking(new Expectations() {
-            {
-                oneOf(annotationDao).getInternalIDFromURI(annotation.getURI());
-                will(returnValue(1));
-
-                oneOf(principalDao).getInternalIDFromURI(annotation.getOwnerRef());
-                will(returnValue(1));
-
-                oneOf(annotationDao).updateAnnotationHeadline(1, "new Headline");
+            { oneOf(annotationDao).updateAnnotationHeadline(1, "new Headline");
                 will(returnValue(1));
 
                 
@@ -1793,16 +1786,16 @@ public class DBDispatcherTest {
         final PermissionList permissions = new PermissionList();
         
         Permission permission2 = new Permission();
-        permission2.setPrincipalRef("ref2");
+        permission2.setPrincipalHref("/api/principals/ref2");
         permission2.setLevel(Access.WRITE);
 
         Permission permission3 = new Permission();
-        permission3.setPrincipalRef("ref3");
+        permission3.setPrincipalHref("/api/principals/ref3");
         permission3.setLevel(Access.READ);
               
         Permission permission4 = new Permission();
         permission4.setLevel(Access.READ);
-        permission4.setPrincipalRef("ref4");
+        permission4.setPrincipalHref("/api/principals/ref4");
         
         permissions.getPermission().add(permission2);
         permissions.getPermission().add(permission3);
@@ -1815,19 +1808,19 @@ public class DBDispatcherTest {
                 oneOf(annotationDao).updatePublicAttribute(1, permissions.getPublic());
                 will(returnValue(1));
 
-                oneOf(principalDao).getInternalIDFromURI(permissions.getPermission().get(0).getPrincipalRef());
+                oneOf(principalDao).getInternalIDFromHref(permissions.getPermission().get(0).getPrincipalHref());
                 will(returnValue(2));
 
                 oneOf(annotationDao).getAccess(1, 2);
                 will(returnValue(Access.WRITE));
 
-                oneOf(principalDao).getInternalIDFromURI(permissions.getPermission().get(1).getPrincipalRef());
+                oneOf(principalDao).getInternalIDFromHref(permissions.getPermission().get(1).getPrincipalHref());
                 will(returnValue(3));
 
                 oneOf(annotationDao).getAccess(1, 3);
                 will(returnValue(Access.WRITE));
                 
-                oneOf(principalDao).getInternalIDFromURI(permissions.getPermission().get(2).getPrincipalRef());
+                oneOf(principalDao).getInternalIDFromHref(permissions.getPermission().get(2).getPrincipalHref());
                 will(returnValue(4));
 
                 oneOf(annotationDao).getAccess(1, 4);
