@@ -53,16 +53,18 @@
         GET <a href="api/principals/info?email=Twan.Goosen@mpi.nl">api/principals/info?email=Twan.Goosen@mpi.nl</a>  <br>
         GET <a href="api/annotations?link=Sagrada_Fam%C3%ADlia">api/annotations?link=Sagrada_Fam%C3%ADlia</a>  <br>
         GET <a href="api/annotations?link=Antoni_Gaud%C3%AD">api/annotations?link=Antoni_Gaud%C3%AD</a>  <br>
-        GET <a href="api/annotations?after=2014-02-04 15:57:58.046908&before=2014-04-06 10:08:16.213186">api/annotations?after=2014-02-04 15:57:58.046908&before=2014-04-06 10:08:16.213186</a><br> 
+        GET <a href="api/annotations?after=2013-02-04 15:57:58.046908&before=2014-06-25 10:08:16.213186">api/annotations?after=2014-02-04 15:57:58.046908&before=2014-04-06 10:08:16.213186</a><br> 
 <!--        !Comment: What is "namespace" query parameter? Must be implemented and tested <br>-->
         GET <a href="api/annotations/00000000-0000-0000-0000-000000000022">api/annotations/00000000-0000-0000-0000-000000000022</a>  </br>
         GET <a href="api/annotations/00000000-0000-0000-0000-000000000022/targets">api/annotations/00000000-0000-0000-0000-000000000022/targets</a>  </br>
         GET <a href="api/annotations/00000000-0000-0000-0000-000000000022/permissions">api/annotations/00000000-0000-0000-0000-000000000022/permissions</a><br>
         GET <a href="api/targets/00000000-0000-0000-0000-000000000032">api/targets/00000000-0000-0000-0000-000000000032</a>  <br>
         GET <a href="api/targets/00000000-0000-0000-0000-000000000032/versions">api/targets/00000000-0000-0000-0000-000000000032/versions</a>   <br>
-        GET <a href="api/cached/654809f6-1202-4073-86b8-a1f6fe0f2409/metadata">api/cached/654809f6-1202-4073-86b8-a1f6fe0f2409/metadata</a><br>
-        GET <a href="api/cached/654809f6-1202-4073-86b8-a1f6fe0f2409/stream">api/cached/654809f6-1202-4073-86b8-a1f6fe0f2409/stream</a><br> 
+        GET <a href="api/cached/b0d3f18c-eecf-40ea-9979-eecbbdca7d68/metadata">api/cached/b0d3f18c-eecf-40ea-9979-eecbbdca7d68//metadata</a><br>
+        GET <a href="api/cached/b0d3f18c-eecf-40ea-9979-eecbbdca7d68/stream">api/cached/b0d3f18c-eecf-40ea-9979-eecbbdca7d68/stream</a><br> 
         GET <a href="api/cached/00000000-0000-0000-0000-000000000051/content">api/cached/00000000-0000-0000-0000-000000000051/content</a><br> 
+        GET <a href="api/cached/de82f9d5-6b84-4c9d-8b8a-0736c8b1dd79/stream">api/cached/de82f9d5-6b84-4c9d-8b8a-0736c8b1dd79/stream</a><br> 
+        
         
         
         <br> 

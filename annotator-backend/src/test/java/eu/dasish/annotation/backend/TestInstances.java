@@ -86,7 +86,7 @@ public class TestInstances {
     }
 
     private Annotation makeAnnotationToAdd(String relativePath) {
-        Annotation result = makeAnnotation(relativePath, "<html><body>some html 3</body></html>", "text/plain", "Annotation to add to test DAO", "00000000-0000-0000-0000-000000000113",  UUID.randomUUID().toString());
+        Annotation result = makeAnnotation(relativePath, "<html><body>some html 3</body></html>", "text/plain", "Annotation to add to test DAO", "00000000-0000-0000-0000-000000000113",  Helpers.generateUUID().toString());
 
         TargetInfo TargetInfo = new TargetInfo();
         TargetInfo.setLink("http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia#de_Opdracht");

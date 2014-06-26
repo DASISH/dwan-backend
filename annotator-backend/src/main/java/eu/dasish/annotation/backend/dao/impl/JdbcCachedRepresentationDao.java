@@ -17,6 +17,7 @@
  */
 package eu.dasish.annotation.backend.dao.impl;
 
+import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.dao.CachedRepresentationDao;
 import eu.dasish.annotation.schema.CachedRepresentationInfo;
@@ -151,7 +152,7 @@ public class JdbcCachedRepresentationDao extends JdbcResourceDao implements Cach
     @Override
     public Number addCachedRepresentation(CachedRepresentationInfo cachedInfo, InputStream streamCached) throws NotInDataBaseException, IOException {
 
-        UUID externalIdentifier = UUID.randomUUID();
+        UUID externalIdentifier = Helpers.generateUUID();
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("externalId", externalIdentifier.toString());
         params.put("mime_type", cachedInfo.getMimeType());

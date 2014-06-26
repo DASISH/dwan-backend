@@ -17,6 +17,7 @@
  */
 package eu.dasish.annotation.backend.dao.impl;
 
+import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.dao.TargetDao;
 import eu.dasish.annotation.schema.Target;
@@ -187,7 +188,7 @@ public class JdbcTargetDao extends JdbcResourceDao implements TargetDao {
     @Override
     public Number addTarget(Target target) throws NotInDataBaseException {
 
-        UUID externalID = UUID.randomUUID();
+        UUID externalID = Helpers.generateUUID();
         String[] linkParts = splitLink(target.getLink());
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("externalId", externalID.toString());

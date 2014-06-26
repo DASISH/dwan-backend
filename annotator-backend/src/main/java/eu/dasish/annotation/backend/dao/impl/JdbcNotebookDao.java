@@ -17,6 +17,7 @@
  */
 package eu.dasish.annotation.backend.dao.impl;
 
+import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.dao.NotebookDao;
 import eu.dasish.annotation.schema.Notebook;
@@ -238,7 +239,7 @@ public class JdbcNotebookDao extends JdbcResourceDao implements NotebookDao {
     @Override
     public Number createNotebookWithoutAccesssAndAnnotations(Notebook notebook, Number ownerID) throws NotInDataBaseException {
 
-        UUID externalID = UUID.randomUUID();
+        UUID externalID = Helpers.generateUUID();
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("externalId", externalID.toString());
         params.put("owner", ownerID);

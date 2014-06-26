@@ -463,7 +463,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         String[] body = retrieveBodyComponents(annotation.getBody());
 
         // generate a new annotation ID 
-        UUID externalID = UUID.randomUUID();
+        UUID externalID = Helpers.generateUUID();
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("externalId", externalID.toString());
         params.put("owner", ownerID);

@@ -17,6 +17,7 @@
  */
 package eu.dasish.annotation.backend.rest;
 
+import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.Resource;
 import eu.dasish.annotation.backend.ResourceAction;
@@ -41,7 +42,6 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import java.net.URI;
 import java.util.UUID;
 import org.springframework.mock.web.MockHttpServletRequest;
 
@@ -176,7 +176,7 @@ public class AnnotationResourceTest {
 
 
         final Annotation addedAnnotation = (new ObjectFactory()).createAnnotation(annotationToAdd).getValue();
-        String externalId = UUID.randomUUID().toString();
+        String externalId = Helpers.generateUUID().toString();
         addedAnnotation.setId(externalId);
         addedAnnotation.setHref("/backend/api/annotations/" + externalId);
         addedAnnotation.setOwnerHref("/backend/api/principals/00000000-0000-0000-0000-000000000113");
