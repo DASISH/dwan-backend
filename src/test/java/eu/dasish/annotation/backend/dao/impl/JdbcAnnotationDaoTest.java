@@ -65,7 +65,7 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
     public void testHrefToExternalID() {
         System.out.println("test stringURItoExternalID");
         jdbcAnnotationDao.setResourcePath("/api/annotations/");
-        String randomUUID = UUID.randomUUID().toString();
+        String randomUUID = Helpers.generateUUID().toString();
         String uri = "/api/annotations/" + randomUUID;
         String uuid = jdbcAnnotationDao.hrefToExternalID(uri);
         assertEquals(randomUUID, uuid);
@@ -79,7 +79,7 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
     public void testExternalIDtoHref() {
         System.out.println("test externalIDtoHref");
         jdbcAnnotationDao.setResourcePath("/api/annotations/");
-        String randomUUID = UUID.randomUUID().toString();
+        String randomUUID = Helpers.generateUUID().toString();
         String uri = "/api/annotations/" + randomUUID;
         String uriResult = jdbcAnnotationDao.externalIDtoHref(randomUUID);
         assertEquals(uri, uriResult);

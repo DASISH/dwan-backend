@@ -22,6 +22,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
+import java.util.UUID;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -31,7 +32,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSSerializer;
 import org.xml.sax.SAXException;
-
+import java.util.Random;
 /**
  *
  * @author olhsha
@@ -39,8 +40,10 @@ import org.xml.sax.SAXException;
 public class Helpers {
 
     //exception messages
-    final static public String INVALID_BODY_EXCEPTION = "Invalide annotation body: both, text and xml options, are null.";
-
+    //final static public String INVALID_BODY_EXCEPTION = "Invalide annotation body: both, text and xml options, are null.";
+    final static String hexa = "ABCDEabcde";
+    final static int hexan= hexa.length();
+    
     public static String replace(String text, Map<String, ?> pairs) {
         StringBuilder result = new StringBuilder(text);
         for (String old : pairs.keySet()) {
@@ -117,5 +120,18 @@ public class Helpers {
     public static String hashPswd(String pswd, int strength, String salt) {
         ShaPasswordEncoder encoder = new ShaPasswordEncoder(strength);
         return encoder.encodePassword(pswd, salt);
+    }
+    
+    public static UUID generateUUID(){ 
+        UUID result = UUID.randomUUID();
+        char[] chars = result.toString().toCharArray();
+        if (chars[0] >= 'a'  && chars[0] <='z') {
+            return result;
+        } else {
+            Random r = new Random();
+            chars[0] = hexa.charAt(r.nextInt(hexan));
+            result = UUID.fromString(new String(chars));
+            return result;
+        }       
     }
 }

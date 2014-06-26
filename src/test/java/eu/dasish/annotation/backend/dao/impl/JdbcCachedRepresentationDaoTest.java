@@ -17,6 +17,7 @@
  */
 package eu.dasish.annotation.backend.dao.impl;
 
+import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.schema.CachedRepresentationInfo;
 import java.io.ByteArrayInputStream;
@@ -50,7 +51,7 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest {
     public void testHrefToExternalID() {
         System.out.println("test hrefToExternalID");
         jdbcCachedRepresentationDao.setResourcePath("/api/cached/");
-        String randomUUID = UUID.randomUUID().toString();
+        String randomUUID = Helpers.generateUUID().toString();
         String uri = "/api/cached/" + randomUUID;
         String check = jdbcCachedRepresentationDao.hrefToExternalID(uri);
         assertEquals(randomUUID, check);
@@ -64,7 +65,7 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest {
     public void testExternalIdToHref() {
         System.out.println("test stringURItoExternalID");
         jdbcCachedRepresentationDao.setResourcePath("/api/cached/");
-        String randomUUID = UUID.randomUUID().toString();
+        String randomUUID = Helpers.generateUUID().toString();
         String uri = "/api/cached/"+randomUUID;
         String uriResult = jdbcCachedRepresentationDao.externalIDtoHref(randomUUID);
         assertEquals(uri, uriResult);
@@ -190,8 +191,31 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest {
         InputStream is = jdbcCachedRepresentationDao.getCachedRepresentationBlob(1);
         byte[] newBytes = new byte[blobBytes.length];
         is.read(newBytes);
-        assertEquals(blobString, new String(newBytes));
+        String test =new String(newBytes); 
+        assertEquals(blobString, test);
         
     }
+    
+    @Test
+    public void testGetCachedRepresentationBlob() throws IOException{
+        System.out.println("test getCachedRepresentationBlob");
+        jdbcCachedRepresentationDao.setResourcePath("/api/cached/");
+        
+        InputStream is = jdbcCachedRepresentationDao.getCachedRepresentationBlob(7);
+        byte[] newBytes = new byte[2];
+        is.read(newBytes);
+        assertEquals("12", new String(newBytes));
+        
+    }
+    
+    @Test
+    public void testHelpersUUIDgeneration(){
+        for (int i=0; i<50; i++) {
+            String test = Helpers.generateUUID().toString();
+            char c = test.charAt(0);
+            assertTrue('a'<=c && c<='z');
+        }
+    }
+
    
 }

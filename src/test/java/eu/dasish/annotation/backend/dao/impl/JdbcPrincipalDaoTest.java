@@ -18,9 +18,9 @@
 package eu.dasish.annotation.backend.dao.impl;
 
 
+import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.PrincipalCannotBeDeleted;
-import eu.dasish.annotation.backend.TestInstances;
 import eu.dasish.annotation.schema.Access;
 import eu.dasish.annotation.schema.Principal;
 import java.util.ArrayList;
@@ -52,7 +52,7 @@ public class JdbcPrincipalDaoTest extends JdbcResourceDaoTest {
     public void testHrefToExternalID() {
         System.out.println("test hrefToExternalID");
         jdbcPrincipalDao.setResourcePath("/api/principals/");
-        String randomUUID = UUID.randomUUID().toString();
+        String randomUUID = Helpers.generateUUID().toString();
         String uri = "/api/principals/" + randomUUID;
         String externalID = jdbcPrincipalDao.hrefToExternalID(uri).toString();
         assertEquals(randomUUID, externalID);
@@ -66,7 +66,7 @@ public class JdbcPrincipalDaoTest extends JdbcResourceDaoTest {
     public void testExternalIDtoURI() {
         System.out.println("test stringURItoExternalID");
         jdbcPrincipalDao.setResourcePath("/api/principals/");
-        String randomUUID = UUID.randomUUID().toString();
+        String randomUUID = Helpers.generateUUID().toString();
         String uri = "/api/principals/"+randomUUID;
         String uriResult = jdbcPrincipalDao.externalIDtoHref(randomUUID);
         assertEquals(uri, uriResult);

@@ -17,6 +17,7 @@
  */
 package eu.dasish.annotation.backend.dao.impl;
 
+import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.PrincipalCannotBeDeleted;
 import eu.dasish.annotation.backend.PrincipalExists;
@@ -686,7 +687,7 @@ public class DBDispatcherTest {
         String mime = "text/html";
         String type = "text";
         String tool = "latex";
-        String externalID = UUID.randomUUID().toString();
+        String externalID = Helpers.generateUUID().toString();
         final CachedRepresentationInfo newCachedInfo = new CachedRepresentationInfo();
         newCachedInfo.setMimeType(mime);
         newCachedInfo.setType(type);
@@ -753,14 +754,14 @@ public class DBDispatcherTest {
 
         // test 2: adding a new Target
         TargetInfo testTargetTwo = new TargetInfo();
-        final String tempTargetID = "/api/targets/"+UUID.randomUUID().toString();
+        final String tempTargetID = "/api/targets/"+Helpers.generateUUID().toString();
         testTargetTwo.setHref(tempTargetID);
         testTargetTwo.setLink("http://www.sagradafamilia.cat/docs_instit/historia.php");
         testTargetTwo.setVersion("version 1.0");
         final List<TargetInfo> mockTargetListTwo = new ArrayList<TargetInfo>();
         mockTargetListTwo.add(testTargetTwo);
 
-        final UUID mockNewTargetUUID = UUID.randomUUID();
+        final UUID mockNewTargetUUID = Helpers.generateUUID();
         final NotInDataBaseException e = new NotInDataBaseException("target", "external ID", tempTargetID);
 
 //        Target newTarget = this.createFreshTarget(targetInfo);
@@ -1652,7 +1653,7 @@ public class DBDispatcherTest {
         final Annotation annotation = (new TestInstances("/api")).getAnnotationOne();
         final NotInDataBaseException e = new NotInDataBaseException("annotation", "external ID", "00000000-0000-0000-0000-000000000031");
         final String mockTempID = "00000000-0000-0000-0000-000000000031";
-        final UUID mockNewID = UUID.randomUUID();
+        final UUID mockNewID = Helpers.generateUUID();
         final PermissionList permissions = annotation.getPermissions();
 
 

@@ -82,7 +82,7 @@ INSERT INTO cached_representation (external_id, mime_type, tool, type_, file_) V
 INSERT INTO cached_representation (external_id, mime_type, tool, type_, file_) VALUES ('00000000-0000-0000-0000-000000000054', 'image/png', 'screen-shot', 'image', NULL); --4
 INSERT INTO cached_representation (external_id, mime_type, tool, type_, file_) VALUES ('00000000-0000-0000-0000-000000000055', 'image/jpg', 'photomaster', 'image', X'1005'); --5 
 INSERT INTO cached_representation (external_id, mime_type, tool, type_, file_) VALUES ('00000000-0000-0000-0000-000000000056', 'text/plain', 'some tool', 'text', X'1006'); --6  not used
-INSERT INTO cached_representation (external_id, mime_type, tool, type_, file_) VALUES ('00000000-0000-0000-0000-000000000057', 'text/html', 'some tool 2', 'text', X'1007'); --7 
+INSERT INTO cached_representation (external_id, mime_type, tool, type_, file_) VALUES ('00000000-0000-0000-0000-000000000057', 'text/html', 'some tool 2', 'text', X'3132'); --7 
 
  -- PostgreSQL --
 -- INSERT INTO cached_representation (external_id, mime_type, tool, type_) VALUES ('00000000-0000-0000-0000-000000000051', 'image/png', 'some tool 1', 'image'); --1

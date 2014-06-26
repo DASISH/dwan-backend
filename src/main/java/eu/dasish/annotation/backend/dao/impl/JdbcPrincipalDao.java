@@ -196,7 +196,7 @@ public class JdbcPrincipalDao extends JdbcResourceDao implements PrincipalDao {
     @Override
     public Number addPrincipal(Principal principal, String remoteID) throws NotInDataBaseException {
 
-        UUID externalIdentifier = UUID.randomUUID();
+        UUID externalIdentifier = Helpers.generateUUID();
         String newExternalIdentifier = externalIdentifier.toString();
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("externalId", newExternalIdentifier);

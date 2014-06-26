@@ -17,6 +17,7 @@
  */
 package eu.dasish.annotation.backend.dao.impl;
 
+import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.schema.Target;
 import eu.dasish.annotation.schema.TargetInfo;
@@ -51,7 +52,7 @@ public class JdbcTargetDaoTest extends JdbcResourceDaoTest {
     public void testHrefToExternalID() {
         System.out.println("test hrefToExternalID");
         jdbcTargetDao.setResourcePath("/api/targets/");
-        String randomUUID = UUID.randomUUID().toString();
+        String randomUUID = Helpers.generateUUID().toString();
         String uri = "/api/targets/" + randomUUID;
         String externalID = (jdbcTargetDao.hrefToExternalID(uri)).toString();
         assertEquals(randomUUID, externalID);
@@ -65,7 +66,7 @@ public class JdbcTargetDaoTest extends JdbcResourceDaoTest {
     public void testExternalIDtoURI() {
         System.out.println("test stringURItoExternalID");
         jdbcTargetDao.setResourcePath("/api/targets/");
-        String randomUUID = UUID.randomUUID().toString();
+        String randomUUID = Helpers.generateUUID().toString();
         String uri = "/api/targets/" + randomUUID;
         String uriResult = jdbcTargetDao.externalIDtoHref(randomUUID);
         assertEquals(uri, uriResult);
