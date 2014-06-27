@@ -1,48 +1,25 @@
-1. Placing tarball: as always, take the tar-ball of the new  version 1.4.1, and follow the 
-standard MPI deployment procedure.  Consult the instructions from INSTALL.txt 
-about placing war file if you have forgotten.
+This time only webannotator-basic must be updated. It will be used for adjusting the 
+frontend while the previous shibbolised backend will be still running with the previous version
+of the front-end, to be tested by our partners from Tartu.
 
-2. Adjusting shhaa.xml: as always, if it is deloyment on lux17 (or production), set
- <sso action="lI">  and <slo action="lO">
+1. Placing tarball: take the tar-ball of the new  version 1.5, and follow the 
+standard MPI deployment procedure, for webannotator-basic.  
+Consult the instructions from INSTALL.txt  about placing war file if you have forgotten.
 
-3. This time the databse stays intact.
+2. The web.xml stays intact  because currently it is set for basic authentication.
 
-4. web.xml differs for ds/webannotator (shibboleth authentication)
-and ds/webannotator-basic (basic spring authentication).
+3. The id of one cached representation (used in the welcome jsp page as an example) 
+must be changed in the database.  
 
-4.1. Filter. For the ds/webannotator use
+Since there is no API for changing IDs, dearest latadmin, pls, do it.
 
- <filter>
-        <filter-name>AAIFilter</filter-name>
-        <filter-class>de.mpg.aai.shhaa.AuthFilter</filter-class>
-    </filter>
-    <filter-mapping>
-        <filter-name>AAIFilter</filter-name>
-        <url-pattern>/*</url-pattern>
-    </filter-mapping>
+UPDATE cached_representation SET external_id = 
+'b0d3f18c-eecf-40ea-9979-eecbbdca7d68' WHERE external_id='654809f6-1202-4073-86b8-a1f6fe0f2409';
+
+This id is already set up in the jsp page, so no changes should be done there.
+
+
+
+
     
-  and for the ds/webannotator-basic use
-    
-     <filter>
-        <filter-name>springSecurityFilterChain</filter-name>
-        <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
-    </filter>
-    <filter-mapping>
-        <filter-name>springSecurityFilterChain</filter-name>
-        <url-pattern>/*</url-pattern>
-    </filter-mapping>
-    
-    
-    4.2. Settting  <param-name>eu.dasish.annotation.backend.logout</param-name>.
-    For the ds/webannotator 
-    (if shibboleth's logout address is of the form http://lux17.mpi.nl/Shibboleth.sso/Logout)
-    
-    <param-value>/../../Shibboleth.sso/Logout</param-value>
-    
-    The "../../" is necessary to climb from http://lux17.mpi.nl/ds/webannotator to
-     http://lux17.mpi.nl. 
-    
-    and for ds/webannotator-basic use
-    
-    <param-value>/j_spring_security_logout</param-value>
-    
+   

@@ -60,7 +60,7 @@
         GET <a href="api/annotations/00000000-0000-0000-0000-000000000022/permissions">api/annotations/00000000-0000-0000-0000-000000000022/permissions</a><br>
         GET <a href="api/targets/00000000-0000-0000-0000-000000000032">api/targets/00000000-0000-0000-0000-000000000032</a>  <br>
         GET <a href="api/targets/00000000-0000-0000-0000-000000000032/versions">api/targets/00000000-0000-0000-0000-000000000032/versions</a>   <br>
-        GET <a href="api/cached/b0d3f18c-eecf-40ea-9979-eecbbdca7d68/metadata">api/cached/b0d3f18c-eecf-40ea-9979-eecbbdca7d68//metadata</a><br>
+        GET <a href="api/cached/b0d3f18c-eecf-40ea-9979-eecbbdca7d68/metadata">api/cached/b0d3f18c-eecf-40ea-9979-eecbbdca7d68/metadata</a><br>
         GET <a href="api/cached/b0d3f18c-eecf-40ea-9979-eecbbdca7d68/stream">api/cached/b0d3f18c-eecf-40ea-9979-eecbbdca7d68/stream</a><br> 
         GET <a href="api/cached/00000000-0000-0000-0000-000000000051/content">api/cached/00000000-0000-0000-0000-000000000051/content</a><br> 
         GET <a href="api/cached/de82f9d5-6b84-4c9d-8b8a-0736c8b1dd79/stream">api/cached/de82f9d5-6b84-4c9d-8b8a-0736c8b1dd79/stream</a><br> 
