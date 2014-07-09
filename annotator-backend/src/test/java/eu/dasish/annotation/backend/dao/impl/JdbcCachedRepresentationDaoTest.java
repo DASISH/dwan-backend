@@ -217,5 +217,15 @@ public class JdbcCachedRepresentationDaoTest extends JdbcResourceDaoTest {
         }
     }
 
+    
+    @Test
+    public void testUpdateIdentifier() throws NotInDataBaseException{
+        System.out.println("test updateResourceIdentifier ");
+
+        boolean result = jdbcCachedRepresentationDao.updateResourceIdentifier(UUID.fromString("00000000-0000-0000-0000-000000000051"), UUID.fromString("a0000000-0000-0000-0000-000000000051"));
+        assertEquals(true, result);
+        Number id = jdbcCachedRepresentationDao.getInternalID(UUID.fromString("a0000000-0000-0000-0000-000000000051"));
+        assertEquals(1, id);
+    }
    
 }

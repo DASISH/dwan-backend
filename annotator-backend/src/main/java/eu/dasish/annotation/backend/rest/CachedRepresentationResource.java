@@ -27,8 +27,10 @@ import eu.dasish.annotation.backend.dao.ILambda;
 import eu.dasish.annotation.schema.CachedRepresentationInfo;
 import eu.dasish.annotation.schema.ObjectFactory;
 import java.awt.image.BufferedImage;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
@@ -108,7 +110,7 @@ public class CachedRepresentationResource extends ResourceResource {
     }
 
     @GET
-    @Produces({"text/plain", "text/html", "text/xml", "application/zip"})
+    //@Produces({"text/plain", "text/html", "text/xml", "application/zip", "image/png", "image/jpg"})
     @Path("{cachedid: " + BackendConstants.regExpIdentifier + "}/stream")
     @Transactional(readOnly = true)
     public InputStream getCachedRepresentationContentStream(@PathParam("cachedid") String externalId) throws IOException {
@@ -141,11 +143,40 @@ public class CachedRepresentationResource extends ResourceResource {
         } else {
             return "Nothing is updated. ";
         }
-        
-       
+
+
+    }
+
+    @PUT
+    @Consumes("text/plain")
+    @Produces(MediaType.APPLICATION_XML)
+    @Path("{cachedid: " + BackendConstants.regExpIdentifier + "}/path/{isurl}")
+    public String updateCachedBlobFromFile(@PathParam("cachedid") String cachedIdentifier,
+            @PathParam("isurl") String isURL, String blobPath) throws IOException {
+        Map params = new HashMap();
+        InputStream input;
+
+        if (isURL.equals("URL")) {
+            URL blob = new URL(blobPath);
+            input = blob.openStream();
+        } else {
+            input = new FileInputStream (blobPath);
+        }
+
+        params.put("stream", input);
+        Integer result = (Integer) (new RequestWrappers(this)).wrapRequestResource(params, new UpdateCachedBlob(), Resource.CACHED_REPRESENTATION, ResourceAction.WRITE, cachedIdentifier);
+        input.close();
+        if (result != null) {
+            return result + "rows are updated";
+        } else {
+            return "Nothing is updated. ";
+        }
+
+
     }
 
     private class UpdateCachedBlob implements ILambda<Map, Integer> {
+
         @Override
         public Integer apply(Map params) throws NotInDataBaseException {
             Number cachedID = (Number) params.get("internalID");
@@ -173,10 +204,11 @@ public class CachedRepresentationResource extends ResourceResource {
         } else {
             return "Nothing is updated. ";
         }
-        
+
     }
-    
-     private class UpdateCachedMetadata implements ILambda<Map, Integer> {
+
+    private class UpdateCachedMetadata implements ILambda<Map, Integer> {
+
         @Override
         public Integer apply(Map params) throws NotInDataBaseException {
             CachedRepresentationInfo cachedInfo = (CachedRepresentationInfo) params.get("info");

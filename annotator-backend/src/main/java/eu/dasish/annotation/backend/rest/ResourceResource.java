@@ -91,6 +91,8 @@ public class ResourceResource<T> {
             return null;
         }
     }
+    
+   
 
     protected void ADMIN_RIGHTS_EXPECTED() throws IOException {
         loggerServer.debug("The request can be performed only by the principal with the admin rights.");

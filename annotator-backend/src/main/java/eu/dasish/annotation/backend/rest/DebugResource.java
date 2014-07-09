@@ -17,7 +17,10 @@
  */
 package eu.dasish.annotation.backend.rest;
 
+import eu.dasish.annotation.backend.BackendConstants;
+import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.NotInDataBaseException;
+import eu.dasish.annotation.backend.Resource;
 import eu.dasish.annotation.schema.AnnotationInfoList;
 import eu.dasish.annotation.schema.ObjectFactory;
 import java.io.BufferedReader;
@@ -46,6 +49,14 @@ import org.springframework.transaction.annotation.Transactional;
 public class DebugResource extends ResourceResource {
 
     private final String developer = "developer";
+    
+    
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    @Path("uuid")
+    public String generateUUID() throws IOException {
+       return (Helpers.generateUUID()).toString();
+    }
 
     @GET
     @Produces(MediaType.TEXT_XML)
@@ -117,7 +128,7 @@ public class DebugResource extends ResourceResource {
     //////////////////////////////////
     @PUT
     @Produces(MediaType.TEXT_XML)
-    @Path("account/{principalId}/make/{account}")
+    @Path("/account/{principalId}/make/{account}")
     @Transactional(readOnly = true)
     public String updatePrincipalsAccount(@PathParam("principalId") String principalId, @PathParam("account") String account) throws IOException {
         Number remotePrincipalID = this.getPrincipalID();
@@ -137,6 +148,32 @@ public class DebugResource extends ResourceResource {
             this.ADMIN_RIGHTS_EXPECTED();
             httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
             return "Coucou.";
+        }
+
+    }
+    
+    //////////////////////////////////
+    @PUT
+    @Produces(MediaType.TEXT_XML)
+    @Path("/resource/{resource}/{oldId: " + BackendConstants.regExpIdentifier + "}/newid/{newId:" + BackendConstants.regExpIdentifier + "}")
+    public String updateResourceIdentifier(@PathParam("resource") String resource, @PathParam("oldId") String oldExternalId, @PathParam("newId") String newExternalId) throws IOException {
+        Number remotePrincipalID = this.getPrincipalID();
+        if (remotePrincipalID == null) {
+            return "null in;ogged principal";
+        }
+        String typeOfAccount = dbDispatcher.getTypeOfPrincipalAccount(remotePrincipalID);
+        if (typeOfAccount.equals(admin)) {
+            try {
+                final boolean update = dbDispatcher.updateResourceIdentifier(Resource.valueOf(resource), UUID.fromString(oldExternalId), UUID.fromString(newExternalId));
+                return (update ? "The identifier is updated" : "The account is not updated, see the log.");
+            } catch (NotInDataBaseException e) {
+                httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.toString());
+                return e.toString();
+            }
+        } else {
+            this.ADMIN_RIGHTS_EXPECTED();
+            httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
+            return "Dooooeeeii!!";
         }
 
     }

@@ -167,6 +167,17 @@ public class JdbcPrincipalDaoTest extends JdbcResourceDaoTest {
         List result = jdbcPrincipalDao.getPrincipalIDsWithAccessForNotebook(1, Access.WRITE);
         assertEquals(expResult, result);
     }
+    
+    @Test
+    public void testUpdateIdentifier() throws NotInDataBaseException{
+        System.out.println("test updateResourceIdentifier ");
+
+        boolean result = jdbcPrincipalDao.updateResourceIdentifier(UUID.fromString("00000000-0000-0000-0000-000000000111"), UUID.fromString("a0000000-0000-0000-0000-000000000111"));
+        assertEquals(true, result);
+        Number id = jdbcPrincipalDao.getInternalID(UUID.fromString("a0000000-0000-0000-0000-000000000111"));
+        assertEquals(1, id);
+    }
+    
 //    
 //   @Test
 //   public void generateHashes() {
