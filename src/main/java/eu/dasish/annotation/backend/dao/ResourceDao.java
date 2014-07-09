@@ -35,7 +35,7 @@ public interface ResourceDao {
 
     UUID getExternalID(Number internalId);
 
-  
+    boolean updateResourceIdentifier(UUID oldIdentifier, UUID newIdentifier);
   
     /**
      *
@@ -50,4 +50,6 @@ public interface ResourceDao {
     List<Map<Number, String>> getPermissions(Number resourceID);
 
     Access getPublicAttribute(Number resourceID);
+    
+    
 }

@@ -461,6 +461,16 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         assertEquals(1, result);
         assertEquals(Access.NONE, jdbcAnnotationDao.getPublicAttribute(1));
     }
+    
+    @Test
+    public void testUpdateIdentifier() throws NotInDataBaseException{
+        System.out.println("test updateResourceIdentifier ");
+
+        boolean result = jdbcAnnotationDao.updateResourceIdentifier(UUID.fromString("00000000-0000-0000-0000-000000000021"), UUID.fromString("10000000-0000-0000-0000-000000000021"));
+        assertEquals(true, result);
+        Number id = jdbcAnnotationDao.getInternalID(UUID.fromString("10000000-0000-0000-0000-000000000021"));
+        assertEquals(1, id);
+    }
 
     @Test
     public void testRetrieveBodyComponents() throws ParserConfigurationException, IOException, SAXException {

@@ -71,8 +71,9 @@
         <br>
         <b>Debugging URI's (only for developers)</b><br>
         GET <a href="api/debug/remoteID">api/debug/remoteID</a> <br>
+        GET <a href="api/debug/uuid">api/debug/uuid</a> (random uuid) <br>
         GET <a href="api/debug/annotations">api/debug/annotations</a> <br>
-        updated: GET <a href="api/debug/logDatabase/32">api/debug/logDatabase/32</a> <br>
-        updated: GET <a href="api/debug/logServer/32">api/debug/logServer/32</a> <br>
+        GET <a href="api/debug/logDatabase/32">api/debug/logDatabase/32</a> <br>
+        GET <a href="api/debug/logServer/32">api/debug/logServer/32</a> <br>
     </body>
 </html>

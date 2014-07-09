@@ -206,4 +206,14 @@ public class JdbcTargetDaoTest extends JdbcResourceDaoTest {
         int result = jdbcTargetDao.updateTargetCachedRepresentationFragment(1, 1, "updated fragment");
         assertEquals(1, result);
     }
+    
+    @Test
+    public void testUpdateIdentifier() throws NotInDataBaseException{
+        System.out.println("test updateResourceIdentifier ");
+
+        boolean result = jdbcTargetDao.updateResourceIdentifier(UUID.fromString("00000000-0000-0000-0000-000000000031"), UUID.fromString("a0000000-0000-0000-0000-000000000031"));
+        assertEquals(true, result);
+        Number id = jdbcTargetDao.getInternalID(UUID.fromString("a0000000-0000-0000-0000-000000000031"));
+        assertEquals(1, id);
+    }
 }

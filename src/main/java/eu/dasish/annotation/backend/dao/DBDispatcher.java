@@ -213,6 +213,10 @@ public interface DBDispatcher {
     /**
      * UPDATERS
      */
+    
+    boolean updateResourceIdentifier(Resource resource, UUID oldIdentifier, UUID newIdentifier) throws NotInDataBaseException;
+    
+    
     boolean updateAccount(UUID principalExternalID, String account) throws NotInDataBaseException;
 
     /**

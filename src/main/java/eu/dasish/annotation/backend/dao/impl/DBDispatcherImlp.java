@@ -614,6 +614,24 @@ public class DBDispatcherImlp implements DBDispatcher {
 
     ///// UPDATERS /////////////////
     @Override
+    public boolean updateResourceIdentifier(Resource resource, UUID oldIdentifier, UUID newIdentifier) {
+        switch (resource) {
+            case PRINCIPAL:
+                return principalDao.updateResourceIdentifier(oldIdentifier, newIdentifier);
+            case ANNOTATION:
+                return annotationDao.updateResourceIdentifier(oldIdentifier, newIdentifier);
+            case TARGET:
+                return targetDao.updateResourceIdentifier(oldIdentifier, newIdentifier);
+            case CACHED_REPRESENTATION:
+                return cachedRepresentationDao.updateResourceIdentifier(oldIdentifier, newIdentifier);
+            case NOTEBOOK:
+                return notebookDao.updateResourceIdentifier(oldIdentifier, newIdentifier);
+            default:
+                return false;
+        } 
+    }
+    
+    @Override
     public boolean updateAccount(UUID principalExternalID, String account) throws NotInDataBaseException {
         return principalDao.updateAccount(principalExternalID, account);
     }

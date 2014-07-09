@@ -23,6 +23,7 @@ import eu.dasish.annotation.schema.NotebookInfo;
 import eu.dasish.annotation.schema.Access;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import org.junit.Test;
@@ -231,5 +232,15 @@ public class JdbcNotebookDaoTest extends JdbcResourceDaoTest {
         System.out.println("test deleteNotebook");
         assertTrue(jdbcNotebookDao.deleteNotebook(3));
         assertFalse(jdbcNotebookDao.deleteNotebook(3));
+    }
+    
+    @Test
+    public void testUpdateIdentifier() throws NotInDataBaseException{
+        System.out.println("test updateResourceIdentifier ");
+
+        boolean result = jdbcNotebookDao.updateResourceIdentifier(UUID.fromString("00000000-0000-0000-0000-000000000011"), UUID.fromString("a0000000-0000-0000-0000-000000000011"));
+        assertEquals(true, result);
+        Number id = jdbcNotebookDao.getInternalID(UUID.fromString("a0000000-0000-0000-0000-000000000011"));
+        assertEquals(1, id);
     }
 }

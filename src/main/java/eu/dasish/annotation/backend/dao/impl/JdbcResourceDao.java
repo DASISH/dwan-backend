@@ -19,6 +19,7 @@ package eu.dasish.annotation.backend.dao.impl;
 
 import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.NotInDataBaseException;
+import eu.dasish.annotation.backend.Resource;
 import eu.dasish.annotation.backend.dao.ResourceDao;
 import eu.dasish.annotation.schema.Access;
 import java.sql.ResultSet;
@@ -216,6 +217,23 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
             return timeStampToXMLGregorianCalendar(rs.getString(last_modified));
         }
     };
+    
+    ///// UPDATERS ////
+    
+    @Override
+    public boolean updateResourceIdentifier(UUID oldIdentifier, UUID newIdentifier) {
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("oldId", oldIdentifier.toString());
+        params.put("newId", newIdentifier.toString());
+        StringBuilder sql = new StringBuilder("UPDATE ");
+        sql.append(resourceTableName).append(" SET ").
+                append(external_id).append("=  :newId").                
+                append(" WHERE ").append(external_id).append("= :oldId");
+        int affectedRows = this.loggedUpdate(sql.toString(), params);
+        return (affectedRows >0);
+    }
+    
+    
 ////////////////// ROW MAPPERS ///////////////////
     protected final RowMapper<Number> internalIDRowMapper = new RowMapper<Number>() {
         @Override
