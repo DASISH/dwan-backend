@@ -362,7 +362,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>        
         <netbeans.hint.license>gpl20</netbeans.hint.license>  
         <plugin.license.copyrightYear>2013</plugin.license.copyrightYear>
-        <project.version>1.5</project.version>
+        <project.version>1.5.1</project.version>
         <shibboleth.version>1.0.4</shibboleth.version>
     </properties>
     

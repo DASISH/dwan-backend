@@ -961,6 +961,21 @@ public class DBDispatcherImlp implements DBDispatcher {
             return null;
         }
     }
+    
+    @Override
+    public UUID getPrincipalExternalIdFromName(String fullName) throws NotInDataBaseException{
+       return principalDao.getExternalIdFromName(fullName);
+    }
+    
+    @Override
+    public List<UUID> getAnnotationExternalIdsFromHeadline(String headline){
+        return annotationDao.getExternalIdFromHeadline(headline);
+    }
+    
+    @Override
+    public List<Number> getAnnotationInternalIDsFromHeadline(String headline){
+        return annotationDao.getInternalIDsFromHeadline(headline);
+    }
 
     //// privee ///
     private Target createFreshTarget(TargetInfo targetInfo) {

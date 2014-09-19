@@ -44,3 +44,10 @@ In the previous version the server has been included as well in the URI.
 
 Moreover, an atribute xml:id is added to the schema for main resource instances.
 
+July 14, 2014. Added 1: api to send an image cached representation as a file, via its path
+or URI. At least will help in testing because I have problems with turning an image file
+onto a stream to send it via FF Client in a request body. Added 2: admin can change the external
+ID (UUID) of a resource. At least will help with testing. 
+
+
+

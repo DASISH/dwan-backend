@@ -156,6 +156,17 @@ public class JdbcPrincipalDao extends JdbcResourceDao implements PrincipalDao {
     }
     
     @Override
+    public UUID getExternalIdFromName(String fullName) throws NotInDataBaseException {
+        StringBuilder requestDB = new StringBuilder("SELECT ");
+        requestDB.append(external_id).append(" FROM ").append(principalTableName).append(" WHERE ").append(principal_name).append("= ? LIMIT 1");
+        List<UUID> result = this.loggedQuery(requestDB.toString(), externalIDRowMapper, fullName);
+        if (result.isEmpty()) {
+            throw new NotInDataBaseException("principal", "full name", fullName);
+        }
+        return result.get(0); 
+    }
+    
+    @Override
     public String getTypeOfPrincipalAccount(Number internalID) {
         StringBuilder requestDB = new StringBuilder("SELECT ");
         requestDB.append(account).append(" FROM ").append(principalTableName).append(" WHERE ").append(principal_id).append("= ? LIMIT 1");
