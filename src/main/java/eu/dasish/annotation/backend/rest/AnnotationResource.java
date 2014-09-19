@@ -33,12 +33,14 @@ import eu.dasish.annotation.schema.ResponseBody;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -60,7 +62,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Path("/annotations")
 @Transactional(rollbackFor = {Exception.class})
 public class AnnotationResource extends ResourceResource {
-   
+
     public void setHttpServletResponse(HttpServletResponse httpServletResponse) {
         this.httpServletResponse = httpServletResponse;
     }
@@ -209,17 +211,15 @@ public class AnnotationResource extends ResourceResource {
     @Path("")
     public JAXBElement<ResponseBody> createAnnotation(Annotation annotation) throws IOException {
 
-            Map params = new HashMap();
-            params.put("annotation", annotation);
-            ResponseBody result = (ResponseBody) (new RequestWrappers(this)).wrapRequestResource(params, new AddAnnotation());
-            if (result != null) {
-                return (new ObjectFactory()).createResponseBody(result);
-            } else {
-                return (new ObjectFactory()).createResponseBody(new ResponseBody());
-            }
+        Map params = new HashMap();
+        params.put("annotation", annotation);
+        ResponseBody result = (ResponseBody) (new RequestWrappers(this)).wrapRequestResource(params, new AddAnnotation());
+        if (result != null) {
+            return (new ObjectFactory()).createResponseBody(result);
+        } else {
+            return (new ObjectFactory()).createResponseBody(new ResponseBody());
         }
-
-    
+    }
 
     private class AddAnnotation implements ILambda<Map, ResponseBody> {
 
@@ -326,6 +326,49 @@ public class AnnotationResource extends ResourceResource {
             return dbDispatcher.makeAnnotationResponseEnvelope(resourceID);
         }
     }
+    
+    //////////////////////////////////////////
+    
+     //////////////////////////////////////////////
+    @POST
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.TEXT_PLAIN)
+    @Path("publicaccessform")
+    public String updatePubliAccessFromForm(
+            @FormParam("annotationId") String annotationDatabaseId,
+            @FormParam("annotationHeadline") String annotationHeadline,
+            @FormParam("access") String access)
+            throws IOException {
+        
+        if (access.trim().equals("")) {
+            access = "none";
+        }
+        
+        Access accessTyped = Access.fromValue(access);
+        int updatedAnnotations = 0;
+        
+        if (annotationDatabaseId == null || annotationDatabaseId.trim().equals("")) {
+            List<Number> annotationIDs = dbDispatcher.getAnnotationInternalIDsFromHeadline(annotationHeadline);
+            if (annotationIDs == null || annotationIDs.isEmpty()) {
+                return "No annotations with this headline have been found";
+            };
+            int count = 0;
+            for (Number annotationID : annotationIDs) {
+                count = dbDispatcher.updatePublicAttribute(annotationID, accessTyped);;
+                updatedAnnotations = updatedAnnotations+count;
+            }            
+            return (updatedAnnotations + " row(s) are updated");
+        } else {
+            try {
+            Number annotationID = dbDispatcher.getResourceInternalIdentifier(UUID.fromString(annotationDatabaseId), Resource.ANNOTATION);
+            updatedAnnotations= dbDispatcher.updatePublicAttribute(annotationID, accessTyped);
+            } catch (NotInDataBaseException e) {
+              httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e.toString());   
+            }
+        }
+        return (updatedAnnotations + " annotation(s) are updated.");
+    }
+    
     ////////////////////////////////////////////////////
 
     @PUT
@@ -336,8 +379,62 @@ public class AnnotationResource extends ResourceResource {
             @PathParam("principalid") String principalExternalId, Access access) throws IOException {
         return this.genericUpdateDeleteAccess(annotationExternalId, principalExternalId, access);
     }
-    ////////////////////////////////////////////
+    
 
+
+    //////////////////////////////////////////////
+    @POST
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.TEXT_PLAIN)
+    @Path("permissionform")
+    public String updatePermissionFromForm(@FormParam("login") String remoteID,
+            @FormParam("fullName") String fullName,
+            @FormParam("userId") String principalDatabaseId,
+            @FormParam("annotationId") String annotationDatabaseId,
+            @FormParam("annotationHeadline") String annotationHeadline,
+            @FormParam("access") String access)
+            throws IOException {
+        
+        if (access.trim().equals("")) {
+            access = null;
+        }
+        
+        try {
+            if (principalDatabaseId == null || principalDatabaseId.trim().equals("")) {
+                if (remoteID != null && !remoteID.trim().equals("")) {
+                    principalDatabaseId = dbDispatcher.getPrincipalExternalIDFromRemoteID(remoteID).toString();
+                } else {
+                    if (fullName != null) {
+                        principalDatabaseId = dbDispatcher.getPrincipalExternalIdFromName(fullName).toString();
+                    } else {
+                        httpServletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST, "No user information is given");
+                    }
+                }
+            }
+        } catch (NotInDataBaseException e) {
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e.toString()); 
+        }
+
+        if (annotationDatabaseId == null || annotationDatabaseId.trim().equals("")) {
+            List<UUID> annotationIds = dbDispatcher.getAnnotationExternalIdsFromHeadline(annotationHeadline);
+            if (annotationIds == null || annotationIds.isEmpty()) {
+                return "No annotations with this headline found";
+            };
+            int count = 0;
+            String tmp = null;
+            for (UUID annotationId : annotationIds) {
+                tmp = this.genericUpdateDeleteAccess(annotationId.toString(), principalDatabaseId, Access.fromValue(access));
+                if (!tmp.startsWith("0")) {
+                    count++;
+                }
+            }            
+            return (count + " row(s) are updated");
+        } else {
+            return this.genericUpdateDeleteAccess(annotationDatabaseId, principalDatabaseId, Access.fromValue(access));
+        }
+    }
+
+    ////////////////////////////////////////////
     private String genericUpdateDeleteAccess(String annotationId, String principalId, Access access) throws IOException {
         Map params = new HashMap();
         params.put("access", access);

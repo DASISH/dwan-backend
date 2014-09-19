@@ -393,4 +393,10 @@ public interface DBDispatcher {
     ResponseBody makeNotebookResponseEnvelope(Number notebookID);
 
     ResponseBody makeAccessResponseEnvelope(Number resourceID, Resource resource);
+    
+    UUID getPrincipalExternalIdFromName(String fullName) throws NotInDataBaseException;
+    
+    List<UUID> getAnnotationExternalIdsFromHeadline(String headline);
+    
+    List<Number> getAnnotationInternalIDsFromHeadline(String headline);
 }

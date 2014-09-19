@@ -24,6 +24,7 @@ import eu.dasish.annotation.schema.AnnotationInfo;
 import eu.dasish.annotation.schema.Access;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Created on : Jun 27, 2013, 10:34:13 AM
@@ -39,6 +40,9 @@ public interface AnnotationDao extends ResourceDao{
      * GETTERS
      */
     
+    public List<UUID> getExternalIdFromHeadline(String headline);
+    
+    public List<Number>  getInternalIDsFromHeadline(String headline);
     /**
      * 
      * @param annotationID

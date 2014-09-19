@@ -110,6 +110,21 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
         List<Access> result = this.loggedQuery(sql.toString(), public_RowMapper, annotationID);
         return result.get(0);
     }
+    
+    
+    @Override
+    public List<UUID> getExternalIdFromHeadline(String headline){
+        StringBuilder requestDB = new StringBuilder("SELECT ");
+        requestDB.append(external_id).append(" FROM ").append(annotationTableName).append(" WHERE ").append("'").append(headline).append("'").append("= ?");
+        return this.loggedQuery(requestDB.toString(), externalIDRowMapper, headline);        
+    }
+    
+    @Override
+    public List<Number> getInternalIDsFromHeadline(String headline){
+        StringBuilder requestDB = new StringBuilder("SELECT ");
+        requestDB.append(annotation_id).append(" FROM ").append(annotationTableName).append(" WHERE ").append("'").append(headline).append("'").append("= ?");
+        return this.loggedQuery(requestDB.toString(), internalIDRowMapper, headline);        
+    }
 
     ////////////////////////////////////////////////////////////////////////
     @Override

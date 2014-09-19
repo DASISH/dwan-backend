@@ -39,7 +39,13 @@
         <h3>Services for which you need to be logged in</h3>
         <br> 
         <a href="api/authentication/logout"> logout</a> <br> 
+        <br>
         <br> 
+        <a href="changePermissions.html"> Change access mode for a user and an annotation </a><br> 
+        <br>
+        <br> 
+        <a href="publicAccess.html"> Change public access mode for an annotation </a> <br> 
+        <br>
         
         <b>Test URI-s</b><br>
         <br> 

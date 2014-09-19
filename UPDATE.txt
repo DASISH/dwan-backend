@@ -18,6 +18,8 @@ UPDATE cached_representation SET external_id =
 
 This id is already set up in the jsp page, so no changes should be done there.
 
+4. Nothing is to be update in settings (web.xml, context.xml) and the database.
+
 
 
 
