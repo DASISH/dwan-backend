@@ -307,6 +307,37 @@
                     </execution>
                 </executions>
             </plugin>
+       <!-- unpacking the schema form annotator-achema project -->     
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>2.9</version>
+                <executions>
+                    <execution>
+                        <id>unpack</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>eu.dasish.annotation</groupId>
+                                    <artifactId>annotator-schema</artifactId>
+                                    <version>1.0-SNAPSHOT</version>
+                                    <type>jar</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>${basedir}/src/main/webapp/SCHEMA</outputDirectory>
+                                    <destFileName>annotator-schema-dynamic-copy.jar</destFileName>
+                                    <includes>**/*.xsd</includes>
+                                    <excludes>**/*.class, **/*.xml</excludes>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            
             <plugin>
                 <!--                                		 
 		    License plugin checks for presence of license header in all source files (with some exceptions, see excludes below).

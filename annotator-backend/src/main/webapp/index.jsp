@@ -24,13 +24,15 @@
         <p><a href="https://trac.clarin.eu/wiki/DASISH/SpecificationDocument#RESTAPI">https://trac.clarin.eu/wiki/DASISH/SpecificationDocument#RESTAPI</a></p>
         <br>
         <h3>Services for which you do not need to be logged-in</h3>
-        <br> 
-        <a href="registerNonShibbolethPrincipal.html"> Register a non-shibboleth user</a> <br> 
+        
+        <br>
+        <%
+        String schemaLocation = application.getInitParameter("eu.dasish.annotation.backend.schemaLocation");
+        System.out.println(schemaLocation);
+        %>
+        <a href=<%=application.getInitParameter("eu.dasish.annotation.backend.schemaLocation")%> > Get DASISH schema</a> <br> 
         <br> 
         <a href="registerShibbolethPrincipal.html"> Register a shibboleth user</a> <br> 
-<!--        <br>
-        <a href="registerShibbolethAlsoAsNonShibboleth.html"> Register an existing  shibboleth user as a non-shibboleth as well.</a> <br> 
-        <br>-->
         <br>
         <a href="api/authentication/login"> login  </a> <br> 
          <br> 
