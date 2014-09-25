@@ -1,24 +1,14 @@
-This time only webannotator-basic must be updated. It will be used for adjusting the 
-frontend while the previous shibbolised backend will be still running with the previous version
-of the front-end, to be tested by our partners from Tartu.
 
-1. Placing tarball: take the tar-ball of the new  version 1.5, and follow the 
+1. Placing tarball: take the tar-ball of the new  version 1.5.2, and follow the 
 standard MPI deployment procedure, for webannotator-basic.  
 Consult the instructions from INSTALL.txt  about placing war file if you have forgotten.
 
 2. The web.xml stays intact  because currently it is set for basic authentication.
 
-3. The id of one cached representation (used in the welcome jsp page as an example) 
-must be changed in the database.  
-
-Since there is no API for changing IDs, dearest latadmin, pls, do it.
-
-UPDATE cached_representation SET external_id = 
-'b0d3f18c-eecf-40ea-9979-eecbbdca7d68' WHERE external_id='654809f6-1202-4073-86b8-a1f6fe0f2409';
-
-This id is already set up in the jsp page, so no changes should be done there.
-
-4. Nothing is to be update in settings (web.xml, context.xml) and the database.
+3. context.xml (global one). Pls, add  
+<Parameter name="eu.dasish.annotation.backend.schemaLocation" 
+value="http://lux17.mpi.nl/ds/webannotator-basic/SCHEMA/DASISH-schema.xsd"
+        override="true"/>
 
 
 
