@@ -26,13 +26,12 @@
         <h3>Services for which you do not need to be logged-in</h3>
         
         <br>
-        <%
-        String schemaLocation = application.getInitParameter("eu.dasish.annotation.backend.schemaLocation");
-        System.out.println(schemaLocation);
-        %>
         <a href=<%=application.getInitParameter("eu.dasish.annotation.backend.schemaLocation")%> > Get DASISH schema</a> <br> 
-        <br> 
+        <br>
+        <br>
+        <a href="registerNonShibbolethPrincipal.html"> Register a user for basic authentication logging-in</a><br> 
         <a href="registerShibbolethPrincipal.html"> Register a shibboleth user</a> <br> 
+        <br>
         <br>
         <a href="api/authentication/login"> login  </a> <br> 
          <br> 
@@ -44,8 +43,6 @@
         <br>
         <br> 
         <a href="changePermissions.html"> Change access mode for a user and an annotation </a><br> 
-        <br>
-        <br> 
         <a href="publicAccess.html"> Change public access mode for an annotation </a> <br> 
         <br>
         
