@@ -49,5 +49,8 @@ or URI. At least will help in testing because I have problems with turning an im
 onto a stream to send it via FF Client in a request body. Added 2: admin can change the external
 ID (UUID) of a resource. At least will help with testing. 
 
-
+September 25, 2014. 1. DASISH schema is now a part of the deployment package, also accessible via 
+the request of the form <server>/SCHEMA/DASISH-schema.xsd.  2. Two API's are added allowing to
+change annotation/user access mode. 3. The password is now hidden while process of registration
+of a non-shibboleth user (basic authentication).
 
