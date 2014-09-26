@@ -17,6 +17,7 @@
  */
 package eu.dasish.annotation.backend.rest;
 
+import eu.dasish.annotation.backend.ForbiddenException;
 import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.PrincipalCannotBeDeleted;
 import eu.dasish.annotation.backend.PrincipalExists;
@@ -216,7 +217,15 @@ public class PrincipalResource extends ResourceResource {
         params.put("newPrincipal", newPrincipal);
 
         dbDispatcher.setResourcesPaths(this.getRelativeServiceURI());
-        return (new RequestWrappers(this)).wrapAddPrincipalRequest(params, new RegisterNonShibbolizedPrincipal());
+        try {
+            return (new RequestWrappers(this)).wrapAddPrincipalRequest(params, new RegisterNonShibbolizedPrincipal());
+        } catch (NotInDataBaseException e1) {
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e1.getMessage());
+            return new ObjectFactory().createPrincipal(new Principal());
+        } catch (PrincipalExists e2) {
+            httpServletResponse.sendError(HttpServletResponse.SC_CONFLICT, e2.getMessage());
+            return new ObjectFactory().createPrincipal(new Principal());
+        }
     }
 
     private class RegisterNonShibbolizedPrincipal implements ILambdaPrincipal<Map, Principal> {
@@ -250,7 +259,15 @@ public class PrincipalResource extends ResourceResource {
         params.put("newPrincipal", newPrincipal);
 
         dbDispatcher.setResourcesPaths(this.getRelativeServiceURI());
-        return (new RequestWrappers(this)).wrapAddPrincipalRequest(params, new RegisterShibbolizedPrincipal());
+        try {
+            return (new RequestWrappers(this)).wrapAddPrincipalRequest(params, new RegisterShibbolizedPrincipal());
+        } catch (NotInDataBaseException e1) {
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e1.getMessage());
+            return new ObjectFactory().createPrincipal(new Principal());
+        } catch (PrincipalExists e2) {
+            httpServletResponse.sendError(HttpServletResponse.SC_CONFLICT, e2.getMessage());
+            return new ObjectFactory().createPrincipal(new Principal());
+        }
     }
 
     private class RegisterShibbolizedPrincipal implements ILambdaPrincipal<Map, Principal> {
