@@ -52,19 +52,13 @@ public class RequestWrappers<T> {
         return " The logged-in principal cannot " + action + " the " + resource + " with the identifier " + identifier;
     }
 
-    public T wrapRequestResource(Map params, ILambda<Map, T> dbRequestor) throws IOException {
+    public T wrapRequestResource(Map params, ILambda<Map, T> dbRequestor) throws IOException, NotInDataBaseException {
         Number remotePrincipalID = resourceResource.getPrincipalID();
         if (remotePrincipalID == null) {
             return null;
         }
         params.put(_principalID, remotePrincipalID);
-        try {
-            return dbRequestor.apply(params);
-        } catch (NotInDataBaseException e1) {
-            resourceResource.loggerServer.debug(e1.toString());
-            resourceResource.httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e1.toString());
-            return null;
-        }
+        return dbRequestor.apply(params);
     }
 
     public T wrapRequestResource(Map params, ILambda<Map, T> dbRequestor, Resource resource, ResourceAction action, String externalId) throws IOException, ForbiddenException, NotInDataBaseException {
@@ -84,6 +78,8 @@ public class RequestWrappers<T> {
         }
 
     }
+    
+    
 
     public JAXBElement<Principal> wrapAddPrincipalRequest(Map params, ILambdaPrincipal<Map, Principal> dbRequestor) throws IOException, NotInDataBaseException, PrincipalExists {
         return new ObjectFactory().createPrincipal(dbRequestor.apply(params));

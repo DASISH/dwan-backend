@@ -246,10 +246,15 @@ public class AnnotationResource extends ResourceResource {
 
         Map params = new HashMap();
         params.put("annotation", annotation);
-        ResponseBody result = (ResponseBody) (new RequestWrappers(this)).wrapRequestResource(params, new AddAnnotation());
-        if (result != null) {
-            return (new ObjectFactory()).createResponseBody(result);
-        } else {
+        try {
+            ResponseBody result = (ResponseBody) (new RequestWrappers(this)).wrapRequestResource(params, new AddAnnotation());
+            if (result != null) {
+                return (new ObjectFactory()).createResponseBody(result);
+            } else {
+                return (new ObjectFactory()).createResponseBody(new ResponseBody());
+            }
+        } catch (NotInDataBaseException e) {
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
             return (new ObjectFactory()).createResponseBody(new ResponseBody());
         }
     }
@@ -398,29 +403,50 @@ public class AnnotationResource extends ResourceResource {
             access = "none";
         }
 
-        Access accessTyped = Access.fromValue(access);
-        int updatedAnnotations = 0;
+        try {
 
-        if (annotationDatabaseId == null || annotationDatabaseId.trim().equals("")) {
-            List<Number> annotationIDs = dbDispatcher.getAnnotationInternalIDsFromHeadline(annotationHeadline);
-            if (annotationIDs == null || annotationIDs.isEmpty()) {
-                return "No annotations with this headline have been found";
-            };
-            int count = 0;
-            for (Number annotationID : annotationIDs) {
-                count = dbDispatcher.updatePublicAttribute(annotationID, accessTyped);;
-                updatedAnnotations = updatedAnnotations + count;
+            Access accessTyped = Access.fromValue(access);
+            if (annotationDatabaseId == null || annotationDatabaseId.trim().equals("")) {
+                List<UUID> annotationIds = dbDispatcher.getAnnotationExternalIdsFromHeadline(annotationHeadline);
+                if (annotationIds == null || annotationIds.isEmpty()) {
+                    httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "No annotations with this headline have been found");
+                    return "No annotations with this headline have been found";
+                };
+                int updatedAnnotations = 0;            
+                for (UUID annotationId : annotationIds) {
+                    Map params = new HashMap();
+                    params.put("access", accessTyped);
+                    Integer result = (Integer) (new RequestWrappers(this)).wrapRequestResource(params, new UpdatePublicAccess(), Resource.ANNOTATION, ResourceAction.WRITE_W_METAINFO, annotationId.toString());
+                    updatedAnnotations = (result != null) ? updatedAnnotations + result.intValue() : updatedAnnotations;
+                }
+                return (updatedAnnotations + " row(s) are updated");
+            } else {
+                Map params = new HashMap();
+                params.put("access", accessTyped);
+                Integer result = (Integer) (new RequestWrappers(this)).wrapRequestResource(params, new UpdatePublicAccess(), Resource.ANNOTATION, ResourceAction.WRITE_W_METAINFO, annotationDatabaseId);
+                if (result != null) {
+                    return result + " row(s) is(are) updated.";
+                } else {
+                    return "0 rows are updated.";
+                }
             }
-            return (updatedAnnotations + " row(s) are updated");
-        } else {
-            try {
-                Number annotationID = dbDispatcher.getResourceInternalIdentifier(UUID.fromString(annotationDatabaseId), Resource.ANNOTATION);
-                updatedAnnotations = dbDispatcher.updatePublicAttribute(annotationID, accessTyped);
-            } catch (NotInDataBaseException e) {
-                httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e.toString());
-            }
+        } catch (NotInDataBaseException e1) {
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e1.toString());
+            return "0 rows are updated.";
+        } catch (ForbiddenException e2) {
+            httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN, e2.toString());
+            return "0 rows are updated.";
         }
-        return (updatedAnnotations + " annotation(s) are updated.");
+    }
+
+    private class UpdatePublicAccess implements ILambda<Map, Integer> {
+
+        @Override
+        public Integer apply(Map params) throws NotInDataBaseException {
+            Number annotationID = (Number) params.get("internalID");
+            Access access = (Access) params.get("access");
+            return dbDispatcher.updatePublicAttribute(annotationID, access);
+        }
     }
 
     ////////////////////////////////////////////////////
@@ -511,8 +537,6 @@ public class AnnotationResource extends ResourceResource {
         } else {
             return "0 rows are updated.";
         }
-
-
     }
 
     private class UpdatePrincipalAccess implements ILambda<Map, Integer> {

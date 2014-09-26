@@ -76,8 +76,13 @@ public class PrincipalResource extends ResourceResource {
     public JAXBElement<Principal> getPrincipal(@PathParam("principalid") String externalIdentifier) throws IOException {
         Map params = new HashMap<String, String>();
         params.put("externalId", externalIdentifier);
-        Principal result = (Principal) (new RequestWrappers(this)).wrapRequestResource(params, new GetPrincipal());
-        return (result != null) ? (new ObjectFactory().createPrincipal(result)) : (new ObjectFactory().createPrincipal(new Principal()));
+        try {
+            Principal result = (Principal) (new RequestWrappers(this)).wrapRequestResource(params, new GetPrincipal());
+            return (result != null) ? (new ObjectFactory().createPrincipal(result)) : (new ObjectFactory().createPrincipal(new Principal()));
+        } catch (NotInDataBaseException e) {
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
+            return new ObjectFactory().createPrincipal(new Principal());
+        }
     }
 
     private class GetPrincipal implements ILambda<Map, Principal> {
@@ -110,8 +115,13 @@ public class PrincipalResource extends ResourceResource {
     public JAXBElement<Principal> getPrincipalByInfo(@QueryParam("email") String email) throws IOException {
         Map params = new HashMap<String, String>();
         params.put("email", email);
-        Principal result = (Principal) (new RequestWrappers(this)).wrapRequestResource(params, new GetPrincipalByInfo());
-        return (result != null) ? (new ObjectFactory().createPrincipal(result)) : (new ObjectFactory().createPrincipal(new Principal()));
+        try {
+            Principal result = (Principal) (new RequestWrappers(this)).wrapRequestResource(params, new GetPrincipalByInfo());
+            return (result != null) ? (new ObjectFactory().createPrincipal(result)) : (new ObjectFactory().createPrincipal(new Principal()));
+        } catch (NotInDataBaseException e) {
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
+            return new ObjectFactory().createPrincipal(new Principal());
+        }
     }
 
     private class GetPrincipalByInfo implements ILambda<Map, Principal> {
@@ -130,8 +140,13 @@ public class PrincipalResource extends ResourceResource {
     public JAXBElement<CurrentPrincipalInfo> getCurrentPrincipalInfo(@PathParam("principalid") String externalIdentifier) throws IOException {
         Map params = new HashMap<String, String>();
         params.put("externalId", externalIdentifier);
-        CurrentPrincipalInfo result = (CurrentPrincipalInfo) (new RequestWrappers(this)).wrapRequestResource(params, new GetCurrentPrincipalInfo());
-        return (result != null) ? (new ObjectFactory().createCurrentPrincipalInfo(result)) : (new ObjectFactory().createCurrentPrincipalInfo(new CurrentPrincipalInfo()));
+        try {
+            CurrentPrincipalInfo result = (CurrentPrincipalInfo) (new RequestWrappers(this)).wrapRequestResource(params, new GetCurrentPrincipalInfo());
+            return (result != null) ? (new ObjectFactory().createCurrentPrincipalInfo(result)) : (new ObjectFactory().createCurrentPrincipalInfo(new CurrentPrincipalInfo()));
+        } catch (NotInDataBaseException e) {
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
+            return new ObjectFactory().createCurrentPrincipalInfo(new CurrentPrincipalInfo());
+        }
     }
 
     private class GetCurrentPrincipalInfo implements ILambda<Map, CurrentPrincipalInfo> {
@@ -308,9 +323,13 @@ public class PrincipalResource extends ResourceResource {
         if (dbDispatcher.getTypeOfPrincipalAccount(remotePrincipalID).equals(admin)) {
             Map params = new HashMap<String, Object>();
             params.put("newPrincipal", principal);
-            Principal result = (Principal) (new RequestWrappers(this)).wrapRequestResource(params, new UpdatePrincipal());
-            return (result != null) ? (new ObjectFactory().createPrincipal(result)) : (new ObjectFactory().createPrincipal(new Principal()));
-
+            try {
+                Principal result = (Principal) (new RequestWrappers(this)).wrapRequestResource(params, new UpdatePrincipal());
+                return (result != null) ? (new ObjectFactory().createPrincipal(result)) : (new ObjectFactory().createPrincipal(new Principal()));
+            } catch (NotInDataBaseException e) {
+                httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
+                return new ObjectFactory().createPrincipal(new Principal());
+            }
         } else {
             this.ADMIN_RIGHTS_EXPECTED();
             httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
