@@ -20,6 +20,7 @@ package eu.dasish.annotation.backend.rest;
 import com.sun.jersey.multipart.BodyPartEntity;
 import com.sun.jersey.multipart.MultiPart;
 import eu.dasish.annotation.backend.BackendConstants;
+import eu.dasish.annotation.backend.ForbiddenException;
 import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.Resource;
 import eu.dasish.annotation.backend.ResourceAction;
@@ -27,6 +28,7 @@ import eu.dasish.annotation.backend.dao.ILambda;
 import eu.dasish.annotation.schema.CachedRepresentationInfo;
 import eu.dasish.annotation.schema.ObjectFactory;
 import eu.dasish.annotation.schema.ReferenceList;
+import eu.dasish.annotation.schema.ResponseBody;
 import eu.dasish.annotation.schema.Target;
 import java.io.IOException;
 import java.io.InputStream;
@@ -78,10 +80,18 @@ public class TargetResource extends ResourceResource {
     @Transactional(readOnly = true)
     public JAXBElement<Target> getTarget(@PathParam("targetid") String externalIdentifier) throws IOException {
         Map params = new HashMap();
-        Target result = (Target) (new RequestWrappers(this)).wrapRequestResource(params, new GetTarget(), Resource.TARGET, ResourceAction.READ, externalIdentifier);
-        if (result != null) {
-            return new ObjectFactory().createTarget(result);
-        } else {
+        try {
+            Target result = (Target) (new RequestWrappers(this)).wrapRequestResource(params, new GetTarget(), Resource.TARGET, ResourceAction.READ, externalIdentifier);
+            if (result != null) {
+                return new ObjectFactory().createTarget(result);
+            } else {
+                return new ObjectFactory().createTarget(new Target());
+            }
+        } catch (NotInDataBaseException e1) {
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e1.getMessage());
+            return new ObjectFactory().createTarget(new Target());
+        } catch (ForbiddenException e2) {
+            httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN, e2.getMessage());
             return new ObjectFactory().createTarget(new Target());
         }
     }
@@ -102,10 +112,18 @@ public class TargetResource extends ResourceResource {
     @Transactional(readOnly = true)
     public JAXBElement<ReferenceList> getSiblingTargets(@PathParam("targetid") String externalIdentifier) throws HTTPException, IOException {
         Map params = new HashMap();
-        ReferenceList result = (ReferenceList) (new RequestWrappers(this)).wrapRequestResource(params, new GetSiblingTargets(), Resource.TARGET, ResourceAction.READ, externalIdentifier);
-        if (result != null) {
-            return new ObjectFactory().createReferenceList(result);
-        } else {
+        try {
+            ReferenceList result = (ReferenceList) (new RequestWrappers(this)).wrapRequestResource(params, new GetSiblingTargets(), Resource.TARGET, ResourceAction.READ, externalIdentifier);
+            if (result != null) {
+                return new ObjectFactory().createReferenceList(result);
+            } else {
+                return new ObjectFactory().createReferenceList(new ReferenceList());
+            }
+        } catch (NotInDataBaseException e1) {
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e1.getMessage());
+            return new ObjectFactory().createReferenceList(new ReferenceList());
+        } catch (ForbiddenException e2) {
+            httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN, e2.getMessage());
             return new ObjectFactory().createReferenceList(new ReferenceList());
         }
     }
@@ -133,11 +151,18 @@ public class TargetResource extends ResourceResource {
         BodyPartEntity bpe = (BodyPartEntity) multiPart.getBodyParts().get(1).getEntity();
         params.put("cachedBlob", bpe.getInputStream());
         params.put("fragmentDescriptor", fragmentDescriptor);
-        
-        CachedRepresentationInfo result = (CachedRepresentationInfo) (new RequestWrappers(this)).wrapRequestResource(params, new PostCached(), Resource.TARGET, ResourceAction.WRITE_W_METAINFO, targetIdentifier);
-        if (result != null) {
-            return new ObjectFactory().createCashedRepresentationInfo(result);
-        } else {
+        try {
+            CachedRepresentationInfo result = (CachedRepresentationInfo) (new RequestWrappers(this)).wrapRequestResource(params, new PostCached(), Resource.TARGET, ResourceAction.WRITE_W_METAINFO, targetIdentifier);
+            if (result != null) {
+                return new ObjectFactory().createCashedRepresentationInfo(result);
+            } else {
+                return new ObjectFactory().createCashedRepresentationInfo(new CachedRepresentationInfo());
+            }
+        } catch (NotInDataBaseException e1) {
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e1.getMessage());
+            return new ObjectFactory().createCashedRepresentationInfo(new CachedRepresentationInfo());
+        } catch (ForbiddenException e2) {
+            httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN, e2.getMessage());
             return new ObjectFactory().createCashedRepresentationInfo(new CachedRepresentationInfo());
         }
     }
@@ -151,8 +176,8 @@ public class TargetResource extends ResourceResource {
             CachedRepresentationInfo metadata = (CachedRepresentationInfo) params.get("cachedInfo");
             InputStream cachedSource = (InputStream) params.get("cachedBlob");
             try {
-            final Number[] respondDB = dbDispatcher.addCachedForTarget(targetID, fragmentDescriptor, metadata, cachedSource);
-            return dbDispatcher.getCachedRepresentationInfo(respondDB[1]);
+                final Number[] respondDB = dbDispatcher.addCachedForTarget(targetID, fragmentDescriptor, metadata, cachedSource);
+                return dbDispatcher.getCachedRepresentationInfo(respondDB[1]);
             } catch (IOException e) {
                 loggerServer.info(e.toString());
                 return null;

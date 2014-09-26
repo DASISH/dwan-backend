@@ -17,6 +17,7 @@
  */
 package eu.dasish.annotation.backend.rest;
 
+import eu.dasish.annotation.backend.ForbiddenException;
 import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.PrincipalExists;
 import eu.dasish.annotation.backend.Resource;
@@ -66,47 +67,25 @@ public class RequestWrappers<T> {
         }
     }
 
-    public T wrapRequestResource(Map params, ILambda<Map, T> dbRequestor, Resource resource, ResourceAction action, String externalId) throws IOException {
+    public T wrapRequestResource(Map params, ILambda<Map, T> dbRequestor, Resource resource, ResourceAction action, String externalId) throws IOException, ForbiddenException, NotInDataBaseException {
         Number principalID = resourceResource.getPrincipalID();
         if (principalID == null) {
             return null;
         }
         params.put(_principalID, principalID);
-        try {
-            final Number resourceID = resourceResource.dbDispatcher.getResourceInternalIdentifier(UUID.fromString(externalId), resource);
-            if (resourceResource.dbDispatcher.canDo(action, principalID, resourceID, resource)) {
-                params.put(_externalId, externalId);            
-                params.put(_internalID, resourceID);
-                params.put(_resourceType, resource);
-                return dbRequestor.apply(params);
-            } else {
-                this.FORBIDDEN_RESOURCE_ACTION(externalId, resource.name(), action.name());
-                resourceResource.loggerServer.debug("Principal " + resourceResource.dbDispatcher.getResourceExternalIdentifier(principalID, Resource.PRINCIPAL) + " cannot " + action.name() + " " + resource.name() + " with the id " + externalId);
-                resourceResource.httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
-                return null;
-            }
-        } catch (NotInDataBaseException e2) {
-            resourceResource.loggerServer.debug(e2.toString());
-            resourceResource.httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e2.toString());
-            return null;
+        final Number resourceID = resourceResource.dbDispatcher.getResourceInternalIdentifier(UUID.fromString(externalId), resource);
+        if (resourceResource.dbDispatcher.canDo(action, principalID, resourceID, resource)) {
+            params.put(_externalId, externalId);
+            params.put(_internalID, resourceID);
+            params.put(_resourceType, resource);
+            return dbRequestor.apply(params);
+        } else {
+            throw new ForbiddenException(this.FORBIDDEN_RESOURCE_ACTION(externalId, resource.name(), action.name()));
         }
+
     }
 
-    public JAXBElement<Principal> wrapAddPrincipalRequest(Map params, ILambdaPrincipal<Map, Principal> dbRequestor) throws IOException {
-
-        try {
-            try {
-                return new ObjectFactory().createPrincipal(dbRequestor.apply(params));
-            } catch (NotInDataBaseException e1) {
-                resourceResource.loggerServer.debug(e1.toString());
-                resourceResource.httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e1.toString());
-                return new ObjectFactory().createPrincipal(new Principal());
-            }
-        } catch (PrincipalExists e) {
-            resourceResource.loggerServer.debug(e.toString());
-            resourceResource.httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.toString());
-            return new ObjectFactory().createPrincipal(new Principal());
-        }
-
+    public JAXBElement<Principal> wrapAddPrincipalRequest(Map params, ILambdaPrincipal<Map, Principal> dbRequestor) throws IOException, NotInDataBaseException, PrincipalExists {
+        return new ObjectFactory().createPrincipal(dbRequestor.apply(params));
     }
 }

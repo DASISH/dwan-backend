@@ -2,7 +2,7 @@
 1. Placing tarball: take the tar-ball of the new  version 1.5.2, and follow the 
 standard MPI deployment procedure, for webannotator-basic.  
 Consult the instructions from INSTALL.txt  about placing war file if you have forgotten.
-
+ override="true
 2. The web.xml stays intact  because currently it is set for basic authentication.
 
 3. context.xml (global one). Pls, add  

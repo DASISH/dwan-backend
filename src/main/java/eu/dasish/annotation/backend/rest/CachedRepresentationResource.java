@@ -20,6 +20,7 @@ package eu.dasish.annotation.backend.rest;
 import com.sun.jersey.multipart.BodyPartEntity;
 import com.sun.jersey.multipart.MultiPart;
 import eu.dasish.annotation.backend.BackendConstants;
+import eu.dasish.annotation.backend.ForbiddenException;
 import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.Resource;
 import eu.dasish.annotation.backend.ResourceAction;
@@ -36,6 +37,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
@@ -67,11 +69,19 @@ public class CachedRepresentationResource extends ResourceResource {
     @Transactional(readOnly = true)
     public JAXBElement<CachedRepresentationInfo> getCachedRepresentationInfo(@PathParam("cachedid") String externalId) throws IOException {
         Map params = new HashMap();
-        CachedRepresentationInfo result = (CachedRepresentationInfo) (new RequestWrappers(this)).wrapRequestResource(params, new GetCachedRepresentationInfo(), Resource.CACHED_REPRESENTATION, ResourceAction.READ, externalId);
-        if (result != null) {
-            return (new ObjectFactory()).createCashedRepresentationInfo(result);
-        } else {
-            return (new ObjectFactory()).createCashedRepresentationInfo(new CachedRepresentationInfo());
+        try {
+            CachedRepresentationInfo result = (CachedRepresentationInfo) (new RequestWrappers(this)).wrapRequestResource(params, new GetCachedRepresentationInfo(), Resource.CACHED_REPRESENTATION, ResourceAction.READ, externalId);
+            if (result != null) {
+                return (new ObjectFactory()).createCashedRepresentationInfo(result);
+            } else {
+                return (new ObjectFactory()).createCashedRepresentationInfo(new CachedRepresentationInfo());
+            }
+        } catch (NotInDataBaseException e1) {
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e1.getMessage());
+            return new ObjectFactory().createCashedRepresentationInfo(new CachedRepresentationInfo());
+        } catch (ForbiddenException e2) {
+            httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN, e2.getMessage());
+            return new ObjectFactory().createCashedRepresentationInfo(new CachedRepresentationInfo());
         }
     }
 
@@ -91,19 +101,27 @@ public class CachedRepresentationResource extends ResourceResource {
     @Transactional(readOnly = true)
     public BufferedImage getCachedRepresentationContent(@PathParam("cachedid") String externalId) throws IOException {
         Map params = new HashMap();
-        InputStream result = (InputStream) (new RequestWrappers(this)).wrapRequestResource(params, new GetCachedRepresentationInputStream(), Resource.CACHED_REPRESENTATION, ResourceAction.READ, externalId);
-        if (result != null) {
-            ImageIO.setUseCache(false);
-            try {
-                BufferedImage retVal = ImageIO.read(result);
-                return retVal;
-            } catch (IOException e1) {
-                loggerServer.info(e1.toString());
+        try {
+            InputStream result = (InputStream) (new RequestWrappers(this)).wrapRequestResource(params, new GetCachedRepresentationInputStream(), Resource.CACHED_REPRESENTATION, ResourceAction.READ, externalId);
+            if (result != null) {
+                ImageIO.setUseCache(false);
+                try {
+                    BufferedImage retVal = ImageIO.read(result);
+                    return retVal;
+                } catch (IOException e1) {
+                    loggerServer.info(e1.toString());
 
+                    return null;
+                }
+            } else {
+                loggerServer.info(" The cached representation with the id " + externalId + " has null blob.");
                 return null;
             }
-        } else {
-            loggerServer.info(" The cached representation with the id " + externalId + " has null blob.");
+        } catch (NotInDataBaseException e1) {
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e1.getMessage());
+            return null;
+        } catch (ForbiddenException e2) {
+            httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN, e2.getMessage());
             return null;
         }
 
@@ -115,7 +133,15 @@ public class CachedRepresentationResource extends ResourceResource {
     @Transactional(readOnly = true)
     public InputStream getCachedRepresentationContentStream(@PathParam("cachedid") String externalId) throws IOException {
         Map params = new HashMap();
-        return (InputStream) (new RequestWrappers(this)).wrapRequestResource(params, new GetCachedRepresentationInputStream(), Resource.CACHED_REPRESENTATION, ResourceAction.READ, externalId);
+        try {
+            return (InputStream) (new RequestWrappers(this)).wrapRequestResource(params, new GetCachedRepresentationInputStream(), Resource.CACHED_REPRESENTATION, ResourceAction.READ, externalId);
+        } catch (NotInDataBaseException e1) {
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e1.getMessage());
+            return null;
+        } catch (ForbiddenException e2) {
+            httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN, e2.getMessage());
+            return null;
+        }
     }
 
     private class GetCachedRepresentationInputStream implements ILambda<Map, InputStream> {
@@ -137,13 +163,20 @@ public class CachedRepresentationResource extends ResourceResource {
         Map params = new HashMap();
         BodyPartEntity bpe = (BodyPartEntity) multiPart.getBodyParts().get(0).getEntity();
         params.put("stream", bpe.getInputStream());
-        Integer result = (Integer) (new RequestWrappers(this)).wrapRequestResource(params, new UpdateCachedBlob(), Resource.CACHED_REPRESENTATION, ResourceAction.WRITE, cachedIdentifier);
-        if (result != null) {
-            return result + "rows are updated";
-        } else {
-            return "Nothing is updated. ";
+        try {
+            Integer result = (Integer) (new RequestWrappers(this)).wrapRequestResource(params, new UpdateCachedBlob(), Resource.CACHED_REPRESENTATION, ResourceAction.WRITE, cachedIdentifier);
+            if (result != null) {
+                return result + "rows are updated";
+            } else {
+                return "Nothing is updated. ";
+            }
+        } catch (NotInDataBaseException e1) {
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e1.getMessage());
+            return e1.getMessage();
+        } catch (ForbiddenException e2) {
+            httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN, e2.getMessage());
+            return e2.getMessage();
         }
-
 
     }
 
@@ -160,18 +193,25 @@ public class CachedRepresentationResource extends ResourceResource {
             URL blob = new URL(blobPath);
             input = blob.openStream();
         } else {
-            input = new FileInputStream (blobPath);
+            input = new FileInputStream(blobPath);
         }
 
         params.put("stream", input);
-        Integer result = (Integer) (new RequestWrappers(this)).wrapRequestResource(params, new UpdateCachedBlob(), Resource.CACHED_REPRESENTATION, ResourceAction.WRITE, cachedIdentifier);
-        input.close();
-        if (result != null) {
-            return result + "rows are updated";
-        } else {
-            return "Nothing is updated. ";
+        try {
+            Integer result = (Integer) (new RequestWrappers(this)).wrapRequestResource(params, new UpdateCachedBlob(), Resource.CACHED_REPRESENTATION, ResourceAction.WRITE, cachedIdentifier);
+            input.close();
+            if (result != null) {
+                return result + "rows are updated";
+            } else {
+                return "Nothing is updated. ";
+            }
+        } catch (NotInDataBaseException e1) {
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e1.getMessage());
+            return e1.getMessage();
+        } catch (ForbiddenException e2) {
+            httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN, e2.getMessage());
+            return e2.getMessage();
         }
-
 
     }
 
@@ -198,13 +238,20 @@ public class CachedRepresentationResource extends ResourceResource {
     public String updateCachedMetadata(CachedRepresentationInfo cachedInfo) throws IOException {
         Map params = new HashMap();
         params.put("info", cachedInfo);
-        Integer result = (Integer) (new RequestWrappers(this)).wrapRequestResource(params, new UpdateCachedMetadata(), Resource.CACHED_REPRESENTATION, ResourceAction.WRITE_W_METAINFO, cachedInfo.getId());
-        if (result != null) {
-            return result + "rows are updated";
-        } else {
-            return "Nothing is updated. ";
+        try {
+            Integer result = (Integer) (new RequestWrappers(this)).wrapRequestResource(params, new UpdateCachedMetadata(), Resource.CACHED_REPRESENTATION, ResourceAction.WRITE_W_METAINFO, cachedInfo.getId());
+            if (result != null) {
+                return result + "rows are updated";
+            } else {
+                return "Nothing is updated. ";
+            }
+        } catch (NotInDataBaseException e1) {
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e1.getMessage());
+            return e1.getMessage();
+        } catch (ForbiddenException e2) {
+            httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN, e2.getMessage());
+            return e2.getMessage();
         }
-
     }
 
     private class UpdateCachedMetadata implements ILambda<Map, Integer> {
