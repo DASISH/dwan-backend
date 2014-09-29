@@ -32,10 +32,12 @@ import eu.dasish.annotation.schema.PermissionList;
 import eu.dasish.annotation.schema.ReferenceList;
 import eu.dasish.annotation.schema.ResponseBody;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -176,6 +178,44 @@ public class AnnotationResource extends ResourceResource {
             return new ObjectFactory().createAnnotationInfoList(new AnnotationInfoList());
         }
     }
+    
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    @Path("stressTest")
+    @Transactional(readOnly = true)
+    public String getAnnotationsMultithread(@QueryParam("n") int n) throws IOException, NotInDataBaseException {
+        Number remotePrincipalID = this.getPrincipalID();
+        if (remotePrincipalID == null) {
+            return "You are not logged in";
+        }
+        String typeOfAccount = dbDispatcher.getTypeOfPrincipalAccount(remotePrincipalID);
+        if (typeOfAccount.equals(admin) || typeOfAccount.equals(DebugResource.developer)) {
+            
+            System.out.print("Preparing the data: getting the list of all annotations, picking up "+n+" of them randomly, and initializing threads");            
+            final List<Number> annotationIDs = dbDispatcher.getFilteredAnnotationIDs(null, null, null, remotePrincipalID, "read", null, null, null);
+            final int size = annotationIDs.size();
+            List<GetThread> threads = new ArrayList<GetThread>(n);
+            Random rand = new Random();
+            for (int i=0; i<n; i++) {
+               int r = rand.nextInt(size);
+               String annotationExternalId = dbDispatcher.getResourceExternalIdentifier(annotationIDs.get(r), Resource.ANNOTATION).toString();
+               GetThread thread = new GetThread(this, annotationExternalId);
+               threads.add(thread);            
+            }
+                        
+            System.out.print("Running on getAnnotation(id) (no serialized output is shown to save time) on randomly selected annotation ids."); 
+            for (int i=0; i<n; i++) {
+               threads.get(i).run();            
+            }
+            
+            return "Stress-tested annotationrResource's getAnnotation(xxx): ok";
+        } else {
+            httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
+            return "You cannot enjoy this priviledged service because youe are neither admin nor developer. Ask the admin for more priviledges";
+        }
+    }
+    
+    
 // TODO Unit test    
 
     @GET
@@ -604,4 +644,6 @@ public class AnnotationResource extends ResourceResource {
             return e2.getMessage();
         }
     }
+    
+    
 }
