@@ -75,6 +75,7 @@
         <br> 
         <br>
         <b>Debugging URI's (only for developers)</b><br>
+        GET <a href="api/annotations/stressTest?n=33">api/annotations/stressTest?n=33</a> <br>
         GET <a href="api/debug/remoteID">api/debug/remoteID</a> <br>
         GET <a href="api/debug/uuid">api/debug/uuid</a> (random uuid) <br>
         GET <a href="api/debug/annotations">api/debug/annotations</a> <br>

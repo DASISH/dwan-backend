@@ -410,9 +410,11 @@ public class AnnotationResourceTest {
         });
 
 
-
         JAXBElement<ResponseBody> result = annotationResource.updateAnnotationHeadline("00000000-0000-0000-0000-000000000021", newHeadline);
         Annotation newAnnotation = result.getValue().getAnnotation();
         assertEquals("new Headline", newAnnotation.getHeadline());
     }
+    
+      
+            
 }

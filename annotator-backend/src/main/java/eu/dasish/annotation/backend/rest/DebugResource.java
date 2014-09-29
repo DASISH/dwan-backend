@@ -21,6 +21,7 @@ import eu.dasish.annotation.backend.BackendConstants;
 import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.Resource;
+import eu.dasish.annotation.schema.AnnotationInfo;
 import eu.dasish.annotation.schema.AnnotationInfoList;
 import eu.dasish.annotation.schema.ObjectFactory;
 import java.io.BufferedReader;
@@ -28,6 +29,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.GET;
@@ -48,7 +50,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Path("/debug")
 public class DebugResource extends ResourceResource {
 
-    private final String developer = "developer";
+    public static final String developer = "developer";
     
     
     @GET
@@ -77,6 +79,8 @@ public class DebugResource extends ResourceResource {
             return new ObjectFactory().createAnnotationInfoList(new AnnotationInfoList());
         }
     }
+    
+    
 
     @GET
     @Produces(MediaType.TEXT_PLAIN)
