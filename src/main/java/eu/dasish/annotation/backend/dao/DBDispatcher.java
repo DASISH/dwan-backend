@@ -17,6 +17,7 @@
  */
 package eu.dasish.annotation.backend.dao;
 
+import eu.dasish.annotation.backend.MatchMode;
 import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.PrincipalCannotBeDeleted;
 import eu.dasish.annotation.backend.PrincipalExists;
@@ -76,7 +77,7 @@ public interface DBDispatcher {
      * read, write) to them, -- namespace ???, -- owned by "owner", --
      * created after time-samp "after and before time-stamp "before".
      */
-    List<Number> getFilteredAnnotationIDs(UUID ownerId, String link, String text, Number inloggedPrincipalID, String  accessMode, String namespace, String after, String before) throws NotInDataBaseException;
+    List<Number> getFilteredAnnotationIDs(UUID ownerId, String link, MatchMode matchMode, String text, Number inloggedPrincipalID, String  accessMode, String namespace, String after, String before) throws NotInDataBaseException;
 
     AnnotationInfoList getAllAnnotationInfos();
 
@@ -95,7 +96,7 @@ public interface DBDispatcher {
      * read, write) to them, -- namespace ???, -- owned by "owner", --
      * created after time-samp "after and before time-stamp "before".
      */
-    AnnotationInfoList getFilteredAnnotationInfos(UUID ownerId, String link, String text, Number inloggedPrincipalID, String access, String namespace, String after, String before) throws NotInDataBaseException;
+    AnnotationInfoList getFilteredAnnotationInfos(UUID ownerId, String link, MatchMode matchMode, String text, Number inloggedPrincipalID, String access, String namespace, String after, String before) throws NotInDataBaseException;
 
   
     

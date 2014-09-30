@@ -19,6 +19,7 @@ package eu.dasish.annotation.backend.rest;
 
 import eu.dasish.annotation.backend.BackendConstants;
 import eu.dasish.annotation.backend.ForbiddenException;
+import eu.dasish.annotation.backend.MatchMode;
 import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.Resource;
 import eu.dasish.annotation.backend.ResourceAction;
@@ -65,6 +66,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Path("/annotations")
 @Transactional(rollbackFor = {Exception.class})
 public class AnnotationResource extends ResourceResource {
+    
+    final private String defaultMatchMode = "exact";
+    final private String[] admissibleMatchModes = {"exact", "starts_with", "ends_with", "contains"};
 
     public void setHttpServletResponse(HttpServletResponse httpServletResponse) {
         this.httpServletResponse = httpServletResponse;
@@ -80,6 +84,7 @@ public class AnnotationResource extends ResourceResource {
 
     public AnnotationResource() {
     }
+    
 
     @GET
     @Produces(MediaType.TEXT_XML)
@@ -148,6 +153,7 @@ public class AnnotationResource extends ResourceResource {
     @Path("")
     @Transactional(readOnly = true)
     public JAXBElement<AnnotationInfoList> getFilteredAnnotations(@QueryParam("link") String link,
+            @QueryParam("matchMode") String matchMode,
             @QueryParam("text") String text,
             @QueryParam("access") String access,
             @QueryParam("namespace") String namespace,
@@ -159,8 +165,18 @@ public class AnnotationResource extends ResourceResource {
         if (principalID == null) {
             return new ObjectFactory().createAnnotationInfoList(new AnnotationInfoList());
         }
+        
+         if (matchMode == null) {
+            matchMode = defaultMatchMode;
+        }
+        if (!Arrays.asList(admissibleMatchModes).contains(matchMode)) {
+            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "ivalide match mode " + matchMode);
+            return new ObjectFactory().createAnnotationInfoList(new AnnotationInfoList());
+        }
 
         UUID ownerExternalUUID = (ownerExternalId != null) ? UUID.fromString(ownerExternalId) : null;
+        
+        
         if (access == null) {
             access = defaultAccess;
         }
@@ -169,8 +185,10 @@ public class AnnotationResource extends ResourceResource {
             httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "ivalide mode acess " + access);
             return new ObjectFactory().createAnnotationInfoList(new AnnotationInfoList());
         }
+        
+        
         try {
-            final AnnotationInfoList annotationInfoList = dbDispatcher.getFilteredAnnotationInfos(ownerExternalUUID, link, text, principalID, access, namespace, after, before);
+            final AnnotationInfoList annotationInfoList = dbDispatcher.getFilteredAnnotationInfos(ownerExternalUUID, link, MatchMode.valueOf(matchMode.toUpperCase()), text, principalID, access, namespace, after, before);
             return new ObjectFactory().createAnnotationInfoList(annotationInfoList);
         } catch (NotInDataBaseException e) {
             loggerServer.debug(e.toString());
@@ -192,7 +210,7 @@ public class AnnotationResource extends ResourceResource {
         if (typeOfAccount.equals(admin) || typeOfAccount.equals(DebugResource.developer)) {
             
             System.out.print("Preparing the data: getting the list of all annotations, picking up "+n+" of them randomly, and initializing threads");            
-            final List<Number> annotationIDs = dbDispatcher.getFilteredAnnotationIDs(null, null, null, remotePrincipalID, "read", null, null, null);
+            final List<Number> annotationIDs = dbDispatcher.getFilteredAnnotationIDs(null, null, null, null, remotePrincipalID, "read", null, null, null);
             final int size = annotationIDs.size();
             List<GetThread> threads = new ArrayList<GetThread>(n);
             Random rand = new Random();
