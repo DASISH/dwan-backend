@@ -56,8 +56,12 @@
         GET <a href="api/principals/00000000-0000-0000-0000-0000000000112/current">api/principals/00000000-0000-0000-0000-0000000000112/current</a><br>  
 <!--        !Problem: how to ask the servlet if the given user is logged in, may be by some other running somewhere client<br> -->
         GET <a href="api/principals/info?email=Twan.Goosen@mpi.nl">api/principals/info?email=Twan.Goosen@mpi.nl</a>  <br>
-        GET <a href="api/annotations?link=Sagrada_Fam%C3%ADlia">api/annotations?link=Sagrada_Fam%C3%ADlia</a>  <br>
-        GET <a href="api/annotations?link=Antoni_Gaud%C3%AD">api/annotations?link=Antoni_Gaud%C3%AD</a>  <br>
+        GET <a href="api/annotations?link=Sagrada&matchMode=contains">api/annotations?link=Sagrada&matchMode=contains</a>  <br>
+        GET <a href="api/annotations?link=http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia&matchMode=exact">api/annotations?link=http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia&matchMode=exact</a>  <br>
+        GET <a href="api/annotations?link=http://nl.wikipedia.org/wiki&matchMode=starts_with">api/annotations?link=http://nl.wikipedia.org/wiki&matchMode=starts_with</a>  <br>
+        GET <a href="api/annotations?link=_Fam%C3%ADlia&matchMode=ends_with">api/annotations?link=_Fam%C3%ADlia&matchMode=ends_with</a>  <br>
+        GET <a href="api/annotations?link=http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia">api/annotations?link=http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia</a>  <br>
+        GET <a href="api/annotations?link=http://nl.wikipedia.org/wiki/Antoni_Gaud%C3%AD">api/annotations?link=http://nl.wikipedia.org/wiki/Antoni_Gaud%C3%AD</a>  <br>
         GET <a href="api/annotations?after=2013-02-04 15:57:58.046908&before=2014-06-25 10:08:16.213186">api/annotations?after=2014-02-04 15:57:58.046908&before=2014-04-06 10:08:16.213186</a><br> 
 <!--        !Comment: What is "namespace" query parameter? Must be implemented and tested <br>-->
         GET <a href="api/annotations/00000000-0000-0000-0000-000000000022">api/annotations/00000000-0000-0000-0000-000000000022</a>  </br>

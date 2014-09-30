@@ -20,6 +20,7 @@ package eu.dasish.annotation.backend.dao.impl;
 import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.Resource;
 import eu.dasish.annotation.backend.Helpers;
+import eu.dasish.annotation.backend.MatchMode;
 import eu.dasish.annotation.backend.PrincipalCannotBeDeleted;
 import eu.dasish.annotation.backend.PrincipalExists;
 import eu.dasish.annotation.backend.ResourceAction;
@@ -172,13 +173,13 @@ public class DBDispatcherImlp implements DBDispatcher {
     }
 
 ////////////////////////////////////////////////////////////////////////
-    @Override
-    public List<Number> getFilteredAnnotationIDs(UUID ownerId, String linkSubstring, String text, Number inloggedPrincipalID, String accessMode, String namespace, String after, String before) throws NotInDataBaseException {
+    @Override 
+    public List<Number> getFilteredAnnotationIDs(UUID ownerId, String link, MatchMode matchMode, String text, Number inloggedPrincipalID, String accessMode, String namespace, String after, String before) throws NotInDataBaseException {
 
         Number ownerID;
 
         if (ownerId != null) {
-            if (accessMode.equals("owner")) {
+            if (accessMode.equals("owner")) { // inloggedUser is the owner of the annotations
                 if (!ownerId.equals(principalDao.getExternalID(inloggedPrincipalID))) {
                     logger.info("The inlogged principal is demanded to be the owner of the annotations, however the expected owner is different and has the UUID " + ownerId.toString());
                     return new ArrayList<Number>();
@@ -217,7 +218,7 @@ public class DBDispatcherImlp implements DBDispatcher {
             }
 
             // filtering on reference        
-            return this.filterAnnotationIDsOnReference(annotationIDs, linkSubstring);
+            return this.filterAnnotationIDsOnReference(annotationIDs, link, matchMode);
         }
 
         return annotationIDs;
@@ -225,14 +226,14 @@ public class DBDispatcherImlp implements DBDispatcher {
     }
 
     /// helpers ///
-    private List<Number> filterAnnotationIDsOnReference(List<Number> annotationIDs, String linkSubstring) {
-        if (linkSubstring != null) {
-            if (!linkSubstring.isEmpty()) {
+    private List<Number> filterAnnotationIDsOnReference(List<Number> annotationIDs, String link, MatchMode matchMode) {
+        if (link != null) {
+            if (!link.isEmpty()) {
                 if (annotationIDs != null) {
-                    String partiallyEncoded = this.encodeURLNoSlashEncoded(linkSubstring);
+                    String partiallyEncoded = this.encodeURLNoSlashEncoded(link);
                     String urlEncoded = null;
                     try {
-                        urlEncoded = URLEncoder.encode(linkSubstring, "UTF-8");
+                        urlEncoded = URLEncoder.encode(link, "UTF-8");
                     } catch (UnsupportedEncodingException e) {
                         logger.debug(e.toString());
                     }
@@ -242,12 +243,12 @@ public class DBDispatcherImlp implements DBDispatcher {
                         List<Number> targets = targetDao.getTargetIDs(annotationID);
                         for (Number targetID : targets) {
                             if (!result.contains(annotationID)) {
-                                String link = targetDao.getLink(targetID);
-                                if (link.contains(linkSubstring) || link.contains(partiallyEncoded)) {
+                                String linkRunner = targetDao.getLink(targetID);
+                                if (matchCriterium(linkRunner, link, matchMode) || matchCriterium(linkRunner, partiallyEncoded, matchMode)) {
                                     result.add(annotationID);
                                 } else {
                                     if (urlEncoded != null) {
-                                        if (link.contains(urlEncoded)) {
+                                        if (matchCriterium(linkRunner, urlEncoded, matchMode)) {
                                             result.add(annotationID);
                                         }
                                     }
@@ -260,6 +261,16 @@ public class DBDispatcherImlp implements DBDispatcher {
             }
         }
         return annotationIDs;
+    }
+    
+    private boolean matchCriterium(String currentString, String pattern, MatchMode matchMode){        
+        switch (matchMode) {
+            case EXACT: return currentString.equals(pattern);
+            case STARTS_WITH: return currentString.startsWith(pattern);
+            case ENDS_WITH: return currentString.endsWith(pattern);
+            case CONTAINS: return currentString.contains(pattern);
+            default: return false;
+        }
     }
 
     public int addAllNoRepetitions(List<Number> list, List<Number> listToAdd) {
@@ -338,8 +349,8 @@ public class DBDispatcherImlp implements DBDispatcher {
     }
 
     @Override
-    public AnnotationInfoList getFilteredAnnotationInfos(UUID ownerId, String link, String text, Number inloggedPrincipalID, String access, String namespace, String after, String before) throws NotInDataBaseException {
-        List<Number> annotationIDs = this.getFilteredAnnotationIDs(ownerId, link, text, inloggedPrincipalID, access, namespace, after, before);
+    public AnnotationInfoList getFilteredAnnotationInfos(UUID ownerId, String link, MatchMode matchMode, String text, Number inloggedPrincipalID, String access, String namespace, String after, String before) throws NotInDataBaseException {
+        List<Number> annotationIDs = this.getFilteredAnnotationIDs(ownerId, link, matchMode, text, inloggedPrincipalID, access, namespace, after, before);
         AnnotationInfoList result = new AnnotationInfoList();
         for (Number annotationID : annotationIDs) {
             AnnotationInfo annotationInfo = annotationDao.getAnnotationInfoWithoutTargetsAndOwner(annotationID);
@@ -400,7 +411,9 @@ public class DBDispatcherImlp implements DBDispatcher {
         List<Number> targetIDs = targetDao.getTargetsForLink(targetDao.getLink(targetID));
         ReferenceList referenceList = new ReferenceList();
         for (Number siblingID : targetIDs) {
+            if (!siblingID.equals(targetID)) {
             referenceList.getHref().add(targetDao.getHrefFromInternalID(siblingID));
+            }
         }
         return referenceList;
     }
