@@ -191,6 +191,12 @@
         
     <build>
         <finalName>annotator-backend-${project.version}</finalName>
+        <resources>
+            <resource>
+                <directory>${basedir}/src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
         <testResources>
             <testResource>
                 <directory>src/main/</directory>
@@ -228,7 +234,7 @@
 <!--                            <includes>  
                                 <include>WEB-INF/web-shib.xml</include>
                             </includes> -->
-                        </resource>
+                        </resource>                        
                     </webResources>
                 </configuration>
             </plugin>
@@ -381,7 +387,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>2.9.1</version>
-            </plugin>    
+            </plugin> 
         </plugins>
     </build>      
            
@@ -395,6 +401,7 @@
         <plugin.license.copyrightYear>2013</plugin.license.copyrightYear>
         <project.version>1.5.2</project.version>
         <shibboleth.version>1.0.4</shibboleth.version>
+        <surefire.version>2.9</surefire.version>
     </properties>
     
     <repositories>

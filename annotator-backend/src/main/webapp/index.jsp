@@ -50,6 +50,8 @@
         <br> 
         <a href="updatePrincipal.html"> Update logged-in user.</a> <br> 
         <br>
+        GET <a href="api/projectinfo/version">api/projectinfo/version</a> <br> 
+        <br>
         GET <a href="api/authentication/principal">api/authentication/principal</a> <br> 
         GET <a href="api/principals/admin">api/principals/admin</a><br> 
         GET <a href="api/principals/00000000-0000-0000-0000-0000000000112">api/principals/00000000-0000-0000-0000-0000000000112</a> <br> 
