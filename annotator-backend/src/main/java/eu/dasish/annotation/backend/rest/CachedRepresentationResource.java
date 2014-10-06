@@ -72,16 +72,16 @@ public class CachedRepresentationResource extends ResourceResource {
         try {
             CachedRepresentationInfo result = (CachedRepresentationInfo) (new RequestWrappers(this)).wrapRequestResource(params, new GetCachedRepresentationInfo(), Resource.CACHED_REPRESENTATION, ResourceAction.READ, externalId);
             if (result != null) {
-                return (new ObjectFactory()).createCashedRepresentationInfo(result);
+                return (new ObjectFactory()).createCachedRepresentationInfo(result);
             } else {
-                return (new ObjectFactory()).createCashedRepresentationInfo(new CachedRepresentationInfo());
+                return (new ObjectFactory()).createCachedRepresentationInfo(new CachedRepresentationInfo());
             }
         } catch (NotInDataBaseException e1) {
             httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e1.getMessage());
-            return new ObjectFactory().createCashedRepresentationInfo(new CachedRepresentationInfo());
+            return new ObjectFactory().createCachedRepresentationInfo(new CachedRepresentationInfo());
         } catch (ForbiddenException e2) {
             httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN, e2.getMessage());
-            return new ObjectFactory().createCashedRepresentationInfo(new CachedRepresentationInfo());
+            return new ObjectFactory().createCachedRepresentationInfo(new CachedRepresentationInfo());
         }
     }
 

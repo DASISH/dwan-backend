@@ -322,9 +322,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
     <xs:element name="annotationList" type="dasish:ReferenceList"/>
 
-    <xs:element name="cashedRepresentationInfo" type="dasish:CachedRepresentationInfo"/>
+    <xs:element name="cachedRepresentationInfo" type="dasish:CachedRepresentationInfo"/>
 
-    <xs:element name="cashedRepresentationList" type="dasish:ReferenceList"/>
+    <xs:element name="cachedRepresentationList" type="dasish:ReferenceList"/>
     
     <xs:element name="cachedRepresentationFragment" type="dasish:CachedRepresentationFragment"/>
     
