@@ -4,7 +4,7 @@
     
     <groupId>eu.dasish.annotation</groupId>
     <artifactId>annotator-backend</artifactId>
-    <version>${project.version}</version>    
+    <version>1.5.3</version>    
     <packaging>war</packaging>
     <name>annotator-backend Jersey Webapp</name>
     <organization> 
@@ -399,9 +399,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>        
         <netbeans.hint.license>gpl20</netbeans.hint.license>  
         <plugin.license.copyrightYear>2013</plugin.license.copyrightYear>
-        <project.version>1.5.2</project.version>
         <shibboleth.version>1.0.4</shibboleth.version>
-        <surefire.version>2.9</surefire.version>
     </properties>
     
     <repositories>
