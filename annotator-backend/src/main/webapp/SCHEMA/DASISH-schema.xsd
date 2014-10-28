@@ -74,7 +74,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
             <xs:element name="link" type="xs:anyURI" minOccurs="1" maxOccurs="1"/>
             <xs:element name="version" type="xs:string" minOccurs="1" maxOccurs="1"/>
             <xs:element name="siblingTargets" type="dasish:ReferenceList" minOccurs="1"/>
-            <xs:element name="cachedRepresentatinons" type="dasish:CachedRepresentationFragmentList"
+            <xs:element name="cachedRepresentations" type="dasish:CachedRepresentationFragmentList"
                 minOccurs="1"/>
         </xs:sequence>
         <xs:attribute name="href" type="xs:anyURI" use="required"/>

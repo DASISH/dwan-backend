@@ -390,7 +390,7 @@ public class DBDispatcherImlp implements DBDispatcher {
             cachedRepresentationFragment.setFragmentString(cachedIDsFragments.get(key));
             cachedRepresentationFragmentList.getCached().add(cachedRepresentationFragment);
         }
-        result.setCachedRepresentatinons(cachedRepresentationFragmentList);
+        result.setCachedRepresentations(cachedRepresentationFragmentList);
         return result;
     }
 

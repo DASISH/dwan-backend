@@ -54,3 +54,10 @@ the request of the form <server>/SCHEMA/DASISH-schema.xsd.  2. Two API's are add
 change annotation/user access mode. 3. The password is now hidden while process of registration
 of a non-shibboleth user (basic authentication).
 
+October 23, 2014. Minor chnages. The package for shibbolized version is prepared to be set up for
+CallTIME on lux17.
+
+October 28, 2014. Spelling mistake in schema, in the naming of the element in Target
+class is corrected (cachedRepresentatinons --> cachedRepresentations).
+
+
