@@ -696,14 +696,20 @@ public class DBDispatcherImlp implements DBDispatcher {
 // TODO: unit test
 
     @Override
-    public int updateAnnotation(Annotation annotation) throws NotInDataBaseException {
+    public int updateAnnotation(Annotation annotation, String remoteUser) throws NotInDataBaseException {
         Number annotationID = annotationDao.getInternalID(UUID.fromString(annotation.getId()));
-        int updatedAnnotations = annotationDao.updateAnnotation(annotation, annotationID, principalDao.getInternalIDFromHref(annotation.getOwnerHref()));
+        Number ownerID = principalDao.getInternalIDFromHref(annotation.getOwnerHref());
+        int updatedAnnotations = annotationDao.updateAnnotation(annotation, annotationID, ownerID);
         int deletedTargets = annotationDao.deleteAllAnnotationTarget(annotationID);
-        int deletedPrinsipalsAccesss = annotationDao.deleteAnnotationPermissions(annotationID);
         int addedTargets = this.addTargets(annotation, annotationID);
-        int addedPrincipalsAccesss = this.addPermissions(annotation.getPermissions().getPermission(), annotationID);
-        int updatedPublicAttribute = annotationDao.updatePublicAttribute(annotationID, annotation.getPermissions().getPublic());
+        
+        Number remoteUserID = principalDao.getPrincipalInternalIDFromRemoteID(remoteUser);
+        
+        if (ownerID.equals(remoteUserID)) {
+            int deletedPrinsipalsAccesss = annotationDao.deleteAnnotationPermissions(annotationID);
+            int addedPrincipalsAccesss = this.addPermissions(annotation.getPermissions().getPermission(), annotationID);
+            int updatedPublicAttribute = annotationDao.updatePublicAttribute(annotationID, annotation.getPermissions().getPublic());
+        };
         return updatedAnnotations;
     }
 

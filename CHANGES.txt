@@ -60,4 +60,8 @@ CallTIME on lux17.
 October 28, 2014. Spelling mistake in schema, in the naming of the element in Target
 class is corrected (cachedRepresentatinons --> cachedRepresentations).
 
+October 31, 2014. This is a package for webannotator of shibbolized version for lux17,
+sych with the basic authenticated version.
+
+
 

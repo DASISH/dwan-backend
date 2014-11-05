@@ -37,8 +37,8 @@
             <fallback>
                 <username>anonymous</username>
             </fallback>
-            <sso action="lI">https://lux16.mpi.nl/Shibboleth.sso/Login</sso> 
-	    <slo action="lO">https://lux16.mpi.nl/Shibboleth.sso/Logout</slo> 
+            <sso action="lI">https://lux17.mpi.nl/Shibboleth.sso/Login</sso> 
+	    <slo action="lO">https://lux17.mpi.nl/Shibboleth.sso/Logout</slo> 
         </authentication>
 	
 	

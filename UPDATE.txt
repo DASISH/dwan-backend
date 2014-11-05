@@ -1,8 +1,11 @@
 
-Placing tarball: take the tar-ball of the new  version 1.5.4-basic, and follow the 
+Placing tarball: take the tar-ball of the new  version 1.5.4-shibboleth, and follow the 
 standard MPI deployment procedure.  
 
-This is is a simple update due to fixing a spelling error in the DASISHschema.
+This is synchronisation of the shibbolized-authenticated version of the backend
+to the basic-authnticated, so both versions are complyiant with the same schema.
+
+
 
 
     
