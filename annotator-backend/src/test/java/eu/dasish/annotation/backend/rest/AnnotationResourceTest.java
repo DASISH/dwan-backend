@@ -275,10 +275,10 @@ public class AnnotationResourceTest {
                 oneOf(mockDbDispatcher).getAnnotationOwnerID(1);
                 will(returnValue(1));
                 
-                oneOf(mockDbDispatcher).canDo(ResourceAction.WRITE_W_METAINFO, 1, 1, Resource.ANNOTATION);
+                oneOf(mockDbDispatcher).canDo(ResourceAction.WRITE, 1, 1, Resource.ANNOTATION);
                 will(returnValue(true));
                 
-                oneOf(mockDbDispatcher).updateAnnotation(annotation);
+                oneOf(mockDbDispatcher).updateAnnotation(annotation, "twagoo@mpi.nl");
                 will(returnValue(1));
                
                 oneOf(mockDbDispatcher).makeAnnotationResponseEnvelope(1);

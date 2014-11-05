@@ -344,11 +344,14 @@ public class AnnotationResource extends ResourceResource {
         }
         try {
             Map params = new HashMap();
+            
             params.put("annotation", annotation);
-            ResponseBody result = (ResponseBody) (new RequestWrappers(this)).wrapRequestResource(params, new UpdateAnnotation(), Resource.ANNOTATION, ResourceAction.WRITE_W_METAINFO, externalId);
+            params.put("remoteUser",httpServletRequest.getRemoteUser()); 
+            ResponseBody result = (ResponseBody) (new RequestWrappers(this)).wrapRequestResource(params, new UpdateAnnotation(), Resource.ANNOTATION, ResourceAction.WRITE, externalId);
             if (result != null) {
                 return (new ObjectFactory()).createResponseBody(result);
-            } else {
+            }
+            else {
                 return (new ObjectFactory()).createResponseBody(new ResponseBody());
             }
         } catch (NotInDataBaseException e1) {
@@ -367,7 +370,8 @@ public class AnnotationResource extends ResourceResource {
         public ResponseBody apply(Map params) throws NotInDataBaseException {
             Annotation annotation = (Annotation) params.get("annotation");
             Number annotationID = (Number) params.get("internalID");
-            int updatedRows = dbDispatcher.updateAnnotation(annotation);
+            String remoteUser = (String) params.get("remoteUser");
+            int updatedRows = dbDispatcher.updateAnnotation(annotation, remoteUser);
             return dbDispatcher.makeAnnotationResponseEnvelope(annotationID);
         }
     }

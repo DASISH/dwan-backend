@@ -105,7 +105,7 @@ public class Helpers {
                 + "You are logged in as "
                 + remoteID + ".<br>"
                 + "<h3>Welcome to DASISH Webannotator (DWAN)</h3><br>"
-                + "<a href=\"" + baseUri + "\"> To DWAN's test jsp page</a>"
+                + "<a href=\"" + baseUri + "\"> To DWAN REST overview page</a>"
                 + "</body>";
         return welcome;
     }

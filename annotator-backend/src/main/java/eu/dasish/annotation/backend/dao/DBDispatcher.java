@@ -225,7 +225,7 @@ public interface DBDispatcher {
      * @param annotation
      * @return 1 of the annotation if it is updated
      */
-    int updateAnnotation(Annotation annotation) throws NotInDataBaseException;
+    int updateAnnotation(Annotation annotation, String remoteUser) throws NotInDataBaseException;
 
     /**
      *

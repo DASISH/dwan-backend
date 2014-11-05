@@ -2113,7 +2113,7 @@ public class DBDispatcherTest {
                 will(returnValue(3));
 
 
-                /// adding the first target, nt foind in the DB
+                /// adding the first target, not found in the DB
 
                 oneOf(targetDao).getInternalIDFromHref(annotation.getTargets().getTargetInfo().get(0).getHref());
                 will(throwException(e));
@@ -2132,6 +2132,11 @@ public class DBDispatcherTest {
                 will(returnValue(2));
 
                 oneOf(annotationDao).addAnnotationTarget(1, 2);
+                will(returnValue(1));
+                
+                /////
+                
+                oneOf(principalDao).getPrincipalInternalIDFromRemoteID("userello");
                 will(returnValue(1));
 
                 /////
@@ -2161,7 +2166,7 @@ public class DBDispatcherTest {
 
             }
         });
-        assertEquals(1, dbDispatcher.updateAnnotation(annotation));
+        assertEquals(1, dbDispatcher.updateAnnotation(annotation, "userello"));
     }
 
     @Test

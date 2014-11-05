@@ -80,8 +80,8 @@ public class AutheticationResource extends ResourceResource {
     public void logout() throws IOException, ServletException {
         httpServletRequest.getSession().invalidate();
         boolean isShibboleth = Boolean.parseBoolean(context.getInitParameter("eu.dasish.annotation.backend.isShibbolethSession"));
-        String redirect = isShibboleth ? context.getInitParameter("eu.dasish.annotation.backend.logout") : 
-                httpServletRequest.getContextPath() + context.getInitParameter("eu.dasish.annotation.backend.logout");        
+        String redirect = isShibboleth ? context.getInitParameter("eu.dasish.annotation.backend.logout.shibboleth") : 
+                httpServletRequest.getContextPath() + context.getInitParameter("eu.dasish.annotation.backend.logout.basic");        
         httpServletResponse.sendRedirect(redirect);
     }
 }
