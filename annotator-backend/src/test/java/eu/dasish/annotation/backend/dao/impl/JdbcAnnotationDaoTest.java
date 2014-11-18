@@ -113,16 +113,16 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
     @Test
     public void testDeleteAnnotationPrinciplePermissions() {
         System.out.println("test deleteAllAnnotationTargets");
-        int result = jdbcAnnotationDao.deleteAnnotationPermissions(1);
+        int result = jdbcAnnotationDao.deletePermissions(1);
         assertEquals(3, result);
-        assertEquals(0, jdbcAnnotationDao.deleteAnnotationPermissions(1));
+        assertEquals(0, jdbcAnnotationDao.deletePermissions(1));
     }
 
     ///////////////////////////////////////////
     @Test
     public void testAddAnnotationPrincipalAccess() {
         System.out.println("test addAnnotationTargets");
-        int result = jdbcAnnotationDao.addAnnotationPrincipalAccess(1, 1, Access.READ);
+        int result = jdbcAnnotationDao.addPermission(1, 1, Access.READ);
         assertEquals(1, result);
     }
 
@@ -225,7 +225,7 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
 
         // to provide integrity, first delete rows in the joint tables
         jdbcAnnotationDao.deleteAllAnnotationTarget(4);
-        jdbcAnnotationDao.deleteAnnotationPermissions(4);
+        jdbcAnnotationDao.deletePermissions(4);
 
         assertEquals(1, jdbcAnnotationDao.deleteAnnotation(4));
         assertEquals(0, jdbcAnnotationDao.deleteAnnotation(4));
@@ -312,17 +312,17 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
     @Test
     public void testAnnotationIDsForPermission() {
         System.out.println("test getAnnotationIDsForPermission");
-        List<Number> result = jdbcAnnotationDao.getAnnotationIDsForPermission(1, Access.READ);
+        List<Number> result = jdbcAnnotationDao.getAnnotationIDsPermissionAtLeast(1, Access.READ);
         assertEquals(3, result.size());
         assertEquals(2, result.get(0));
         assertEquals(3, result.get(1));
         assertEquals(4, result.get(2));
 
-        List<Number> resultTwo = jdbcAnnotationDao.getAnnotationIDsForPermission(1, Access.WRITE);
+        List<Number> resultTwo = jdbcAnnotationDao.getAnnotationIDsPermissionAtLeast(1, Access.WRITE);
         assertEquals(1, resultTwo.size());
         assertEquals(4, resultTwo.get(0));
 
-        List<Number> resultThree = jdbcAnnotationDao.getAnnotationIDsForPermission(1, Access.NONE);
+        List<Number> resultThree = jdbcAnnotationDao.getAnnotationIDsPermissionAtLeast(1, Access.NONE);
         assertEquals(0, resultThree.size());
 
     }
@@ -331,17 +331,17 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
     @Test
     public void testAnnotationIDsForPublicAccess() {
         System.out.println("test getAnnotationIDsForPublicAccess");
-        List<Number> result = jdbcAnnotationDao.getAnnotationIDsForPublicAccess(Access.READ);
+        List<Number> result = jdbcAnnotationDao.getAnnotationIDsPublicAtLeast(Access.READ);
         assertEquals(2, result.size());
         assertTrue(result.contains(1));
         assertTrue(result.contains(2));
 
-        List<Number> resultTwo = jdbcAnnotationDao.getAnnotationIDsForPublicAccess(Access.WRITE);
+        List<Number> resultTwo = jdbcAnnotationDao.getAnnotationIDsPublicAtLeast(Access.WRITE);
         assertEquals(1, resultTwo.size());
         assertEquals(1, resultTwo.get(0));
 
 
-        List<Number> resultThree = jdbcAnnotationDao.getAnnotationIDsForPublicAccess(Access.NONE);
+        List<Number> resultThree = jdbcAnnotationDao.getAnnotationIDsPublicAtLeast(Access.NONE);
         assertEquals(2, resultThree.size());
         assertTrue(resultThree.contains(3));
         assertTrue(resultThree.contains(4));
@@ -361,7 +361,7 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         System.out.println("test getAccess");
         assertEquals(Access.READ, jdbcAnnotationDao.getAccess(1, 3));
         assertEquals(Access.WRITE, jdbcAnnotationDao.getAccess(2, 3));
-        assertEquals(null, jdbcAnnotationDao.getAccess(3, 3));
+        assertEquals(Access.NONE, jdbcAnnotationDao.getAccess(3, 3));
     }
 
     @Test
@@ -448,7 +448,7 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
     public void testUpdateAnnotationPrincipalAccess() {
         System.out.println("test updateAnntationPrincipalAccess ");
 
-        int result = jdbcAnnotationDao.updateAnnotationPrincipalAccess(1, 2, Access.NONE);
+        int result = jdbcAnnotationDao.updatePermission(1, 2, Access.NONE);
         assertEquals(1, result);
         assertEquals(Access.NONE, jdbcAnnotationDao.getAccess(1, 2));
     }
@@ -457,7 +457,7 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
     public void testUpdatPublicAttribute() {
         System.out.println("test updatePublicAtribute ");
 
-        int result = jdbcAnnotationDao.updatePublicAttribute(1, Access.NONE);
+        int result = jdbcAnnotationDao.updatePublicAccess(1, Access.NONE);
         assertEquals(1, result);
         assertEquals(Access.NONE, jdbcAnnotationDao.getPublicAttribute(1));
     }

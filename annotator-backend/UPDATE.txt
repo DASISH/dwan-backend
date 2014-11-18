@@ -1,9 +1,10 @@
 
-Placing tarball: take the tar-ball of the new  version 1.5.4-shibboleth, and follow the 
+Placing tarball: take the tar-ball of the new  version 1.6-basic, and follow the 
 standard MPI deployment procedure.  
 
-This is synchronisation of the shibbolized-authenticated version of the backend
-to the basic-authnticated, so both versions are complyiant with the same schema.
+A new feature: a user with "write" access can update 
+annotation as a whole, but if he also sends permission updates they will be 
+ignored.
 
 
 

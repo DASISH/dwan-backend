@@ -23,7 +23,6 @@ import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.MatchMode;
 import eu.dasish.annotation.backend.PrincipalCannotBeDeleted;
 import eu.dasish.annotation.backend.PrincipalExists;
-import eu.dasish.annotation.backend.ResourceAction;
 import eu.dasish.annotation.backend.dao.AnnotationDao;
 import eu.dasish.annotation.backend.dao.CachedRepresentationDao;
 import eu.dasish.annotation.backend.dao.DBDispatcher;
@@ -120,13 +119,11 @@ public class DBDispatcherImlp implements DBDispatcher {
         return this.getDao(resource).getInternalID(externalID);
     }
 
-  
     @Override
     public UUID getResourceExternalIdentifier(Number resourceID, Resource resource) {
         return this.getDao(resource).getExternalID(resourceID);
     }
 
-   
     @Override
     public Annotation getAnnotation(Number annotationID) {
         Annotation result = annotationDao.getAnnotationWithoutTargetsAndPemissions(annotationID);
@@ -173,7 +170,7 @@ public class DBDispatcherImlp implements DBDispatcher {
     }
 
 ////////////////////////////////////////////////////////////////////////
-    @Override 
+    @Override
     public List<Number> getFilteredAnnotationIDs(UUID ownerId, String link, MatchMode matchMode, String text, Number inloggedPrincipalID, String accessMode, String namespace, String after, String before) throws NotInDataBaseException {
 
         Number ownerID;
@@ -208,12 +205,24 @@ public class DBDispatcherImlp implements DBDispatcher {
             if (!annotationIDs.isEmpty()) {
                 if (!accessMode.equals("owner")) {
                     Access access = Access.fromValue(accessMode);
-                    List<Number> annotationIDsAccess = annotationDao.getAnnotationIDsForPermission(inloggedPrincipalID, access);
-                    List<Number> annotationIDsPublic = annotationDao.getAnnotationIDsForPublicAccess(access);
-                    List<Number> annotationIDsOwned = annotationDao.getFilteredAnnotationIDs(inloggedPrincipalID, text, namespace, after, before);
-                    int check1 = this.addAllNoRepetitions(annotationIDsAccess, annotationIDsPublic);
-                    int check2 = this.addAllNoRepetitions(annotationIDsAccess, annotationIDsOwned);
-                    annotationIDs.retainAll(annotationIDsAccess);// intersection
+                    if (access.equals(Access.NONE)) {
+                        List<Number> annotationIDsfiletered = new ArrayList<Number>();
+                        Access accessCurrent;
+                        for (Number annotationID : annotationIDs) {
+                            accessCurrent = annotationDao.getAccess(inloggedPrincipalID, annotationID);
+                            if (accessCurrent.equals(Access.NONE)) {
+                                annotationIDsfiletered.add(annotationID);
+                            }
+                        }
+                        annotationIDs = annotationIDsfiletered; // yeaahhh I'm relying on garbage collector here                         
+                    } else {
+                        List<Number> annotationIDsAccess = annotationDao.getAnnotationIDsPermissionAtLeast(inloggedPrincipalID, access);
+                        List<Number> annotationIDsPublic = annotationDao.getAnnotationIDsPublicAtLeast(access);
+                        List<Number> annotationIDsOwned = annotationDao.getFilteredAnnotationIDs(inloggedPrincipalID, text, namespace, after, before);
+                        int check1 = this.addAllNoRepetitions(annotationIDsAccess, annotationIDsPublic);
+                        int check2 = this.addAllNoRepetitions(annotationIDsAccess, annotationIDsOwned);
+                        annotationIDs.retainAll(annotationIDsAccess);// intersection
+                    }
                 }
             }
 
@@ -262,14 +271,19 @@ public class DBDispatcherImlp implements DBDispatcher {
         }
         return annotationIDs;
     }
-    
-    private boolean matchCriterium(String currentString, String pattern, MatchMode matchMode){        
+
+    private boolean matchCriterium(String currentString, String pattern, MatchMode matchMode) {
         switch (matchMode) {
-            case EXACT: return currentString.equals(pattern);
-            case STARTS_WITH: return currentString.startsWith(pattern);
-            case ENDS_WITH: return currentString.endsWith(pattern);
-            case CONTAINS: return currentString.contains(pattern);
-            default: return false;
+            case EXACT:
+                return currentString.equals(pattern);
+            case STARTS_WITH:
+                return currentString.startsWith(pattern);
+            case ENDS_WITH:
+                return currentString.endsWith(pattern);
+            case CONTAINS:
+                return currentString.contains(pattern);
+            default:
+                return false;
         }
     }
 
@@ -412,7 +426,7 @@ public class DBDispatcherImlp implements DBDispatcher {
         ReferenceList referenceList = new ReferenceList();
         for (Number siblingID : targetIDs) {
             if (!siblingID.equals(targetID)) {
-            referenceList.getHref().add(targetDao.getHrefFromInternalID(siblingID));
+                referenceList.getHref().add(targetDao.getHrefFromInternalID(siblingID));
             }
         }
         return referenceList;
@@ -437,22 +451,31 @@ public class DBDispatcherImlp implements DBDispatcher {
     public Access getAccess(Number annotationID, Number principalID) {
         Access publicAttribute = annotationDao.getPublicAttribute(annotationID);
         Access access = annotationDao.getAccess(annotationID, principalID);
-        if (access != null) {
-            if (publicAttribute.equals(Access.NONE)) {
-                return access;
+        if (publicAttribute.equals(Access.NONE)) {
+            return access;
+        } else {
+            if (publicAttribute.equals(Access.READ)) {
+                if (access.equals(Access.NONE)) {
+                    return Access.READ;
+                } else {
+                    return access;
+                }
             } else {
-                if (publicAttribute.equals(Access.READ)) {
-                    if (access.equals(Access.NONE)) {
-                        return Access.READ;
+                if (publicAttribute.equals(Access.WRITE)) {
+                    if (access.equals(Access.NONE) || access.equals(Access.READ)) {
+                        return Access.WRITE;
                     } else {
                         return access;
                     }
                 } else {
-                    return Access.WRITE;
+                    if (publicAttribute.equals(Access.ALL)) {
+                        return Access.ALL;
+                    } else {
+                        logger.error("Database problem: the value of public attribute is not a proper Access value: " + publicAttribute.value());
+                        return access;
+                    }
                 }
             }
-        } else {
-            return publicAttribute;
         }
     }
 
@@ -465,7 +488,7 @@ public class DBDispatcherImlp implements DBDispatcher {
     public Number getPrincipalInternalIDFromRemoteID(String remoteID) throws NotInDataBaseException {
         return principalDao.getPrincipalInternalIDFromRemoteID(remoteID);
     }
-    
+
     @Override
     public UUID getPrincipalExternalIDFromRemoteID(String remoteID) throws NotInDataBaseException {
         return principalDao.getPrincipalExternalIDFromRemoteID(remoteID);
@@ -483,7 +506,7 @@ public class DBDispatcherImlp implements DBDispatcher {
 
     // !!!so far implemented only for annotations!!!
     @Override
-    public boolean canDo(ResourceAction action, Number principalID, Number resourceID, Resource resource) {
+    public boolean canDo(Access action, Number principalID, Number resourceID, Resource resource) {
 
         switch (resource) {
             case ANNOTATION: {
@@ -508,11 +531,16 @@ public class DBDispatcherImlp implements DBDispatcher {
 
     }
 
-    private boolean greaterOrEqual(Access access, ResourceAction action) {
-        if (access.equals(Access.WRITE) && (action.equals(ResourceAction.READ) || action.equals(ResourceAction.WRITE))) {
+    private boolean greaterOrEqual(Access access, Access action) {
+
+        if (access.equals(Access.ALL)) {
             return true;
         }
-        if (access.equals(Access.READ) && action.equals(ResourceAction.READ)) {
+
+        if (access.equals(Access.WRITE) && (action.equals(Access.READ) || action.equals(Access.WRITE))) {
+            return true;
+        }
+        if (access.equals(Access.READ) && action.equals(Access.READ)) {
             return true;
         }
         return false;
@@ -523,7 +551,7 @@ public class DBDispatcherImlp implements DBDispatcher {
     @Override
     public NotebookInfoList getNotebooks(Number principalID, Access access) {
         NotebookInfoList result = new NotebookInfoList();
-        if (access.equals(Access.READ) || access.equals(Access.WRITE)) {
+        if (access.equals(Access.READ) || access.equals(Access.WRITE) || access.equals(Access.ALL)) {
             List<Number> notebookIDs = notebookDao.getNotebookIDs(principalID, access);
             for (Number notebookID : notebookIDs) {
                 NotebookInfo notebookInfo = notebookDao.getNotebookInfoWithoutOwner(notebookID);
@@ -580,6 +608,7 @@ public class DBDispatcherImlp implements DBDispatcher {
         List<Access> accesss = new ArrayList<Access>();
         accesss.add(Access.READ);
         accesss.add(Access.WRITE);
+        accesss.add(Access.ALL);
         for (Access access : accesss) {
             List<Number> principals = principalDao.getPrincipalIDsWithAccessForNotebook(notebookID, access);
             if (principals != null) {
@@ -641,54 +670,49 @@ public class DBDispatcherImlp implements DBDispatcher {
                 return notebookDao.updateResourceIdentifier(oldIdentifier, newIdentifier);
             default:
                 return false;
-        } 
+        }
     }
-    
+
     @Override
     public boolean updateAccount(UUID principalExternalID, String account) throws NotInDataBaseException {
         return principalDao.updateAccount(principalExternalID, account);
     }
 
     @Override
-    public int updateAnnotationPrincipalAccess(Number annotationID, Number principalID, Access access) {
+    public int updatePermission(Number annotationID, Number principalID, Access access) {
         int result;
         if (access != null) {
-            Access currentAccess = annotationDao.getAccess(annotationID, principalID);
-            if (currentAccess != null) {
-                result = annotationDao.updateAnnotationPrincipalAccess(annotationID, principalID, access);
+            Boolean checkAccess = annotationDao.hasExplicitAccess(annotationID, principalID);
+            if (checkAccess) {
+                result = annotationDao.updatePermission(annotationID, principalID, access);
             } else {
-                result = annotationDao.addAnnotationPrincipalAccess(annotationID, principalID, access);
+                result = annotationDao.addPermission(annotationID, principalID, access);
             }
         } else {
-            result = annotationDao.deleteAnnotationPrincipalAccess(annotationID, principalID);
+            result = annotationDao.deletePermission(annotationID, principalID);
         }
         return result;
     }
 
     @Override
     public int updatePublicAttribute(Number annotationID, Access publicAttribute) {
-        return annotationDao.updatePublicAttribute(annotationID, publicAttribute);
+        return annotationDao.updatePublicAccess(annotationID, publicAttribute);
     }
 
     @Override
     public int updatePermissions(Number annotationID, PermissionList permissionList) throws NotInDataBaseException {
-        annotationDao.updatePublicAttribute(annotationID, permissionList.getPublic());
+        annotationDao.updatePublicAccess(annotationID, permissionList.getPublic());
         List<Permission> permissions = permissionList.getPermission();
         int result = 0;
         for (Permission permission : permissions) {
             Number principalID = principalDao.getInternalIDFromHref(permission.getPrincipalHref());
             Access access = permission.getLevel();
-            Access currentAccess = annotationDao.getAccess(annotationID, principalID);
-            if (currentAccess != null) {
-                if (!access.equals(currentAccess)) {
-                    result = result + annotationDao.updateAnnotationPrincipalAccess(annotationID, principalID, access);
-                } else {
-                    result = 0;
-                }
+            Boolean checkAccess = annotationDao.hasExplicitAccess(annotationID, principalID);
+            if (checkAccess) {
+                result = result + annotationDao.updatePermission(annotationID, principalID, access);
             } else {
-                result = result + annotationDao.addAnnotationPrincipalAccess(annotationID, principalID, access);
+                result = result + annotationDao.addPermission(annotationID, principalID, access);
             }
-
         }
         return result;
     }
@@ -702,13 +726,13 @@ public class DBDispatcherImlp implements DBDispatcher {
         int updatedAnnotations = annotationDao.updateAnnotation(annotation, annotationID, ownerID);
         int deletedTargets = annotationDao.deleteAllAnnotationTarget(annotationID);
         int addedTargets = this.addTargets(annotation, annotationID);
-        
+
         Number remoteUserID = principalDao.getPrincipalInternalIDFromRemoteID(remoteUser);
-        
-        if (ownerID.equals(remoteUserID)) {
-            int deletedPrinsipalsAccesss = annotationDao.deleteAnnotationPermissions(annotationID);
+
+        if (ownerID.equals(remoteUserID) || (annotationDao.getAccess(annotationID, remoteUserID).equals(Access.ALL))) {
+            int deletedPrinsipalsAccesss = annotationDao.deletePermissions(annotationID);
             int addedPrincipalsAccesss = this.addPermissions(annotation.getPermissions().getPermission(), annotationID);
-            int updatedPublicAttribute = annotationDao.updatePublicAttribute(annotationID, annotation.getPermissions().getPublic());
+            //int updatedPublicAttribute = annotationDao.updatePublicAccess(annotationID, annotation.getPermissions().getPublic());
         };
         return updatedAnnotations;
     }
@@ -721,7 +745,7 @@ public class DBDispatcherImlp implements DBDispatcher {
     }
 
     @Override
-    public int updateAnnotationHeadline(Number internalID, String newHeader){
+    public int updateAnnotationHeadline(Number internalID, String newHeader) {
         return annotationDao.updateAnnotationHeadline(internalID, newHeader);
     }
 
@@ -774,7 +798,6 @@ public class DBDispatcherImlp implements DBDispatcher {
 
     }
 
-    
     @Override
     public Map<String, String> addTargetsForAnnotation(Number annotationID, List<TargetInfo> targets) throws NotInDataBaseException {
         Map<String, String> result = new HashMap<String, String>();
@@ -798,7 +821,7 @@ public class DBDispatcherImlp implements DBDispatcher {
         Number annotationID = annotationDao.addAnnotation(annotation, ownerID);
         int affectedAnnotRows = this.addTargets(annotation, annotationID);
         int addedPrincipalsAccesss = this.addPermissions(annotation.getPermissions().getPermission(), annotationID);
-        int updatedPublic = annotationDao.updatePublicAttribute(annotationID, annotation.getPermissions().getPublic());
+        //int updatedPublic = annotationDao.updatePublicAccess(annotationID, annotation.getPermissions().getPublic());
         return annotationID;
     }
 
@@ -885,7 +908,7 @@ public class DBDispatcherImlp implements DBDispatcher {
     @Override
     public int[] deleteAnnotation(Number annotationID) {
         int[] result = new int[5];
-        result[1] = annotationDao.deleteAnnotationPermissions(annotationID);
+        result[1] = annotationDao.deletePermissions(annotationID);
         List<Number> targetIDs = targetDao.getTargetIDs(annotationID);
         result[2] = annotationDao.deleteAllAnnotationTarget(annotationID);
         result[3] = 0;
@@ -924,7 +947,7 @@ public class DBDispatcherImlp implements DBDispatcher {
 
     @Override
     public int deleteAnnotationPrincipalAccess(Number annotationID, Number principalID) {
-        return annotationDao.deleteAnnotationPrincipalAccess(annotationID, principalID);
+        return annotationDao.deletePermission(annotationID, principalID);
     }
 ////////////// HELPERS ////////////////////
     ////////////////////////////////////////
@@ -980,19 +1003,19 @@ public class DBDispatcherImlp implements DBDispatcher {
             return null;
         }
     }
-    
+
     @Override
-    public UUID getPrincipalExternalIdFromName(String fullName) throws NotInDataBaseException{
-       return principalDao.getExternalIdFromName(fullName);
+    public UUID getPrincipalExternalIdFromName(String fullName) throws NotInDataBaseException {
+        return principalDao.getExternalIdFromName(fullName);
     }
-    
+
     @Override
-    public List<UUID> getAnnotationExternalIdsFromHeadline(String headline){
+    public List<UUID> getAnnotationExternalIdsFromHeadline(String headline) {
         return annotationDao.getExternalIdFromHeadline(headline);
     }
-    
+
     @Override
-    public List<Number> getAnnotationInternalIDsFromHeadline(String headline){
+    public List<Number> getAnnotationInternalIDsFromHeadline(String headline) {
         return annotationDao.getInternalIDsFromHeadline(headline);
     }
 
@@ -1031,7 +1054,7 @@ public class DBDispatcherImlp implements DBDispatcher {
         if (permissions != null) {
             int addedPermissions = 0;
             for (Permission permission : permissions) {
-                addedPermissions = addedPermissions + annotationDao.addAnnotationPrincipalAccess(annotationID, principalDao.getInternalIDFromHref(permission.getPrincipalHref()), permission.getLevel());
+                addedPermissions = addedPermissions + annotationDao.addPermission(annotationID, principalDao.getInternalIDFromHref(permission.getPrincipalHref()), permission.getLevel());
             }
             return addedPermissions;
         } else {

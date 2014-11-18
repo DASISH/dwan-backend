@@ -20,7 +20,6 @@ package eu.dasish.annotation.backend.rest;
 import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.Resource;
-import eu.dasish.annotation.backend.ResourceAction;
 import eu.dasish.annotation.backend.dao.DBDispatcher;
 import eu.dasish.annotation.backend.TestInstances;
 import eu.dasish.annotation.schema.Access;
@@ -106,7 +105,7 @@ public class AnnotationResourceTest {
                 will(returnValue(1));
 
 
-                oneOf(mockDbDispatcher).canDo(ResourceAction.READ, 3, 1, Resource.ANNOTATION);
+                oneOf(mockDbDispatcher).canDo(Access.READ, 3, 1, Resource.ANNOTATION);
                 will(returnValue(true));
 
                 oneOf(mockDbDispatcher).getAnnotation(1);
@@ -151,7 +150,7 @@ public class AnnotationResourceTest {
                 oneOf(mockDbDispatcher).getAnnotationOwnerID(4);
                 will(returnValue(3));
                 
-                oneOf(mockDbDispatcher).canDo(ResourceAction.DELETE, 3, 4, Resource.ANNOTATION);
+                oneOf(mockDbDispatcher).canDo(Access.ALL, 3, 4, Resource.ANNOTATION);
                 will(returnValue(true));
 
                 oneOf(mockDbDispatcher).deleteAnnotation(4);
@@ -275,7 +274,7 @@ public class AnnotationResourceTest {
                 oneOf(mockDbDispatcher).getAnnotationOwnerID(1);
                 will(returnValue(1));
                 
-                oneOf(mockDbDispatcher).canDo(ResourceAction.WRITE, 1, 1, Resource.ANNOTATION);
+                oneOf(mockDbDispatcher).canDo(Access.WRITE, 1, 1, Resource.ANNOTATION);
                 will(returnValue(true));
                 
                 oneOf(mockDbDispatcher).updateAnnotation(annotation, "twagoo@mpi.nl");
@@ -343,7 +342,7 @@ public class AnnotationResourceTest {
                 oneOf(mockDbDispatcher).getResourceInternalIdentifier(externalId, Resource.ANNOTATION);
                 will(returnValue(1));
                 
-                oneOf(mockDbDispatcher).canDo(ResourceAction.WRITE, 1, 1, Resource.ANNOTATION);
+                oneOf(mockDbDispatcher).canDo(Access.WRITE, 1, 1, Resource.ANNOTATION);
                 will(returnValue(true));               
                 
                 
@@ -396,7 +395,7 @@ public class AnnotationResourceTest {
                 oneOf(mockDbDispatcher).getResourceInternalIdentifier(externalId, Resource.ANNOTATION);
                 will(returnValue(1));
                 
-                oneOf(mockDbDispatcher).canDo(ResourceAction.WRITE, 1, 1, Resource.ANNOTATION);
+                oneOf(mockDbDispatcher).canDo(Access.WRITE, 1, 1, Resource.ANNOTATION);
                 will(returnValue(true));               
                 
                 

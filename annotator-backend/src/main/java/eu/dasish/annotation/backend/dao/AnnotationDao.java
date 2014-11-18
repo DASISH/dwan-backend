@@ -57,9 +57,10 @@ public interface AnnotationDao extends ResourceDao{
     public List<Number> getFilteredAnnotationIDs(Number ownerID, String text, String namespace, String after, String before);
      
   
-    public List<Number> getAnnotationIDsForPermission(Number principalID, Access acess);
+    public List<Number> getAnnotationIDsPermissionAtLeast(Number principalID, Access acess);
     
-    public List<Number> getAnnotationIDsForPublicAccess(Access access);
+   
+    public List<Number> getAnnotationIDsPublicAtLeast(Access access);
     
    
     /*
@@ -84,17 +85,7 @@ public interface AnnotationDao extends ResourceDao{
      */
     public List<String> getAnnotationREFs(List<Number> annotationIDs); 
     
-   
-    
-    
-    
-       /**
-     * 
-     * @param annotationID
-     * @return the list of the internal IDs of all the target Targets of "annotationID".
-     */
-    //public List<Number> retrieveTargetIDs(Number annotationID);   
-    
+  
     
     public Number  getOwner(Number annotationID);
     
@@ -105,6 +96,8 @@ public interface AnnotationDao extends ResourceDao{
      * @return access of the principalID w.r.t. annotationID, or null if the access is not given
      */ 
     public Access  getAccess(Number annotationID, Number principalID);
+    
+    public boolean  hasExplicitAccess(Number annotationID, Number principalID);
     
     
     public Access getPublicAttribute(Number annotationID);
@@ -147,7 +140,7 @@ public interface AnnotationDao extends ResourceDao{
      * @return # rows added to the table "annotations_principals_accesss"
      * Sets the "access" for the "principalID" w.r.t. the annotation with "annotationID".
      */
-    public int addAnnotationPrincipalAccess(Number annotationID, Number principalID, Access access);
+    public int addPermission(Number annotationID, Number principalID, Access access);
     
     
   
@@ -186,10 +179,10 @@ public interface AnnotationDao extends ResourceDao{
      * @return # rows updated to the table "annotations_principals_accesss"
      * Sets the "access" for the "principalID" w.r.t. the annotation with "annotationID".
      */
-    public int updateAnnotationPrincipalAccess(Number annotationID, Number principalID, Access access);
+    public int updatePermission(Number annotationID, Number principalID, Access access);
     
     
-    public int updatePublicAttribute(Number annotationID, Access access);
+    public int updatePublicAccess(Number annotationID, Access access);
     
     
    /**
@@ -221,9 +214,9 @@ public interface AnnotationDao extends ResourceDao{
     * @return # removed rows in the table "annotations_principals_accesss".
     * @throws SQLException 
     */
-    public int deleteAnnotationPermissions(Number annotationID);
+    public int deletePermissions(Number annotationID);
     
-    public int deleteAnnotationPrincipalAccess(Number annotationID, Number principalID);
+    public int deletePermission(Number annotationID, Number principalID);
     
     public int deleteAnnotationFromAllNotebooks(Number annotationID);
     
