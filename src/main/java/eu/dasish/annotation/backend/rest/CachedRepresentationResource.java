@@ -23,8 +23,8 @@ import eu.dasish.annotation.backend.BackendConstants;
 import eu.dasish.annotation.backend.ForbiddenException;
 import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.Resource;
-import eu.dasish.annotation.backend.ResourceAction;
 import eu.dasish.annotation.backend.dao.ILambda;
+import eu.dasish.annotation.schema.Access;
 import eu.dasish.annotation.schema.CachedRepresentationInfo;
 import eu.dasish.annotation.schema.ObjectFactory;
 import java.awt.image.BufferedImage;
@@ -70,7 +70,7 @@ public class CachedRepresentationResource extends ResourceResource {
     public JAXBElement<CachedRepresentationInfo> getCachedRepresentationInfo(@PathParam("cachedid") String externalId) throws IOException {
         Map params = new HashMap();
         try {
-            CachedRepresentationInfo result = (CachedRepresentationInfo) (new RequestWrappers(this)).wrapRequestResource(params, new GetCachedRepresentationInfo(), Resource.CACHED_REPRESENTATION, ResourceAction.READ, externalId);
+            CachedRepresentationInfo result = (CachedRepresentationInfo) (new RequestWrappers(this)).wrapRequestResource(params, new GetCachedRepresentationInfo(), Resource.CACHED_REPRESENTATION, Access.READ, externalId);
             if (result != null) {
                 return (new ObjectFactory()).createCachedRepresentationInfo(result);
             } else {
@@ -102,7 +102,7 @@ public class CachedRepresentationResource extends ResourceResource {
     public BufferedImage getCachedRepresentationContent(@PathParam("cachedid") String externalId) throws IOException {
         Map params = new HashMap();
         try {
-            InputStream result = (InputStream) (new RequestWrappers(this)).wrapRequestResource(params, new GetCachedRepresentationInputStream(), Resource.CACHED_REPRESENTATION, ResourceAction.READ, externalId);
+            InputStream result = (InputStream) (new RequestWrappers(this)).wrapRequestResource(params, new GetCachedRepresentationInputStream(), Resource.CACHED_REPRESENTATION, Access.READ, externalId);
             if (result != null) {
                 ImageIO.setUseCache(false);
                 try {
@@ -134,7 +134,7 @@ public class CachedRepresentationResource extends ResourceResource {
     public InputStream getCachedRepresentationContentStream(@PathParam("cachedid") String externalId) throws IOException {
         Map params = new HashMap();
         try {
-            return (InputStream) (new RequestWrappers(this)).wrapRequestResource(params, new GetCachedRepresentationInputStream(), Resource.CACHED_REPRESENTATION, ResourceAction.READ, externalId);
+            return (InputStream) (new RequestWrappers(this)).wrapRequestResource(params, new GetCachedRepresentationInputStream(), Resource.CACHED_REPRESENTATION, Access.READ, externalId);
         } catch (NotInDataBaseException e1) {
             httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e1.getMessage());
             return null;
@@ -164,7 +164,7 @@ public class CachedRepresentationResource extends ResourceResource {
         BodyPartEntity bpe = (BodyPartEntity) multiPart.getBodyParts().get(0).getEntity();
         params.put("stream", bpe.getInputStream());
         try {
-            Integer result = (Integer) (new RequestWrappers(this)).wrapRequestResource(params, new UpdateCachedBlob(), Resource.CACHED_REPRESENTATION, ResourceAction.WRITE, cachedIdentifier);
+            Integer result = (Integer) (new RequestWrappers(this)).wrapRequestResource(params, new UpdateCachedBlob(), Resource.CACHED_REPRESENTATION, Access.WRITE, cachedIdentifier);
             if (result != null) {
                 return result + "rows are updated";
             } else {
@@ -198,7 +198,7 @@ public class CachedRepresentationResource extends ResourceResource {
 
         params.put("stream", input);
         try {
-            Integer result = (Integer) (new RequestWrappers(this)).wrapRequestResource(params, new UpdateCachedBlob(), Resource.CACHED_REPRESENTATION, ResourceAction.WRITE, cachedIdentifier);
+            Integer result = (Integer) (new RequestWrappers(this)).wrapRequestResource(params, new UpdateCachedBlob(), Resource.CACHED_REPRESENTATION, Access.WRITE, cachedIdentifier);
             input.close();
             if (result != null) {
                 return result + "rows are updated";
@@ -239,7 +239,7 @@ public class CachedRepresentationResource extends ResourceResource {
         Map params = new HashMap();
         params.put("info", cachedInfo);
         try {
-            Integer result = (Integer) (new RequestWrappers(this)).wrapRequestResource(params, new UpdateCachedMetadata(), Resource.CACHED_REPRESENTATION, ResourceAction.WRITE_W_METAINFO, cachedInfo.getId());
+            Integer result = (Integer) (new RequestWrappers(this)).wrapRequestResource(params, new UpdateCachedMetadata(), Resource.CACHED_REPRESENTATION, Access.ALL, cachedInfo.getId());
             if (result != null) {
                 return result + "rows are updated";
             } else {

@@ -63,5 +63,11 @@ class is corrected (cachedRepresentatinons --> cachedRepresentations).
 October 31, 2014. This is a package for webannotator of shibbolized version for lux17,
 sych with the basic authenticated version.
 
+November 7, 2014. This is a package for a basic authenticated annotator, to test a new feature.
+Namely, a user with "write" access can update annotation as a whole, but if he also sends permission
+updates they will be ignored.
 
+November 10, 2014. This is a package for a shibboleth authenticated annotator. Now A user with 
+"write"  access can update annotation as a whole, but if he also sends permission updates they will 
+be  ignored.
 

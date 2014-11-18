@@ -4,7 +4,7 @@
     
     <groupId>eu.dasish.annotation</groupId>
     <artifactId>annotator-backend</artifactId>
-    <version>1.5.4-shibboleth</version>    
+    <version>1.6-shibboleth</version>    
     <packaging>war</packaging>
     <name>annotator-backend Jersey Webapp</name>
     <organization> 

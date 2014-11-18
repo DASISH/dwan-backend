@@ -22,7 +22,6 @@ import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.PrincipalCannotBeDeleted;
 import eu.dasish.annotation.backend.PrincipalExists;
 import eu.dasish.annotation.backend.Resource;
-import eu.dasish.annotation.backend.ResourceAction;
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationBody;
 import eu.dasish.annotation.schema.AnnotationInfoList;
@@ -31,6 +30,7 @@ import eu.dasish.annotation.schema.Notebook;
 import eu.dasish.annotation.schema.NotebookInfo;
 import eu.dasish.annotation.schema.NotebookInfoList;
 import eu.dasish.annotation.schema.Access;
+import eu.dasish.annotation.schema.Action;
 import eu.dasish.annotation.schema.PermissionList;
 import eu.dasish.annotation.schema.ReferenceList;
 import eu.dasish.annotation.schema.ResponseBody;
@@ -185,7 +185,7 @@ public interface DBDispatcher {
      * @return access of the principalID w.r.t. annotationID, or null if the
      * access is not given
      */
-    Access getAccess(Number annotationID, Number principalID);
+    Access getAccess(Number annotationID, Number principalID) ;
     
     Access getPublicAttribute(Number annotationID);
 
@@ -193,7 +193,7 @@ public interface DBDispatcher {
     
     Principal getDataBaseAdmin() ;
 
-    boolean canDo(ResourceAction action, Number principalID, Number resourceID, Resource resource);
+    boolean canDo(Access action, Number principalID, Number resourceID, Resource resource);
 
     
     /// notebooks ///
@@ -246,7 +246,7 @@ public interface DBDispatcher {
      * Sets the "access" for the "principalID" w.r.t. the annotation with
      * "annotationID".
      */
-    int updateAnnotationPrincipalAccess(Number annotationID, Number principalID, Access access);
+    int updatePermission(Number annotationID, Number principalID, Access access);
 
     /**
      *

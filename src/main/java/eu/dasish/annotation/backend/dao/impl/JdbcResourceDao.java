@@ -263,6 +263,13 @@ public class JdbcResourceDao extends SimpleJdbcDaoSupport implements ResourceDao
             return result;
         }
     };
+    protected final RowMapper<Access> accessRowMapper = new RowMapper<Access>() {
+        @Override
+        public Access mapRow(ResultSet rs, int rowNumber) throws SQLException {
+            Access result =Access.fromValue(rs.getString(access));
+            return result;
+        }
+    };
      protected final RowMapper<Access> public_RowMapper = new RowMapper<Access>() {
         @Override
         public Access mapRow(ResultSet rs, int rowNumber) throws SQLException {

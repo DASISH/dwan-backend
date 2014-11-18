@@ -21,15 +21,14 @@ import eu.dasish.annotation.backend.ForbiddenException;
 import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.PrincipalExists;
 import eu.dasish.annotation.backend.Resource;
-import eu.dasish.annotation.backend.ResourceAction;
 import eu.dasish.annotation.backend.dao.ILambda;
 import eu.dasish.annotation.backend.dao.ILambdaPrincipal;
+import eu.dasish.annotation.schema.Access;
 import eu.dasish.annotation.schema.ObjectFactory;
 import eu.dasish.annotation.schema.Principal;
 import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
-import javax.servlet.http.HttpServletResponse;
 import javax.xml.bind.JAXBElement;
 
 /**
@@ -61,7 +60,7 @@ public class RequestWrappers<T> {
         return dbRequestor.apply(params);
     }
 
-    public T wrapRequestResource(Map params, ILambda<Map, T> dbRequestor, Resource resource, ResourceAction action, String externalId) throws IOException, ForbiddenException, NotInDataBaseException {
+    public T wrapRequestResource(Map params, ILambda<Map, T> dbRequestor, Resource resource, Access action, String externalId) throws IOException, ForbiddenException, NotInDataBaseException {
         Number principalID = resourceResource.getPrincipalID();
         if (principalID == null) {
             return null;

@@ -23,12 +23,11 @@ import eu.dasish.annotation.backend.BackendConstants;
 import eu.dasish.annotation.backend.ForbiddenException;
 import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.Resource;
-import eu.dasish.annotation.backend.ResourceAction;
 import eu.dasish.annotation.backend.dao.ILambda;
+import eu.dasish.annotation.schema.Access;
 import eu.dasish.annotation.schema.CachedRepresentationInfo;
 import eu.dasish.annotation.schema.ObjectFactory;
 import eu.dasish.annotation.schema.ReferenceList;
-import eu.dasish.annotation.schema.ResponseBody;
 import eu.dasish.annotation.schema.Target;
 import java.io.IOException;
 import java.io.InputStream;
@@ -81,7 +80,7 @@ public class TargetResource extends ResourceResource {
     public JAXBElement<Target> getTarget(@PathParam("targetid") String externalIdentifier) throws IOException {
         Map params = new HashMap();
         try {
-            Target result = (Target) (new RequestWrappers(this)).wrapRequestResource(params, new GetTarget(), Resource.TARGET, ResourceAction.READ, externalIdentifier);
+            Target result = (Target) (new RequestWrappers(this)).wrapRequestResource(params, new GetTarget(), Resource.TARGET, Access.READ, externalIdentifier);
             if (result != null) {
                 return new ObjectFactory().createTarget(result);
             } else {
@@ -113,7 +112,7 @@ public class TargetResource extends ResourceResource {
     public JAXBElement<ReferenceList> getSiblingTargets(@PathParam("targetid") String externalIdentifier) throws HTTPException, IOException {
         Map params = new HashMap();
         try {
-            ReferenceList result = (ReferenceList) (new RequestWrappers(this)).wrapRequestResource(params, new GetSiblingTargets(), Resource.TARGET, ResourceAction.READ, externalIdentifier);
+            ReferenceList result = (ReferenceList) (new RequestWrappers(this)).wrapRequestResource(params, new GetSiblingTargets(), Resource.TARGET, Access.READ, externalIdentifier);
             if (result != null) {
                 return new ObjectFactory().createReferenceList(result);
             } else {
@@ -152,7 +151,7 @@ public class TargetResource extends ResourceResource {
         params.put("cachedBlob", bpe.getInputStream());
         params.put("fragmentDescriptor", fragmentDescriptor);
         try {
-            CachedRepresentationInfo result = (CachedRepresentationInfo) (new RequestWrappers(this)).wrapRequestResource(params, new PostCached(), Resource.TARGET, ResourceAction.WRITE_W_METAINFO, targetIdentifier);
+            CachedRepresentationInfo result = (CachedRepresentationInfo) (new RequestWrappers(this)).wrapRequestResource(params, new PostCached(), Resource.TARGET, Access.ALL, targetIdentifier);
             if (result != null) {
                 return new ObjectFactory().createCachedRepresentationInfo(result);
             } else {

@@ -22,7 +22,6 @@ import eu.dasish.annotation.backend.ForbiddenException;
 import eu.dasish.annotation.backend.MatchMode;
 import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.Resource;
-import eu.dasish.annotation.backend.ResourceAction;
 import eu.dasish.annotation.backend.dao.ILambda;
 import eu.dasish.annotation.schema.Annotation;
 import eu.dasish.annotation.schema.AnnotationBody;
@@ -93,7 +92,7 @@ public class AnnotationResource extends ResourceResource {
     public JAXBElement<Annotation> getAnnotation(@PathParam("annotationid") String externalIdentifier) throws IOException {
         Map params = new HashMap();
         try {
-            Annotation result = (Annotation) (new RequestWrappers(this)).wrapRequestResource(params, new GetAnnotation(), Resource.ANNOTATION, ResourceAction.READ, externalIdentifier);
+            Annotation result = (Annotation) (new RequestWrappers(this)).wrapRequestResource(params, new GetAnnotation(), Resource.ANNOTATION, Access.READ, externalIdentifier);
             if (result != null) {
                 return (new ObjectFactory()).createAnnotation(result);
             } else {
@@ -124,7 +123,7 @@ public class AnnotationResource extends ResourceResource {
     public JAXBElement<ReferenceList> getAnnotationTargets(@PathParam("annotationid") String externalIdentifier) throws IOException {
         Map params = new HashMap();
         try {
-            ReferenceList result = (ReferenceList) (new RequestWrappers(this)).wrapRequestResource(params, new GetTargetList(), Resource.ANNOTATION, ResourceAction.READ, externalIdentifier);
+            ReferenceList result = (ReferenceList) (new RequestWrappers(this)).wrapRequestResource(params, new GetTargetList(), Resource.ANNOTATION, Access.READ, externalIdentifier);
             if (result != null) {
                 return (new ObjectFactory()).createTargetList(result);
             } else {
@@ -243,7 +242,7 @@ public class AnnotationResource extends ResourceResource {
     public JAXBElement<PermissionList> getAnnotationPermissions(@PathParam("annotationid") String externalIdentifier) throws IOException {
         Map params = new HashMap();
         try {
-            PermissionList result = (PermissionList) (new RequestWrappers(this)).wrapRequestResource(params, new GetPermissionList(), Resource.ANNOTATION, ResourceAction.READ, externalIdentifier);
+            PermissionList result = (PermissionList) (new RequestWrappers(this)).wrapRequestResource(params, new GetPermissionList(), Resource.ANNOTATION, Access.READ, externalIdentifier);
             if (result != null) {
                 return (new ObjectFactory()).createPermissionList(result);
             } else {
@@ -272,7 +271,7 @@ public class AnnotationResource extends ResourceResource {
     public String deleteAnnotation(@PathParam("annotationid") String externalIdentifier) throws IOException {
         Map params = new HashMap();
         try {
-            int[] result = (int[]) (new RequestWrappers(this)).wrapRequestResource(params, new DeleteAnnotation(), Resource.ANNOTATION, ResourceAction.DELETE, externalIdentifier);
+            int[] result = (int[]) (new RequestWrappers(this)).wrapRequestResource(params, new DeleteAnnotation(), Resource.ANNOTATION, Access.ALL, externalIdentifier);
             if (result != null) {
                 return result[0] + " annotation(s) is(are) deleted.";
             } else {
@@ -343,11 +342,10 @@ public class AnnotationResource extends ResourceResource {
             return null;
         }
         try {
-            Map params = new HashMap();
-            
+            Map params = new HashMap();            
             params.put("annotation", annotation);
             params.put("remoteUser",httpServletRequest.getRemoteUser()); 
-            ResponseBody result = (ResponseBody) (new RequestWrappers(this)).wrapRequestResource(params, new UpdateAnnotation(), Resource.ANNOTATION, ResourceAction.WRITE, externalId);
+            ResponseBody result = (ResponseBody) (new RequestWrappers(this)).wrapRequestResource(params, new UpdateAnnotation(), Resource.ANNOTATION, Access.WRITE, externalId);
             if (result != null) {
                 return (new ObjectFactory()).createResponseBody(result);
             }
@@ -385,7 +383,7 @@ public class AnnotationResource extends ResourceResource {
         Map params = new HashMap();
         params.put("annotationBody", annotationBody);
         try {
-            ResponseBody result = (ResponseBody) (new RequestWrappers(this)).wrapRequestResource(params, new UpdateAnnotationBody(), Resource.ANNOTATION, ResourceAction.WRITE, externalIdentifier);
+            ResponseBody result = (ResponseBody) (new RequestWrappers(this)).wrapRequestResource(params, new UpdateAnnotationBody(), Resource.ANNOTATION, Access.WRITE, externalIdentifier);
             if (result != null) {
                 return (new ObjectFactory()).createResponseBody(result);
             } else {
@@ -421,7 +419,7 @@ public class AnnotationResource extends ResourceResource {
         Map params = new HashMap();
         params.put("headline", newHeadline);
         try {
-            ResponseBody result = (ResponseBody) (new RequestWrappers(this)).wrapRequestResource(params, new UpdateAnnotationHeadline(), Resource.ANNOTATION, ResourceAction.WRITE, externalIdentifier);
+            ResponseBody result = (ResponseBody) (new RequestWrappers(this)).wrapRequestResource(params, new UpdateAnnotationHeadline(), Resource.ANNOTATION, Access.WRITE, externalIdentifier);
             if (result != null) {
                 return (new ObjectFactory()).createResponseBody(result);
             } else {
@@ -478,14 +476,14 @@ public class AnnotationResource extends ResourceResource {
                 for (UUID annotationId : annotationIds) {
                     Map params = new HashMap();
                     params.put("access", accessTyped);
-                    Integer result = (Integer) (new RequestWrappers(this)).wrapRequestResource(params, new UpdatePublicAccess(), Resource.ANNOTATION, ResourceAction.WRITE_W_METAINFO, annotationId.toString());
+                    Integer result = (Integer) (new RequestWrappers(this)).wrapRequestResource(params, new UpdatePublicAccess(), Resource.ANNOTATION, Access.ALL, annotationId.toString());
                     updatedAnnotations = (result != null) ? updatedAnnotations + result.intValue() : updatedAnnotations;
                 }
                 return (updatedAnnotations + " row(s) are updated");
             } else {
                 Map params = new HashMap();
                 params.put("access", accessTyped);
-                Integer result = (Integer) (new RequestWrappers(this)).wrapRequestResource(params, new UpdatePublicAccess(), Resource.ANNOTATION, ResourceAction.WRITE_W_METAINFO, annotationDatabaseId);
+                Integer result = (Integer) (new RequestWrappers(this)).wrapRequestResource(params, new UpdatePublicAccess(), Resource.ANNOTATION, Access.ALL, annotationDatabaseId);
                 if (result != null) {
                     return result + " row(s) is(are) updated.";
                 } else {
@@ -516,10 +514,10 @@ public class AnnotationResource extends ResourceResource {
     @Consumes(MediaType.APPLICATION_XML)
     @Produces(MediaType.APPLICATION_XML)
     @Path("{annotationid: " + BackendConstants.regExpIdentifier + "}/permissions/{principalid: " + BackendConstants.regExpIdentifier + "}")
-    public String updateAccess(@PathParam("annotationid") String annotationExternalId,
+    public String updatePermission(@PathParam("annotationid") String annotationExternalId,
             @PathParam("principalid") String principalExternalId, Access access) throws IOException {
         try {
-            return this.genericUpdateDeleteAccess(annotationExternalId, principalExternalId, access);
+            return this.genericUpdateDeletePermission(annotationExternalId, principalExternalId, access);
         } catch (NotInDataBaseException e1) {
             httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e1.getMessage());
             return e1.getMessage();
@@ -568,14 +566,14 @@ public class AnnotationResource extends ResourceResource {
                 int count = 0;
                 String tmp = null;
                 for (UUID annotationId : annotationIds) {
-                    tmp = this.genericUpdateDeleteAccess(annotationId.toString(), principalDatabaseId, Access.fromValue(access));
+                    tmp = this.genericUpdateDeletePermission(annotationId.toString(), principalDatabaseId, Access.fromValue(access));
                     if (!tmp.startsWith("0")) {
                         count++;
                     }
                 }
                 return (count + " row(s) are updated");
             } else {
-                return this.genericUpdateDeleteAccess(annotationDatabaseId, principalDatabaseId, Access.fromValue(access));
+                return this.genericUpdateDeletePermission(annotationDatabaseId, principalDatabaseId, Access.fromValue(access));
             }
 
         } catch (NotInDataBaseException e1) {
@@ -588,12 +586,12 @@ public class AnnotationResource extends ResourceResource {
     }
 
     ////////////////////////////////////////////
-    private String genericUpdateDeleteAccess(String annotationId, String principalId, Access access) throws IOException, NotInDataBaseException, ForbiddenException {
+    private String genericUpdateDeletePermission(String annotationId, String principalId, Access access) throws IOException, NotInDataBaseException, ForbiddenException {
         Map params = new HashMap();
         params.put("access", access);
         final Number inputPrincipalID = dbDispatcher.getResourceInternalIdentifier(UUID.fromString(principalId), Resource.PRINCIPAL);
         params.put("inputPrincipalID", inputPrincipalID);
-        Integer result = (Integer) (new RequestWrappers(this)).wrapRequestResource(params, new UpdatePrincipalAccess(), Resource.ANNOTATION, ResourceAction.WRITE_W_METAINFO, annotationId);
+        Integer result = (Integer) (new RequestWrappers(this)).wrapRequestResource(params, new UpdatePermissionHelper(), Resource.ANNOTATION, Access.ALL, annotationId);
         if (result != null) {
             return result + " row(s) is(are) updated.";
         } else {
@@ -601,14 +599,14 @@ public class AnnotationResource extends ResourceResource {
         }
     }
 
-    private class UpdatePrincipalAccess implements ILambda<Map, Integer> {
+    private class UpdatePermissionHelper implements ILambda<Map, Integer> {
 
         @Override
         public Integer apply(Map params) throws NotInDataBaseException {
             Number annotationID = (Number) params.get("internalID");
             Number principalID = (Number) params.get("inputPrincipalID");
             Access access = (Access) params.get("access");
-            return dbDispatcher.updateAnnotationPrincipalAccess(annotationID, principalID, access);
+            return dbDispatcher.updatePermission(annotationID, principalID, access);
         }
     }
     ///////////////////////////////////////////
@@ -622,7 +620,7 @@ public class AnnotationResource extends ResourceResource {
         Map params = new HashMap();
         params.put("permissions", permissions);
         try {
-            ResponseBody result = (ResponseBody) (new RequestWrappers(this)).wrapRequestResource(params, new UpdatePermissions(), Resource.ANNOTATION, ResourceAction.WRITE_W_METAINFO, annotationExternalId);
+            ResponseBody result = (ResponseBody) (new RequestWrappers(this)).wrapRequestResource(params, new UpdatePermissions(), Resource.ANNOTATION, Access.ALL, annotationExternalId);
             if (result != null) {
                 return new ObjectFactory().createResponseBody(result);
             } else {
@@ -654,10 +652,10 @@ public class AnnotationResource extends ResourceResource {
     @DELETE
     @Produces(MediaType.TEXT_PLAIN)
     @Path("{annotationId: " + BackendConstants.regExpIdentifier + "}/principal/{principalId}/delete")
-    public String deletePrincipalsAccess(@PathParam("annotationId") String annotationId,
+    public String deletePermission(@PathParam("annotationId") String annotationId,
             @PathParam("principalId") String principalId) throws IOException {
         try {
-            return this.genericUpdateDeleteAccess(annotationId, principalId, null);
+            return this.genericUpdateDeletePermission(annotationId, principalId, null);
         } catch (NotInDataBaseException e1) {
             httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e1.getMessage());
             return e1.getMessage();
