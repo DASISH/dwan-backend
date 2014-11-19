@@ -26,6 +26,7 @@ import eu.dasish.annotation.schema.AnnotationBody.TextBody;
 import eu.dasish.annotation.schema.AnnotationBody.XmlBody;
 import eu.dasish.annotation.schema.AnnotationInfo;
 import eu.dasish.annotation.schema.Access;
+import eu.dasish.annotation.schema.PermissionList;
 import java.io.IOException;
 import java.lang.String;
 import java.sql.ResultSet;
@@ -189,9 +190,9 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
                 accessConstraint.append("(").append(column).append("  = '").append(Access.WRITE.value()).append("'");
                 accessConstraint.append(" OR ").append(column).append("  = '").append(Access.ALL.value()).append("')");
             } else if (access.equals(Access.ALL)) {
-                accessConstraint.append("(").append(column).append("  = '").append(Access.ALL.value()).append("')");
+                accessConstraint.append(column).append("  = '").append(Access.ALL.value()).append("'");
             } else {
-                accessConstraint.append("(").append(column).append("  = '").append(Access.NONE.value()).append("')");
+                accessConstraint.append(column).append("  = '").append(Access.NONE.value()).append("'");
             }
         }
         return accessConstraint.toString();
@@ -284,7 +285,7 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
 
     //////////////////////////////////////////////////////////////////////////
     @Override
-    public Annotation getAnnotationWithoutTargetsAndPemissions(Number annotationID) {
+    public Annotation getAnnotationWithoutTargetsAndPemissionList(Number annotationID) {
 
         StringBuilder sql = new StringBuilder("SELECT ");
         sql.append(annotationStar).append(" FROM ").append(annotationTableName).append(" WHERE ").append(annotation_id).append("= ? LIMIT  1");
@@ -327,7 +328,11 @@ public class JdbcAnnotationDao extends JdbcResourceDao implements AnnotationDao 
                 body.setTextBody(textBody);
             }
             annotation.setBody(body);
-
+            
+            PermissionList permissions = new PermissionList();
+            permissions.setPublic(Access.fromValue(rs.getString(public_)));
+            annotation.setPermissions(permissions);
+                    
             annotation.setTargets(null);
             String externalId = rs.getString(external_id);
             annotation.setId(externalId);

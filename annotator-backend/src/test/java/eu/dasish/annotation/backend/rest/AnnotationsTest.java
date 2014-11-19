@@ -204,7 +204,9 @@ public class AnnotationsTest extends JerseyTest {
         assertEquals("<html><body>some html 3</body></html>", entityA.getBody().getTextBody().getBody());
         assertEquals("text/plain", entityA.getBody().getTextBody().getMimeType());
         assertEquals("Annotation to add to test DAO", entityA.getHeadline());
-        assertEquals(0, entityA.getPermissions().getPermission().size());
+        assertEquals(1, entityA.getPermissions().getPermission().size());
+        assertEquals(Access.ALL, entityA.getPermissions().getPermission().get(0).getLevel());
+        assertEquals(_relativePath + "/principals/00000000-0000-0000-0000-000000000111", entityA.getPermissions().getPermission().get(0).getPrincipalHref());
         assertEquals(Access.WRITE, entityA.getPermissions().getPublic());
         assertEquals(_relativePath + "/principals/00000000-0000-0000-0000-000000000113", entityA.getOwnerHref());
         assertEquals("http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia#de_Opdracht", entityA.getTargets().getTargetInfo().get(0).getLink());

@@ -126,7 +126,7 @@ public class DBDispatcherImlp implements DBDispatcher {
 
     @Override
     public Annotation getAnnotation(Number annotationID) {
-        Annotation result = annotationDao.getAnnotationWithoutTargetsAndPemissions(annotationID);
+        Annotation result = annotationDao.getAnnotationWithoutTargetsAndPemissionList(annotationID);
         result.setOwnerHref(principalDao.getHrefFromInternalID(annotationDao.getOwner(annotationID)));
         List<Number> targetIDs = targetDao.getTargetIDs(annotationID);
         TargetInfoList sis = new TargetInfoList();
@@ -135,7 +135,7 @@ public class DBDispatcherImlp implements DBDispatcher {
             sis.getTargetInfo().add(targetInfo);
         }
         result.setTargets(sis);
-        result.setPermissions(this.getPermissions(annotationID, Resource.ANNOTATION));
+        this.fillInPermissionList(result.getPermissions().getPermission(), annotationID, Resource.ANNOTATION);
         return result;
     }
 
@@ -151,21 +151,24 @@ public class DBDispatcherImlp implements DBDispatcher {
     }
 
     ///////////////////////////////////////////////////
-    // TODO UNIT tests
-    @Override
-    public PermissionList getPermissions(Number resourceID, Resource resource) {
+   
+    private void fillInPermissionList(List<Permission> listPermissions, Number resourceID, Resource resource) {
         List<Map<Number, String>> principalsAccesss = this.getDao(resource).getPermissions(resourceID);
-        PermissionList result = new PermissionList();
-        result.setPublic(this.getDao(resource).getPublicAttribute(resourceID));
-        List<Permission> list = result.getPermission();
         for (Map<Number, String> principalAccess : principalsAccesss) {
             Number[] principal = new Number[1];
             principalAccess.keySet().toArray(principal);
             Permission permission = new Permission();
             permission.setPrincipalHref(principalDao.getHrefFromInternalID(principal[0]));
             permission.setLevel(Access.fromValue(principalAccess.get(principal[0])));
-            list.add(permission);
+            listPermissions.add(permission);
         }
+    }
+    
+    @Override
+    public PermissionList getPermissions(Number resourceID, Resource resource) {
+        PermissionList result = new PermissionList();
+        result.setPublic(this.getDao(resource).getPublicAttribute(resourceID));
+        this.fillInPermissionList(result.getPermission(), resourceID, resource);
         return result;
     }
 
@@ -732,7 +735,7 @@ public class DBDispatcherImlp implements DBDispatcher {
         if (ownerID.equals(remoteUserID) || (annotationDao.getAccess(annotationID, remoteUserID).equals(Access.ALL))) {
             int deletedPrinsipalsAccesss = annotationDao.deletePermissions(annotationID);
             int addedPrincipalsAccesss = this.addPermissions(annotation.getPermissions().getPermission(), annotationID);
-            //int updatedPublicAttribute = annotationDao.updatePublicAccess(annotationID, annotation.getPermissions().getPublic());
+               
         };
         return updatedAnnotations;
     }
@@ -821,7 +824,6 @@ public class DBDispatcherImlp implements DBDispatcher {
         Number annotationID = annotationDao.addAnnotation(annotation, ownerID);
         int affectedAnnotRows = this.addTargets(annotation, annotationID);
         int addedPrincipalsAccesss = this.addPermissions(annotation.getPermissions().getPermission(), annotationID);
-        //int updatedPublic = annotationDao.updatePublicAccess(annotationID, annotation.getPermissions().getPublic());
         return annotationID;
     }
 

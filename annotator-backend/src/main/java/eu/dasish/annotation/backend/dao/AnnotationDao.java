@@ -51,7 +51,7 @@ public interface AnnotationDao extends ResourceDao{
      * (Constructing a complete Annotation object using  "getAnnotationWithoutTargets" and "retrieveTargetIDs" is done in "DaoDispatchter".)
      * 
      */
-    public Annotation getAnnotationWithoutTargetsAndPemissions(Number annotationID);
+    public Annotation getAnnotationWithoutTargetsAndPemissionList(Number annotationID);
     
       
     public List<Number> getFilteredAnnotationIDs(Number ownerID, String text, String namespace, String after, String before);

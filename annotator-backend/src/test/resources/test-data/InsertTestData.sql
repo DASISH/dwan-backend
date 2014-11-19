@@ -24,6 +24,7 @@
 INSERT INTO access(access_mode) VALUES ('write');
 INSERT INTO access(access_mode) VALUES ('read');
 INSERT INTO access(access_mode) VALUES ('none');
+INSERT INTO access(access_mode) VALUES ('all');
 
 INSERT INTO principal (principal_name, external_id, remote_id, e_mail, account) VALUES ('Twan', '00000000-0000-0000-0000-000000000111', 'twagoo@mpi.nl', 'Twan.Goosen@mpi.nl', 'developer'); --1 
 INSERT INTO principal (principal_name, external_id, remote_id, e_mail, account) VALUES ('Peter', '00000000-0000-0000-0000-000000000112', 'petwit@mpi.nl', 'Peter.Withers@mpi.nl', 'developer'); -- 2
@@ -45,7 +46,7 @@ INSERT INTO notebook (title, owner_id, external_id) VALUES ('Notebook 4', 3, '00
 
 INSERT INTO annotation (owner_id, headline,body_text, body_mimetype, external_id, last_modified, is_xml, public_) VALUES (1, 'Sagrada Famiglia','<html><body>some html 1</body></html>', 'text/html' , '00000000-0000-0000-0000-000000000021', '2013-08-12 09:25:00.383', false, 'write'); --1
 INSERT INTO annotation (owner_id, headline,body_text, body_mimetype, external_id, last_modified, is_xml, public_) VALUES (2, 'Gaudi','<html><body>some html 2</body></html>', 'text/html' , '00000000-0000-0000-0000-000000000022', '2013-08-12 10:30:00.383', false, 'read'); --2
-INSERT INTO annotation (owner_id, headline,body_text, body_mimetype, external_id, last_modified, is_xml) VALUES (3, 'Art Nuveau','some plain text', 'text/plain' , '00000000-0000-0000-0000-000000000023', '2013-08-12 11:30:00.383', false); --3
+INSERT INTO annotation (owner_id, headline,body_text, body_mimetype, external_id, last_modified, is_xml, public_) VALUES (3, 'Art Nuveau','some plain text', 'text/plain' , '00000000-0000-0000-0000-000000000023', '2013-08-12 11:30:00.383', false, 'all'); --3
 INSERT INTO annotation (owner_id, headline,body_text, body_mimetype, external_id, is_xml) VALUES (3, 'Annotation to delete','<html><body>some html 4</body></html>', 'text/html' , '00000000-0000-0000-0000-000000000024',false); --4
 
 
@@ -118,7 +119,9 @@ INSERT INTO annotations_principals_accesses (annotation_id, principal_id, access
 INSERT INTO annotations_principals_accesses (annotation_id, principal_id, access_) VALUES (3, 2, 'read');
 
 INSERT INTO annotations_principals_accesses (annotation_id, principal_id, access_) VALUES (4, 2, 'write');
-INSERT INTO annotations_principals_accesses (annotation_id, principal_id, access_) VALUES (4, 1, 'write');
+INSERT INTO annotations_principals_accesses (annotation_id, principal_id, access_) VALUES (4, 1, 'all');
+INSERT INTO annotations_principals_accesses (annotation_id, principal_id, access_) VALUES (4, 3, 'none');
+INSERT INTO annotations_principals_accesses (annotation_id, principal_id, access_) VALUES (4, 11, 'none');
 -- checking integrity control:
 -- INSERT INTO annotations_principals_accesses (annotation_id, principal_id, access_) VALUES (5, 5, 'read');
 
