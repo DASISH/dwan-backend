@@ -100,6 +100,10 @@ public class TestInstances {
         PermissionList permissions = new PermissionList();
         permissions.setPublic(Access.WRITE);
         result.setPermissions(permissions);
+        Permission p = new Permission();
+        p.setLevel(Access.ALL);
+        p.setPrincipalHref(relativePath +"/principals/00000000-0000-0000-0000-000000000111");
+        permissions.getPermission().add(p);
 
         return result;
     }

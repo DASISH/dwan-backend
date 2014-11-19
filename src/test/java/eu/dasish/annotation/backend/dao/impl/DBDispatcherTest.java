@@ -196,6 +196,9 @@ public class DBDispatcherTest {
         textBody.setMimeType("text/plain");
         textBody.setBody("<html><body>some html 1</body></html>");
         mockAnnotation.setBody(mockBody);
+        PermissionList permissions = new PermissionList();
+        permissions.setPublic(Access.WRITE);
+        mockAnnotation.setPermissions(permissions);
         mockAnnotation.setTargets(null);
 
 
@@ -234,7 +237,7 @@ public class DBDispatcherTest {
 
         mockeryDao.checking(new Expectations() {
             {
-                oneOf(annotationDao).getAnnotationWithoutTargetsAndPemissions(1);
+                oneOf(annotationDao).getAnnotationWithoutTargetsAndPemissionList(1);
                 will(returnValue(mockAnnotation));
 
                 oneOf(annotationDao).getOwner(1);
@@ -256,9 +259,6 @@ public class DBDispatcherTest {
 
                 oneOf(annotationDao).getPermissions(1);
                 will(returnValue(listMap));
-
-                oneOf(annotationDao).getPublicAttribute(1);
-                will(returnValue(Access.WRITE));
 
                 oneOf(principalDao).getHrefFromInternalID(2);
                 will(returnValue(uri2));
@@ -1252,28 +1252,24 @@ public class DBDispatcherTest {
                 oneOf(annotationDao).addAnnotationTarget(5, 1);
                 will(returnValue(1));
 
-                ///////////
+                ///
 
                 oneOf(annotationDao).updateAnnotationBody(5, testAnnotation.getBody().getTextBody().getBody(), testAnnotation.getBody().getTextBody().getMimeType(), false);
                 will(returnValue(1)); // the DB update will be called at perform anyway, even if the body is not changed (can be optimized)
 
-                oneOf(annotationDao).updatePublicAccess(5, Access.WRITE);
+                //////
+                
+                
+                oneOf(principalDao).getInternalIDFromHref("/api/principals/00000000-0000-0000-0000-000000000111");
+                will(returnValue(1));
+                
+                oneOf(annotationDao).addPermission(5, 1, Access.ALL);
                 will(returnValue(1));
             }
         });
 
         Number result = dbDispatcher.addPrincipalsAnnotation(3, testAnnotation);
         assertEquals(5, result);
-
-//        Annotation newAnnotation = dbDispatcher.getAnnotation(5);
-//        assertEquals("/api/principals/00000000-0000-0000-0000-000000000113", newAnnotation.getOwnerHref());
-//        assertEquals(testAnnotation.getHeadline(), newAnnotation.getHeadline());
-//        assertEquals(testAnnotation.getBody().getTextBody().getBody(), newAnnotation.getBody().getTextBody().getBody());
-//        assertEquals(testAnnotation.getBody().getTextBody().getMimeType(), newAnnotation.getBody().getTextBody().getMimeType());
-//        assertEquals(testAnnotation.getPermissions().getPermission().size(), newAnnotation.getPermissions().getPermission().size());
-//        assertEquals(Access.WRITE, newAnnotation.getPermissions().getPublic());
-//        assertEquals(testAnnotation.getTargets().getTargetInfo().size(), newAnnotation.getTargets().getTargetInfo().size());
-
     }
 
     @Test
@@ -1954,11 +1950,19 @@ public class DBDispatcherTest {
 
                 oneOf(annotationDao).updatePublicAccess(5, Access.WRITE);
                 will(returnValue(1));
+                
+                ////                
+                    
+                oneOf(principalDao).getInternalIDFromHref("/api/principals/00000000-0000-0000-0000-000000000111");
+                will(returnValue(1));
 
                 /////////////////////////
 
                 oneOf(notebookDao).addAnnotationToNotebook(1, 5);
                 will(returnValue(true));
+                
+                oneOf(annotationDao).addPermission(5, 1, Access.ALL);
+                will(returnValue(1));
             }
         });
 
@@ -2090,7 +2094,6 @@ public class DBDispatcherTest {
 
         final Annotation annotation = (new TestInstances("/api")).getAnnotationOne();
         final NotInDataBaseException e = new NotInDataBaseException("annotation", "external ID", "00000000-0000-0000-0000-000000000031");
-        final String mockTempID = "00000000-0000-0000-0000-000000000031";
         final UUID mockNewID = Helpers.generateUUID();
         final PermissionList permissions = annotation.getPermissions();
 
@@ -2159,12 +2162,6 @@ public class DBDispatcherTest {
                 oneOf(annotationDao).updateAnnotationBody(1, annotation.getBody().getTextBody().getBody(), "text/html", false);
                 will(returnValue(1));
 
-                ///
-
-                oneOf(annotationDao).updatePublicAccess(1, permissions.getPublic());
-                will(returnValue(1));
-
-
             }
         });
         assertEquals(1, dbDispatcher.updateAnnotation(annotation, "userello"));
@@ -2215,12 +2212,16 @@ public class DBDispatcherTest {
                 
                 oneOf(annotationDao).addPermission(1, 4, Access.WRITE);
                 will(returnValue(1));
+                
+                oneOf(annotationDao).deletePermission(1, 2);
+                will(returnValue(1));
 
             }
         });
 
         assertEquals(1, dbDispatcher.updatePermission(1, 2, Access.READ));
         assertEquals(1, dbDispatcher.updatePermission(1, 4, Access.WRITE));
+        assertEquals(1, dbDispatcher.updatePermission(1, 2, null));
     }
 
     @Test
@@ -2305,5 +2306,65 @@ public class DBDispatcherTest {
 
         assertEquals(1, dbDispatcher.updatePublicAttribute(1, Access.NONE));
 
+    }
+    
+    @Test
+    public void testCanDo(){
+        System.out.println("test canDo");
+        
+        mockeryDao.checking(new Expectations() {            {
+                /////
+                oneOf(annotationDao).getOwner(1);
+                will(returnValue(1));
+                oneOf(principalDao).getTypeOfPrincipalAccount(1);
+                will(returnValue("developer"));
+            }
+        });
+        assertTrue(dbDispatcher.canDo(Access.ALL, 1, 1, Resource.ANNOTATION));
+        
+        mockeryDao.checking(new Expectations() {            {
+                /////
+                oneOf(annotationDao).getOwner(2);
+                will(returnValue(2));
+                oneOf(principalDao).getTypeOfPrincipalAccount(2);
+                will(returnValue("developer"));
+                
+                oneOf(annotationDao).getAccess(2, 1);
+                will(returnValue(Access.READ));
+                oneOf(annotationDao).getPublicAttribute(2);
+                will(returnValue(Access.READ));
+            }
+        });
+        assertFalse(dbDispatcher.canDo(Access.WRITE, 1, 2, Resource.ANNOTATION));
+        
+        mockeryDao.checking(new Expectations() {            {
+                /////
+                oneOf(annotationDao).getOwner(3);
+                will(returnValue(3));
+                oneOf(principalDao).getTypeOfPrincipalAccount(1);
+                will(returnValue("developer"));
+                
+                oneOf(annotationDao).getAccess(3, 1);
+                will(returnValue(Access.READ));
+                oneOf(annotationDao).getPublicAttribute(3);
+                will(returnValue(Access.ALL));
+            }
+        });
+        assertTrue(dbDispatcher.canDo(Access.WRITE, 1, 3, Resource.ANNOTATION));
+        
+        mockeryDao.checking(new Expectations() {            {
+                /////
+                oneOf(annotationDao).getOwner(4);
+                will(returnValue(3));
+                oneOf(principalDao).getTypeOfPrincipalAccount(11);
+                will(returnValue("user"));
+                
+                oneOf(annotationDao).getAccess(4, 11);
+                will(returnValue(Access.NONE));
+                oneOf(annotationDao).getPublicAttribute(4);
+                will(returnValue(Access.NONE));
+            }
+        });
+        assertFalse(dbDispatcher.canDo(Access.READ, 11, 4, Resource.ANNOTATION));
     }
 }

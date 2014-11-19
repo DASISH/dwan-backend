@@ -201,7 +201,7 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
     public void getAnnotationWithoutTargetsAndPermisions() throws DatatypeConfigurationException {
         System.out.println("test getAnnotationWithoutTargetsAndPermissions");
         jdbcAnnotationDao.setResourcePath("/api/annotations/");
-        final Annotation result = jdbcAnnotationDao.getAnnotationWithoutTargetsAndPemissions(1);
+        final Annotation result = jdbcAnnotationDao.getAnnotationWithoutTargetsAndPemissionList(1);
 
         assertEquals("Sagrada Famiglia", result.getHeadline());
         assertEquals("<html><body>some html 1</body></html>", result.getBody().getTextBody().getBody());
@@ -209,6 +209,7 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         assertEquals("00000000-0000-0000-0000-000000000021", result.getId());
         assertEquals("/api/annotations/00000000-0000-0000-0000-000000000021", result.getHref());
         assertEquals(DatatypeFactory.newInstance().newXMLGregorianCalendar("2013-08-12T09:25:00.383000Z"), result.getLastModified());
+        assertEquals(Access.WRITE, result.getPermissions().getPublic());
     }
 
     /**
@@ -244,12 +245,13 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         assertEquals(5, newAnnotationID);
 
         // checking
-        Annotation addedAnnotation = jdbcAnnotationDao.getAnnotationWithoutTargetsAndPemissions(5);
+        Annotation addedAnnotation = jdbcAnnotationDao.getAnnotationWithoutTargetsAndPemissionList(5);
         assertEquals(addedAnnotation.getHref(), "/api/annotations/"+addedAnnotation.getId());
         assertFalse(null == addedAnnotation.getLastModified());
         assertEquals(annotationToAdd.getBody().getTextBody().getMimeType(), addedAnnotation.getBody().getTextBody().getMimeType());
         assertEquals(annotationToAdd.getBody().getTextBody().getBody(), addedAnnotation.getBody().getTextBody().getBody());
         assertEquals(annotationToAdd.getHeadline(), addedAnnotation.getHeadline());
+        assertEquals(annotationToAdd.getPermissions().getPublic(), addedAnnotation.getPermissions().getPublic());
         System.out.println("creation time " + addedAnnotation.getLastModified());
     }
 
@@ -305,46 +307,63 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         assertEquals("write", result.get(0).get(2));
         assertEquals("read", result.get(1).get(3));
         assertEquals("read", result.get(2).get(11));
-
+        
+        List<Map<Number, String>> result2 = jdbcAnnotationDao.getPermissions(4);
+        assertEquals(4, result2.size());        
+        assertEquals("all", result2.get(0).get(1));
+        assertEquals("write", result2.get(1).get(2));
+        assertEquals("none", result2.get(2).get(3));
+        assertEquals("none", result2.get(3).get(11)); 
     }
 
     // getAnnotationIDsForPermission(Number principalID, Access access)
     @Test
-    public void testAnnotationIDsForPermission() {
-        System.out.println("test getAnnotationIDsForPermission");
+    public void testAnnotationIDsForPermissionAtLeast() {
+        System.out.println("test getAnnotationIDsForPermissionAtLeast");
         List<Number> result = jdbcAnnotationDao.getAnnotationIDsPermissionAtLeast(1, Access.READ);
         assertEquals(3, result.size());
         assertEquals(2, result.get(0));
         assertEquals(3, result.get(1));
         assertEquals(4, result.get(2));
 
-        List<Number> resultTwo = jdbcAnnotationDao.getAnnotationIDsPermissionAtLeast(1, Access.WRITE);
-        assertEquals(1, resultTwo.size());
-        assertEquals(4, resultTwo.get(0));
+        List<Number> resultWrite = jdbcAnnotationDao.getAnnotationIDsPermissionAtLeast(1, Access.WRITE);
+        assertEquals(1, resultWrite.size());
+        assertEquals(4, resultWrite.get(0));
+        
+        List<Number> resultAll = jdbcAnnotationDao.getAnnotationIDsPermissionAtLeast(1, Access.ALL);
+        assertEquals(1, resultAll.size());
+        assertEquals(4, resultAll.get(0));
 
-        List<Number> resultThree = jdbcAnnotationDao.getAnnotationIDsPermissionAtLeast(1, Access.NONE);
-        assertEquals(0, resultThree.size());
-
+        List<Number> resultNone= jdbcAnnotationDao.getAnnotationIDsPermissionAtLeast(1, Access.NONE);
+        assertEquals(0, resultNone.size());
+        
+        List<Number> resultNone1 = jdbcAnnotationDao.getAnnotationIDsPermissionAtLeast(3, Access.NONE);
+        assertEquals(1, resultNone1.size());
+        assertEquals(4, resultWrite.get(0));
     }
 
     // getAnnotationIDsForPublicAccess
     @Test
-    public void testAnnotationIDsForPublicAccess() {
+    public void testAnnotationIDsForPublicAtLeast() {
         System.out.println("test getAnnotationIDsForPublicAccess");
         List<Number> result = jdbcAnnotationDao.getAnnotationIDsPublicAtLeast(Access.READ);
-        assertEquals(2, result.size());
+        assertEquals(3, result.size());
         assertTrue(result.contains(1));
         assertTrue(result.contains(2));
-
+        assertTrue(result.contains(3));
+        
         List<Number> resultTwo = jdbcAnnotationDao.getAnnotationIDsPublicAtLeast(Access.WRITE);
-        assertEquals(1, resultTwo.size());
-        assertEquals(1, resultTwo.get(0));
-
-
-        List<Number> resultThree = jdbcAnnotationDao.getAnnotationIDsPublicAtLeast(Access.NONE);
-        assertEquals(2, resultThree.size());
+        assertEquals(2, resultTwo.size());
+        assertTrue(result.contains(1));
+        assertTrue(resultTwo.contains(3));
+        
+        List<Number> resultThree = jdbcAnnotationDao.getAnnotationIDsPublicAtLeast(Access.ALL);
+        assertEquals(1, resultThree.size());
         assertTrue(resultThree.contains(3));
-        assertTrue(resultThree.contains(4));
+
+        List<Number> resultNone = jdbcAnnotationDao.getAnnotationIDsPublicAtLeast(Access.NONE);
+        assertEquals(1, resultNone.size());
+        assertTrue(resultNone.contains(4));
 
     }
 
@@ -353,7 +372,8 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         System.out.println("test getPublicAttribute");
         assertEquals(Access.WRITE, jdbcAnnotationDao.getPublicAttribute(1));
         assertEquals(Access.READ, jdbcAnnotationDao.getPublicAttribute(2));
-        assertEquals(Access.NONE, jdbcAnnotationDao.getPublicAttribute(3));
+        assertEquals(Access.ALL, jdbcAnnotationDao.getPublicAttribute(3));
+        assertEquals(Access.NONE, jdbcAnnotationDao.getPublicAttribute(4));
     }
 
     @Test
@@ -362,6 +382,14 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         assertEquals(Access.READ, jdbcAnnotationDao.getAccess(1, 3));
         assertEquals(Access.WRITE, jdbcAnnotationDao.getAccess(2, 3));
         assertEquals(Access.NONE, jdbcAnnotationDao.getAccess(3, 3));
+        assertEquals(Access.NONE, jdbcAnnotationDao.getAccess(2, 2)); // implicit none, no row in the table
+    }
+    
+    @Test
+    public void testHasExplicitAccess() {
+        System.out.println("test getAccess");
+        assertTrue(jdbcAnnotationDao.hasExplicitAccess(1, 3));
+        assertFalse(jdbcAnnotationDao.hasExplicitAccess(2, 2)); // implicit none, no row in the table
     }
 
     @Test
@@ -421,14 +449,14 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         System.out.println("test updateAnnotationbody ");
         int result = jdbcAnnotationDao.updateAnnotationBody(1, "some html 1 updated", "text/plain", false);
         assertEquals(1, result);
-        Annotation check = jdbcAnnotationDao.getAnnotationWithoutTargetsAndPemissions(1);
+        Annotation check = jdbcAnnotationDao.getAnnotationWithoutTargetsAndPemissionList(1);
         assertEquals("some html 1 updated", check.getBody().getTextBody().getBody());
         assertEquals("text/plain", check.getBody().getTextBody().getMimeType());
 
         String testXml = "<xhtml:span style=\"background-color:rgb(0,0,153);color:rgb(255,255,255);border: thick solid rgb(0, 0, 153);\">test</xhtml:span>";
         int result2 = jdbcAnnotationDao.updateAnnotationBody(1, testXml, "application/xml", true);
         assertEquals(1, result2);
-        Annotation check2 = jdbcAnnotationDao.getAnnotationWithoutTargetsAndPemissions(1);
+        Annotation check2 = jdbcAnnotationDao.getAnnotationWithoutTargetsAndPemissionList(1);
         assertEquals("xhtml:span", check2.getBody().getXmlBody().getAny().getNodeName());
         assertTrue(check2.getBody().getXmlBody().getAny().hasAttribute("style"));
         assertEquals("test", check2.getBody().getXmlBody().getAny().getTextContent());
@@ -440,7 +468,7 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         System.out.println("test updateAnnotationHeader ");
         int result = jdbcAnnotationDao.updateAnnotationHeadline(1, "new Header");
         assertEquals(1, result);
-        Annotation check = jdbcAnnotationDao.getAnnotationWithoutTargetsAndPemissions(1);
+        Annotation check = jdbcAnnotationDao.getAnnotationWithoutTargetsAndPemissionList(1);
         assertEquals("new Header", check.getHeadline());
     }
 
@@ -508,17 +536,19 @@ public class JdbcAnnotationDaoTest extends JdbcResourceDaoTest {
         annotation.setHeadline("updated headline 1");
         annotation.getBody().getTextBody().setBody("updated some html 1");
         annotation.getBody().getTextBody().setMimeType("text/plain");
+        annotation.getPermissions().setPublic(Access.ALL);
 
         
         int result = jdbcAnnotationDao.updateAnnotation(annotation,1, 1);
         assertEquals(1, result);
         System.out.println(" annotation updated");
-        Annotation check = jdbcAnnotationDao.getAnnotationWithoutTargetsAndPemissions(1);
+        Annotation check = jdbcAnnotationDao.getAnnotationWithoutTargetsAndPemissionList(1);
         assertEquals("updated some html 1", check.getBody().getTextBody().getBody());
         assertEquals("text/plain", check.getBody().getTextBody().getMimeType());
         assertEquals("updated headline 1", check.getHeadline());
         assertEquals("/api/annotations/00000000-0000-0000-0000-000000000021", check.getHref());
         assertEquals("00000000-0000-0000-0000-000000000021", check.getId());
+        assertEquals(Access.ALL, check.getPermissions().getPublic());
     }
     
     @Test
