@@ -71,3 +71,6 @@ November 10, 2014. This is a package for a shibboleth authenticated annotator. N
 "write"  access can update annotation as a whole, but if he also sends permission updates they will 
 be  ignored.
 
+November 20, 2014.  A new feature: an "all" access mode is added. The user with this permission have 
+the same rights as the owner, that it he can update permissions on the annotation
+and delete it at all. Also, the pieces of code handling permissions, have been refactored. 

@@ -1,10 +1,13 @@
 
-Placing tarball: take the tar-ball of the new  version 1.6-basic, and follow the 
-standard MPI deployment procedure.  
+Placing tarball: take the tar-ball of the new  version 1.6.1-shibboleth, and follow the 
+standard MPI deployment procedure.
 
-A new feature: a user with "write" access can update 
-annotation as a whole, but if he also sends permission updates they will be 
-ignored.
+Update the dasish annotation database with: 
+INSERT INTO access(access_mode) VALUES ('all');
+
+A new feature: an "all" access mode is added. The user with this permission have 
+the same rights as the owner, that it he can update permissions on the annotation
+and delete it at all.
 
 
 
