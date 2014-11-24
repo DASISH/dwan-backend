@@ -313,6 +313,9 @@ public class AnnotationResource extends ResourceResource {
         } catch (NotInDataBaseException e) {
             httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
             return (new ObjectFactory()).createResponseBody(new ResponseBody());
+        } catch (ForbiddenException e2) {
+            httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN, e2.getMessage());
+            return (new ObjectFactory()).createResponseBody(new ResponseBody());
         }
     }
 
@@ -364,8 +367,8 @@ public class AnnotationResource extends ResourceResource {
     ///////////////////////////////////////////////////////////
     private class UpdateAnnotation implements ILambda<Map, ResponseBody> {
 
-        @Override
-        public ResponseBody apply(Map params) throws NotInDataBaseException {
+        @Override 
+        public ResponseBody apply(Map params) throws NotInDataBaseException, ForbiddenException {
             Annotation annotation = (Annotation) params.get("annotation");
             Number annotationID = (Number) params.get("internalID");
             String remoteUser = (String) params.get("remoteUser");
@@ -643,7 +646,7 @@ public class AnnotationResource extends ResourceResource {
         public ResponseBody apply(Map params) throws NotInDataBaseException {
             Number annotationID = (Number) params.get("internalID");
             PermissionList permissions = (PermissionList) params.get("permissions");
-            int updatedRows = dbDispatcher.updatePermissions(annotationID, permissions);
+            int updatedRows = dbDispatcher.updateOrAddPermissions(annotationID, permissions);
             return dbDispatcher.makeAccessResponseEnvelope(annotationID, Resource.ANNOTATION);
         }
     }

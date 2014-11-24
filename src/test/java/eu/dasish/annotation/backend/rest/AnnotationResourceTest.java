@@ -17,6 +17,7 @@
  */
 package eu.dasish.annotation.backend.rest;
 
+import eu.dasish.annotation.backend.ForbiddenException;
 import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.Resource;
@@ -230,7 +231,7 @@ public class AnnotationResourceTest {
     }
 
     @Test
-    public void testUpdateAnnotation() throws NotInDataBaseException, IOException{
+    public void testUpdateAnnotation() throws NotInDataBaseException, IOException, ForbiddenException{
         System.out.println("test updateAnnotation");
 
         final Annotation annotation = (new TestInstances("/backend/api")).getAnnotationOne();

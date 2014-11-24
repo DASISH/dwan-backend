@@ -1,13 +1,11 @@
+Placing tarball: take the tar-ball of the new  version 1.6.1-basic-authentication, and follow the 
+standard MPI deployment procedure. The "current-nonshib" should link to this package.
 
-Placing tarball: take the tar-ball of the new  version 1.6.1-shibboleth, and follow the 
-standard MPI deployment procedure.
+No changings are to be done in context.xml and in the data-base because they are the same as
+for the sibboleth version, abd it works.
 
-Update the dasish annotation database with: 
-INSERT INTO access(access_mode) VALUES ('all');
-
-A new feature: an "all" access mode is added. The user with this permission have 
-the same rights as the owner, that it he can update permissions on the annotation
-and delete it at all.
+The splitting between logging of shibboleth and basic versions will be implemented in 
+next deployments
 
 
 

@@ -82,6 +82,9 @@ public class PrincipalResource extends ResourceResource {
         } catch (NotInDataBaseException e) {
             httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
             return new ObjectFactory().createPrincipal(new Principal());
+        } catch (ForbiddenException e2) {
+            httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN, e2.getMessage());
+            return new ObjectFactory().createPrincipal(new Principal());
         }
     }
 
@@ -121,6 +124,9 @@ public class PrincipalResource extends ResourceResource {
         } catch (NotInDataBaseException e) {
             httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
             return new ObjectFactory().createPrincipal(new Principal());
+        } catch (ForbiddenException e2) {
+            httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN, e2.getMessage());
+            return new ObjectFactory().createPrincipal(new Principal());
         }
     }
 
@@ -145,6 +151,9 @@ public class PrincipalResource extends ResourceResource {
             return (result != null) ? (new ObjectFactory().createCurrentPrincipalInfo(result)) : (new ObjectFactory().createCurrentPrincipalInfo(new CurrentPrincipalInfo()));
         } catch (NotInDataBaseException e) {
             httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
+            return new ObjectFactory().createCurrentPrincipalInfo(new CurrentPrincipalInfo());
+        } catch (ForbiddenException e2) {
+            httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN, e2.getMessage());
             return new ObjectFactory().createCurrentPrincipalInfo(new CurrentPrincipalInfo());
         }
     }
@@ -329,6 +338,9 @@ public class PrincipalResource extends ResourceResource {
             } catch (NotInDataBaseException e) {
                 httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
                 return new ObjectFactory().createPrincipal(new Principal());
+            } catch (ForbiddenException e2) {
+                httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN, e2.getMessage());
+                return new ObjectFactory().createPrincipal(new Principal());
             }
         } else {
             this.ADMIN_RIGHTS_EXPECTED();
@@ -357,8 +369,13 @@ public class PrincipalResource extends ResourceResource {
         newPrincipal.setHref(href);
         Map params = new HashMap<String, Object>();
         params.put("newPrincipal", newPrincipal);
-        Principal result = (Principal) (new RequestWrappers(this)).wrapRequestResource(params, new UpdatePrincipal());
-        return (result != null) ? (new ObjectFactory().createPrincipal(result)) : (new ObjectFactory().createPrincipal(new Principal()));
+        try {
+            Principal result = (Principal) (new RequestWrappers(this)).wrapRequestResource(params, new UpdatePrincipal());
+            return (result != null) ? (new ObjectFactory().createPrincipal(result)) : (new ObjectFactory().createPrincipal(new Principal()));
+        } catch (ForbiddenException e2) {
+            httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN, e2.getMessage());
+            return new ObjectFactory().createPrincipal(new Principal());
+        }
     }
 
     private class UpdatePrincipal implements ILambda<Map, Principal> {

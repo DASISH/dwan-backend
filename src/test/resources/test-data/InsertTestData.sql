@@ -104,7 +104,7 @@ INSERT INTO targets_cached_representations (target_id,  cached_representation_id
 INSERT INTO targets_cached_representations (target_id,  cached_representation_id, fragment_descriptor_in_cached) VALUES (5, 7, '(0,1)');
 
 
----- ACCESSS --------------------------------------------------------------------------------------------
+---- ACCESS--------------------------------------------------------------------------------------------
 
 
 

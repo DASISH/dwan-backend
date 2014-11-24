@@ -254,7 +254,10 @@ public class AnnotationsTest extends JerseyTest {
         assertEquals("text/plain", entityA.getBody().getTextBody().getMimeType());
         assertEquals("updated annotation 1", entityA.getHeadline());
         assertEquals(3, entityA.getPermissions().getPermission().size());
-//        assertEquals(Access.READ, entityA.getPermissions().getPublic());
+        assertEquals(Access.READ, entityA.getPermissions().getPublic());
+        assertEquals(Access.WRITE, entityA.getPermissions().getPermission().get(0).getLevel());
+        assertEquals(Access.WRITE, entityA.getPermissions().getPermission().get(1).getLevel());
+        assertEquals(Access.READ, entityA.getPermissions().getPermission().get(2).getLevel());
 //        assertEquals(_relativePath + "/principals/00000000-0000-0000-0000-000000000111", entityA.getOwnerHref());
 //        assertEquals("http://nl.wikipedia.org/wiki/Sagrada_Fam%C3%ADlia#de_Opdracht", entityA.getTargets().getTargetInfo().get(0).getLink());
 //        assertEquals(_relativePath+ "/targets/00000000-0000-0000-0000-000000000031", entityA.getTargets().getTargetInfo().get(0).getHref());

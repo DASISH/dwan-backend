@@ -51,7 +51,7 @@ public class RequestWrappers<T> {
         return " The logged-in principal cannot perform action that falls under access mode'" + action + "', with the " + resource + " with the identifier " + identifier;
     }
 
-    public T wrapRequestResource(Map params, ILambda<Map, T> dbRequestor) throws IOException, NotInDataBaseException {
+    public T wrapRequestResource(Map params, ILambda<Map, T> dbRequestor) throws IOException, NotInDataBaseException, ForbiddenException {
         Number remotePrincipalID = resourceResource.getPrincipalID();
         if (remotePrincipalID == null) {
             return null;

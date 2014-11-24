@@ -17,6 +17,7 @@
  */
 package eu.dasish.annotation.backend.dao;
 
+import eu.dasish.annotation.backend.ForbiddenException;
 import eu.dasish.annotation.backend.MatchMode;
 import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.PrincipalCannotBeDeleted;
@@ -30,7 +31,6 @@ import eu.dasish.annotation.schema.Notebook;
 import eu.dasish.annotation.schema.NotebookInfo;
 import eu.dasish.annotation.schema.NotebookInfoList;
 import eu.dasish.annotation.schema.Access;
-import eu.dasish.annotation.schema.Action;
 import eu.dasish.annotation.schema.PermissionList;
 import eu.dasish.annotation.schema.ReferenceList;
 import eu.dasish.annotation.schema.ResponseBody;
@@ -225,7 +225,7 @@ public interface DBDispatcher {
      * @param annotation
      * @return 1 of the annotation if it is updated
      */
-    int updateAnnotation(Annotation annotation, String remoteUser) throws NotInDataBaseException;
+    int updateAnnotation(Annotation annotation, String remoteUser) throws NotInDataBaseException, ForbiddenException;
 
     /**
      *
@@ -255,7 +255,7 @@ public interface DBDispatcher {
      * @return # of rows updated or added in the table
      * annotations_principals_accesss
      */
-    int updatePermissions(Number annotationID, PermissionList permissionList) throws NotInDataBaseException ;
+    int updateOrAddPermissions(Number annotationID, PermissionList permissionList) throws NotInDataBaseException ;
     
     int updatePublicAttribute(Number annotationID, Access publicAttribute);
     

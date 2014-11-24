@@ -17,6 +17,7 @@
  */
 package eu.dasish.annotation.backend.dao.impl;
 
+import eu.dasish.annotation.backend.ForbiddenException;
 import eu.dasish.annotation.backend.Helpers;
 import eu.dasish.annotation.backend.MatchMode;
 import eu.dasish.annotation.backend.NotInDataBaseException;
@@ -2088,7 +2089,7 @@ public class DBDispatcherTest {
 //            }
 //        }
     @Test
-    public void testUpdateAnnotation() throws NotInDataBaseException {
+    public void testUpdateAnnotation() throws NotInDataBaseException, ForbiddenException {
 
         System.out.println("test updateAnnotation");
 
@@ -2106,16 +2107,18 @@ public class DBDispatcherTest {
 
                 oneOf(principalDao).getInternalIDFromHref(annotation.getOwnerHref());
                 will(returnValue(1));
-
+                
+                oneOf(annotationDao).getAccess(1,1);
+                will(returnValue(Access.NONE));
+                
+                oneOf(principalDao).getDBAdminID();
+                will(returnValue(3));
+                
                 oneOf(annotationDao).updateAnnotation(annotation, 1, 1);
                 will(returnValue(1));
 
                 oneOf(annotationDao).deleteAllAnnotationTarget(1);
                 will(returnValue(1));
-
-                oneOf(annotationDao).deletePermissions(1);
-                will(returnValue(3));
-
 
                 /// adding the first target, not found in the DB
 
@@ -2144,16 +2147,26 @@ public class DBDispatcherTest {
                 will(returnValue(1));
 
                 /////
+                
+                oneOf(annotationDao).updatePublicAccess(1, Access.WRITE);
+                will(returnValue(1));
+                
                 oneOf(principalDao).getInternalIDFromHref(permissions.getPermission().get(0).getPrincipalHref());
                 will(returnValue(2));
-
-                oneOf(annotationDao).addPermission(1, 2, Access.WRITE);
+                
+                oneOf(annotationDao).hasExplicitAccess(1, 2);
+                will(returnValue(true));
+                
+                oneOf(annotationDao).updatePermission(1, 2, Access.WRITE);
                 will(returnValue(1));
 
                 oneOf(principalDao).getInternalIDFromHref(permissions.getPermission().get(1).getPrincipalHref());
                 will(returnValue(3));
+                
+                 oneOf(annotationDao).hasExplicitAccess(1, 3);
+                 will(returnValue(true));
 
-                oneOf(annotationDao).addPermission(1, 3, Access.READ);
+                oneOf(annotationDao).updatePermission(1, 3, Access.READ);
                 will(returnValue(1));
 
 
@@ -2283,7 +2296,7 @@ public class DBDispatcherTest {
             }
         });
 
-        assertEquals(3, dbDispatcher.updatePermissions(1, permissions));
+        assertEquals(3, dbDispatcher.updateOrAddPermissions(1, permissions));
 
     }
 
