@@ -17,6 +17,7 @@
  */
 package eu.dasish.annotation.backend.dao;
 
+import eu.dasish.annotation.backend.ForbiddenException;
 import eu.dasish.annotation.backend.NotInDataBaseException;
 
 /**
@@ -25,6 +26,6 @@ import eu.dasish.annotation.backend.NotInDataBaseException;
  */
 public interface ILambda<Map, R> {
     
-    public R apply(Map params)   throws NotInDataBaseException;
+    public R apply(Map params)   throws NotInDataBaseException, ForbiddenException;
     
 }

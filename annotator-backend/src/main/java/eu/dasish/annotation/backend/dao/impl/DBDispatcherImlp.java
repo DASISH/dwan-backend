@@ -17,6 +17,7 @@
  */
 package eu.dasish.annotation.backend.dao.impl;
 
+import eu.dasish.annotation.backend.ForbiddenException;
 import eu.dasish.annotation.backend.NotInDataBaseException;
 import eu.dasish.annotation.backend.Resource;
 import eu.dasish.annotation.backend.Helpers;
@@ -151,7 +152,6 @@ public class DBDispatcherImlp implements DBDispatcher {
     }
 
     ///////////////////////////////////////////////////
-   
     private void fillInPermissionList(List<Permission> listPermissions, Number resourceID, Resource resource) {
         List<Map<Number, String>> principalsAccesss = this.getDao(resource).getPermissions(resourceID);
         for (Map<Number, String> principalAccess : principalsAccesss) {
@@ -163,7 +163,7 @@ public class DBDispatcherImlp implements DBDispatcher {
             listPermissions.add(permission);
         }
     }
-    
+
     @Override
     public PermissionList getPermissions(Number resourceID, Resource resource) {
         PermissionList result = new PermissionList();
@@ -703,7 +703,7 @@ public class DBDispatcherImlp implements DBDispatcher {
     }
 
     @Override
-    public int updatePermissions(Number annotationID, PermissionList permissionList) throws NotInDataBaseException {
+    public int updateOrAddPermissions(Number annotationID, PermissionList permissionList) throws NotInDataBaseException {
         annotationDao.updatePublicAccess(annotationID, permissionList.getPublic());
         List<Permission> permissions = permissionList.getPermission();
         int result = 0;
@@ -719,28 +719,68 @@ public class DBDispatcherImlp implements DBDispatcher {
         }
         return result;
     }
-// TODO: optimize (not chnanged targets should not be deleted)
-// TODO: unit test
 
+// TODO: optimize (not chnanged targets should not be deleted)
     @Override
-    public int updateAnnotation(Annotation annotation, String remoteUser) throws NotInDataBaseException {
+    public int updateAnnotation(Annotation annotation, String remoteUser) throws NotInDataBaseException, ForbiddenException {
+
         Number annotationID = annotationDao.getInternalID(UUID.fromString(annotation.getId()));
         Number ownerID = principalDao.getInternalIDFromHref(annotation.getOwnerHref());
+        Number remoteUserID = principalDao.getPrincipalInternalIDFromRemoteID(remoteUser);
+        
+        boolean isOwner = ownerID.equals(remoteUserID);
+        boolean hasAllAccess = annotationDao.getAccess(annotationID, remoteUserID).equals(Access.ALL);
+        boolean isAdmin = remoteUserID.equals(principalDao.getDBAdminID());
+        boolean weakPrincipal = (!isOwner && !hasAllAccess && !isAdmin);
+
+        if (weakPrincipal) { // we need to check if permissions are intact
+            if (!(annotation.getPermissions().getPublic()).equals(annotationDao.getPublicAttribute(annotationID))) {
+                throw new ForbiddenException("The inlogged user does not have rights to update 'public' attribute in this annotation.");
+            }
+            List<Map<Number, String>> permissionsDB = annotationDao.getPermissions(annotationID);
+            if (!this.permissionsIntact(annotation.getPermissions().getPermission(), permissionsDB))  {
+                throw new ForbiddenException("The inlogged user does not have rights to update permissions in this annotation.");
+            }
+        }
+
+
         int updatedAnnotations = annotationDao.updateAnnotation(annotation, annotationID, ownerID);
         int deletedTargets = annotationDao.deleteAllAnnotationTarget(annotationID);
         int addedTargets = this.addTargets(annotation, annotationID);
-
-        Number remoteUserID = principalDao.getPrincipalInternalIDFromRemoteID(remoteUser);
-
-        if (ownerID.equals(remoteUserID) || (annotationDao.getAccess(annotationID, remoteUserID).equals(Access.ALL))) {
-            int deletedPrinsipalsAccesss = annotationDao.deletePermissions(annotationID);
-            int addedPrincipalsAccesss = this.addPermissions(annotation.getPermissions().getPermission(), annotationID);
-               
-        };
+        if (!weakPrincipal) { // if weak permissions reach this point then permissions are the same
+            int changedPermissions = this.updateOrAddPermissions(annotationID, annotation.getPermissions());
+        }
         return updatedAnnotations;
     }
 
-    // TODO: unit test
+    private boolean permissionsIntact(List<Permission> permissionsInput, List<Map<Number, String>> permissionsDB) throws NotInDataBaseException{
+        if (permissionsInput == null || permissionsInput.isEmpty()) {
+            return true;
+        }
+        
+        if (permissionsDB == null || permissionsDB.isEmpty()) {
+            return false;
+        }
+        
+        for(Permission permission:permissionsInput) {
+            Number principalID = principalDao.getInternalIDFromHref(permission.getPrincipalHref());
+            String accessLevel = permission.getLevel().value();
+            Map current = new HashMap<Number, String>();
+            current.put(principalID, accessLevel);
+            int index = permissionsDB.indexOf(current);
+            if (index>-1) {
+             if (!accessLevel.equals(permissionsDB.get(index).get(principalID)))   {
+                 return false;
+             } 
+            } else {
+                if (!accessLevel.equals(Access.NONE.value())) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     @Override
     public int updateAnnotationBody(Number internalID, AnnotationBody annotationBody) {
         String[] body = annotationDao.retrieveBodyComponents(annotationBody);
