@@ -180,41 +180,41 @@ public class CachedRepresentationResource extends ResourceResource {
 
     }
 
-    @PUT
-    @Consumes("text/plain")
-    @Produces(MediaType.APPLICATION_XML)
-    @Path("{cachedid: " + BackendConstants.regExpIdentifier + "}/path/{isurl}")
-    public String updateCachedBlobFromFile(@PathParam("cachedid") String cachedIdentifier,
-            @PathParam("isurl") String isURL, String blobPath) throws IOException {
-        Map params = new HashMap();
-        InputStream input;
-
-        if (isURL.equals("URL")) {
-            URL blob = new URL(blobPath);
-            input = blob.openStream();
-        } else {
-            input = new FileInputStream(blobPath);
-        }
-
-        params.put("stream", input);
-        try {
-            Integer result = (Integer) (new RequestWrappers(this)).wrapRequestResource(params, new UpdateCachedBlob(), Resource.CACHED_REPRESENTATION, Access.WRITE, cachedIdentifier);
-            input.close();
-            if (result != null) {
-                return result + "rows are updated";
-            } else {
-                return "Nothing is updated. ";
-            }
-        } catch (NotInDataBaseException e1) {
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e1.getMessage());
-            return e1.getMessage();
-        } catch (ForbiddenException e2) {
-            httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN, e2.getMessage());
-            return e2.getMessage();
-        }
-
-    }
-
+//    @PUT
+//    @Consumes("text/plain")
+//    @Produces(MediaType.APPLICATION_XML)
+//    @Path("{cachedid: " + BackendConstants.regExpIdentifier + "}/path/{isurl}")
+//    public String updateCachedBlobFromFile(@PathParam("cachedid") String cachedIdentifier,
+//            @PathParam("isurl") String isURL, String blobPath) throws IOException {
+//        Map params = new HashMap();
+//        InputStream input;
+//
+//        if (isURL.equals("URL")) {
+//            URL blob = new URL(blobPath);
+//            input = blob.openStream();
+//        } else {
+//            input = new FileInputStream(blobPath);
+//        }
+//
+//        params.put("stream", input);
+//        try {
+//            Integer result = (Integer) (new RequestWrappers(this)).wrapRequestResource(params, new UpdateCachedBlob(), Resource.CACHED_REPRESENTATION, Access.WRITE, cachedIdentifier);
+//            input.close();
+//            if (result != null) {
+//                return result + "rows are updated";
+//            } else {
+//                return "Nothing is updated. ";
+//            }
+//        } catch (NotInDataBaseException e1) {
+//            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND, e1.getMessage());
+//            return e1.getMessage();
+//        } catch (ForbiddenException e2) {
+//            httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN, e2.getMessage());
+//            return e2.getMessage();
+//        }
+//
+//    }
+//
     private class UpdateCachedBlob implements ILambda<Map, Integer> {
 
         @Override

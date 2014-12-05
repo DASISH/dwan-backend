@@ -163,7 +163,7 @@ public class DebugResource extends ResourceResource {
     public String updateResourceIdentifier(@PathParam("resource") String resource, @PathParam("oldId") String oldExternalId, @PathParam("newId") String newExternalId) throws IOException {
         Number remotePrincipalID = this.getPrincipalID();
         if (remotePrincipalID == null) {
-            return "null in;ogged principal";
+            return "null inlogged principal";
         }
         String typeOfAccount = dbDispatcher.getTypeOfPrincipalAccount(remotePrincipalID);
         if (typeOfAccount.equals(admin)) {
