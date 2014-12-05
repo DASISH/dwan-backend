@@ -73,4 +73,13 @@ be  ignored.
 
 November 20, 2014.  A new feature: an "all" access mode is added. The user with this permission have 
 the same rights as the owner, that it he can update permissions on the annotation
-and delete it at all. Also, the pieces of code handling permissions, have been refactored. 
+and delete it at all. Also, the pieces of code handling permissions, have been refactored.
+
+November 24, 2014. The inconvenience is fixed. In the previous version when the user with "write"
+access tried to update the whole annotation (including persmissions) the server ignored permission
+update part but the user was not notified. Now it is fixed: 403 is thrown is the permissions differ 
+from the given ones.
+
+December 5, 2014. The insecure API that allows to download pictures from the internet to the 
+database, as a cahced representation, has been removed (commented in the code). This API was used
+for convenience to created demo data, and was not a part of the specification.

@@ -1,11 +1,10 @@
-Placing tarball: take the tar-ball of the new  version 1.6.1-basic-authentication, and follow the 
-standard MPI deployment procedure. The "current-nonshib" should link to this package.
+This is the a simple deployemnt that does not demand changings in the context.xml, web.xml-s
+and in the database.
 
-No changings are to be done in context.xml and in the data-base because they are the same as
-for the sibboleth version, abd it works.
+Placing tarball: take the tar-ball of the version 1.6.3-basic-authentication, and follow the 
+standard first MPI deployment procedure. The "current" for lux17:mpi.nl/ds/webannotator-basic
+(respectively corpus1:mpi.nl/ds/webannotator-basic) should link to  this package.
 
-The splitting between logging of shibboleth and basic versions will be implemented in 
-next deployments
 
 
 
