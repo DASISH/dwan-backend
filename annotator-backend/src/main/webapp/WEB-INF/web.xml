@@ -47,7 +47,7 @@ see implementation details http://jersey.java.net/nonav/documentation/latest/jax
     </context-param>
     <context-param>
         <param-name>eu.dasish.annotation.backend.logout.shibboleth</param-name>
-        <param-value>https://corpus1.mpi.nl/Shibboleth.sso/Logout</param-value> 
+        <param-value>XXX</param-value> 
     </context-param>
     
     <listener>
