@@ -36,8 +36,8 @@ create unique index ix_auth_username on authorities (username,authority);
 INSERT INTO roles(role) VALUES ('ROLE_USER');
 
 INSERT INTO  users(username, password) VALUES 
-('olhsha@mpi.nl','07bb23ab0eca1757ec95a96312a063bbc69c1c3788f08d23994e371c3bff9bede3583f30e319fedbc96356352ff3bb0045d01ccd45a49f58a21baa52d925c7e2');
-INSERT INTO  users(username, password) VALUES ('olasei@mpi.nl','cecc2ce46d93555c4cfb747f1313dce819c934626db2716728c07c4f505a43b470ed988f84397505f9c988bf60e61952260e93bc75b91eb733fcaf9c13845e5d');
+('x','xxx');
+INSERT INTO  users(username, password) VALUES ('y','yyy');
 
-INSERT INTO  authorities(username, authority) VALUES ('olhsha@mpi.nl', 'ROLE_USER');
-INSERT INTO  authorities(username, authority) VALUES ('olasei@mpi.nl', 'ROLE_USER');
+INSERT INTO  authorities(username, authority) VALUES ('xl', 'ROLE_USER');
+INSERT INTO  authorities(username, authority) VALUES ('y', 'ROLE_USER');
