@@ -1,0 +1,44 @@
+1. Placing tarball: as always, take the tar-ball of the new  version 1.4, and follow the 
+standard MPI deployment procedure.  Consult the instructions from INSTALL.txt 
+about placing war file if you have forgotten.
+
+2. Adjusting shhaa.xml: as always, if it is deloyment on lux17 (or production), set
+ <sso action="lI">  and <slo action="lO">
+
+3. This time the databse stays intact.
+
+4. web.xml differs for ds/webannotator (shibboleth authentication)
+and ds/webannotator-basic (basic spring authentication).
+
+4.1. Filter. For the ds/webannotator use
+
+ <filter>
+        <filter-name>AAIFilter</filter-name>
+        <filter-class>de.mpg.aai.shhaa.AuthFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>AAIFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+    
+  and for the ds/webannotator-basic use
+    
+     <filter>
+        <filter-name>springSecurityFilterChain</filter-name>
+        <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>springSecurityFilterChain</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+    
+    
+    4.2. Settting  <param-name>eu.dasish.annotation.backend.logout</param-name>.
+    For the ds/webannotator use 
+    
+    <param-value>?shhaaDo=lO</param-value>
+    
+    and for ds/webannotator-basic use
+    
+    <param-value>/j_spring_security_logout</param-value>
+    

@@ -1,0 +1,35 @@
+January 2, 2014: the first deployment on lux16.
+
+January 3, 2014: files README, INSTALL, UPDATE, CHANGES are added to the 
+deployment tar-ball which is from now on is generated using maven assembly 
+plug-in.
+
+January 9-10, 2014. The spring-security settings (authentication and authorisation) 
+are removed. Shibboleth sshaa.xml is added,  and web.xml is adapted. The boolean  column admin_rights 
+is added to the table "principal" in the DB. Adding, updating and deleting a principal 
+in the DB (only by admin) is debugged and tested.
+
+January 20, 2014. The database is updated (redundant  duplicating ownerId column is removed 
+from annotation table, and "admin_rights" is replaced with more informative "account" for the
+table principal. There are two profiles now: for tomcat authentication (laptop development testing)
+and shibbolized one. The deployment tarball is compiled with the shibbolized  profile.
+
+March 11, 2014. The database is recreated (the old one was polluted by experimental data, 
+"owner" is removed from access values). Shibboleth authentication is possible via a new
+authentication/login api, the other uri's return 401 unless authenticated/authorized.
+POST new annotation is possible with a temporary target uri of any form. Notebook DAO is added
+(unit tested), Notebook REST is added (not completed).  The code is significantly refactored.
+
+March 18, 2014. The "bienvenue" page is created when a principal is successfully authenticated. Zipped and html cacher representations can be GET. 
+
+April 7/04. 1) Added automated generation of the default record for a shibollized principal, if his/her record not in DB yet. However, to customise the record, the principal has to ask the database admin.  2) Added attribute “public” to permission lists. The database is changed so that the column “public” is added to the table annotation. 3) Attribute and element banes, and the names of their values are simplified.  The corresponding tables and columns are renamed. 4) Using “null” as the intended value when a resource is not found is replaced with throwing an exception.
+
+April 11 2014. fixed bug: posting cached representations did now work. Added features: updating blob of the cached, updating its metadata, 
+updating fragment connecting a target and its cached.
+
+May 15, 2014. Added validation (via the schem on SCHEMAcat) of the xmls sent by client. Refactoring.
+fixing busg with escape symbols and URL encoding of them.
+
+May 22, 2014. Resored automated prinicpal record generation for a fresh shibbolized user, update
+principal is fixed (both issues have appeared after eralier refactoring). Jsp pages are updated,
+dynamical logout adress is generated.

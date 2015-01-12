@@ -1,0 +1,98 @@
+DASISH annotator back-end installation 
+------------------------------------
+
+Contents:
+- Requirements
+- Installation and configuration 
+-- placing war-file and ds#webannotator.xml
+-- The fragment to be present in Tomcat's context.xml 
+-- The fragment to be present in Tomcat's web.xml 
+- Testing 
+
+
+= Requirements =
+
+* annotator-backend-XXX-mpi-deploy.tar.gz package 
+* Tomcat >=6
+* PostgreSQL >=9.2.4 database for keeping annotations
+
+
+
+= Installation and configuration   =
+=========================================================================================
+== Placing war-file and ds#webannotator.xml at the tomcat's conf/Catalina/localhost ==
+
+You must deploy the annotator's .war file to the tomcat-webprincipal. Make a directory for the 
+application, like e.g. lat/webapps/dasish-web-annotator on lux16,  and deploy .war there following
+the standard TLA procedure.
+
+Then the corresponding ds#webannotator.xml looks as follows: 
+
+<?xml version='1.0' encoding='utf-8'?>
+<Context path="/ds/webannotator"
+  docBase="/lat/webapps/dasish-web-annotator/current"
+  debug="0" reloadable="true" crossContext="true">
+</Context>
+
+
+=============================================================================================
+== context.xml ===
+
+The file must contain the fragment for the database, like e.g.on lux16:
+
+         <Resource
+                 name="jdbc/DASISHAnnotator"
+                 auth="Container"
+                 type="javax.sql.DataSource"
+                 driverClassName="org.postgresql.Driver"
+                 url="jdbc:postgresql://localhost/dasish"                
+                 principalname="XXXXXXX"  
+                 password="YYYYYYY"  
+                 maxActive="20"
+                 maxIdle="5"    
+                 maxWait="4000" />
+
+
+=============================================================================================
+== web.xml ===
+
+So far no parameters to be placed in the "global" web.xml 
+
+
+=============================================================================================
+
+= Testing  =
+
+If the application is succesfully deployed, you will get the jsp page after requesting
+
+<server uri>/ds/webannotator
+
+Note that the path "ds/webannotator" is the same as mentioned in  ds#webannotator.xml 
+above.
+
+On this web-page there is a number of test GET requests there which you can send if you want 
+to check if it works. If you are not in the DB yet, any request will end up with the Server 
+error message "the logged-in-principal". Ask Olha to add you providing with your shibboleth 
+remote ID. If you are in the DB you should be able to perform any request, except may be
+getting annotation. If you have read access to the test annotation, you will get it.
+
+
+
+If you want to test POST, PUT and DELETE requests use e.g.
+
+-- chrome REST console, see
+https://chrome.google.com/webstore/detail/rest-console/cokgbflfommojglbmbpenpphppikmonn
+
+-- or a FireFox add-on "Rest client", 
+see https://addons.mozilla.org/nl/firefox/addon/restclient/
+
+
+Example  Posting/Putting files via curl:
+
+curl -u <principal>:<password> -H "Content-Type: multipart/mixed" -F 
+"metadata=@cachedInfoToAdd.xml; type=application/xml " -F "content=@artnouveauspain.png; 
+type=image/png" -X POST 
+http://localhost:8080/annotator-backend/api/targets/00000000-0000-0000-0000-000000000033/fragment/"(1,1)"/cached -i -v
+
+
+
