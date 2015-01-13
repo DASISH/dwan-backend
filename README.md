@@ -1,7 +1,7 @@
 # dwan-backend
 DASISH Task 5.6. Annotation framework backend
 
-This repository contains the last committed to svn source code for annotator backend. 
+This repository contains the last committed to svn source code for the annotator backend. 
 
 The logins, passwords and other authentication fragments have been removed from context.xml, web.xml.  shhaa.xml is has been removed. They must be adjusted locally on the server where the software is installed. In web.xml you will need uncomment/comment the fragments switching on shibboleth or basic authentication mechanisms, depending on which sort of authentication you use.
 
