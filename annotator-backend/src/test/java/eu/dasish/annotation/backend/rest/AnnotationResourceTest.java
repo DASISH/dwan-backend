@@ -91,7 +91,7 @@ public class AnnotationResourceTest {
         final String externalIDstring = "00000000-0000-0000-0000-000000000021";
         final Annotation expectedAnnotation = (new TestInstances("/api")).getAnnotationOne();
         annotationResource.setHttpServletRequest(mockRequest);
-        mockRequest.setRemoteUser("olhsha@mpi.nl");
+        mockRequest.setRemoteUser("alice@mail.domain");
         mockRequest.setContextPath("/backend");
         mockRequest.setServletPath("/api");
         mockeryRest.checking(new Expectations() {
@@ -99,7 +99,7 @@ public class AnnotationResourceTest {
                 
                 oneOf(mockDbDispatcher).setResourcesPaths("/backend/api");
 
-                oneOf(mockDbDispatcher).getPrincipalInternalIDFromRemoteID("olhsha@mpi.nl");
+                oneOf(mockDbDispatcher).getPrincipalInternalIDFromRemoteID("alice@mail.domain");
                 will(returnValue(3));
 
                 oneOf(mockDbDispatcher).getResourceInternalIdentifier(with(aNonNull(UUID.class)), with(aNonNull((Resource.class))));
@@ -133,7 +133,7 @@ public class AnnotationResourceTest {
         mockDelete[3] = 1; // # deletd Targets, 4
 
         annotationResource.setHttpServletRequest(mockRequest);
-        mockRequest.setRemoteUser("olhsha@mpi.nl");
+        mockRequest.setRemoteUser("alice@mail.domain");
         mockRequest.setContextPath("/backend");
         mockRequest.setServletPath("/api");
         
@@ -141,7 +141,7 @@ public class AnnotationResourceTest {
             {
                 oneOf(mockDbDispatcher).setResourcesPaths("/backend/api");
 
-                oneOf(mockDbDispatcher).getPrincipalInternalIDFromRemoteID("olhsha@mpi.nl");
+                oneOf(mockDbDispatcher).getPrincipalInternalIDFromRemoteID("alice@mail.domain");
                 will(returnValue(3));
 
                 oneOf(mockDbDispatcher).getResourceInternalIdentifier(with(aNonNull(UUID.class)), with(aNonNull((Resource.class))));
@@ -191,7 +191,7 @@ public class AnnotationResourceTest {
         action.setObject("/backend/api/targets/00000000-0000-0000-0000-000000000036");
 
         annotationResource.setHttpServletRequest(mockRequest);
-        mockRequest.setRemoteUser("olhsha@mpi.nl");
+        mockRequest.setRemoteUser("alice@mail.domain");
          mockRequest.setContextPath("/backend");
         mockRequest.setServletPath("/api");
         mockeryRest.checking(new Expectations() {
@@ -199,7 +199,7 @@ public class AnnotationResourceTest {
                
                 oneOf(mockDbDispatcher).setResourcesPaths("/backend/api");
 
-                oneOf(mockDbDispatcher).getPrincipalInternalIDFromRemoteID("olhsha@mpi.nl");
+                oneOf(mockDbDispatcher).getPrincipalInternalIDFromRemoteID("alice@mail.domain");
                 will(returnValue(3));
 
                 oneOf(mockDbDispatcher).addPrincipalsAnnotation(3, annotationToAdd);

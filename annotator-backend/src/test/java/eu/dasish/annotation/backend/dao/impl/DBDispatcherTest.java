@@ -1298,7 +1298,7 @@ public class DBDispatcherTest {
         freshPrincipal.setEMail("Olha.Shakaravska@mpi.nl");
         mockeryDao.checking(new Expectations() {
             {
-                oneOf(principalDao).principalExists("olhsha@mpi.nl");
+                oneOf(principalDao).principalExists("alice@mail.domain");
                 will(returnValue(true));
 
             }
@@ -1306,7 +1306,7 @@ public class DBDispatcherTest {
 
         PrincipalExists ex = null;
         try {
-            dbDispatcher.addPrincipal(principal, "olhsha@mpi.nl");
+            dbDispatcher.addPrincipal(principal, "alice@mail.domain");
         } catch (PrincipalExists e) {
             ex = e;
         }

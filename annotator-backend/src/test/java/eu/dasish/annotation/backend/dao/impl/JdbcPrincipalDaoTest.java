@@ -152,7 +152,7 @@ public class JdbcPrincipalDaoTest extends JdbcResourceDaoTest {
     public void tesPrincipalExists() {
         System.out.println("test principalExists");      
         assertEquals(false,jdbcPrincipalDao.principalExists("guisil@mpi.nl"));       
-        assertTrue(jdbcPrincipalDao.principalExists("olhsha@mpi.nl"));
+        assertTrue(jdbcPrincipalDao.principalExists("alice@mail.domain"));
     }
     
       /**
@@ -183,7 +183,7 @@ public class JdbcPrincipalDaoTest extends JdbcResourceDaoTest {
 //   public void generateHashes() {
 //        System.out.println("*****"); 
 //        System.out.println("generate hashes");
-//        System.out.println(Helpers.hashPswd("1234", 512, "olhsha@mpi.nl"));
+//        System.out.println(Helpers.hashPswd("1234", 512, "alice@mail.domain"));
 //        System.out.println(Helpers.hashPswd("5678", 512, "olasei@mpi.nl"));
 //        System.out.println("*****");
 //        
