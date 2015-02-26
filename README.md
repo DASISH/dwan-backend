@@ -3,7 +3,7 @@ DASISH Task 5.6. Annotation framework backend.
 
 This repository contains the mirror of the last committed to svn source code for the annotator backend, with some security-sensitive information censored, located at https://trac.clarin.eu/browser/DASISH/t5.6/backend/annotator-backend/tags/git-copy-censored.
 
-Javadocs are added to the interface package eu.dasish.annotation.backend.dao and to the package eu.dasish.annotation.backend.rest. 
+Javadocs annotations are added to the interface package eu.dasish.annotation.backend.dao and to the package eu.dasish.annotation.backend.rest. 
 
 In the context.xml, shhaa.xml, database scripts and testing packages: usernames, passwords, hashes, names of servers are replaced with the gegeneric ones. You will need to replace it with your own settings.
 
