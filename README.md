@@ -5,7 +5,7 @@ This repository contains the mirror of the last committed to svn source code for
 
 Javadocs annotations are added to the interface package eu.dasish.annotation.backend.dao and to the package eu.dasish.annotation.backend.rest. 
 
-In the context.xml, shhaa.xml, database scripts and testing packages: usernames, passwords, hashes, names of servers are replaced with the gegeneric ones. You will need to replace it with your own settings.
+In the context.xml, shhaa.xml, database scripts and testing packages: usernames, passwords, hashes, names of servers and e-mails are replaced with the generic ones. You will need to replace it with your own settings.
 
 If you do not set up your annotation database yet, you will need to run the script https://github.com/DASISH/dwan-backend/blob/master/annotator-backend/src/main/sql/DashishAnnotatorCreate.sql. If you are up to basic authentication you will also run the script https://github.com/DASISH/dwan-backend/blob/master/annotator-backend/src/main/sql/principal_non-shibb.sql.  Note that in the second script security-sensitive information is XXX-ed. You need to set it up yourself. 
 
