@@ -11,8 +11,8 @@ If you have not set up your annotation database yet, you will need to run the sc
 
 The DASISH schema is located at https://github.com/DASISH/dwan-backend/blob/master/annotator-backend/src/main/webapp/SCHEMA/DASISH-schema.xsd
 
-The scripts and schema are also searchable within this source package. They are located at the standard subdirectories. 
+The scripts and schema are also searchable within this repository. They are located in the standard subdirectories. 
 
-The complete documentation is located at https://github.com/DASISH/dwan-documentation
+The complete documentation can be at https://github.com/DASISH/dwan-documentation.
 
 
